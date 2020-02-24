@@ -11,7 +11,8 @@ Different Shock beam types.<br>
 Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or Deepu's Ultimate NewNet.<br>
 Add the following lines to your server's <b>UnrealTournament.ini</b> under <b>[Engine.GameEngine]</b>:<br><br>
 <b>ServerPackages=InstaGibPlus</b><br>
-<b>ServerActors=InstaGibPlus.NewNetServer</b><br><br>
+<b>ServerActors=InstaGibPlus.NewNetServer</b><br>
+<b>ServerActors=InstaGibPlus.PureStat</b><br><br>
 
 If you'd like to use the AutoPause features, also add:<br><br>
 <b>ServerActors=InstaGibPlus.PureAutoPause</b><br>
