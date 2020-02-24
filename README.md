@@ -1,5 +1,5 @@
 # InstaGib+
-A competitive InstaGib fork of TimTim's NewNet.
+A competitive Unreal Tournament GOTY InstaGib fork of TimTim's NewNet.
 
 # Features
 Tweaked netcode values.<br>
