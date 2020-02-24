@@ -20,7 +20,7 @@ If you'd like to use the AutoPause features, also add:<br><br>
 If you want to make sure InstaGib+ is loaded every map you can also add under <b>[Engine.GameEngine]</b>:<br><br>
 <b>ServerActors=InstaGibPlus.NewNetIG</b><br><br>
 otherwise make sure the mutator <b>InstaGibPlus.NewNetIG</b> is loaded via your map vote configuration or during server launch.<br><br>
-InstaGib+ has minimal weapons code and will load the default UT weapons if the NewNetIG mutator is not loaded, so it is absolutely unusable in normal weapons, make sure to use it only if your objective is to play or to run an InstaGib centered server.<br>
+InstaGib+ has minimal weapons code and will load the default UT weapons if the NewNetIG mutator is not loaded, so it is absolutely unusable in normal weapons, make sure to use it only if your objective is to play or to run an InstaGib centered server.<br><br>
 When connected to the server type <b>'mutate playerhelp'</b> in the console to view the available commands and options.
 
 
