@@ -1,4 +1,5 @@
 # InstaGib+
+A competitive InstaGib fork of TimTim's NewNet.
 
 # Features
 Tweaked netcode values.<br>
