@@ -105,7 +105,7 @@ local DeathMatchPlus zzDMP;
 	// If Game has started, cleanup all the flags assigned
 	zzDMP = DeathMatchPlus(Level.Game);
 
-	Log("On PureClickBoard Timer");
+	//Log("On PureClickBoard Timer");
 
 	if (zzDMP.CountDown > 0)
 	{

@@ -1483,11 +1483,11 @@ defaultproperties
 	ConsoleName="InstaGib+ Console"
 	VersionStr="InstaGib+ Final"
 	LongVersion="RC "
-	ThisVer="1D"
-	NiceVer="1D"
+	ThisVer="1E"
+	NiceVer="1E"
 	BADminText="Not allowed - Log in as admin!"
-	MinPosError=10
-	MaxPosError=1000
+	MinPosError=75.0
+	MaxPosError=500.0
 	MaxHitError=15000
 	bAlwaysTick=True
 	NNAnnouncer=True

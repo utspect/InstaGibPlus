@@ -34,6 +34,7 @@ var globalconfig int selectedHitSound;
 var globalconfig string sHitSound[16];
 var globalconfig int cShockBeam;
 var globalconfig float BeamScale;
+var globalconfig float playerNetMoveDelta;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
@@ -1631,7 +1632,7 @@ function xxServerMove
 	if ( ServerTimeStamp > 0 )
 	{
 		// allow 1% error
-		TimeMargin += DeltaTime - 2.01 * (Level.TimeSeconds - ServerTimeStamp); // 1.01?
+		TimeMargin += DeltaTime - 1.01 * (Level.TimeSeconds - ServerTimeStamp); // 1.01?
 		if ( TimeMargin > MaxTimeMargin )
 		{
 			// player is too far ahead
@@ -2358,6 +2359,10 @@ simulated function xxSetTimes(int RemainingTime, int ElapsedTime)
 	GameReplicationInfo.ElapsedTime = ElapsedTime;
 }
 
+exec function getNetMoveDelta() {
+	ClientMessage("playerNetMoveDelta:"@playerNetMoveDelta);
+}
+
 function ReplicateMove
 (
 	float DeltaTime,
@@ -2491,8 +2496,10 @@ function xxReplicateMove
 		FreeMoves.Clear();
 		NewMove = PendingMove;
 	}
-	if (Player.CurrentNetSpeed != 0)
-		NetMoveDelta = FMax(100.0/Player.CurrentNetSpeed, 0.005);
+	if (Player.CurrentNetSpeed != 0) {
+		NetMoveDelta = FMax(50.0/Player.CurrentNetSpeed, 0.009999);
+		//Log("NetMoveDelta:"@NetMoveDelta);
+	}
 
 	if ( !PendingMove.bForceFire && !PendingMove.bForceAltFire && !PendingMove.bPressedJump
 		&& (PendingMove.Delta < NetMoveDelta - ClientUpdateTime) )
@@ -8024,8 +8031,8 @@ defaultproperties
 	bNewNetIsDisabled=False
 	desiredSkin=1
 	desiredTeamSkin=1
-	NetUpdateFrequency=250.000000
-	NetPriority=10.000000
+	//NetUpdateFrequency=100.000000
+	//NetPriority=10.000000
 	bEnableHitSounds=True
 	selectedHitSound=0
 	bIsPatch469=False
@@ -8034,4 +8041,5 @@ defaultproperties
 	cShockBeam=1
 	BeamScale=0.45
 	bIsFinishedLoading=False
+	playerNetMoveDelta=50
 }
