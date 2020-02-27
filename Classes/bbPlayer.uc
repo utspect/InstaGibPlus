@@ -34,7 +34,6 @@ var globalconfig int selectedHitSound;
 var globalconfig string sHitSound[16];
 var globalconfig int cShockBeam;
 var globalconfig float BeamScale;
-var globalconfig float playerNetMoveDelta;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
@@ -2359,9 +2358,6 @@ simulated function xxSetTimes(int RemainingTime, int ElapsedTime)
 	GameReplicationInfo.ElapsedTime = ElapsedTime;
 }
 
-exec function getNetMoveDelta() {
-	ClientMessage("playerNetMoveDelta:"@playerNetMoveDelta);
-}
 
 function ReplicateMove
 (
@@ -2497,7 +2493,7 @@ function xxReplicateMove
 		NewMove = PendingMove;
 	}
 	if (Player.CurrentNetSpeed != 0) {
-		NetMoveDelta = FMax(50.0/Player.CurrentNetSpeed, 0.009999);
+		NetMoveDelta = FMax(64.0/Player.CurrentNetSpeed, 0.011);
 		//Log("NetMoveDelta:"@NetMoveDelta);
 	}
 
@@ -3052,7 +3048,7 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 
 	if ( (GetAnimGroup(AnimSequence) == 'Ducking') && (AnimFrame > -0.03) )
 	{
-		maxZ = Location.Z + 0.2 * CollisionHeight; // default value is 0.3
+		maxZ = Location.Z + 0.3 * CollisionHeight; // default value is 0.3
 		if ( HitLocation.Z > maxZ )
 		{
 			if ( TraceDir.Z >= 0 )
@@ -8041,5 +8037,4 @@ defaultproperties
 	cShockBeam=1
 	BeamScale=0.45
 	bIsFinishedLoading=False
-	playerNetMoveDelta=50
 }
