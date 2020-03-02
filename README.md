@@ -31,5 +31,5 @@ When connected to the server type <b>'mutate playerhelp'</b> in the console to v
 *<b>Deepu</b>* - Ultimate NewNet.<br>
 *<b>Deaod</b>* - For the support and pointers when I got stuck, without him I don't think I could've finished this so fast.<br>
 *<b>UT99 Community</b>* - For their endless patience, support and help testing and reporting bugs.<br>
-<b>IG Nation Testers</b> - For all the feedback given.<br>
+*<b>IG Nation Testers</b> - For all the feedback given.<br>
 *<b>Epic</b>* - For not open sourcing a 20 year old game running on their 20 year old engine.
