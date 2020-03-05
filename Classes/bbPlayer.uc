@@ -1593,9 +1593,8 @@ function xxServerMove
 	}
 
 	// View components
-	ViewPitch = View/32768;
-	ViewYaw = 2 * (View - 32768 * ViewPitch);
-	ViewPitch *= 2;
+	ViewPitch = (View >>> 16);
+	ViewYaw = (View & 0xFFFF);
 	// Make acceleration.
 	Accel = InAccel/10;
 
@@ -2555,7 +2554,7 @@ function xxReplicateMove
 		NewMove.bForceAltFire,
 		NewMove.DodgeMove,
 		ClientRoll,
-		(32767 & (zzViewRotation.Pitch/2)) * 32768 + (32767 & (zzViewRotation.Yaw/2)),
+		((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF),
 		OldTimeDelta,
 		OldAccel
 	);
@@ -3732,7 +3731,7 @@ state FeigningDeath
 	)
 	{
 		Global.xxServerMove(TimeStamp, Accel, ClientLoc, ClientVel, NewbRun, NewbDuck, NewbJumpStatus,
-							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, (32767 & (Rotation.Pitch/2)) * 32768 + (32767 & (Rotation.Yaw/2)));
+							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, ((Rotation.Pitch & 0xFFFF) << 16) | (Rotation.Yaw & 0xFFFF));
 	}
 
 	function PlayerMove( float DeltaTime)
@@ -4781,7 +4780,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	)
 	{
 		Global.xxServerMove(TimeStamp, InAccel, ClientLoc, ClientVel, NewbRun, NewbDuck, NewbJumpStatus,
-							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, (32767 & (zzViewRotation.Pitch/2)) * 32768 + (32767 & (zzViewRotation.Yaw/2)) );
+							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, ((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF));
 
 	}
 
