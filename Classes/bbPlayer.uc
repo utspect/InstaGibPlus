@@ -368,7 +368,7 @@ simulated function bool xxNewSetLocation(vector NewLoc, vector NewVel, optional 
 simulated function bool xxNewMoveSmooth(vector NewLoc, vector NewVel)
 {
 	local bool bSuccess;
-	bSuccess = MoveSmooth(NewLoc - Location);
+	bSuccess = Move(NewLoc - Location);
 	if (bSuccess)
 		Velocity = NewVel;
 	return bSuccess;
