@@ -237,7 +237,7 @@ simulated function NN_TraceFire()
 //	Owner.MakeNoise(Pawn(Owner).SoundDampening);
 
 	GetAxes(GV,X,Y,Z);
-	StartTrace = Owner.Location + CDO + yMod * Y + FireOffset.Z * Z;
+	StartTrace = Owner.Location + CDO;
 	EndTrace = StartTrace + (100000 * vector(GV));
 
 	Other = bbP.NN_TraceShot(HitLocation,HitNormal,EndTrace,StartTrace,Pawn(Owner));
@@ -245,8 +245,8 @@ simulated function NN_TraceFire()
 	{
 		HitDiff = HitLocation - Other.Location;
 
-		/* 
-		
+		/*
+
 		What is all this for? It works just fine without this, seriously, this actually makes it worse. Don't try to fix what's not broken.
 
 		zzbbP = bbPlayer(Other);
@@ -261,8 +261,8 @@ simulated function NN_TraceFire()
 			zzOther = bbP.NN_TraceShot(zzHitLocation,zzHitNormal,zzEndTrace,zzStartTrace,Pawn(Owner));
 			zzbbP.SetCollisionSize(oRadius, oHeight);
 			//bbP.xxChecked(Other != zzOther);
-		} 
-		
+		}
+
 		*/
 	}
 
@@ -354,7 +354,7 @@ simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vect
 		Smoke2 = Spawn(class'NN_SuperShockBeam',Owner,,SmokeLocation,SmokeRotation);
 		Smoke2.MoveAmount = DVector/NumPoints;
 		Smoke2.NumPuffs = NumPoints - 1;
-	} 	
+	}
 	else if (bbPlayer(Owner).cShockBeam == 2) {
 		Smoke = Spawn(class'NN_AlternateSuperShockBeam',Owner,,SmokeLocation,SmokeRotation);
 		Smoke.SetProperties(Pawn(Owner).PlayerReplicationInfo.Team,bbPlayer(Owner).BeamScale,BeamFadeCurve,BeamDuration);

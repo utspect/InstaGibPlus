@@ -1,8 +1,8 @@
-/** 
+/**
  * @Author: TimTim
  * @Extended by: spect
- * @Class: bbPlayer 
- * @Date: 2020-02-16 01:54:19 
+ * @Class: bbPlayer
+ * @Date: 2020-02-16 01:54:19
  * @Desc: The bread and butter of UT99 NewNet
  */
 
@@ -368,7 +368,7 @@ simulated function bool xxNewSetLocation(vector NewLoc, vector NewVel, optional 
 simulated function bool xxNewMoveSmooth(vector NewLoc, vector NewVel)
 {
 	local bool bSuccess;
-	bSuccess = MoveSmooth(NewLoc - Location);
+	bSuccess = Move(NewLoc - Location);
 	if (bSuccess)
 		Velocity = NewVel;
 	return bSuccess;
@@ -608,7 +608,7 @@ event Possess()
 		GameReplicationInfo.RemainingTime = DeathMatchPlus(Level.Game).RemainingTime;
 		GameReplicationInfo.ElapsedTime = DeathMatchPlus(Level.Game).ElapsedTime;
 		xxSetTimes(GameReplicationInfo.RemainingTime, GameReplicationInfo.ElapsedTime);
-		
+
 		ForEach AllActors(class'Kicker', K)
 		{
 			if (K.Class.Name != 'Kicker')
@@ -1593,9 +1593,8 @@ function xxServerMove
 	}
 
 	// View components
-	ViewPitch = View/32768;
-	ViewYaw = 2 * (View - 32768 * ViewPitch);
-	ViewPitch *= 2;
+	ViewPitch = (View >>> 16);
+	ViewYaw = (View & 0xFFFF);
 	// Make acceleration.
 	Accel = InAccel/10;
 
@@ -2188,7 +2187,7 @@ simulated function xxNN_RemoveProj(int ProjIndex, optional vector HitLocation, o
 		xxNN_ProjExplode(ProjIndex, HitLocation, HitNormal, bCombo);
 	else
 		xxNN_ClientProjExplode(ProjIndex, HitLocation, HitNormal, bCombo);
-} 
+}
 
 simulated function xxNN_ProjExplode( int ProjIndex, optional vector HitLocation, optional vector HitNormal, optional bool bCombo )
 {
@@ -2555,7 +2554,7 @@ function xxReplicateMove
 		NewMove.bForceAltFire,
 		NewMove.DodgeMove,
 		ClientRoll,
-		(32767 & (zzViewRotation.Pitch/2)) * 32768 + (32767 & (zzViewRotation.Yaw/2)),
+		((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF),
 		OldTimeDelta,
 		OldAccel
 	);
@@ -2718,9 +2717,9 @@ function string forcedTeamModelToString(int fm) {
 
 simulated function setClientNetspeed() {
 
-/** 
- * @Author: spect 
- * @Date: 2020-02-23 15:05:21 
+/**
+ * @Author: spect
+ * @Date: 2020-02-23 15:05:21
  * @Desc: Force client netspeed, gets set on every connect request, for now it remains at 20000
  */
 
@@ -2733,7 +2732,7 @@ exec function enableHitSounds(bool b) {
 	if (b) {
 		ClientMessage("Hitsounds: on");
 		reconnectClient();
-	} else { 
+	} else {
 		ClientMessage("Hitsounds: off");
 		reconnectClient();
 	}
@@ -2744,7 +2743,7 @@ exec function setForcedSkins(int fs) {
 		desiredSkin = fs;
 		SaveConfig();
 		ClientMessage("Forced enemy skin set!");
-	} else 
+	} else
 		ClientMessage("Please input a value between 0 and 17, e.g. setforcedskins 4");
 }
 
@@ -2753,7 +2752,7 @@ exec function setForcedTeamSkins(int fs) {
 		desiredTeamSkin = fs;
 		SaveConfig();
 		ClientMessage("Forced team skin set!");
-	} else 
+	} else
 		ClientMessage("Please input a value between 0 and 17, e.g. setforcedteamskins 4");
 }
 
@@ -2774,7 +2773,7 @@ exec function setShockBeam(int sb) {
 		cShockBeam = sb;
 		SaveConfig();
 		ClientMessage("Shock beam set!");
-	} else 
+	} else
 		ClientMessage("Please input a value between 1 and 3");
 }
 
@@ -3034,14 +3033,15 @@ function ServerTaunt(name Sequence )
 
 simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector TraceDir)
 {
-	/** 
-	 * @Author: spect 
-	 * @Modified Date: 2020-02-22 02:08:45 
+	/**
+	 * @Author: spect
+	 * @Modified Date: 2020-02-22 02:08:45
 	 * @Desc: Reduced the hitboxes slightly
 	 * @Feedback: Positive
 	 */
 
 	local float adjZ, maxZ;
+	local vector delta;
 
 	TraceDir = Normal(TraceDir);
 	HitLocation = HitLocation + 0.3 * CollisionRadius * TraceDir; // default value is 0.4
@@ -3057,7 +3057,8 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 			HitLocation.Z = maxZ;
 			HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
 			HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
-			if ( VSize(HitLocation - Location) > CollisionRadius )
+			delta = (HitLocation - Location) * vect(1,1,0);
+			if (delta dot delta > CollisionRadius * CollisionRadius)
 				return false;
 		}
 	}
@@ -3704,9 +3705,9 @@ simulated function CheckHitSound()
 }
 
 /** STATES
- * @Author: spect 
- * @Date: 2020-02-19 02:13:05 
- * @Desc: PlayerPawn States (This is where movement, compensation and position adjustment is controlled) 
+ * @Author: spect
+ * @Date: 2020-02-19 02:13:05
+ * @Desc: PlayerPawn States (This is where movement, compensation and position adjustment is controlled)
  */
 
 state FeigningDeath
@@ -3732,7 +3733,7 @@ state FeigningDeath
 	)
 	{
 		Global.xxServerMove(TimeStamp, Accel, ClientLoc, ClientVel, NewbRun, NewbDuck, NewbJumpStatus,
-							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, (32767 & (Rotation.Pitch/2)) * 32768 + (32767 & (Rotation.Yaw/2)));
+							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, ((Rotation.Pitch & 0xFFFF) << 16) | (Rotation.Yaw & 0xFFFF));
 	}
 
 	function PlayerMove( float DeltaTime)
@@ -4287,7 +4288,7 @@ function xxServerSetReadyToPlay()
 	{
 		zzbForceUpdate = true;
 		zzIgnoreUpdateUntil = 0;
-		
+
 		PlayerRestartState = 'PlayerWarmup';
 		GotoState('PlayerWarmup');
 		zzUTPure.zzDMP.ReStartPlayer(Self);
@@ -4781,7 +4782,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	)
 	{
 		Global.xxServerMove(TimeStamp, InAccel, ClientLoc, ClientVel, NewbRun, NewbDuck, NewbJumpStatus,
-							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, (32767 & (zzViewRotation.Pitch/2)) * 32768 + (32767 & (zzViewRotation.Yaw/2)) );
+							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, ((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF));
 
 	}
 
@@ -5226,10 +5227,10 @@ simulated function xxCheckForKickers()
 
 static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 
-	/** 
+	/**
  	* @Author: spect
- 	* @Date: 2020-02-21 01:17:00 
- 	* @Desc: Sets the selected forced skin client side 
+ 	* @Date: 2020-02-21 01:17:00
+ 	* @Desc: Sets the selected forced skin client side
 	* @TODO: Set green and yellow colors. Shit is gonna hit the fan when this is used in xtdm.
  	*/
 
@@ -5242,7 +5243,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 				SetSkinElement(SkinActor, 0, "FCommandoSkins.aphe1t_0", "FCommandoSkins.aphe");
 				SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2t_0", "FCommandoSkins.aphe");
 				SetSkinElement(SkinActor, 2, "FCommandoSkins.aphe2t_0", "FCommandoSkins.aphe");
-				
+
 			} else if (TeamNum == 1) {
 				SetSkinElement(SkinActor, 0, "FCommandoSkins.aphe1t_1", "FCommandoSkins.aphe");
 				SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2t_1", "FCommandoSkins.aphe");
@@ -5514,16 +5515,16 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			}
 			bbPlayer(SkinActor).Mesh = class'bbTBoss'.Default.Mesh;
 			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
-			break; 
+			break;
 	}
 }
 
 static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int TeamNum) {
 
-	/** 
-	 * @Author: spect 
-	 * @Date: 2020-02-22 17:18:19 
-	 * @Desc: Sets the selected forced skin for team mates 
+	/**
+	 * @Author: spect
+	 * @Date: 2020-02-22 17:18:19
+	 * @Desc: Sets the selected forced skin for team mates
 	 * @TODO: Set green and yellow colors. Shit is gonna hit the fan when this is used in xtdm.
 	 */
 
@@ -5820,7 +5821,7 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTBoss'.Default.Mesh;
 			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
-			break; 
+			break;
 	}
 }
 
@@ -5866,11 +5867,11 @@ event PreRender( canvas zzCanvas )
 					zzPRI.PlayerLocation = PlayerReplicationInfo.PlayerLocation;
 					zzPRI.PlayerZone = None;
 				}
-				
-				/** 
+
+				/**
 				 * @Author: spect
-				 * @Date: 2020-02-18 02:20:22 
-				 * @Desc: Applies the forced skin client side if force models is enabled. 
+				 * @Date: 2020-02-18 02:20:22
+				 * @Desc: Applies the forced skin client side if force models is enabled.
 				 */
 
 				if (zzbForceModels) {
@@ -5952,10 +5953,10 @@ event PreRender( canvas zzCanvas )
 										break;
 								}
 
-								// Set the skin	
+								// Set the skin
 								if (zzPRI.Team == Self.PlayerReplicationInfo.Team)
 									setForcedTeamSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
-								else 
+								else
 									setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
 							}
 						}
@@ -6126,10 +6127,10 @@ simulated function xxRenderLogo(canvas zzC)
 
 simulated function xxDrawAlphaWarning(canvas zzC, float zzx, float zzY) {
 
-	/** 
+	/**
 	 * @Author: spect
-	 * @Date: 2020-02-18 02:23:10 
-	 * @Desc: Draw a big and visible ALPHA WARNING text in the left hand corner so people complain less. It didn't work, they complained anyway. 
+	 * @Date: 2020-02-18 02:23:10
+	 * @Desc: Draw a big and visible ALPHA WARNING text in the left hand corner so people complain less. It didn't work, they complained anyway.
 	 */
 
 	if (MyHUD == None)
@@ -6737,9 +6738,9 @@ exec function NoRevert(bool b)
 exec function ForceModels(bool b)
 {
 
-	/** 
-	 * @Author: spect 
-	 * @Date: 2020-02-21 02:28:03 
+	/**
+	 * @Author: spect
+	 * @Date: 2020-02-21 02:28:03
 	 * @Desc: Console command to force models client side
 	 */
 
