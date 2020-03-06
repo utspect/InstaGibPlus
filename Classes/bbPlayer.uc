@@ -3041,6 +3041,7 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	 */
 
 	local float adjZ, maxZ;
+	local vector delta;
 
 	TraceDir = Normal(TraceDir);
 	HitLocation = HitLocation + 0.3 * CollisionRadius * TraceDir; // default value is 0.4
@@ -3056,7 +3057,8 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 			HitLocation.Z = maxZ;
 			HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
 			HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
-			if ( VSize(HitLocation - Location) > CollisionRadius )
+			delta = (HitLocation - Location) * vector(1,1,0);
+			if (delta dot delta > CollisionRadius * CollisionRadius)
 				return false;
 		}
 	}
