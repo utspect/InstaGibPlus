@@ -3057,7 +3057,7 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 			HitLocation.Z = maxZ;
 			HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
 			HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
-			delta = (HitLocation - Location) * vector(1,1,0);
+			delta = (HitLocation - Location) * vect(1,1,0);
 			if (delta dot delta > CollisionRadius * CollisionRadius)
 				return false;
 		}
