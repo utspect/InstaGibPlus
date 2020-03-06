@@ -1487,7 +1487,7 @@ defaultproperties
 	NiceVer="1F"
 	BADminText="Not allowed - Log in as admin!"
 	MinPosError=100
-	MaxPosError=1000
+	MaxPosError=2000
 	MaxHitError=10000
 	bAlwaysTick=True
 	NNAnnouncer=True
