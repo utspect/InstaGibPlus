@@ -942,7 +942,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		Sender.ClientMessage("- SetForcedTeamSkins x (Set forced skins for your team mates. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- SetForcedSkins x (Set forced skins for your enemies. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- EnableHitSounds x (Enables or disables hitsounds, 0 is disabled, 1 is enabled. Default: 1)");
-		Sender.ClientMessage("- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0)"); 
+		Sender.ClientMessage("- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- ListSkins (Lists the available skins that can be forced)");
 		Sender.ClientMessage("- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam) - Sets your Shock Rifle beam type.");
 		Sender.ClientMessage("- SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
