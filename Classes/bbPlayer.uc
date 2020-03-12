@@ -4523,26 +4523,28 @@ state PlayerWaking
 
 state Dying
 {
-	/*
+
 	exec function Fire( optional float F )
 	{
-		if ( (Level.NetMode == NM_Standalone) && !Level.Game.bDeathMatch )
-		{
-			if ( bFrozen )
-				return;
-			ShowLoadMenu();
-		}
-		else if ( !bFrozen || (TimerRate <= 0.0) )
-		{
-			if (Level.NetMode == NM_Client)
+		if (Level.NetMode == NM_DedicatedServer && Role == ROLE_Authority) {
+			bJustFired = true;
+			if( bShowMenu || (Level.Pauser != "") )
 			{
-				ClientMessage(zzNextStartSpot);
-				xxRestartPlayer();
+				if ( !bShowMenu && (Level.Pauser == PlayerReplicationInfo.PlayerName)  )
+					SetPause(False);
+				return;
 			}
-			ServerReStartPlayer();
+			if( Weapon != None )
+			{
+				Weapon.bPointing = true;
+				//PlayFiring();
+				Weapon.Fire(F);
+			}
+		} else {
+			super.Fire(F);
 		}
 	}
-	*/
+
 	function ServerReStartPlayer()
 	{
 		//log("calling restartplayer in dying with netmode "$Level.NetMode);
