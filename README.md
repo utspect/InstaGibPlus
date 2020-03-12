@@ -14,9 +14,6 @@ Add the following lines to your server's <b>UnrealTournament.ini</b> under <b>[E
 * <b>ServerActors=InstaGibPlus.NewNetServer</b><br>
 * <b>ServerActors=InstaGibPlus.PureStats</b><br><br>
 
-If you'd like to use the AutoPause features, also add:<br><br>
-* <b>ServerActors=InstaGibPlus.PureAutoPause</b><br><br>
-
 <b>It is highly recommended to set your server's tickrate to 100.</b>
 
 # Usage
