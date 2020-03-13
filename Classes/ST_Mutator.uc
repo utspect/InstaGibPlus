@@ -267,7 +267,7 @@ function SwitchWeaponsInventory(Pawn Other)
 
 	if (bTranslocatorGame)
 	{
-		GiveGoodWeapon(Other, PreFix$"ST_Translocator", None);
+		//GiveGoodWeapon(Other, PreFix$"ST_Translocator", None);
 		DMP.bUseTranslocator = False;
 	}
 	

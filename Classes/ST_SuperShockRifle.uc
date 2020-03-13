@@ -8,7 +8,7 @@ class ST_SuperShockRifle extends SuperShockRifle;
 
 var bool bNewNet;				// Self-explanatory lol
 var Rotator GV;
-var Vector CDO;
+var Vector CDO, clientHitNormal, clientHitLoc, clientX;
 var float yMod;
 var bool bAltFired;
 var float LastFiredTime;
@@ -21,6 +21,10 @@ var float BeamDuration;
 var float ImpactSize;
 var float ImpactDuration;
 var float ImpactPitch;
+var name MyDamageType;
+var int clientDamage;
+var bool bHitTimer;
+var bbPlayer globalbbP;
 
 simulated function RenderOverlays(Canvas Canvas)
 {
@@ -237,13 +241,26 @@ simulated function NN_TraceFire()
 //	Owner.MakeNoise(Pawn(Owner).SoundDampening);
 
 	GetAxes(GV,X,Y,Z);
-	StartTrace = Owner.Location + CDO + yMod * Y + FireOffset.Z * Z;
+	//StartTrace = Owner.Location + CDO + yMod * Y + FireOffset.Z * Z;
+	StartTrace = Owner.Location + CDO;
 	EndTrace = StartTrace + (100000 * vector(GV));
 
 	Other = bbP.NN_TraceShot(HitLocation,HitNormal,EndTrace,StartTrace,Pawn(Owner));
+
+	if (bbP.bDrawDebugData) {
+		bbP.debugClientHitLocation = HitLocation;
+		bbP.debugClientHitNormal = HitNormal;
+		bbP.bClientPawnHit = False;
+	}
+
 	if (Other.IsA('Pawn'))
 	{
 		HitDiff = HitLocation - Other.Location;
+		if (bbP.bDrawDebugData) {
+			bbP.debugClientHitDiff = HitDiff;
+			bbP.debugClientEnemyHitLocation = Other.Location;
+			bbP.bClientPawnHit = True;
+		}
 
 		/* 
 		
@@ -266,8 +283,10 @@ simulated function NN_TraceFire()
 		*/
 	}
 
+	clientHitNormal = HitNormal;
+	clientHitLoc = HitLocation;
 	NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(GV),Y,Z);
-	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.zzViewRotation, Other, HitLocation, HitDiff, true);
+	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.zzViewRotation, Other, HitLocation, HitDiff, false);
 	if (Other == bbP.zzClientTTarget)
 		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(GV), MyDamageType);
 }
@@ -289,14 +308,15 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		HitLocation = Owner.Location + X*100000.0;
 	}
 
+
 	NN_SpawnEffect(HitLocation, Owner.Location + CDO + (FireOffset.X + 20) * X + Y * yMod + FireOffset.Z * Z, HitNormal);
 
 	is = ImpactSize;
 	f = 60000.0;
 
+	bbP = bbPlayer(Owner);
+
 	if (Other.isA('Pawn')) {
-		// Play a hitsound on the client
-		bbP = bbPlayer(Owner);
 		if (bbP.bEnableHitSounds) {
 			if (bbPlayer(Other).PlayerReplicationInfo.Team != bbP.PlayerReplicationInfo.Team) {
 				//Log("Hitsound:"@bbP.playedHitSound);
@@ -304,6 +324,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 			}
 		}
 	}
+
 	/* if ( ST_ShockProj(Other)!=None )
 	{
 		ST_ShockProj(Other).NN_SuperDuperExplosion(Pawn(Owner));
@@ -430,17 +451,26 @@ function TraceFire( float Accuracy )
 
 	if (bbP.zzNN_HitActor != None && (bbP.zzNN_HitActor.IsA('Pawn') || bbP.zzNN_HitActor.IsA('Projectile')) && FastTrace(bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff, StartTrace))
 	{
-		NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
-		bbP.TraceShot(HitLocation,HitNormal,NN_HitLoc,StartTrace);
+		/* NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
+		bbP.TraceShot(HitLocation,HitNormal,NN_HitLoc,StartTrace); */
+		NN_HitLoc = bbP.zzNN_HitLoc;
+		//bbP.zzNN_HitActor.SetLocation(NN_HitLoc - bbP.zzNN_HitDiff);
 	}
 	else
 	{
 		bbP.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
 		//bbP.zzNN_HitActor = bbP.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
+		//bbP.zzNN_HitActor.SetLocation(NN_HitLoc - bbP.zzNN_HitDiff);
 		NN_HitLoc = bbP.zzNN_HitLoc;
 	}
 
-	ProcessTraceHit(bbP.zzNN_HitActor, NN_HitLoc, HitNormal, vector(AdjustedAim),Y,Z);
+	//ProcessTraceHit(bbP.zzNN_HitActor, clientHitLoc, clientHitNormal, vector(AdjustedAim), Y, Z);
+	clientHitLoc = NN_HitLoc;
+	//clientX = vector(AdjustedAim);
+	//bbP.zzNN_LastHitActor = bbP.zzNN_HitActor;
+	/* if (!bbP.zzNN_LastHitActor.IsA('bbPlayer'))
+		bbP.zzNN_LastHitActor = None; */
+	ProcessTraceHit(bbP.zzNN_HitActor, NN_HitLoc, HitNormal, vector(AdjustedAim), Y, Z);
 	bbP.zzNN_HitActor = None;
 	Tracked = None;
 	bBotSpecialMove = false;
@@ -449,6 +479,7 @@ function TraceFire( float Accuracy )
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
 	local Pawn PawnOwner;
+	local bbPlayer bbP;
 
 	if (Owner.IsA('Bot'))
 	{
@@ -459,6 +490,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	yModInit();
 
 	PawnOwner = Pawn(Owner);
+	bbP = bbPlayer(Owner);
 
 	if (Other==None)
 	{
@@ -490,8 +522,27 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 	if ( (Other != self) && (Other != Owner) && (Other != None) )
 	{
-		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
+		if (Other.IsA('bbPlayer') && bbPlayer(Other).PlayerReplicationInfo.Team == bbP.PlayerReplicationInfo.Team) {
+			//Log("Same team player boosting player");
+			Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
+			bbP.zzNN_LastHitActor = None;
+		}
+		ClientX = X;
 	}
+}
+
+event Tick(float DeltaTime) {
+	local bbPlayer bbPC;
+	// If they both hit, they both die
+	ForEach AllActors(class'bbPlayer', bbPC) {
+		if (bbPC.zzNN_LastHitActor != None) {
+			bbPC.zzNN_LastHitActor.TakeDamage(clientDamage, bbPC, clientHitLoc, 60000.0*ClientX, MyDamageType);
+			//Log("Got a client hit! Killing:"@bbPC.zzNN_LastHitActor);
+			bbPC.zzNN_LastHitActor = None;
+			clientHitLoc = vect(0,0,0);
+		}
+	}
+	Super.Tick(DeltaTime);
 }
 
 simulated function DoSuperRing2(PlayerPawn Pwner, vector HitLocation, vector HitNormal)
@@ -565,7 +616,7 @@ simulated function AnimEnd ()
 state NormalFire
 {
 	function Fire(float F)
-	{
+	{	
 		if (Owner.IsA('Bot'))
 		{
 			Super.Fire(F);
@@ -621,6 +672,7 @@ defaultproperties
      PickupViewScale=1.750000
 	 bDebugSuperShockRifle=False
 	 BeamLength=135
+	 clientDamage=1000
      BeamPitch=1.25
      BeamAltPitch=1.50
      BeamFadeCurve=4
@@ -629,4 +681,6 @@ defaultproperties
      ImpactDuration=1.20
      ImpactPitch=1.25
 	 CustImpactSound=Sound'UnrealShare.General.Expla02'
+	 MyDamageType=jolted
+	 bHitTimer=False
 }
