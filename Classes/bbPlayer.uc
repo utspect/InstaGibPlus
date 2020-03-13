@@ -1807,12 +1807,6 @@ function xxServerMove
 	zzMyState = GetStateName();
 	LastUpdateTime = ServerTimeStamp;
 
-	/* xxFindGrapple();
-	if (zzGrappling != None && (Caps(zzGrappling.GetPropertyText("bHookOut")) == "TRUE" || Caps(zzGrappling.GetPropertyText("bAttached")) == "TRUE"))
-		zzGrappleTime = ServerTimeStamp; */
-
-	
-
 	for (P = Level.PawnList; P != None; P = P.NextPawn)
 	{
 		if (zzForceUpdateUntil > 0 || zzLastClientErr < MinPosError && ClientLocErr > MaxPosError)
@@ -1825,7 +1819,7 @@ function xxServerMove
 		/* zzPP = PlayerPawn(P);
 		if (zzPP.bAdmin && Physics == PHYS_Falling && Velocity.Z > -160.0 && bPressedJump == true)
 		{
-			zzForceUpdateUntil = Level.TimeSeconds + 5;
+			zzForceUpdateUntil = Level.TimeSeconds + 3;
 		} */
 	}
 
