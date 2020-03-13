@@ -12,7 +12,7 @@ Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or
 Add the following lines to your server's <b>UnrealTournament.ini</b> under <b>[Engine.GameEngine]</b>:<br><br>
 <b>ServerPackages=InstaGibPlus</b><br>
 <b>ServerActors=InstaGibPlus.NewNetServer</b><br>
-<b>ServerActors=InstaGibPlus.PureStats</b><br><br>
+<b>ServerActors=InstaGibPlus.PureStats</b><br>
 
 <b>It is highly recommended to set your server's tickrate to 100.</b>
 
