@@ -426,7 +426,7 @@ simulated function bool xxNewSetLocation(vector NewLoc, vector NewVel, optional 
 simulated function bool xxNewMoveSmooth(vector NewLoc, vector NewVel)
 {
 	local bool bSuccess;
-	bSuccess = Move(NewLoc - Location);
+	bSuccess = MoveSmooth(NewLoc - Location);
 	if (bSuccess)
 		Velocity = NewVel;
 	return bSuccess;
@@ -4575,46 +4575,27 @@ state PlayerWaking
 
 state Dying
 {
-	/*
+
 	exec function Fire( optional float F )
 	{
-		if ( (Level.NetMode == NM_Standalone) && !Level.Game.bDeathMatch )
-		{
-			if ( bFrozen )
-				return;
-			ShowLoadMenu();
-		}
-		else if ( !bFrozen || (TimerRate <= 0.0) )
-		{
-			if (Level.NetMode == NM_Client)
+		if (Level.NetMode == NM_DedicatedServer && Role == ROLE_Authority) {
+			bJustFired = true;
+			if( bShowMenu || (Level.Pauser != "") )
 			{
-				ClientMessage(zzNextStartSpot);
-				xxRestartPlayer();
+				if ( !bShowMenu && (Level.Pauser == PlayerReplicationInfo.PlayerName)  )
+					SetPause(False);
+				return;
 			}
-			ServerReStartPlayer();
+			if( Weapon != None )
+			{
+				Weapon.bPointing = true;
+				//PlayFiring();
+				Weapon.Fire(F);
+			}
+		} else {
+			super.Fire(F);
 		}
 	}
-	*/
-    exec function Fire( optional float F )
-    {
-        if (Level.NetMode == NM_DedicatedServer && Role == ROLE_Authority) {
-            bJustFired = true;
-            if( bShowMenu || (Level.Pauser != "") )
-            {
-                if ( !bShowMenu && (Level.Pauser == PlayerReplicationInfo.PlayerName)  )
-                    SetPause(False);
-                return;
-            }
-            if( Weapon != None )
-            {
-                Weapon.bPointing = true;
-                //PlayFiring();
-                Weapon.Fire(F);
-            }
-        } else {
-            super.Fire(F);
-        }
-    }
 
 	function ServerReStartPlayer()
 	{
