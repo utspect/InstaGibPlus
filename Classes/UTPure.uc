@@ -52,6 +52,7 @@ var localized config bool bForceDefaultHitSounds;
 var localized config int TeleRadius;
 var localized config int ThrowVelocity;	// How far a player can throw weapons
 var localized config bool bForceDemo;		// Forces clients to do demos.
+var string MapName;
 
 
 // Nice variables.
@@ -74,9 +75,10 @@ var int zzAntiTimerListState;			// The state of the pickups, calculated each tic
 // Pause control (for Event PlayerCalcView)
 var bool	zzbPaused;			// Game has been paused at one time.
 var float	zzPauseCountdown;		// Give 120 seconds of "ignore FT"
-var int MinPosError;
-var int MaxPosError;
-var int MaxHitError;
+var localized config int MinPosError;
+var localized config int MaxPosError;
+var localized config int MaxHitError;
+var localized config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
 
@@ -98,16 +100,22 @@ struct MoverInfo {
 var MoverInfo zzMoverDelayTimes[256];
 var int zzMoverDelayTimesCount;
 */
-
 var bbPlayer PlayerOwner;
+
+//Add the maplist where kickers will work using normal network
+var localized config string ExcludeMapsForKickers[128];
+var bool bExludeKickers;
 
 replication
 {
 	unreliable if (Role < ROLE_Authority)
 		zzbWarmupPlayers;
 
+	unreliable if (Role == ROLE_Authority)
+		MinPosError, MaxPosError, zzAutoPauser;
+
 	reliable if( Role==ROLE_Authority )
-		NNAnnouncer;
+		NNAnnouncer, bExludeKickers, getErrorDetails;
 }
 
 //XC_Engine interface
@@ -189,6 +197,7 @@ function PreBeginPlay()
 		zzDMP.HUDType = Class'PureDMHUD';
 
 	zzSI = Class<ChallengeHUD>(zzDMP.HUDType).Default.ServerInfoClass;
+
 }
 
 function PostBeginPlay()
@@ -309,7 +318,7 @@ function PostBeginPlay()
 //	zzPureMD5 = PackageMD5(zzPurePackageName, zzMD5KeyInit);
 //	Log("MD5 Result"@zzPureMD5);
 
-
+	//Log("bAutoPause:"@bAutoPause@"bTeamGame:"@zzDMP.bTeamGame@"bTournament:"@zzDMP.bTournament);
 	if (bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
 		zzAutoPauser = Spawn(Class'PureAutoPause');
 
@@ -322,7 +331,76 @@ function PostBeginPlay()
 	if (bDelayedPickupSpawn)
 		Spawn(Class'PureDPS');
 
+// Necessary functions to let the "bExludeKickers" list work	
+/////////////////////////////////////////////////////////////////////////
+	if(GetCurrentMapName(MapName))
+		if(IsMapExcluded(MapName))
+			bExludeKickers = true;
+/////////////////////////////////////////////////////////////////////////
 	SaveConfig();
+}
+
+// Necessary functions to let the "bExludeKickers" list work
+/////////////////////////////////////////////////////////////////////////
+function bool GetCurrentMapName (out string MapName)
+{
+	local int i;
+
+	MapName=string(self);
+	i=InStr(MapName,".");
+	if ( i != -1 )
+	{
+		MapName=Left(MapName,i);
+		return True;
+	}
+	return False;
+}
+
+function bool IsMapExcluded (string MapName)
+{
+    local int index;
+    local string MapNameUNR;
+
+    MapNameUNR = MapName$".unr";
+
+	while (index < arrayCount(ExcludeMapsForKickers))
+        {
+        if ((trim(ExcludeMapsForKickers[index]) ~= MapName) || (trim(ExcludeMapsForKickers[index]) ~= MapNameUNR))
+            return true;
+        ++index;
+	}
+	return false;
+}
+
+function string trim(string source)
+{
+	local int index;
+	local string result;
+
+	// Remove leading spaces.
+	result = source;
+	while (index < len(result) && mid(result, index, 1) == " ")
+        {
+		index++;
+	}
+	result = mid(result, index);
+
+	// Remove trailing spaces.
+	index = len(result) - 1;
+	while (index >= 0 && mid(result, index, 1) == " ")
+        {
+		index--;
+	}
+	result = left(result, index + 1);
+
+	// Return new string.
+	return result;
+}
+
+/////////////////////////////////////////////////////////////////////////
+
+function int getErrorDetails() {
+	return MinPosError;
 }
 
 function SetupClickBoard()
@@ -642,7 +720,9 @@ function xxResetPlayer(bbPlayer zzP)
 	local PlayerReplicationInfo zzPRI;
 
 	zzP.zzbIsWarmingUp = false;
-	zzP.PlayerRestartState = 'PlayerWaiting';
+	//zzP.PlayerRestartState = 'PlayerWaiting';
+	zzP.PlayerRestartState = 'CountdownDying';
+	zzP.GoToState('CountdownDying');
 	zzP.Died(None, 'Suicided', Location);	// Nuke teh sukar!
 
 	zzP.DieCount = 0; zzP.ItemCount = 0; zzP.KillCount = 0; zzP.SecretCount = 0; zzP.Spree = 0;
@@ -651,8 +731,7 @@ function xxResetPlayer(bbPlayer zzP)
 		zzPRI.Score = 0;
 	zzPRI.Deaths = 0;
 	zzP.zzAddVelocityCount = 0;
-	zzP.zzGrappling = None;
-	//zzP.GoToState('PlayerWaiting');
+	//zzP.GoToState('Dying');
 }
 
 function xxResetGame()			// Resets the current game to make sure nothing bad happens after warmup.
@@ -942,7 +1021,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		Sender.ClientMessage("- SetForcedTeamSkins x (Set forced skins for your team mates. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- SetForcedSkins x (Set forced skins for your enemies. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- EnableHitSounds x (Enables or disables hitsounds, 0 is disabled, 1 is enabled. Default: 1)");
-		Sender.ClientMessage("- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0)");
+		Sender.ClientMessage("- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0)"); 
 		Sender.ClientMessage("- ListSkins (Lists the available skins that can be forced)");
 		Sender.ClientMessage("- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam) - Sets your Shock Rifle beam type.");
 		Sender.ClientMessage("- SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
@@ -1053,6 +1132,9 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		}
 		else
 			Sender.ClientMessage(BADminText);
+	}
+	else if (MutateString ~= "geterrordata") {
+		Sender.ClientMessage("MinPosError:"@MinPosError@"MaxPosError:"@MaxPosError);
 	}
 	else if (Left(MutateString,7) ~= "KICKID ")
 	{
@@ -1466,6 +1548,7 @@ defaultproperties
 	CenterViewDelay=1.000000
 	bAllowBehindView=False
 	TrackFOV=0
+	bAutoPause=True
 	bFastTeams=True
 	bUseClickboard=True
 	MinClientRate=20000
@@ -1483,12 +1566,13 @@ defaultproperties
 	ConsoleName="InstaGib+ Console"
 	VersionStr="InstaGib+ Final"
 	LongVersion="RC "
-	ThisVer="1F"
-	NiceVer="1F"
+	ThisVer="3"
+	NiceVer="3"
 	BADminText="Not allowed - Log in as admin!"
-	MinPosError=100
-	MaxPosError=2000
-	MaxHitError=10000
 	bAlwaysTick=True
 	NNAnnouncer=True
+    MinPosError=100
+    MaxPosError=2000
+    MaxHitError=10000
+	ShowTouchedPackage=False
 }

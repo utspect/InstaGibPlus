@@ -1,9 +1,9 @@
-class SpecMessagePlus extends InstaGibPlus.DDeathMessagePlus;
+class SpecMessagePlus extends DDeathMessagePlus;
 
-static function ClientReceive(
+static function ClientReceive( 
 	PlayerPawn P,
 	optional int Switch,
-	optional PlayerReplicationInfo RelatedPRI_1,
+	optional PlayerReplicationInfo RelatedPRI_1, 
 	optional PlayerReplicationInfo RelatedPRI_2,
 	optional Object OptionalObject
 	)
@@ -29,7 +29,7 @@ static function ClientReceive(
 				TournamentPlayer(P.ViewTarget).MultiLevel++;
 				//CHSpectator(P).ReceiveLocalizedMessage( class'MMultiKillMessage', TournamentPlayer(P.ViewTarget).MultiLevel );
 				CHSpectator(P).ReceiveLocalizedMessage( class'MultiKillMessage', TournamentPlayer(P.ViewTarget).MultiLevel );
-			}
+			} 
 			else
 				TournamentPlayer(P.ViewTarget).MultiLevel = 0;
 			TournamentPlayer(P.ViewTarget).LastKillTime = CHSpectator(P).Level.TimeSeconds;
@@ -38,12 +38,12 @@ static function ClientReceive(
 			TournamentPlayer(P.ViewTarget).MultiLevel = 0;
 		if ( ChallengeHUD(P.MyHUD) != None )
 			ChallengeHUD(P.MyHUD).ScoreTime = CHSpectator(P).Level.TimeSeconds;
-	}
-	else if (RelatedPRI_2 == TournamentPlayer(P.ViewTarget).PlayerReplicationInfo)
+	} 
+	else if (RelatedPRI_2 == TournamentPlayer(P.ViewTarget).PlayerReplicationInfo) 
 	{
 		CHSpectator(P).ReceiveLocalizedMessage( class'VictimMessage', 0, RelatedPRI_1 );
 		Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-	}
+	} 
 	else
 		Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 }

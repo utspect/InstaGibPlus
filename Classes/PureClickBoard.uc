@@ -131,7 +131,7 @@ local DeathMatchPlus zzDMP;
 
 			foreach Level.AllActors(class'bbPlayer', zzbbP) {
 				if (!zzbbP.IsA('Spectator') && zzbbP.PlayerReplicationInfo != none) {
-			        if (zzbbP.bReadyToPlay && zzP.PlayerReplicationInfo.HasFlag == none) {
+			        if (zzbbP.bReadyToPlay && zzbbP.PlayerReplicationInfo.HasFlag == none) {
 			            zzbbP.PlayerReplicationInfo.HasFlag = zzFakeFlag;
                     } else if (!zzbbP.bReadyToPlay && zzbbP.PlayerReplicationInfo.HasFlag == zzFakeFlag) {
                         zzbbP.PlayerReplicationInfo.HasFlag = none;

@@ -1,4 +1,4 @@
-# Specify filepatterns you want git to ignore.
-
-*.sublime-project
-*.sublime-workspace
+*.old
+*.old2
+*.bat
+make.ini
