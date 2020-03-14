@@ -2,3 +2,6 @@
 *.old2
 *.bat
 make.ini
+
+*.sublime-project
+*.sublime-workspace
