@@ -1404,9 +1404,8 @@ function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics, vector N
 	Velocity = NewVel;
 
 	SetBase(NewBase);
-	if ( Mover(NewBase) != None ) {
+	if ( Mover(NewBase) != None )
 		NewLoc += NewBase.Location;
-	}
 
 	//log("Client "$Role$" adjust "$self$" stamp "$TimeStamp$" location "$Location);
 	Carried = CarriedDecoration;
@@ -1425,9 +1424,8 @@ function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics, vector N
 	}
 	SetPhysics(newPhysics);
 
-	if ( !IsInState(newState) ) {
+	if ( !IsInState(newState) )
 		GotoState(newState);
-	}
 
 	zzbFakeUpdate = false;
 	bUpdatePosition = true;
@@ -1773,10 +1771,10 @@ function xxServerMove
 	
 	PlayerReplicationInfo.Ping = int(ConsoleCommand("GETPING"));
 
-	/* if (SetPendingWeapon)
+	if (SetPendingWeapon)
 	{
-		//xxSetPendingWeapon(PendingWeapon);
-		//zzPendingWeapon = PendingWeapon;
+		xxSetPendingWeapon(PendingWeapon);
+		zzPendingWeapon = PendingWeapon;
 	}
 	else
 	{
@@ -1795,7 +1793,7 @@ function xxServerMove
 					Weapon.GotoState('DownWeapon');
 			}
 		}
-	} */
+	}
 	
 	if (zzDisabledPlayerCollision > 0)
 	{
@@ -1806,6 +1804,7 @@ function xxServerMove
 	zzOldBase = Base;
 	zzMyState = GetStateName();
 	LastUpdateTime = ServerTimeStamp;
+
 
 	for (P = Level.PawnList; P != None; P = P.NextPawn)
 	{
@@ -1834,9 +1833,9 @@ function xxServerMove
 		zzAddVelocityCount = 0;
 		zzbForceUpdate = false;
 
-		if ( Mover(Base) != None ) {
+		if ( Mover(Base) != None )
 			ClientLoc = Location - Base.Location;
-		} else
+		else
 			ClientLoc = Location;
 
 		if (zzMyState == 'PlayerWalking')
@@ -1857,9 +1856,9 @@ function xxServerMove
 		}
 		else
 		{
-			if (Base == Level) {
+			if (Base == Level)
 				xxCAPLevelBase(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
-			} else
+			else
 				xxCAP(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
 		}
 
@@ -4658,16 +4657,19 @@ state Dying
 	simulated function BeginState()
 	{
 		local bbPlayer bbP;
+    	local float LKT;
 
-		/* xxSendNextStartSpot(); */
+    	/* xxSendNextStartSpot(); */
 
-		bJumpStatus = false;
-		zzbForceUpdate = true;
-		zzIgnoreUpdateUntil = 0;
-		if (zzClientTTarget != None)
-			zzClientTTarget.Destroy();
+    	bJumpStatus = false;
+    	zzbForceUpdate = true;
+    	zzIgnoreUpdateUntil = 0;
+    	if (zzClientTTarget != None)
+        	zzClientTTarget.Destroy();
 
-		Super.BeginState();
+    	LKT = LastKillTime;
+    	Super.BeginState();
+    	LastKillTime = LKT;
 	}
 
 	function PlayerMove(float DeltaTime)
@@ -4783,6 +4785,7 @@ state Dying
 			zzIgnoreUpdateUntil = 0;
 		}
 		Super.EndState();
+		LastKillTime = 0;
 	}
 
 }

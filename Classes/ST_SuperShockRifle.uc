@@ -92,7 +92,7 @@ simulated function bool ClientFire(float Value)
 	return Super.ClientFire(Value);
 }
 
-simulated function bool ClientAltFire(float Value)
+/* simulated function bool ClientAltFire(float Value)
 {
 	local bbPlayer bbP;
 
@@ -111,6 +111,38 @@ simulated function bool ClientAltFire(float Value)
 		bbP.xxNN_AltFire(-1, bbP.Location, bbP.Velocity, bbP.zzViewRotation);
 	}
 	return Super.ClientAltFire(Value);
+} */
+
+simulated function bool ClientAltFire(float Value) {
+	
+	local bbPlayer bbP;
+
+	if (Owner.IsA('Bot'))
+		return Super.ClientFire(Value);
+
+	bbP = bbPlayer(Owner);
+	if (Role < ROLE_Authority && bbP != None && bNewNet)
+	{
+		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.9)
+			return false;
+		if ( (AmmoType == None) && (AmmoName != None) )
+		{
+			// ammocheck
+			GiveAmmo(Pawn(Owner));
+		}
+		if ( AmmoType.AmmoAmount > 0 )
+		{
+			Instigator = Pawn(Owner);
+			GotoState('ClientFiring');
+			bPointing=True;
+			bCanClientFire = true;
+			if ( bRapidFire || (FiringSpeed > 0) )
+				Pawn(Owner).PlayRecoil(FiringSpeed);
+			NN_TraceFire();
+			LastFiredTime = Level.TimeSeconds;
+		}
+	}
+	return Super.ClientFire(Value);
 }
 
 function Fire( float Value )
