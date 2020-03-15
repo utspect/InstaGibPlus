@@ -1,8 +1,8 @@
-/** 
+/**
  * @Author: TimTim
  * @Extended by: spect
- * @Class: bbPlayer 
- * @Date: 2020-02-16 01:54:19 
+ * @Class: bbPlayer
+ * @Date: 2020-02-16 01:54:19
  * @Desc: The bread and butter of UT99 NewNet
  */
 
@@ -357,9 +357,9 @@ function string ParseDelimited(string Text, string Delimiter, int Count, optiona
 	local int Found, i;
 	local string s;
 
-	Result = "";	
+	Result = "";
 	Found = 1;
-	
+
 	for(i=0;i<Len(Text);i++)
 	{
 		s = Mid(Text, i, 1);
@@ -373,7 +373,7 @@ function string ParseDelimited(string Text, string Delimiter, int Count, optiona
 					return Result;
 			}
 
-			Found++;			
+			Found++;
 		}
 		else
 		{
@@ -381,7 +381,7 @@ function string ParseDelimited(string Text, string Delimiter, int Count, optiona
 				Result = Result $ s;
 		}
 	}
-	
+
 	return Result;
 }
 
@@ -393,18 +393,18 @@ simulated function Touch( actor Other )
 	if(Level.NetMode != NM_Client)
 	{
 		Package = ParseDelimited(string(Other.Class), ".", 1);
-		if (Class'UTPure'.Default.ShowTouchedPackage) 
+		if (Class'UTPure'.Default.ShowTouchedPackage)
 		{
 			ClientMessage(Package);
 		}
-		if	
-			(	
+		if
+			(
 				(
-						Other.IsA('Kicker') && zzUTPure.bExludeKickers 
+						Other.IsA('Kicker') && zzUTPure.bExludeKickers
 				)	||	Other.IsA('Teleporter') ||
-						Package != "Botpack" && 
-						Package != "Engine" && 
-						Package != "UnrealShare" &&	
+						Package != "Botpack" &&
+						Package != "Engine" &&
+						Package != "UnrealShare" &&
 						Package != "Unreali"
 			)
 		{
@@ -688,7 +688,7 @@ event Possess()
 		GameReplicationInfo.RemainingTime = DeathMatchPlus(Level.Game).RemainingTime;
 		GameReplicationInfo.ElapsedTime = DeathMatchPlus(Level.Game).ElapsedTime;
 		xxSetTimes(GameReplicationInfo.RemainingTime, GameReplicationInfo.ElapsedTime);
-		
+
 		if(!zzUTPure.bExludeKickers)
 		{
 			ForEach AllActors(class'Kicker', K)
@@ -1561,7 +1561,7 @@ function xxServerMove
 	local eDodgeDir OldDodgeMove;
 	local name zzMyState;
 	local Pawn P;
-	local PlayerPawn zzPP;	
+	local PlayerPawn zzPP;
 	local PlayerStart PS;
 	local NavigationPoint NP;
 	local Teleporter T;
@@ -1573,7 +1573,7 @@ function xxServerMove
 
 	if (bDeleteMe)
 		return;
-	
+
 	if (Role < ROLE_Authority)
 	{
 		zzbDidMD5 = True;
@@ -1635,7 +1635,7 @@ function xxServerMove
 			if ( Accel.Z > 127 )
 				Accel.Z = -1 * (Accel.Z - 128);
 			Accel *= 20;
-			
+
 			OldbRun = ( (OldAccel & 64) != 0 );
 			OldbDuck = ( (OldAccel & 32) != 0 );
 			NewbPressedJump = ( (OldAccel & 16) != 0 );
@@ -1700,7 +1700,7 @@ function xxServerMove
 		maxPitch = 1;
 	If ( (ViewPitch > maxPitch * RotationRate.Pitch) && (ViewPitch < 65536 - maxPitch * RotationRate.Pitch) )
 	{
-		If (ViewPitch < 32768) 
+		If (ViewPitch < 32768)
 			Rot.Pitch = maxPitch * RotationRate.Pitch;
 		else
 			Rot.Pitch = 65536 - maxPitch * RotationRate.Pitch;
@@ -1716,7 +1716,7 @@ function xxServerMove
 
 	if ( (Level.Pauser == "") && (DeltaTime > 0) )
 		MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
-	
+
 	if (bNewNet)
 	{
 		MinPosError = Class'UTPure'.Default.MinPosError;
@@ -1727,23 +1727,23 @@ function xxServerMove
 		MinPosError = 0.0;
 		MaxPosError = 3.0;
 	}
-	
+
 	LocDiff = Location - ClientLoc;
 	ClientLocErr = LocDiff Dot LocDiff;
 	debugClientLocError = ClientLocErr;
-	
+
 	if (Player.CurrentNetSpeed == 0)
 		//bTooLong = ServerTimeStamp - LastUpdateTime > 0.025;
 		bTooLong = ServerTimeStamp - LastUpdateTime > 0.0001;
 	else
 		bTooLong = ServerTimeStamp - LastUpdateTime > 500.0/Player.CurrentNetSpeed;
-	
+
 	if (!bTooLong)
 		bTooLong = ClientLocErr > MinPosError;
-	
+
 	if (!bTooLong)
 		return;
-	
+
 	PlayerReplicationInfo.Ping = int(ConsoleCommand("GETPING"));
 
 	if (SetPendingWeapon)
@@ -1769,7 +1769,7 @@ function xxServerMove
 			}
 		}
 	}
-	
+
 	if (zzDisabledPlayerCollision > 0)
 	{
 		zzDisabledPlayerCollision--;
@@ -1788,8 +1788,8 @@ function xxServerMove
 			zzbForceUpdate = true;
 			if (ServerTimeStamp > zzForceUpdateUntil)
 				zzForceUpdateUntil = 0;
-		}		
-		
+		}
+
 		/* zzPP = PlayerPawn(P);
 		if (zzPP.bAdmin && Physics == PHYS_Falling && Velocity.Z > -160.0 && bPressedJump == true)
 		{
@@ -1848,9 +1848,9 @@ function xxServerMove
 		{
 			zzLastClientErr = ClientLocErr;
 		}
-		else if (Mover(Base) == None)  
+		else if (Mover(Base) == None)
 		{
-			bMoveSmooth = FastTrace(ClientLoc);	
+			bMoveSmooth = FastTrace(ClientLoc);
 			if (!bMoveSmooth)
 			{
 				for (P = Level.PawnList; P != None; P = P.NextPawn)
@@ -2191,7 +2191,7 @@ simulated function xxNN_RemoveProj(int ProjIndex, optional vector HitLocation, o
 		xxNN_ProjExplode(ProjIndex, HitLocation, HitNormal, bCombo);
 	else
 		xxNN_ClientProjExplode(ProjIndex, HitLocation, HitNormal, bCombo);
-} 
+}
 
 simulated function xxNN_ProjExplode( int ProjIndex, optional vector HitLocation, optional vector HitNormal, optional bool bCombo )
 {
@@ -2714,9 +2714,9 @@ function string forcedTeamModelToString(int fm) {
 
 simulated function setClientNetspeed() {
 
-/** 
- * @Author: spect 
- * @Date: 2020-02-23 15:05:21 
+/**
+ * @Author: spect
+ * @Date: 2020-02-23 15:05:21
  * @Desc: Force client netspeed, gets set on every connect request, for now it remains at 20000
  */
 
@@ -2739,7 +2739,7 @@ exec function enableHitSounds(bool b) {
 	if (b) {
 		ClientMessage("Hitsounds: on");
 		reconnectClient();
-	} else { 
+	} else {
 		ClientMessage("Hitsounds: off");
 		reconnectClient();
 	}
@@ -2750,7 +2750,7 @@ exec function setForcedSkins(int fs) {
 		desiredSkin = fs;
 		SaveConfig();
 		ClientMessage("Forced enemy skin set!");
-	} else 
+	} else
 		ClientMessage("Please input a value between 0 and 17, e.g. setforcedskins 4");
 }
 
@@ -2759,7 +2759,7 @@ exec function setForcedTeamSkins(int fs) {
 		desiredTeamSkin = fs;
 		SaveConfig();
 		ClientMessage("Forced team skin set!");
-	} else 
+	} else
 		ClientMessage("Please input a value between 0 and 17, e.g. setforcedteamskins 4");
 }
 
@@ -2780,7 +2780,7 @@ exec function setShockBeam(int sb) {
 		cShockBeam = sb;
 		SaveConfig();
 		ClientMessage("Shock beam set!");
-	} else 
+	} else
 		ClientMessage("Please input a value between 1 and 3");
 }
 
@@ -3040,9 +3040,9 @@ function ServerTaunt(name Sequence )
 
 simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector TraceDir)
 {
-	/** 
-	 * @Author: spect 
-	 * @Modified Date: 2020-02-22 02:08:45 
+	/**
+	 * @Author: spect
+	 * @Modified Date: 2020-02-22 02:08:45
 	 * @Desc: Reduced the hitboxes slightly
 	 * @Feedback: Positive
 	 */
@@ -3714,9 +3714,9 @@ simulated function CheckHitSound()
 }
 
 /** STATES
- * @Author: spect 
- * @Date: 2020-02-19 02:13:05 
- * @Desc: PlayerPawn States (This is where movement, compensation and position adjustment is controlled) 
+ * @Author: spect
+ * @Date: 2020-02-19 02:13:05
+ * @Desc: PlayerPawn States (This is where movement, compensation and position adjustment is controlled)
  */
 
 state FeigningDeath
@@ -4299,7 +4299,7 @@ function xxServerSetReadyToPlay()
 	{
 		zzbForceUpdate = true;
 		zzIgnoreUpdateUntil = 0;
-		
+
 		PlayerRestartState = 'PlayerWarmup';
 		GotoState('PlayerWarmup');
 		zzUTPure.zzDMP.ReStartPlayer(Self);
@@ -4343,7 +4343,7 @@ function GiveMeWeapons()
 
 		if (DMP.bUseTranslocator)			// Sneak in translocator
 			WeaponList[WeapCnt++] = "Botpack.Translocator";
-	} 
+	}
 
 	for (x = 0; x < 8; x++)
 		if (zzUTPure.zzDefaultWeapons[x] != '')
@@ -4726,7 +4726,7 @@ state Dying
 
 }
 
-state CountdownDying extends Dying 
+state CountdownDying extends Dying
 {
 	/*
 	exec function Fire( optional float F )
@@ -5293,7 +5293,7 @@ simulated function xxCheckForPortals()
 simulated function xxCheckForKickers()
 {
 	local Kicker K;
-	
+
 	ForEach AllActors(class'Kicker', K)
 		if (K.Owner != Self)
 			K.SetCollision(false, true);
@@ -5302,10 +5302,10 @@ simulated function xxCheckForKickers()
 
 static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 
-	/** 
+	/**
  	* @Author: spect
- 	* @Date: 2020-02-21 01:17:00 
- 	* @Desc: Sets the selected forced skin client side 
+ 	* @Date: 2020-02-21 01:17:00
+ 	* @Desc: Sets the selected forced skin client side
 	* @TODO: Set green and yellow colors. Shit is gonna hit the fan when this is used in xtdm.
  	*/
 
@@ -5318,7 +5318,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 				SetSkinElement(SkinActor, 0, "FCommandoSkins.aphe1t_0", "FCommandoSkins.aphe");
 				SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2t_0", "FCommandoSkins.aphe");
 				SetSkinElement(SkinActor, 2, "FCommandoSkins.aphe2t_0", "FCommandoSkins.aphe");
-				
+
 			} else if (TeamNum == 1) {
 				SetSkinElement(SkinActor, 0, "FCommandoSkins.aphe1t_1", "FCommandoSkins.aphe");
 				SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2t_1", "FCommandoSkins.aphe");
@@ -5590,16 +5590,16 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			}
 			bbPlayer(SkinActor).Mesh = class'bbTBoss'.Default.Mesh;
 			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
-			break; 
+			break;
 	}
 }
 
 static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int TeamNum) {
 
-	/** 
-	 * @Author: spect 
-	 * @Date: 2020-02-22 17:18:19 
-	 * @Desc: Sets the selected forced skin for team mates 
+	/**
+	 * @Author: spect
+	 * @Date: 2020-02-22 17:18:19
+	 * @Desc: Sets the selected forced skin for team mates
 	 * @TODO: Set green and yellow colors. Shit is gonna hit the fan when this is used in xtdm.
 	 */
 
@@ -5896,7 +5896,7 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTBoss'.Default.Mesh;
 			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
-			break; 
+			break;
 	}
 }
 
@@ -5942,11 +5942,11 @@ event PreRender( canvas zzCanvas )
 					zzPRI.PlayerLocation = PlayerReplicationInfo.PlayerLocation;
 					zzPRI.PlayerZone = None;
 				}
-				
-				/** 
+
+				/**
 				 * @Author: spect
-				 * @Date: 2020-02-18 02:20:22 
-				 * @Desc: Applies the forced skin client side if force models is enabled. 
+				 * @Date: 2020-02-18 02:20:22
+				 * @Desc: Applies the forced skin client side if force models is enabled.
 				 */
 
 				if (zzbForceModels) {
@@ -6028,10 +6028,10 @@ event PreRender( canvas zzCanvas )
 										break;
 								}
 
-								// Set the skin	
+								// Set the skin
 								if (zzPRI.Team == Self.PlayerReplicationInfo.Team)
 									setForcedTeamSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
-								else 
+								else
 									setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
 							}
 						}
@@ -6206,10 +6206,10 @@ simulated function xxRenderLogo(canvas zzC)
 
 simulated function xxDrawAlphaWarning(canvas zzC, float zzx, float zzY) {
 
-	/** 
+	/**
 	 * @Author: spect
-	 * @Date: 2020-02-18 02:23:10 
-	 * @Desc: Draw a big and visible ALPHA WARNING text in the left hand corner so people complain less. It didn't work, they complained anyway. 
+	 * @Date: 2020-02-18 02:23:10
+	 * @Desc: Draw a big and visible ALPHA WARNING text in the left hand corner so people complain less. It didn't work, they complained anyway.
 	 */
 
 	if (MyHUD == None)
@@ -6227,10 +6227,10 @@ simulated function xxDrawAlphaWarning(canvas zzC, float zzx, float zzY) {
 
 simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 
-	/** 
+	/**
 	 * @Author: spect
-	 * @Date: 2020-03-07 19:56:32 
-	 * @Desc: Draw Debug Data 
+	 * @Date: 2020-03-07 19:56:32
+	 * @Desc: Draw Debug Data
 	 */
 
 	if (MyHUD == None)
@@ -6850,9 +6850,9 @@ exec function NoRevert(bool b)
 exec function ForceModels(bool b)
 {
 
-	/** 
-	 * @Author: spect 
-	 * @Date: 2020-02-21 02:28:03 
+	/**
+	 * @Author: spect
+	 * @Date: 2020-02-21 02:28:03
 	 * @Desc: Console command to force models client side
 	 */
 
