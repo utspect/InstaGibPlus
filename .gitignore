@@ -3,3 +3,6 @@
 *.bat
 *.uc_ig
 make.ini
+
+*.sublime-project
+*.sublime-workspace

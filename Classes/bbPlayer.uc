@@ -1,8 +1,8 @@
-/** 
+/**
  * @Author: TimTim
  * @Extended by: spect
- * @Class: bbPlayer 
- * @Date: 2020-02-16 01:54:19 
+ * @Class: bbPlayer
+ * @Date: 2020-02-16 01:54:19
  * @Desc: The bread and butter of UT99 NewNet
  */
 
@@ -705,6 +705,7 @@ event Possess()
 		GameReplicationInfo.RemainingTime = DeathMatchPlus(Level.Game).RemainingTime;
 		GameReplicationInfo.ElapsedTime = DeathMatchPlus(Level.Game).ElapsedTime;
 		xxSetTimes(GameReplicationInfo.RemainingTime, GameReplicationInfo.ElapsedTime);
+
 		/*
 		ForEach AllActors(class'Trigger', T)
 		{
@@ -1617,19 +1618,15 @@ function xxSetPendingWeapon(Weapon W)
 
 function xxServerMove
 (
-	float TimeStamp, 
-	vector InAccel, 
+	float TimeStamp,
+	vector InAccel,
 	vector ClientLoc,
 	vector ClientVel,
 	bool NewbRun,
 	bool NewbDuck,
-	bool NewbJumpStatus, 
-	bool bFired,
-	bool bAltFired,
-	bool bForceFire,
-	bool bForceAltFire,
-	eDodgeDir DodgeMove, 
-	byte ClientRoll, 
+	bool NewbJumpStatus,
+	eDodgeDir DodgeMove,
+	byte ClientRoll,
 	int View,
 	optional byte OldTimeDelta,
 	optional int OldAccel
@@ -1643,6 +1640,7 @@ function xxServerMove
 	local eDodgeDir OldDodgeMove;
 	local name zzMyState;
 	local Pawn P;
+	local PlayerPawn zzPP;
 	local PlayerStart PS;
 	local NavigationPoint NP;
 	local Teleporter T;
@@ -1652,7 +1650,7 @@ function xxServerMove
 
 	if (bDeleteMe)
 		return;
-	
+
 	if (Role < ROLE_Authority)
 	{
 		zzbDidMD5 = True;
@@ -1726,7 +1724,7 @@ function xxServerMove
 			if ( Accel.Z > 127 )
 				Accel.Z = -1 * (Accel.Z - 128);
 			Accel *= 20;
-			
+
 			OldbRun = ( (OldAccel & 64) != 0 );
 			OldbDuck = ( (OldAccel & 32) != 0 );
 			NewbPressedJump = ( (OldAccel & 16) != 0 );
@@ -1769,31 +1767,6 @@ function xxServerMove
 	NewbPressedJump = (bJumpStatus != NewbJumpStatus);
 	bJumpStatus = NewbJumpStatus;
 
-	// handle firing and alt-firing
-	if ( bFired )
-	{
-		if ( bForceFire && (Weapon != None) )
-			Weapon.ForceFire();
-		else if ( bFire == 0 )
-			Fire(0);
-		bFire = 1;
-	}
-	else
-		bFire = 0;
-
-
-	if ( bAltFired )
-	{
-		if ( bForceAltFire && (Weapon != None) )
-			Weapon.ForceAltFire();
-		else if ( bAltFire == 0 )
-			AltFire(0);
-		bAltFire = 1;
-	}
-	else
-		bAltFire = 0;
-
-	// Save move parameters.
 	DeltaTime = TimeStamp - CurrentTimeStamp;
 	if ( ServerTimeStamp > 0 )
 	{
@@ -1821,7 +1794,7 @@ function xxServerMove
 		maxPitch = 1;
 	If ( (ViewPitch > maxPitch * RotationRate.Pitch) && (ViewPitch < 65536 - maxPitch * RotationRate.Pitch) )
 	{
-		If (ViewPitch < 32768) 
+		If (ViewPitch < 32768)
 			Rot.Pitch = maxPitch * RotationRate.Pitch;
 		else
 			Rot.Pitch = 65536 - maxPitch * RotationRate.Pitch;
@@ -1839,7 +1812,7 @@ function xxServerMove
 	// Perform actual movement.
 	if ( (Level.Pauser == "") && (DeltaTime > 0) )
 		MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
-	
+
 	if (bNewNet)
 	{
 		MinPosError = Class'UTPure'.Default.MinPosError;
@@ -1850,22 +1823,22 @@ function xxServerMove
 		MinPosError = 0.0;
 		MaxPosError = 3.0;
 	}
-	
+
 	LocDiff = Location - ClientLoc;
 	ClientLocErr = LocDiff Dot LocDiff;
 	debugClientLocError = ClientLocErr;
-	
+
 	if (Player.CurrentNetSpeed == 0)
 		bTooLong = ServerTimeStamp - LastUpdateTime > 0.025;
 	else
 		bTooLong = ServerTimeStamp - LastUpdateTime > 500.0/Player.CurrentNetSpeed;
-	
+
 	if (!bTooLong)
 		bTooLong = ClientLocErr > MinPosError;
-	
+
 	if (!bTooLong)
 		return;
-	
+
 	PlayerReplicationInfo.Ping = int(ConsoleCommand("GETPING"));
 	if (zzPendingWeapon != PendingWeapon)
 	{
@@ -1874,7 +1847,7 @@ function xxServerMove
 		if (PendingWeapon != None && PendingWeapon.Owner == Self && Weapon != None && !Weapon.IsInState('DownWeapon'))
 			Weapon.GotoState('DownWeapon');
 	}
-	
+
 	if (zzDisabledPlayerCollision > 0)
 	{
 		zzDisabledPlayerCollision--;
@@ -2620,10 +2593,6 @@ function xxReplicateMove
 		PendingMove.bRun = (bRun > 0);
 		PendingMove.bDuck = (bDuck > 0);
 		PendingMove.bPressedJump = bPressedJump || PendingMove.bPressedJump;
-		PendingMove.bFire = PendingMove.bFire || bJustFired || (bFire != 0);
-		PendingMove.bForceFire = PendingMove.bForceFire || bJustFired;
-		PendingMove.bAltFire = PendingMove.bAltFire || bJustAltFired || (bAltFire != 0);
-		PendingMove.bForceAltFire = PendingMove.bForceAltFire || bJustFired;
 		PendingMove.Delta = TotalTime;
 	}
 	if ( SavedMoves != None )
@@ -2656,10 +2625,6 @@ function xxReplicateMove
 	NewMove.bRun = (bRun > 0);
 	NewMove.bDuck = (bDuck > 0);
 	NewMove.bPressedJump = bPressedJump;
-	NewMove.bFire = (bJustFired || (bFire != 0));
-	NewMove.bForceFire = bJustFired;
-	NewMove.bAltFire = (bJustAltFired || (bAltFire != 0));
-	NewMove.bForceAltFire = bJustAltFired;
 	if ( Weapon != None ) // approximate pointing so don't have to replicate
 		Weapon.bPointing = ((bFire != 0) || (bAltFire != 0));
 	bJustFired = false;
@@ -2764,12 +2729,8 @@ function xxReplicateMove
 		Velocity,
 		NewMove.bRun,
 		NewMove.bDuck,
-		bJumpStatus, 
-		NewMove.bFire,
-		NewMove.bAltFire,
-		NewMove.bForceFire,
-		NewMove.bForceAltFire,
-		NewMove.DodgeMove, 
+		bJumpStatus,
+		NewMove.DodgeMove,
 		ClientRoll,
 		//(32767 & (zzViewRotation.Pitch/2)) * 32768 + (32767 & (zzViewRotation.Yaw/2)),
 		((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF),
@@ -2935,9 +2896,9 @@ function string forcedTeamModelToString(int fm) {
 
 simulated function setClientNetspeed() {
 
-/** 
- * @Author: spect 
- * @Date: 2020-02-23 15:05:21 
+/**
+ * @Author: spect
+ * @Date: 2020-02-23 15:05:21
  * @Desc: Force client netspeed, gets set on every connect request, for now it remains at 20000
  */
 
@@ -2960,7 +2921,7 @@ exec function enableHitSounds(bool b) {
 	if (b) {
 		ClientMessage("Hitsounds: on");
 		reconnectClient();
-	} else { 
+	} else {
 		ClientMessage("Hitsounds: off");
 		reconnectClient();
 	}
@@ -2971,7 +2932,7 @@ exec function setForcedSkins(int fs) {
 		desiredSkin = fs;
 		SaveConfig();
 		ClientMessage("Forced enemy skin set!");
-	} else 
+	} else
 		ClientMessage("Please input a value between 0 and 17, e.g. setforcedskins 4");
 }
 
@@ -2980,7 +2941,7 @@ exec function setForcedTeamSkins(int fs) {
 		desiredTeamSkin = fs;
 		SaveConfig();
 		ClientMessage("Forced team skin set!");
-	} else 
+	} else
 		ClientMessage("Please input a value between 0 and 17, e.g. setforcedteamskins 4");
 }
 
@@ -3001,7 +2962,7 @@ exec function setShockBeam(int sb) {
 		cShockBeam = sb;
 		SaveConfig();
 		ClientMessage("Shock beam set!");
-	} else 
+	} else
 		ClientMessage("Please input a value between 1 and 3");
 }
 
@@ -3261,6 +3222,13 @@ function ServerTaunt(name Sequence )
 
 simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector TraceDir)
 {
+	/**
+	 * @Author: spect
+	 * @Modified Date: 2020-02-22 02:08:45
+	 * @Desc: Reduced the hitboxes slightly
+	 * @Feedback: Positive
+	 */
+
 	local float adjZ, maxZ;
 	local vector delta;
 
@@ -3965,7 +3933,11 @@ simulated function CheckHitSound()
 		PlayTeamHitSound(0);
 }
 
-/// ----------- States
+/** STATES
+ * @Author: spect
+ * @Date: 2020-02-19 02:13:05
+ * @Desc: PlayerPawn States (This is where movement, compensation and position adjustment is controlled)
+ */
 
 state FeigningDeath
 {
@@ -3977,13 +3949,9 @@ state FeigningDeath
 		vector ClientVel,
 		bool NewbRun,
 		bool NewbDuck,
-		bool NewbJumpStatus, 
-		bool bFired,
-		bool bAltFired,
-		bool bForceFire,
-		bool bForceAltFire,
-		eDodgeDir DodgeMove, 
-		byte ClientRoll, 
+		bool NewbJumpStatus,
+		eDodgeDir DodgeMove,
+		byte ClientRoll,
 		int View,
 		optional byte OldTimeDelta,
 		optional int OldAccel
@@ -3991,7 +3959,7 @@ state FeigningDeath
 	{
 		Global.xxServerMove(TimeStamp, Accel, ClientLoc, ClientVel, NewbRun, NewbDuck, NewbJumpStatus,
 							//bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, (32767 & (Rotation.Pitch/2)) * 32768 + (32767 & (Rotation.Yaw/2)));
-							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, ((Rotation.Pitch & 0xFFFF) << 16) | (Rotation.Yaw & 0xFFFF));
+							DodgeMove, ClientRoll, ((Rotation.Pitch & 0xFFFF) << 16) | (Rotation.Yaw & 0xFFFF));
 	}
 	
 	function PlayerMove( float DeltaTime)
@@ -4551,7 +4519,7 @@ function xxServerSetReadyToPlay()
 	{
 		zzbForceUpdate = true;
 		zzIgnoreUpdateUntil = 0;
-		
+
 		PlayerRestartState = 'PlayerWarmup';
 		GotoState('PlayerWarmup');
 		zzUTPure.zzDMP.ReStartPlayer(Self);
@@ -4596,7 +4564,7 @@ function GiveMeWeapons()
 		if (DMP.bUseTranslocator)			// Sneak in translocator
 			WeaponList[WeapCnt++] = "Botpack.Translocator";
 	}
-	
+
 	for (x = 0; x < 8; x++)
 		if (zzUTPure.zzDefaultWeapons[x] != '')
 		{
@@ -4786,46 +4754,27 @@ state PlayerWaking
 
 state Dying
 {
-	/*
+
 	exec function Fire( optional float F )
 	{
-		if ( (Level.NetMode == NM_Standalone) && !Level.Game.bDeathMatch )
-		{
-			if ( bFrozen )
-				return;
-			ShowLoadMenu();
-		}
-		else if ( !bFrozen || (TimerRate <= 0.0) )
-		{
-			if (Level.NetMode == NM_Client)
+		if (Level.NetMode == NM_DedicatedServer && Role == ROLE_Authority) {
+			bJustFired = true;
+			if( bShowMenu || (Level.Pauser != "") )
 			{
-				ClientMessage(zzNextStartSpot);
-				xxRestartPlayer();
+				if ( !bShowMenu && (Level.Pauser == PlayerReplicationInfo.PlayerName)  )
+					SetPause(False);
+				return;
 			}
-			ServerReStartPlayer();
+			if( Weapon != None )
+			{
+				Weapon.bPointing = true;
+				//PlayFiring();
+				Weapon.Fire(F);
+			}
+		} else {
+			super.Fire(F);
 		}
 	}
-	*/
-	exec function Fire( optional float F )
-    {
-        if (Level.NetMode == NM_DedicatedServer && Role == ROLE_Authority) {
-            bJustFired = true;
-            if( bShowMenu || (Level.Pauser != "") )
-            {
-                if ( !bShowMenu && (Level.Pauser == PlayerReplicationInfo.PlayerName)  )
-                    SetPause(False);
-                return;
-            }
-            if( Weapon != None )
-            {
-                Weapon.bPointing = true;
-                //PlayFiring();
-                Weapon.Fire(F);
-            }
-        } else {
-            super.Fire(F);
-        }
-    }
 
 	function ServerReStartPlayer()
 	{
@@ -4925,19 +4874,15 @@ state Dying
 		bool NewbRun,
 		bool NewbDuck,
 		bool NewbJumpStatus,
-		bool bFired,
-		bool bAltFired,
-		bool bForceFire,
-		bool bForceAltFire,
-		eDodgeDir DodgeMove, 
-		byte ClientRoll, 
+		eDodgeDir DodgeMove,
+		byte ClientRoll,
 		int View,
 		optional byte OldTimeDelta,
 		optional int OldAccel
 	)
 	{
 		zzbForceUpdate = true;
-		Global.xxServerMove(TimeStamp, Accel, ClientLoc, ClientVel, false, false, false, false, false, false, false,
+		Global.xxServerMove(TimeStamp, Accel, ClientLoc, ClientVel, false, false, false,
 				DodgeMove, ClientRoll, View);
 	}
 
@@ -5000,7 +4945,7 @@ state Dying
 	
 }
 
-state CountdownDying extends Dying 
+state CountdownDying extends Dying
 {
 	/*
 	exec function Fire( optional float F )
@@ -5121,13 +5066,9 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 		vector ClientVel,
 		bool NewbRun,
 		bool NewbDuck,
-		bool NewbJumpStatus, 
-		bool bFired,
-		bool bAltFired,
-		bool bForceFire,
-		bool bForceAltFire,
-		eDodgeDir DodgeMove, 
-		byte ClientRoll, 
+		bool NewbJumpStatus,
+		eDodgeDir DodgeMove,
+		byte ClientRoll,
 		int View,
 		optional byte OldTimeDelta,
 		optional int OldAccel
@@ -5135,7 +5076,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	{
 		Global.xxServerMove(TimeStamp, InAccel, ClientLoc, ClientVel, NewbRun, NewbDuck, NewbJumpStatus,
 							//bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, (32767 & (zzViewRotation.Pitch/2)) * 32768 + (32767 & (zzViewRotation.Yaw/2)) );
-							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, ((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF));
+							DodgeMove, ClientRoll, ((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF));
 	}
 
 	function FindGoodView()
@@ -5566,18 +5507,17 @@ simulated function xxCheckForPortals()
 simulated function xxCheckForKickers()
 {
 	local Kicker K;
-	
-	ForEach RadiusActors(class'Kicker', K, PortalRadius)
+	ForEach AllActors(class'Kicker', K)
 		if (K.Owner != Self)
 			K.SetCollision(false, false, false);
 }
 
 static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 
-	/** 
+	/**
  	* @Author: spect
- 	* @Date: 2020-02-21 01:17:00 
- 	* @Desc: Sets the selected forced skin client side 
+ 	* @Date: 2020-02-21 01:17:00
+ 	* @Desc: Sets the selected forced skin client side
 	* @TODO: Set green and yellow colors. Shit is gonna hit the fan when this is used in xtdm.
  	*/
 
@@ -5590,7 +5530,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 				SetSkinElement(SkinActor, 0, "FCommandoSkins.aphe1t_0", "FCommandoSkins.aphe");
 				SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2t_0", "FCommandoSkins.aphe");
 				SetSkinElement(SkinActor, 2, "FCommandoSkins.aphe2t_0", "FCommandoSkins.aphe");
-				
+
 			} else if (TeamNum == 1) {
 				SetSkinElement(SkinActor, 0, "FCommandoSkins.aphe1t_1", "FCommandoSkins.aphe");
 				SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2t_1", "FCommandoSkins.aphe");
@@ -5862,16 +5802,16 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			}
 			bbPlayer(SkinActor).Mesh = class'bbTBoss'.Default.Mesh;
 			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
-			break; 
+			break;
 	}
 }
 
 static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int TeamNum) {
 
-	/** 
-	 * @Author: spect 
-	 * @Date: 2020-02-22 17:18:19 
-	 * @Desc: Sets the selected forced skin for team mates 
+	/**
+	 * @Author: spect
+	 * @Date: 2020-02-22 17:18:19
+	 * @Desc: Sets the selected forced skin for team mates
 	 * @TODO: Set green and yellow colors. Shit is gonna hit the fan when this is used in xtdm.
 	 */
 
@@ -6168,7 +6108,7 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTBoss'.Default.Mesh;
 			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
-			break; 
+			break;
 	}
 }
 
@@ -6243,10 +6183,10 @@ event PreRender( canvas zzCanvas )
 					zzPRI.PlayerZone = None;
 				}
 
-				/** 
+				/**
 				 * @Author: spect
-				 * @Date: 2020-02-18 02:20:22 
-				 * @Desc: Applies the forced skin client side if force models is enabled. 
+				 * @Date: 2020-02-18 02:20:22
+				 * @Desc: Applies the forced skin client side if force models is enabled.
 				 */
 
 				if (zzbForceModels) {
@@ -6328,10 +6268,10 @@ event PreRender( canvas zzCanvas )
 										break;
 								}
 
-								// Set the skin	
+								// Set the skin
 								if (zzPRI.Team == Self.PlayerReplicationInfo.Team)
 									setForcedTeamSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
-								else 
+								else
 									setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
 							}
 						}
@@ -6678,10 +6618,10 @@ simulated function xxRenderLogo(canvas zzC)
 
 simulated function xxDrawAlphaWarning(canvas zzC, float zzx, float zzY) {
 
-	/** 
+	/**
 	 * @Author: spect
-	 * @Date: 2020-02-18 02:23:10 
-	 * @Desc: Draw a big and visible ALPHA WARNING text in the left hand corner so people complain less. It didn't work, they complained anyway. 
+	 * @Date: 2020-02-18 02:23:10
+	 * @Desc: Draw a big and visible ALPHA WARNING text in the left hand corner so people complain less. It didn't work, they complained anyway.
 	 */
 
 	if (MyHUD == None)
@@ -6699,10 +6639,10 @@ simulated function xxDrawAlphaWarning(canvas zzC, float zzx, float zzY) {
 
 simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 
-	/** 
+	/**
 	 * @Author: spect
-	 * @Date: 2020-03-07 19:56:32 
-	 * @Desc: Draw Debug Data 
+	 * @Date: 2020-03-07 19:56:32
+	 * @Desc: Draw Debug Data
 	 */
 
 	if (MyHUD == None)
@@ -7357,9 +7297,9 @@ exec function NoRevert(bool b)
 exec function ForceModels(bool b)
 {
 
-	/** 
-	 * @Author: spect 
-	 * @Date: 2020-02-21 02:28:03 
+	/**
+	 * @Author: spect
+	 * @Date: 2020-02-21 02:28:03
 	 * @Desc: Console command to force models client side
 	 */
 
