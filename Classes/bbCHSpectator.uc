@@ -448,19 +448,10 @@ auto state CheatFlying
 		optional byte OldTimeDelta,
 		optional int OldAccel
 	) {
-		local float DeltaTime, clientErr, OldTimeStamp;
-		local rotator DeltaRot, Rot;
-		local vector Accel, LocDiff;
-		local int maxPitch, ViewPitch, ViewYaw;
-		local actor OldBase;
-		local bool NewbPressedJump, OldbRun, OldbDuck;
-		local eDodgeDir OldDodgeMove;
-
 		// If this move is outdated, discard it.
 		if ( CurrentTimeStamp >= TimeStamp )
 			return;
 
-		NewbPressedJump = (bJumpStatus != NewbJumpStatus);
 		bJumpStatus = NewbJumpStatus;
 
 		// handle firing and alt-firing
