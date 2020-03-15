@@ -1539,19 +1539,15 @@ function xxSetPendingWeapon(Weapon W)
 
 function xxServerMove
 (
-	float TimeStamp, 
-	vector InAccel, 
+	float TimeStamp,
+	vector InAccel,
 	vector ClientLoc,
 	vector ClientVel,
 	bool NewbRun,
 	bool NewbDuck,
-	bool NewbJumpStatus, 
-	bool bFired,
-	bool bAltFired,
-	bool bForceFire,
-	bool bForceAltFire,
-	eDodgeDir DodgeMove, 
-	byte ClientRoll, 
+	bool NewbJumpStatus,
+	eDodgeDir DodgeMove,
+	byte ClientRoll,
 	int View,
 	optional byte OldTimeDelta,
 	optional int OldAccel
@@ -1678,27 +1674,6 @@ function xxServerMove
 
 	NewbPressedJump = (bJumpStatus != NewbJumpStatus);
 	bJumpStatus = NewbJumpStatus;
-
-	if ( bFired )
-	{
-		if ( bForceFire && (Weapon != None) )
-			Weapon.ForceFire();
-		else if ( bFire == 0 )
-			Fire(0);
-		bFire = 1;
-	}
-	else
-		bFire = 0;
-	if ( bAltFired )
-	{
-		if ( bForceAltFire && (Weapon != None) )
-			Weapon.ForceAltFire();
-		else if ( bAltFire == 0 )
-			AltFire(0);
-		bAltFire = 1;
-	}
-	else
-		bAltFire = 0;
 
 	DeltaTime = TimeStamp - CurrentTimeStamp;
 	if ( ServerTimeStamp > 0 )
@@ -2434,10 +2409,6 @@ function xxReplicateMove
 		PendingMove.bRun = (bRun > 0);
 		PendingMove.bDuck = (bDuck > 0);
 		PendingMove.bPressedJump = bPressedJump || PendingMove.bPressedJump;
-		PendingMove.bFire = PendingMove.bFire || bJustFired || (bFire != 0);
-		PendingMove.bForceFire = PendingMove.bForceFire || bJustFired;
-		PendingMove.bAltFire = PendingMove.bAltFire || bJustAltFired || (bAltFire != 0);
-		PendingMove.bForceAltFire = PendingMove.bForceAltFire || bJustFired;
 		PendingMove.Delta = TotalTime;
 	}
 	if ( SavedMoves != None )
@@ -2470,10 +2441,6 @@ function xxReplicateMove
 	NewMove.bRun = (bRun > 0);
 	NewMove.bDuck = (bDuck > 0);
 	NewMove.bPressedJump = bPressedJump;
-	NewMove.bFire = (bJustFired || (bFire != 0));
-	NewMove.bForceFire = bJustFired;
-	NewMove.bAltFire = (bJustAltFired || (bAltFire != 0));
-	NewMove.bForceAltFire = bJustAltFired;
 	if ( Weapon != None ) // approximate pointing so don't have to replicate
 		Weapon.bPointing = ((bFire != 0) || (bAltFire != 0));
 	bJustFired = false;
@@ -2581,10 +2548,6 @@ function xxReplicateMove
 		NewMove.bRun,
 		NewMove.bDuck,
 		bJumpStatus,
-		NewMove.bFire,
-		NewMove.bAltFire,
-		NewMove.bForceFire,
-		NewMove.bForceAltFire,
 		NewMove.DodgeMove,
 		ClientRoll,
 		//(32767 & (zzViewRotation.Pitch/2)) * 32768 + (32767 & (zzViewRotation.Yaw/2)),
@@ -3767,10 +3730,6 @@ state FeigningDeath
 		bool NewbRun,
 		bool NewbDuck,
 		bool NewbJumpStatus,
-		bool bFired,
-		bool bAltFired,
-		bool bForceFire,
-		bool bForceAltFire,
 		eDodgeDir DodgeMove,
 		byte ClientRoll,
 		int View,
@@ -3780,7 +3739,7 @@ state FeigningDeath
 	{
 		Global.xxServerMove(TimeStamp, Accel, ClientLoc, ClientVel, NewbRun, NewbDuck, NewbJumpStatus,
 							//bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, (32767 & (Rotation.Pitch/2)) * 32768 + (32767 & (Rotation.Yaw/2)));
-							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, ((Rotation.Pitch & 0xFFFF) << 16) | (Rotation.Yaw & 0xFFFF));
+							DodgeMove, ClientRoll, ((Rotation.Pitch & 0xFFFF) << 16) | (Rotation.Yaw & 0xFFFF));
 	}
 
 	function PlayerMove( float DeltaTime)
@@ -4696,10 +4655,6 @@ state Dying
 		bool NewbRun,
 		bool NewbDuck,
 		bool NewbJumpStatus,
-		bool bFired,
-		bool bAltFired,
-		bool bForceFire,
-		bool bForceAltFire,
 		eDodgeDir DodgeMove,
 		byte ClientRoll,
 		int View,
@@ -4708,7 +4663,7 @@ state Dying
 	)
 	{
 		zzbForceUpdate = true;
-		Global.xxServerMove(TimeStamp, Accel, ClientLoc, ClientVel, false, false, false, false, false, false, false,
+		Global.xxServerMove(TimeStamp, Accel, ClientLoc, ClientVel, false, false, false,
 				DodgeMove, ClientRoll, View);
 	}
 
@@ -4893,10 +4848,6 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 		bool NewbRun,
 		bool NewbDuck,
 		bool NewbJumpStatus,
-		bool bFired,
-		bool bAltFired,
-		bool bForceFire,
-		bool bForceAltFire,
 		eDodgeDir DodgeMove,
 		byte ClientRoll,
 		int View,
@@ -4906,7 +4857,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	{
 		Global.xxServerMove(TimeStamp, InAccel, ClientLoc, ClientVel, NewbRun, NewbDuck, NewbJumpStatus,
 							//bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, (32767 & (zzViewRotation.Pitch/2)) * 32768 + (32767 & (zzViewRotation.Yaw/2)) );
-							bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, ((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF));
+							DodgeMove, ClientRoll, ((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF));
 	}
 
 	function FindGoodView()
