@@ -177,10 +177,26 @@ simulated function PlayAltFiring()
 	LoopAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
 }
 
-function AltFire( float Value )
+/* function AltFire( float Value )
 {
 	bAltFired = true;
 	Super.AltFire(Value);
+} */
+
+function AltFire( float Value ) {
+	local bbPlayer bbP;
+
+	if (Owner.IsA('Bot'))
+	{
+		Super.Fire(Value);
+		return;
+	}
+
+	bbP = bbPlayer(Owner);
+	bAltFired = false;
+	if (bbP != None && bNewNet && Value < 1)
+		return;
+	Super.Fire(Value);
 }
 
 state ClientFiring
