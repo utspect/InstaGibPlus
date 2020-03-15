@@ -114,7 +114,7 @@ simulated function bool ClientFire(float Value)
 } */
 
 simulated function bool ClientAltFire(float Value) {
-	
+
 	local bbPlayer bbP;
 
 	if (Owner.IsA('Bot'))
@@ -177,17 +177,33 @@ simulated function PlayAltFiring()
 	LoopAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
 }
 
-function AltFire( float Value )
+/* function AltFire( float Value )
 {
 	bAltFired = true;
 	Super.AltFire(Value);
+} */
+
+function AltFire( float Value ) {
+	local bbPlayer bbP;
+
+	if (Owner.IsA('Bot'))
+	{
+		Super.Fire(Value);
+		return;
+	}
+
+	bbP = bbPlayer(Owner);
+	bAltFired = false;
+	if (bbP != None && bNewNet && Value < 1)
+		return;
+	Super.Fire(Value);
 }
 
 state ClientFiring
 {
 	simulated function bool ClientFire(float Value)
 	{
-		local float MinTapTime;
+		/* local float MinTapTime;
 
 		if (Owner.IsA('Bot'))
 			return Super.ClientFire(Value);
@@ -200,7 +216,7 @@ state ClientFiring
 		if ( Level.TimeSeconds - TapTime < MinTapTime )
 			return false;
 		bForceFire = bForceFire || ( bCanClientFire && (Pawn(Owner) != None) && (AmmoType.AmmoAmount > 0) );
-		return bForceFire;
+		return bForceFire; */
 	}
 }
 

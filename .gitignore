@@ -1,4 +1,5 @@
 *.old
 *.old2
 *.bat
+*.uc_ig
 make.ini

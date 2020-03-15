@@ -9,9 +9,5 @@ function bool AlwaysKeep(Actor Other)
 	{
 		NNS.bEnabled = false;
 	}
-	ForEach AllActors(class'bbPlayer', bbP)
-	{
-		bbP.MMSupport = True;
-	}
 	return Super.AlwaysKeep(Other);
 }
