@@ -12,7 +12,7 @@ class bbPlayer extends TournamentPlayer
 var int bReason;
 // Client Config
 //var globalconfig bool bNewNet;	// if Client wants new or old netcode. (default true)
-var bool bNewNet;	// if Client wants new or old netcode. (default true)
+var bool bNewNet;
 var globalconfig bool bNoRevert;	// if Client does not want the Revert to Previous Weapon option on Translocator. (default true)
 var globalconfig bool bForceModels;	// if Client wishes models forced to his own. (default false)
 var globalconfig int HitSound;	// if Client wishes hitsounds (default 2, must be enabled on server)
@@ -58,11 +58,11 @@ var bool	zzCVDeny;		// Deny CenterView ?
 var float	zzCVDelay;		// Delay for CenterView usage
 var int		zzMinimumNetspeed;	// Default 1000, it's the minimum netspeed a client may have.
 var float	zzWaitTime;		// Used for diverse waiting.
-//var bool	zzbWeaponTracer;	// True if current weapon is a tracer!
+var bool	zzbWeaponTracer;	// True if current weapon is a tracer!
 var int		zzForceSettingsLevel;	// The Anti-Default/Ini check force.
 var bool	zzbForceModels;		// Allow/Enable/Force Models for clients.
 var bool	zzbForceDemo;		// Set true by server to force client to do demo.
-var bool	zzbGameStarted;	// Set to true when Pawn spawns first time (ModifyPlayer)
+var bool	zzbGameStarted;		// Set to true when Pawn spawns first time (ModifyPlayer)
 var bool	zzbUsingTranslocator;
 var byte	HUDInfo;		// 0 = Off, 1 = boots/timer, 2 = Team Info too.
 
@@ -116,14 +116,14 @@ var actor   zzNN_HitActor, zzNN_HitActorLast, zzOldBase, zzNN_LastHitActor;
 var Vector  zzNN_HitLoc, zzClientHitNormal, zzClientHitLocation, zzNN_HitDiff, zzNN_HitLocLast, zzNN_HitNormalLast, zzNN_ClientLoc, zzNN_ClientVel;
 var bool    zzbIsWarmingUp, zzbFakeUpdate, zzbForceUpdate, zzbOnMover, zzbNN_Special, zzbNN_ReleasedFire, zzbNN_ReleasedAltFire;
 var float   zzNN_Accuracy, zzLastStuffUpdate, zzNextTimeTime, zzLastFallVelZ, zzLastClientErr, zzForceUpdateUntil, zzIgnoreUpdateUntil, zzLastLocDiff, zzSpawnedTime;
-var Teleporter LastPortal, LastPortalDest;
+var NN_Teleporter zzLastPortal, zzLastPortalDest;
 var Trigger zzLastTrigger;
-var float LastPortalTime, zzLastTriggerTime;
+var float zzLastPortalTime, zzLastTriggerTime;
 var TournamentWeapon zzGrappling;
 var float zzGrappleTime;
 var Weapon zzKilledWithWeapon;
 var Pawn zzLastKilled;
-var vector zzLast10Positions[10];	// every 50ms for half a second of backtracking
+var vector zzLast10Positions[10];	// every 50ms for half a second of backtracking 
 var int zzPositionIndex;
 var float zzNextPositionTime;
 var bool zzbInitialized;
@@ -143,9 +143,29 @@ var byte zzPressing[1024];
 var bool bIsAlpha;
 var bool bNewNetIsDisabled;
 var bool bIsPatch469;
-
 var globalconfig float MinDodgeClickTime;
 var float zzLastTimeForward, zzLastTimeBack, zzLastTimeLeft, zzLastTimeRight;
+/*
+struct MoverTimeout {
+	var bool bClear;
+	var Mover M;
+	var float EndTime;
+	var name For;
+	var name Which;
+};
+
+var MoverTimeout zzMoverTimeouts[256];
+var int zzNumMoverTimeouts;
+
+var Mover zzMoverTriggerDisabled[256];
+var int zzMoverTriggerDisabledLength;
+var Mover zzMoverBumpDisabled[256];
+var int zzMoverBumpDisabledLength;
+var Mover zzMoverAttachDisabled[256];
+var int zzMoverAttachDisabledLength;
+var float zzMoverEncroachedTime;
+var float zzMoverAttachedTime;
+*/
 
 struct MoveInfo {
 	var float Delta;
@@ -156,6 +176,18 @@ struct MoveInfo {
 	var vector Acceleration;
 	var rotator DeltaRot;
 };
+
+/* Crash fix bs
+struct StoredCollisionInfo {                       // Actor collision attributes structure
+	var bool bCollideActors;                      // Did the actor collide with other actors?
+	var bool bBlockActors;                        // Did the actor block other actors?
+	var bool bBlockPlayers;                       // Did the actor block PlayerPawns?
+	var int TickCount;
+	var EPhysics OldPhysics;
+	var EPhysics EndPhysics;
+	var vector Velocity;
+};
+var StoredCollisionInfo zzStoredCollision; */
 
 struct BetterVector {
 	var int X;
@@ -189,7 +221,7 @@ var float	zzCVTO;			// CenterView Time out.
 var bool	zzbCanCSL;		// Console sets this to true if they are allowed to CSL
 
 // Consoles & Canvas
-var Console	zzOldConsole;
+var Console	zzOldConsole; 		
 var PureSuperDuperUberConsole	zzMyConsole;
 var bool	zzbBadConsole;
 var Canvas zzCannibal;			// Old console
@@ -250,19 +282,24 @@ var PurePlayer PurePlayer;	// And player.
 var TranslocatorTarget zzClientTTarget, TTarget;
 var float LastTick, AvgTickDiff;
 
-var bool MMSupport;
-var bool DisablePortals;
-var bool SetPendingWeapon;
 
+/*
+var byte RecentPings[100];	// 100 most recent ping results (In pixels, not actual ping)
+var byte RecentPLs[100];	// 100 most recent PL results (In pixels, not actual pl)
+var byte RecentPPIndex;		// Where the Most recent data was entered.
+var float RecentPPLastTime;	// Last time we checked ping/pl
+var int RecentPing, RecentPL, RecentCount;	// Use this to average reads.
+var bool bRecentShow;		// Show the recent pings/pl.
+*/
 replication
 {
 	//	Client->Demo
 	unreliable if ( bClientDemoRecording )
 		xxReplicateVRToDemo, xxClientDemoMessage, xxClientLogToDemo;
-
+	
     reliable if (bClientDemoRecording && !bClientDemoNetFunc)
         xxClientDemoFix, xxClientDemoBolt;
-
+	
 	reliable if ((Role == ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ClientProjExplode;
 
@@ -271,17 +308,17 @@ replication
 		zzTrackFOV, zzCVDeny, zzCVDelay, zzShowClick, zzMinimumNetspeed,
 		zzWaitTime,zzAntiTimerList,zzAntiTimerListCount,zzAntiTimerListState,
 		zzbDidMD5, zzStat;
-
+	
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
-		/* zzHUDType, zzSBType, zzSIType, xxClientAcceptMutator, zzbWeaponTracer, */ zzForceSettingsLevel,
+		zzHUDType, zzSBType, zzSIType, xxClientAcceptMutator, zzbWeaponTracer, zzForceSettingsLevel,
 		zzbForceModels, zzbForceDemo, zzbGameStarted, zzbUsingTranslocator, HUDInfo;
-
+	
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
 		debugClientLocError, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
-		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
-		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
+		xxNN_MoveClientTTarget, xxSetPendingWeapon, //xxReceiveNextStartSpot,
+		xxSetTeleRadius, xxSetDefaultWeapon, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
 		xxClientKicker, xxClientSetVelocity; //, xxClientTrigger, xxClientActivateMover;
 
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
@@ -296,25 +333,25 @@ replication
 		xxCAPWalking,
 		xxCAPWalkingWalkingLevelBase,xxCAPWalkingWalking,
 		xxFakeCAP;
-
+	
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
-		/* xxServerMove, */ zzNN_LastHitActor, xxServerCheater,
+		xxServerMove, zzNN_LastHitActor, xxServerCheater,
 		zzbConsoleInvalid, zzFalse, zzTrue, zzNetspeed, zzbBadConsole, zzbBadCanvas, zzbVRChanged,
 		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD;
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		/* xxServerCheckMutator, */ xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
+		xxServerCheckMutator,xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
 		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay,Hold,Go,
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
 		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
 		xxExplodeOther, xxServerSetVelocity; //, xxServerActivateMover;
-
+	
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
-		xxNN_ProjExplode, /* xxNN_ServerTakeDamage, */ /* xxNN_RadiusDamage, */ xxNN_TeleFrag, xxNN_TransFrag,
-		xxNN_Fire, xxNN_AltFire, xxNN_ReleaseFire, xxNN_ReleaseAltFire, xxNN_MoveTTarget, ServerPreTeleport;
+		xxNN_ProjExplode, xxNN_ServerTakeDamage, xxNN_RadiusDamage, xxNN_TeleFrag,
+		xxNN_Fire, xxNN_AltFire, xxNN_ReleaseFire, xxNN_ReleaseAltFire, xxNN_MoveTTarget, xxServerPreTeleport;
 }
 
 //XC_Engine interface
@@ -327,93 +364,75 @@ simulated function bool xxGarbageLocation(actor Other)
 		InStr(Caps(string(Other.Location.Y)), "N") > -1 ||
 		InStr(Caps(string(Other.Location.Z)), "N") > -1);
 }
-
-exec function Fly()
+/*
+simulated function xxStoreCollision(optional EPhysics EndPhysics)
 {
-	zzForceUpdateUntil = Level.TimeSeconds + 0.5;
-	zzbForceUpdate = true;
-	Super.Fly();
-}
-
-exec function Ghost()
-{
-	zzForceUpdateUntil = Level.TimeSeconds + 0.5;
-	zzbForceUpdate = true;
-	Super.Ghost();
-}
-
-simulated function xxSetPortals(bool DP)
-{
-	DisablePortals = DP;
-}
-
-simulated function setNullKiller() {
-	zzNN_LastHitActor = None;
-}
-
-function string ParseDelimited(string Text, string Delimiter, int Count, optional bool bToEndOfLine)
-{
-	local string Result;
-	local int Found, i;
-	local string s;
-
-	Result = "";
-	Found = 1;
-
-	for(i=0;i<Len(Text);i++)
+	if (Role < ROLE_Authority)
+		return;
+	
+	if (zzStoredCollision.TickCount == 0)
 	{
-		s = Mid(Text, i, 1);
-		if(InStr(Delimiter, s) != -1)
-		{
-			if(Found == Count)
-			{
-				if(bToEndOfLine)
-					return Result$Mid(Text, i);
-				else
-					return Result;
-			}
-
-			Found++;
-		}
-		else
-		{
-			if(Found >= Count)
-				Result = Result $ s;
-		}
+		zzStoredCollision.bCollideActors = bCollideActors;
+		zzStoredCollision.bBlockActors = bBlockActors;
+		zzStoredCollision.bBlockPlayers = bBlockPlayers;
+		zzStoredCollision.TickCount = 1;
+		zzStoredCollision.OldPhysics = Physics;
+		if (EndPhysics > 0)
+			zzStoredCollision.EndPhysics = EndPhysics;
+		zzStoredCollision.Velocity = Velocity;
+		
+		SetCollision(false, false, false);
+		//SetPhysics(PHYS_None);
 	}
-
-	return Result;
+	else
+	{
+		zzStoredCollision.TickCount = 1;
+		if (EndPhysics > 0)
+			zzStoredCollision.EndPhysics = EndPhysics;
+	}
 }
 
+simulated function xxRestoreCollision()
+{
+	if (Role < ROLE_Authority || zzStoredCollision.TickCount == 0)
+		return;
+	
+	//if (zzStoredCollision.EndPhysics > 0 && !Region.Zone.bWaterZone)
+	//	SetPhysics(zzStoredCollision.EndPhysics);
+	//else
+	//	SetPhysics(zzStoredCollision.OldPhysics);
+	
+	SetCollision(zzStoredCollision.bCollideActors, zzStoredCollision.bBlockActors, zzStoredCollision.bBlockPlayers);
+	zzStoredCollision.TickCount = 0;
+	
+	//Velocity = zzStoredCollision.Velocity;
+}
+
+simulated function xxCollisionTick()
+{
+	if (zzStoredCollision.TickCount > 0)
+		xxRestoreCollision();
+	//else if (zzStoredCollision.TickCount > 0)
+	//	zzStoredCollision.TickCount++;
+}
+*/
 simulated function Touch( actor Other )
 {
-	local string Package;
-	local Kicker K;
-
-	if(Level.NetMode != NM_Client)
+	if (Level.NetMode != NM_Client)
 	{
-		Package = ParseDelimited(string(Other.Class), ".", 1);
-		if (Class'UTPure'.Default.ShowTouchedPackage)
+		if (
+			Other.IsA('Teleporter') && Other.Class.Name != 'NN_Teleporter' ||
+			Other.IsA('Kicker') && Other.Class.Name != 'Kicker'
+		)
 		{
-			ClientMessage(Package);
+			zzForceUpdateUntil = Level.TimeSeconds + 0.15 + float(Other.GetPropertyText("ToggleTime"));
+			zzbForceUpdate = true;
 		}
-		if
-			(
-				(
-						Other.IsA('Kicker') && zzUTPure.bExludeKickers
-				)	||	Other.IsA('Teleporter') ||
-						Package != "Botpack" &&
-						Package != "Engine" &&
-						Package != "UnrealShare" &&
-						Package != "Unreali"
-			)
-		{
-			zzForceUpdateUntil = Level.TimeSeconds + 0.15;
-		}
-    }
-    Super.Touch(Other);
+	}
+	
+	Super.Touch(Other);
+	
 }
-
 
 simulated function bool xxNewSetLocation(vector NewLoc, vector NewVel, optional EPhysics EndPhysics)
 {
@@ -432,27 +451,27 @@ simulated function bool xxNewMoveSmooth(vector NewLoc, vector NewVel)
 	return bSuccess;
 }
 
-function ServerPreTeleport(Teleporter Other, Teleporter Dest, vector ClientLoc, rotator ClientRot, vector ClientVel)
+function xxServerPreTeleport(NN_Teleporter Other, NN_Teleporter Dest, vector ClientLoc, vector ClientVel, rotator ClientRot)
 {
 	local bool bUnblocked;
-
-	if (Other == None || Dest == None || VSize(Dest.Location - ClientLoc) > TeleRadius || Level.NetMode == NM_Client || IsInState('Dying') || Mesh == None)
+	
+	if (Other == None || Level.NetMode == NM_Client || IsInState('Dying') || Mesh == None)
 		return;
-
+	
 	if (bBlockPlayers)
 	{
 		SetCollision(bCollideActors, bBlockActors, false);
 		zzDisabledPlayerCollision++;
 		bUnblocked = true;
 	}
-
+	
 	if (!xxNewSetLocation(ClientLoc, ClientVel))
 	{
 		if (bUnblocked)
 			zzDisabledPlayerCollision--;
 		return;
 	}
-
+	
 	PlayTeleportEffect(false, true, Other);
 	SetRotation(ClientRot);
 	ViewRotation = ClientRot;
@@ -466,16 +485,16 @@ function PlayTeleportEffect( optional bool bOut, optional bool bSound, optional 
 	local DeathMatchPlus DMP;
 	local vector nLoc;
 	local rotator nRot;
-
+	
 	if (Mesh == None)
 		return;
-
+	
 	DMP = DeathMatchPlus(Level.Game);
 	if (DMP == None || !bNewNet) {
 		Level.Game.PlayTeleportEffect(Self, bOut, bSound);
 		return;
 	}
-
+	
 	if (Portal == None)
 	{
 		nLoc = Location;
@@ -496,22 +515,20 @@ function PlayTeleportEffect( optional bool bOut, optional bool bSound, optional 
 
 simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeight, float KLocationX, float KLocationY, float KLocationZ, int KRotationYaw, int KRotationPitch, int KRotationRoll, name KTag, name KEvent, name KAttachTag, vector KKickVelocity, name KKickedClasses, bool KbKillVelocity, bool KbRandomize )
 {
-	local Actor A;
 	local Kicker K;
-	local AttachMover AM;
 	local vector KLocation;
 	local rotator KRotation;
-
-	if(Level.NetMode != NM_Client)
+	
+	if (Level.NetMode != NM_Client)
 		return;
-
+	
 	KLocation.X = KLocationX;
 	KLocation.Y = KLocationY;
 	KLocation.Z = KLocationZ;
 	KRotation.Yaw = KRotationYaw;
 	KRotation.Pitch = KRotationPitch;
 	KRotation.Roll = KRotationRoll;
-
+	
 	K = Spawn(class'Kicker', Self, , KLocation, KRotation);
 	K.SetCollisionSize(KCollisionRadius, KCollisionHeight);
 	K.Tag = KTag;
@@ -521,45 +538,24 @@ simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeigh
 	K.KickedClasses = KKickedClasses;
 	K.bKillVelocity = KbKillVelocity;
 	K.bRandomize = KbRandomize;
-
-	if(K.AttachTag != '')
-	{
-		Foreach AllActors(class'Actor', A, K.AttachTag)
-		{
-			K.SetBase(A);
-			break;
-		}
-	}
-	if(K.Tag != '')
-	{
-		Foreach AllActors(class'AttachMover', AM)
-		{
-			if(AM.AttachTag == K.Tag)
-			{
-				K.SetBase(AM);
-				break;
-			}
-		}
-	}
 }
 
 event PostBeginPlay()
 {
 	local int i;
-	local Arena NewNetIG;
-
+	
 	for (i = 0; i < FRVI_length; i++)
 		zzFRandVals[i] = FRand();
-
+	
 	for (i = 0; i < VRVI_length; i++)
 		zzVRandVals[i] = VRand()*10000;
-
+	
 	if (DeathMatchPlus(Level.Game) != None)
 		zzShowClick =  DeathMatchPlus(Level.Game).bTournament;
 
 
 	Super.PostBeginPlay();
-
+	
 
 	if ( Level.NetMode != NM_Client )
 	{
@@ -568,9 +564,8 @@ event PostBeginPlay()
 		zzSIType  = zzUTPure.zzSI;
 		zzbCanCSL = True;
 		zzMinimumNetspeed = Class'UTPure'.Default.MinClientRate;
-		zzWaitTime = 5.0;
+		zzWaitTime = 3.0;
 	}
-	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
 }
 
 // called after PostBeginPlay on net client
@@ -598,10 +593,10 @@ simulated event PostNetBeginPlay()
 		Skin = Default.Skin;
 
 
-	if ( (PlayerReplicationInfo != None)
+	if ( (PlayerReplicationInfo != None) 
 		&& (PlayerReplicationInfo.Owner == None) )
 		PlayerReplicationInfo.SetOwner(self);
-
+	
 }
 
 event Possess()
@@ -627,7 +622,7 @@ event Possess()
 		}
 		zzTrue = !zzFalse;
 		zzInfoThing = Spawn(Class'PureInfo');
-		//xxServerSetNetCode(bNewNet);
+		xxServerSetNetCode(bNewNet);
 		playedHitSound = loadHitSound(selectedHitSound);
 		xxServerSetNoRevert(bNoRevert);
 		xxServerSetForceModels(bForceModels);
@@ -667,36 +662,69 @@ event Possess()
 			xxServerCheater(chr(90)$chr(69));		// ZE
 		}
 		SetPropertyText("PureLevel", GetPropertyText("xLevel"));
+		
+/*
+		for (zzx = 0; zzx < 50; zzx++)
+		{
+			SetPropertyText("PureLinker", "LinkerLoad'Transient.LinkerLoad"$zzx$"'");
+			Log("Test1.0"@PureLinker);
+			if (PureLinker == None)
+				continue;
+			Log("Test2.0"@PureLinker.zzRoot);
+			Log("Test3.1"@PureLinker.zzSummary.zzTag);
+			Log("Test3.2"@PureLinker.zzSummary.zzFileVersion);
+			Log("Test3.3"@PureLinker.zzSummary.zzPackageFlags);
+			Log("Test3.4"@PureLinker.zzSummary.zzNameCount);
+			Log("Test3.5"@PureLinker.zzSummary.zzNameOffset);
+			Log("Test3.6"@PureLinker.zzSummary.zzExportCount);
+			Log("Test3.7"@PureLinker.zzSummary.zzExportOffset);
+			Log("Test3.8"@PureLinker.zzSummary.zzImportCount);
+			Log("Test3.9"@PureLinker.zzSummary.zzImportOffset);
+			Log("Test7.0"@PureLinker.zzSuccess);
+			Log("Test8.0"@PureLinker.zzFileName);
+			Log("Test9.0"@PureLinker.zzContextFlags);
+		}
+			//Log("Test4.0"@PureLinker.GetPropertyText("zzNameMap"));
+			//for (zzx = 0; zzx < PureLinker.zzSummary.zzNameCount; zzx++)
+			//	Log("Test4."$zzx@PureLinker.zzNameMap[zzx]);
+*/
 	}
 	else
 	{
 		TeleRadius = zzUTPure.Default.TeleRadius;
 		xxSetTeleRadius(TeleRadius);
-
-		xxSetPortals(DisablePortals);
-		DisablePortals = zzUTPure.Default.DisablePortals;
-
+		
 		DefaultHitSound = zzUTPure.Default.DefaultHitSound;
 		DefaultTeamHitSound = zzUTPure.Default.DefaultTeamHitSound;
 		bForceDefaultHitSounds = zzUTPure.Default.bForceDefaultHitSounds;
 		xxSetHitSounds(DefaultHitSound, DefaultTeamHitSound, bForceDefaultHitSounds);
-
-
-		xxSetSniperSpeed(class'UTPure'.default.SniperSpeed);
+		
+		
 		xxSetDefaultWeapon(Level.Game.BaseMutator.MutatedDefaultWeapon().name);
-
+		
 		GameReplicationInfo.RemainingTime = DeathMatchPlus(Level.Game).RemainingTime;
 		GameReplicationInfo.ElapsedTime = DeathMatchPlus(Level.Game).ElapsedTime;
 		xxSetTimes(GameReplicationInfo.RemainingTime, GameReplicationInfo.ElapsedTime);
 
-		if(!zzUTPure.bExludeKickers)
+		/*
+		ForEach AllActors(class'Trigger', T)
 		{
-			ForEach AllActors(class'Kicker', K)
+			xxClientTrigger(T.Class, T.CollisionRadius, T.CollisionHeight, T.Location.X, T.Location.Y, T.Location.Z, T.Rotation.Yaw, T.Rotation.Pitch, T.Rotation.Roll, T.Tag, T.Event, T.AttachTag);
+			ForEach AllActors(class'Mover', M)
 			{
-				if (K.Class.Name != 'Kicker')
-					continue;
-				xxClientKicker(K.CollisionRadius, K.CollisionHeight, K.Location.X, K.Location.Y, K.Location.Z, K.Rotation.Yaw, K.Rotation.Pitch, K.Rotation.Roll, K.Tag, K.Event, K.AttachTag, K.KickVelocity, K.KickedClasses, K.bKillVelocity, K.bRandomize );
+				if ( T.Event == M.Tag )
+				{
+					T.SetCollision(false);
+					break;
+				}
 			}
+		}
+		*/
+		ForEach AllActors(class'Kicker', K)
+		{
+			if (K.Class.Name != 'Kicker')
+				continue;
+			xxClientKicker(K.CollisionRadius, K.CollisionHeight, K.Location.X, K.Location.Y, K.Location.Z, K.Rotation.Yaw, K.Rotation.Pitch, K.Rotation.Roll, K.Tag, K.Event, K.AttachTag, K.KickVelocity, K.KickedClasses, K.bKillVelocity, K.bRandomize );
 		}
 	}
 	Super.Possess();
@@ -716,30 +744,45 @@ function Timer() {
 
 function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 {
-	if (zzbCanCSL ||
+	if (zzbCanCSL || 
 	     (zzNewRotation.Roll == 0 && zzNewRotation == ViewRotation &&
 	      (WarpZoneInfo(Region.Zone) != None || WarpZoneInfo(HeadRegion.Zone) != None || WarpZoneInfo(FootRegion.Zone) != None)))
 	{
+//		Log("OldLoc:"@Location@"NewLoc:"@NewLocation);
+//		Log("ClientSetLocation");
+//		xxAttachConsole();		
 		zzViewRotation      = zzNewRotation; // mm..
 		ViewRotation		= zzNewRotation; // mm.. even more !
 		If ( (zzViewRotation.Pitch > RotationRate.Pitch) && (zzViewRotation.Pitch < 65536 - RotationRate.Pitch) )
 		{
-			If (zzViewRotation.Pitch < 32768)
+			If (zzViewRotation.Pitch < 32768) 
 				zzNewRotation.Pitch = RotationRate.Pitch;
 			else
 				zzNewRotation.Pitch = 65536 - RotationRate.Pitch;
 		}
+//		zzCSLCSRCounter++;
 		zzNewRotation.Roll  = 0;
 		SetRotation( zzNewRotation );
 		SetLocation( zzNewLocation );
+//		Log("CSL Allowed");
 	}
+//	else
+//	{
+//		Log("zzGCanvas"@zzGCanvas);
+//		Log("zzbCanCSL"@zzbCanCSL);
+//		log("zzGCanvas.RenderPtr"@zzGCanvas.RenderPtr);
+//		log("NewRotation.Roll"@NewRotation.Roll);
+//		log("NewRotation==ViewRotation"@NewRotation == ViewRotation);
+//		log("WarpZoneShit"@(WarpZoneInfo(Region.Zone) != None || WarpZoneInfo(HeadRegion.Zone) != None || WarpZoneInfo(FootRegion.Zone) != None));
+//		log("CSL Denied");
+//	}
 }
 
 
 event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject )
 {
 	local Pawn P;
-
+	
 	if (Message == class'CTFMessage2' && PureFlag(PlayerReplicationInfo.HasFlag) != None)
 		return;
 
@@ -748,7 +791,7 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 	{
 		if (RelatedPRI_1 == None)
 			return;
-
+		
 		if (GameReplicationInfo.bTeamGame && RelatedPRI_1.Team == RelatedPRI_2.Team)
 		{
 			if (TeamHitSound > 0)
@@ -778,7 +821,7 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 			xxSendSpreeToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 		}
 	}
-
+	
 	Super.ReceiveLocalizedMessage(Message, Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 }
 
@@ -803,7 +846,6 @@ function xxSendMultiKillToSpecs(optional int Sw, optional PlayerReplicationInfo 
 	local Pawn P;
 	for ( P=Level.PawnList; P!=None; P=P.NextPawn )
 		if (P.IsA('bbCHSpectator') && bbCHSpectator(P).ViewTarget == Self)
-			//P.ReceiveLocalizedMessage( class'MMultiKillMessage', Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject );
 			P.ReceiveLocalizedMessage( class'MultiKillMessage', Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject );
 }
 
@@ -824,15 +866,30 @@ event PlayerTick( float Time )
 
 function ClientSetRotation( rotator zzNewRotation )
 {
+//	Log("CSR is dead. Long live CSR!");  TNSe: I don't like this, it's waaaaaaaay too easy to bytehack.
+	
 	if (zzbCanCSL)
 	{
+//		if (Role < ROLE_Authority)
+//			xxAttachConsole();
+//		Log("ClientSetRotation");
+//		zzCSLCSRCounter++;
+//		zzViewRotation      = zzNewRotation;		// NUKED FOR NOW (57)
 		ViewRotation		= zzNewRotation;
-		zzViewRotation  	= zzNewRotation;
 		zzNewRotation.Pitch = 0;
 		zzNewRotation.Roll  = 0;
 		SetRotation( zzNewRotation );
+//		Log("CSR Allowed");
 	}
+//	else
+//		Log("CSR Denied"); 
 }
+/*
+function ClientReplicateSkins(texture Skin1, optional texture Skin2, optional texture Skin3, optional texture Skin4)
+{
+	return;
+}
+*/
 
 simulated function xxClientDemoMessage(string zzS)
 {
@@ -847,7 +904,7 @@ event ClientMessage( coerce string zzS, optional Name zzType, optional bool zzbB
 	xxClientDemoMessage(zzS);
 	Super.ClientMessage(zzS, zzType, zzbBeep);
 	zzPrevClientMessage = "";
-
+	
 	//xxFinishAce(zzS);
 }
 
@@ -855,11 +912,11 @@ simulated function xxCheckAce()
 {
 	local float Now;
 	local Actor A;
-
+	
 	Now = Level.TimeSeconds;
 	if (zzbAceChecked || Now - zzAceCheckedTime < 15 || Level.NetMode != NM_Client)
 		return;
-
+	
 	if (Now < 60)
 	{
 		ForEach AllActors(class'Actor', A)
@@ -882,7 +939,7 @@ simulated function xxFinishAce( string zzS )
 {
 	if (!zzbAceFinish || Level.NetMode != NM_Client)
 		return;
-
+	
 	zzbAceFinish = false;
 	zzS = Caps(zzS);
 	if (zzS == "ACE PERFORMANCE MODE IS NOW TOGGLED ON.")
@@ -900,17 +957,21 @@ simulated function xxFinishAce( string zzS )
 
 simulated event bool PreTeleport( Teleporter zzInTeleporter )
 {
-	local Teleporter Dest;
-
-	if (Level.NetMode == NM_Client && zzInTeleporter != LastPortal)
+	local NN_Teleporter Source, Dest;
+	
+	Source = NN_Teleporter(zzInTeleporter);
+	if (Level.NetMode == NM_Client && Source != None)
 	{
-		LastPortal = zzInTeleporter;
-		LastPortalTime = Level.TimeSeconds + 0.2;
-		Dest = TeleporterTouch(zzInTeleporter);
+		zzLastPortal = Source;
+		Dest = TeleporterTouch(Source);
+		zzLastPortalDest = Dest;
 		if (Dest != None)
-			ServerPreTeleport(zzInTeleporter, Dest, Location, Rotation, Velocity);
-		return true;
+		{
+			zzLastPortalTime = Level.TimeSeconds;
+			xxServerPreTeleport(Source, Dest, Location, Velocity, Rotation);
+		}
 	}
+	
 	zzTP = zzInTeleporter;
 	zzTPE = zzTP.Event;
 	zzTP.Event = 'UTPure';
@@ -938,95 +999,94 @@ event Trigger( Actor zzOther, Pawn zzEventInstigator )
 }
 
 // Teleporter was touched by an actor.
-simulated function Teleporter TeleporterTouch( Teleporter T )
+simulated function NN_Teleporter TeleporterTouch( NN_Teleporter T )
 {
-	local Teleporter Dest;
+	local NN_Teleporter Dest;
 	local int i;
 	local Actor A;
-
-	if ( !T.bEnabled )
+	
+	if ( !T.zzbEnabled || IsInState('Dying') || Mesh == None )
 		return Dest;
 
-	if( (InStr( T.URL, "/" ) >= 0) || (InStr( T.URL, "#" ) >= 0) )
+	if( (InStr( T.zzURL, "/" ) >= 0) || (InStr( T.zzURL, "#" ) >= 0) )
 	{
 		// Teleport to a level on the net.
-		Level.Game.SendPlayer(Self, T.URL);
+		Level.Game.SendPlayer(Self, T.zzURL);
 	}
 	else
 	{
 		// Teleport to a random teleporter in this local level, if more than one pick random.
 
-		foreach AllActors( class 'Teleporter', Dest )
-			if( string(Dest.tag)~=T.URL && Dest!=T )
+		foreach AllActors( class 'NN_Teleporter', Dest )
+			if( string(Dest.zzTag)~=T.zzURL && Dest!=T )
 				i++;
 		i = rand(i);
-		foreach AllActors( class 'Teleporter', Dest )
-			if( string(Dest.tag)~=T.URL && Dest!=T && i-- == 0 )
+		foreach AllActors( class 'NN_Teleporter', Dest )
+			if( string(Dest.zzTag)~=T.zzURL && Dest!=T && i-- == 0 )
 				break;
 		if( Dest != None )
 		{
 			// Teleport the actor into the other teleporter.
+			if (!TeleporterAccept( Dest, T ))
+				return None;
 			T.PlayTeleportEffect( Self, false);
-			TeleporterAccept( Dest, T );
-			if (T.Event != '')
-				foreach AllActors( class 'Actor', A, T.Event )
-					A.Trigger( Self, Self.Instigator );
+			if (T.zzEvent != '')
+				foreach AllActors( class 'Actor', A, T.zzEvent )
+				{
+					//if (A.IsA('Mover'))
+					//	xxMover_DoTrigger(Mover(A), Self, Self.Instigator);
+					//else
+						A.Trigger( Self, Self.Instigator );
+				}
 		}
 	}
 	return Dest;
 }
 
 // Accept an actor that has teleported in.
-simulated function bool TeleporterAccept( Teleporter T, Actor Source )
+simulated function bool TeleporterAccept( NN_Teleporter T, NN_Teleporter Source )
 {
 	local rotator newRot, oldRot;
 	local int oldYaw;
 	local float mag;
 	local vector oldDir;
 	local pawn P;
-	local VisibleTeleporter VT;
 
-	T.Disable('Touch');
+	// Move the actor here.
+	//T.Disable('Touch');
+	//log("Move Actor here "$tag);
+	
+	if (!SetLocation(T.Location))
+		return false;
+	
 	newRot = Rotation;
-	if (T.bChangesYaw)
+	if (T.zzbChangesYaw)
 	{
 		oldRot = Rotation;
-		newRot.Yaw = T.Rotation.Yaw;
+		newRot.Yaw = T.zzRotation.Yaw;
 		if ( Source != None )
-			newRot.Yaw += (32768 + Rotation.Yaw - Source.Rotation.Yaw);
+			newRot.Yaw += (32768 + Rotation.Yaw - Source.zzRotation.Yaw);
 	}
-	SetLocation(T.Location);
 	SetRotation(newRot);
 	ViewRotation = newRot;
 	zzViewRotation = newRot;
-	T.LastFired = Level.TimeSeconds;
+	
 	MoveTimer = -1.0;
 	MoveTarget = T;
+	
+	T.LastFired = Level.TimeSeconds;
 	T.PlayTeleportEffect( Self, false);
-	T.Enable('Touch');
+	//T.Enable('Touch');
 
-	if (T.bChangesVelocity)
-		Velocity = T.TargetVelocity;
-	else
-	{
-		if ( T.bChangesYaw )
-		{
-			if ( Physics == PHYS_Walking )
-				OldRot.Pitch = 0;
-			oldDir = vector(OldRot);
-			mag = Velocity Dot oldDir;
-			Velocity = Velocity - mag * oldDir + mag * vector(Rotation);
-		}
-		if ( T.bReversesX )
-			Velocity.X *= -1.0;
-		if ( T.bReversesY )
-			Velocity.Y *= -1.0;
-		if ( T.bReversesZ )
-			Velocity.Z *= -1.0;
-	}
+	if (T.zzbChangesVelocity)
+		Velocity = T.zzTargetVelocity;
+	else if (T.zzbChangesYaw)
+		Velocity = Velocity << OldRot - newRot;
+	
 	foreach VisibleCollidingActors( class 'Pawn', P, CollisionRadius * TeleRadius / 100, Location )
 		if ( P != Self && (!GameReplicationInfo.bTeamGame || PlayerReplicationInfo.Team != P.PlayerReplicationInfo.Team) && ((VSize(P.Location - Location)) < ((P.CollisionRadius + CollisionRadius) * CollisionHeight)) )
-			xxNN_TeleFrag(T, P);
+			xxNN_TeleFrag(P, Location);
+	
 	return true;
 }
 
@@ -1078,7 +1138,7 @@ event PlayerInput( float DeltaTime )
 	local float Now, SmoothTime, FOVScale, MouseScale, AbsSmoothX, AbsSmoothY, MouseTime;
 	local bool bOldWasForward, bOldWasBack, bOldWasLeft, bOldWasRight;
 
-	if ( bShowMenu && (zzmyHud != None) )
+	if ( bShowMenu && (zzmyHud != None) ) 
 	{
 		// clear inputs
 		bEdgeForward = false;
@@ -1099,7 +1159,7 @@ event PlayerInput( float DeltaTime )
 		aLookUp = 0;
 		return;
 	}
-
+	
 	Now = Level.TimeSeconds;
 
 	// Check for Dodge move
@@ -1124,10 +1184,10 @@ event PlayerInput( float DeltaTime )
 		zzLastTimeLeft = Now;
 	if (bOldWasRight && !bWasRight)
 		zzLastTimeRight = Now;
-
+	
 	// Smooth and amplify mouse movement
 	SmoothTime = FMin(0.2, 3 * DeltaTime * Level.TimeDilation);
-	FOVScale = DesiredFOV * 0.01111;
+	FOVScale = DesiredFOV * 0.01111; 
 	MouseScale = MouseSensitivity * FOVScale;
 
 	aMouseX *= MouseScale;
@@ -1146,7 +1206,7 @@ event PlayerInput( float DeltaTime )
 	}
 	else
 	{
-		if ( (SmoothMouseX == 0) || (aMouseX == 0)
+		if ( (SmoothMouseX == 0) || (aMouseX == 0) 
 				|| ((SmoothMouseX > 0) != (aMouseX > 0)) )
 		{
 			SmoothMouseX = aMouseX;
@@ -1161,7 +1221,7 @@ event PlayerInput( float DeltaTime )
 					SmoothMouseX = 1;
 				else
 					SmoothMouseX = -1;
-			}
+			} 
 			BorrowedMouseX = SmoothMouseX - aMouseX;
 		}
 		AbsSmoothX = SmoothMouseX;
@@ -1173,7 +1233,7 @@ event PlayerInput( float DeltaTime )
 	}
 	else
 	{
-		if ( (SmoothMouseY == 0) || (aMouseY == 0)
+		if ( (SmoothMouseY == 0) || (aMouseY == 0) 
 				|| ((SmoothMouseY > 0) != (aMouseY > 0)) )
 		{
 			SmoothMouseY = aMouseY;
@@ -1188,7 +1248,7 @@ event PlayerInput( float DeltaTime )
 					SmoothMouseY = 1;
 				else
 					SmoothMouseY = -1;
-			}
+			} 
 			BorrowedMouseY = SmoothMouseY - aMouseY;
 		}
 		AbsSmoothY = SmoothMouseY;
@@ -1260,18 +1320,18 @@ event PlayerInput( float DeltaTime )
 
 function ServerMove
 (
-	float TimeStamp,
-	vector InAccel,
+	float TimeStamp, 
+	vector InAccel, 
 	vector ClientLoc,
 	bool NewbRun,
 	bool NewbDuck,
-	bool NewbJumpStatus,
+	bool NewbJumpStatus, 
 	bool bFired,
 	bool bAltFired,
 	bool bForceFire,
 	bool bForceAltFire,
-	eDodgeDir DodgeMove,
-	byte ClientRoll,
+	eDodgeDir DodgeMove, 
+	byte ClientRoll, 
 	int View,
 	optional byte OldTimeDelta,
 	optional int OldAccel
@@ -1279,7 +1339,7 @@ function ServerMove
 {
 	if (zzSMCnt == 0)
 		Log("SM Attempt to cheat by"@PlayerReplicationInfo.PlayerName, 'UTCheat');
-
+		
 	zzSMCnt++;
 	if (zzSMCnt > 30)
 	{
@@ -1291,14 +1351,14 @@ function ServerMove
 
 function ClientAdjustPosition
 (
-	float TimeStamp,
-	name newState,
+	float TimeStamp, 
+	name newState, 
 	EPhysics newPhysics,
-	float NewLocX,
-	float NewLocY,
-	float NewLocZ,
-	float NewVelX,
-	float NewVelY,
+	float NewLocX, 
+	float NewLocY, 
+	float NewLocZ, 
+	float NewVelX, 
+	float NewVelY, 
 	float NewVelZ,
 	Actor NewBase
 )
@@ -1347,7 +1407,7 @@ function ClientAdjustPosition
 
 // OLD STYLE (3xfloat) CAP
 
-function xxCAP(float TimeStamp, name newState, EPhysics newPhysics,
+function xxCAP(float TimeStamp, name newState, EPhysics newPhysics, 
 			float NewLocX, float NewLocY, float NewLocZ, float NewVelX, float NewVelY, float NewVelZ, Actor NewBase)
 {
 	local vector Loc,Vel;
@@ -1356,7 +1416,7 @@ function xxCAP(float TimeStamp, name newState, EPhysics newPhysics,
 	xxPureCAP(TimeStamp, newState, newPhysics,Loc,Vel,NewBase);
 }
 
-function xxCAPLevelBase(float TimeStamp, name newState, EPhysics newPhysics,
+function xxCAPLevelBase(float TimeStamp, name newState, EPhysics newPhysics, 
 			float NewLocX, float NewLocY, float NewLocZ, float NewVelX, float NewVelY, float NewVelZ)
 {
 	local vector Loc,Vel;
@@ -1365,7 +1425,7 @@ function xxCAPLevelBase(float TimeStamp, name newState, EPhysics newPhysics,
 	xxPureCAP(TimeStamp,newState,newPhysics,Loc,Vel,Level);
 }
 
-function xxCAPWalking(float TimeStamp, EPhysics newPhysics,
+function xxCAPWalking(float TimeStamp, EPhysics newPhysics, 
 			float NewLocX, float NewLocY, float NewLocZ, float NewVelX, float NewVelY, float NewVelZ, Actor NewBase)
 {
 	local vector Loc,Vel;
@@ -1447,6 +1507,10 @@ function ClientUpdatePosition()
 	local int realbRun, realbDuck;
 	local bool bRealJump;
 
+//	local float TotalTime, AdjPCol;
+//	local pawn P;
+//	local vector Dir;
+
 	bUpdatePosition = false;
 	realbRun= bRun;
 	realbDuck = bDuck;
@@ -1465,6 +1529,21 @@ function ClientUpdatePosition()
 		}
 		else
 		{
+			// adjust radius of nearby players with uncertain location
+//			if ( TotalTime > 0 )
+//				ForEach AllActors(class'Pawn', P)
+//					if ( (P != self) && (P.Velocity != vect(0,0,0)) && P.bBlockPlayers )
+//					{
+//						Dir = Normal(P.Location - Location);
+//						if ( (Velocity Dot Dir > 0) && (P.Velocity Dot Dir > 0) )
+//						{
+//							// if other pawn moving away from player, push it away if its close
+//							// since the client-side position is behind the server side position
+//							if ( VSize(P.Location - Location) < P.CollisionRadius + CollisionRadius + CurrentMove.Delta * GroundSpeed )
+//								P.MoveSmooth(P.Velocity * 0.5 * PlayerReplicationInfo.Ping);
+//						}
+//					} 
+//			TotalTime += CurrentMove.Delta;
 			if (!zzbFakeUpdate)
 				MoveAutonomous(CurrentMove.Delta, CurrentMove.bRun, CurrentMove.bDuck, CurrentMove.bPressedJump, CurrentMove.DodgeMove, CurrentMove.Acceleration, rot(0,0,0));
 			CurrentMove = CurrentMove.NextMove;
@@ -1482,16 +1561,16 @@ function xxServerReceiveStuff( float VelX, float VelY, float VelZ, bool bOnMover
 {
 	local Inventory inv;
 	local Translocator TLoc;
-
+	
 	if (Level.NetMode == NM_Client || IsInState('Dying'))
 		return;
-
+	
 	if (VelZ < 0)
 		zzLastFallVelZ = VelZ;
-
+	
 	zzbOnMover = bOnMover;
-
-	if ((TeleLoc dot TeleLoc) > 0 && TTarget != None && VSize(TeleLoc - TTarget.Location) < class'UTPure'.default.MaxPosError)
+	
+	if ((TeleLoc dot TeleLoc) > 0 && TTarget != None)
 	{
 		TLoc = Translocator(Weapon);
 		if (TLoc == None)
@@ -1506,7 +1585,7 @@ function xxServerReceiveStuff( float VelX, float VelY, float VelZ, bool bOnMover
 		TTarget.MoveSmooth(TeleLoc - TTarget.Location);
 		TTarget.Velocity = TeleVel;
 	}
-
+	
 }
 
 function TakeFallingDamage()
@@ -1528,7 +1607,7 @@ function TakeFallingDamage()
 		}
 	}
 	else if ( Velocity.Z > 0.5 * Default.JumpZ )
-		MakeNoise(0.35);
+		MakeNoise(0.35);				
 	zzLastFallVelZ = 0;
 }
 
@@ -1568,8 +1647,6 @@ function xxServerMove
 	local Decoration Carried;
 	local vector OldLoc;
 	local Carcass Carc;
-	local float CurrentTime;
-	local bbPlayer bbPlayerOwner;
 
 	if (bDeleteMe)
 		return;
@@ -1584,6 +1661,10 @@ function xxServerMove
 		return;
 	}
 
+	zzbWeaponTracer = (Health > 0) && (Weapon != None && (Weapon.bInstantHit || Weapon.bAltInstantHit));
+
+	//////////////
+	// CRC stuff:
 	if (!zzbMD5RequestSent)
 	{
 		xxClientMD5(zzUTPure.zzPurePackageName, zzUTPure.zzMD5KeyInit);
@@ -1597,13 +1678,14 @@ function xxServerMove
 		return;
 	}
 
+	// SHOULD NEVER BE TRUE ON SERVER
 	if (zzbBadConsole)
 		xxServerCheater("BC");
 	if (zzbBadCanvas)
 		xxServerCheater("BA");
 	if (TimeStamp > 20.0)
 	{
-		if (zzFalse || !zzTrue)
+		if (zzFalse || !zzTrue)	// Wait 20 seconds before checking this to allow repl.
 			xxServerCheater("TF");
 		if (zzClientTD != Level.TimeDilation)
 			xxServerCheater("TD");
@@ -1611,20 +1693,27 @@ function xxServerMove
 	if (zzbConsoleInvalid)
 		xxServerCheater("IC");
 	if (zzbForcedTick && !zzUTPure.zzbPaused)
-		xxServerCheater("FT");
+		xxServerCheater("FT");		// This will arrive shortly after a pause unfortunately :P
 
-	if (zzbVRChanged)
+	if (zzbVRChanged)			// View rotation changed on client at wrong time!
 		xxServerCheater("VR");
+
+	if (zzbBadLighting)
+		xxServerCheater("BL");
 
 	zzKickReady = Max(zzKickReady - 1,0);
 
+	// If this move is outdated, discard it.
 	if ( CurrentTimeStamp >= TimeStamp )
 		return;
+
+	// if OldTimeDelta corresponds to a lost packet, process it first
 	if (  OldTimeDelta != 0 )
 	{
 		OldTimeStamp = TimeStamp - float(OldTimeDelta)/500 - 0.001;
 		if ( CurrentTimeStamp < OldTimeStamp - 0.001 )
 		{
+			// split out components of lost move (approx)
 			Accel.X = OldAccel >>> 23;
 			if ( Accel.X > 127 )
 				Accel.X = -1 * (Accel.X - 128);
@@ -1660,16 +1749,19 @@ function xxServerMove
 					OldDodgeMove = DODGE_Back;
 					break;
 			}
+			//log("Recovered move from "$OldTimeStamp$" acceleration "$Accel$" from "$OldAccel);
 			MoveAutonomous(OldTimeStamp - CurrentTimeStamp, OldbRun, OldbDuck, NewbPressedJump, OldDodgeMove, Accel, rot(0,0,0));
 			CurrentTimeStamp = OldTimeStamp;
 		}
 	}
 
+	// View components
 	//ViewPitch = View/32768;
 	//ViewYaw = 2 * (View - 32768 * ViewPitch);
 	//ViewPitch *= 2;
 	ViewPitch = (View >>> 16);
 	ViewYaw = (View & 0xFFFF);
+	// Make acceleration.
 	Accel = InAccel/10;
 
 	NewbPressedJump = (bJumpStatus != NewbJumpStatus);
@@ -1678,9 +1770,11 @@ function xxServerMove
 	DeltaTime = TimeStamp - CurrentTimeStamp;
 	if ( ServerTimeStamp > 0 )
 	{
+		// allow 1% error
 		TimeMargin += DeltaTime - 1.01 * (Level.TimeSeconds - ServerTimeStamp);
 		if ( TimeMargin > MaxTimeMargin )
 		{
+			// player is too far ahead
 			TimeMargin -= DeltaTime;
 			if ( TimeMargin < 0.5 )
 				MaxTimeMargin = Default.MaxTimeMargin;
@@ -1706,14 +1800,16 @@ function xxServerMove
 			Rot.Pitch = 65536 - maxPitch * RotationRate.Pitch;
 	}
 	else
-	Rot.Pitch = ViewPitch;
+		Rot.Pitch = ViewPitch;
 	DeltaRot = (Rotation - Rot);
 	ViewRotation.Pitch = ViewPitch;
 	ViewRotation.Yaw = ViewYaw;
 	ViewRotation.Roll = 0;
 	zzViewRotation = ViewRotation;
+//	Log("ViewRotation:"@ViewRotation);
 	SetRotation(Rot);
 
+	// Perform actual movement.
 	if ( (Level.Pauser == "") && (DeltaTime > 0) )
 		MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
 
@@ -1733,8 +1829,7 @@ function xxServerMove
 	debugClientLocError = ClientLocErr;
 
 	if (Player.CurrentNetSpeed == 0)
-		//bTooLong = ServerTimeStamp - LastUpdateTime > 0.025;
-		bTooLong = ServerTimeStamp - LastUpdateTime > 0.0001;
+		bTooLong = ServerTimeStamp - LastUpdateTime > 0.025;
 	else
 		bTooLong = ServerTimeStamp - LastUpdateTime > 500.0/Player.CurrentNetSpeed;
 
@@ -1745,29 +1840,12 @@ function xxServerMove
 		return;
 
 	PlayerReplicationInfo.Ping = int(ConsoleCommand("GETPING"));
-
-	if (SetPendingWeapon)
+	if (zzPendingWeapon != PendingWeapon)
 	{
 		xxSetPendingWeapon(PendingWeapon);
 		zzPendingWeapon = PendingWeapon;
-	}
-	else
-	{
-		if (MMSupport)
-		{
-			xxSetPendingWeapon(PendingWeapon);
-			zzPendingWeapon = PendingWeapon;
-		}
-		else
-		{
-			if (zzPendingWeapon != PendingWeapon)
-			{
-				xxSetPendingWeapon(PendingWeapon);
-				zzPendingWeapon = PendingWeapon;
-				if (PendingWeapon != None && PendingWeapon.Owner == Self && Weapon != None && !Weapon.IsInState('DownWeapon'))
-					Weapon.GotoState('DownWeapon');
-			}
-		}
+		if (PendingWeapon != None && PendingWeapon.Owner == Self && Weapon != None && !Weapon.IsInState('DownWeapon'))
+			Weapon.GotoState('DownWeapon');
 	}
 
 	if (zzDisabledPlayerCollision > 0)
@@ -1776,43 +1854,45 @@ function xxServerMove
 		if (zzDisabledPlayerCollision == 0)
 			SetCollision(bCollideActors, bBlockActors, true);
 	}
+	
+	bOnMover = Mover(Base) != None;
+	/* if (bOnMover && zzbOnMover)
+	{
+		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
+	}
+	else if (zzIgnoreUpdateUntil > 0)
+	{
+		if (zzIgnoreUpdateUntil > ServerTimeStamp && (Base == None || Mover(Base) == None || bOnMover != zzbOnMover) && Physics != PHYS_Falling)
+			zzIgnoreUpdateUntil = 0;
+		zzbForceUpdate = false;
+	} */
+
+	if (bOnMover)
+		return;
+	
 	zzOldBase = Base;
 	zzMyState = GetStateName();
 	LastUpdateTime = ServerTimeStamp;
 
-
-	for (P = Level.PawnList; P != None; P = P.NextPawn)
+	
+	if (zzForceUpdateUntil > 0 || zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError || ServerTimeStamp - zzGrappleTime < 0.5)
 	{
-		if (zzForceUpdateUntil > 0 || zzLastClientErr < MinPosError && ClientLocErr > MaxPosError)
-		{
-			zzbForceUpdate = true;
-			if (ServerTimeStamp > zzForceUpdateUntil)
-				zzForceUpdateUntil = 0;
-		}
-
-		/* zzPP = PlayerPawn(P);
-		if (zzPP.bAdmin && Physics == PHYS_Falling && Velocity.Z > -160.0 && bPressedJump == true)
-		{
-			zzForceUpdateUntil = Level.TimeSeconds + 3;
-		} */
+		zzbForceUpdate = true;
+		if (ServerTimeStamp > zzForceUpdateUntil)
+			zzForceUpdateUntil = 0;
 	}
-
-	bOnMover = Mover(Base) != None;
-
-	if (bOnMover) {
-		return;
-	}
-
+	
 	if (zzbForceUpdate)
 	{
 		zzAddVelocityCount = 0;
 		zzbForceUpdate = false;
-
+		
 		if ( Mover(Base) != None )
 			ClientLoc = Location - Base.Location;
 		else
 			ClientLoc = Location;
-
+		//log("Client Error at "$TimeStamp$" is "$ClientLocErr$" with acceleration "$Accel$" LocDiff "$LocDiff$" Physics "$Physics);
+		
 		if (zzMyState == 'PlayerWalking')
 		{
 			if (Physics == PHYS_Walking)
@@ -1836,12 +1916,12 @@ function xxServerMove
 			else
 				xxCAP(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
 		}
-
+		
 		zzLastClientErr = 0;
 		xxRememberPosition();
 		return;
 	}
-
+	
 	if (ClientLocErr > MinPosError)
 	{
 		if(zzLastClientErr == 0 || ClientLocErr < zzLastClientErr)
@@ -1862,7 +1942,7 @@ function xxServerMove
 					}
 				}
 			}
-
+			
 			if(bMoveSmooth)
 			{
 				xxNewMoveSmooth(ClientLoc, ClientVel);
@@ -1872,11 +1952,11 @@ function xxServerMove
 			{
 				Carried = CarriedDecoration;
 				OldLoc = Location;
-
+				
 				bCanTeleport = false;
 				xxNewSetLocation(ClientLoc, ClientVel);
 				bCanTeleport = true;
-
+				
 				if ( Carried != None )
 				{
 					CarriedDecoration = Carried;
@@ -1884,51 +1964,50 @@ function xxServerMove
 					CarriedDecoration.SetPhysics(PHYS_None);
 					CarriedDecoration.SetBase(self);
 				}
-
+				
 				zzLastClientErr = 0;
 			}
 		}
-	}
+	}	
 	xxFakeCAP(TimeStamp);
-	xxRememberPosition();
-	xxNewMoveSmooth(ClientLoc, ClientVel);
+	xxRememberPosition();	
 }
 
 function xxRememberPosition()
 {
 	local float Now;
-
+	
 	Now = Level.TimeSeconds;
 	if (Now < zzNextPositionTime)
 		return;
-
+	
 	zzLast10Positions[zzPositionIndex] = Location;
 	zzPositionIndex++;
 	if (zzPositionIndex > 9)
 		zzPositionIndex = 0;
 	zzNextPositionTime = Now + 0.05;
-
+	
 }
 
 function bool xxCloseEnough(vector HitLoc, optional int HitRadius)
 {
 	local int i, MaxHitError;
 	local vector Loc;
-
+	
 	MaxHitError = zzUTPure.default.MaxHitError + HitRadius;
-
+	
 	if (VSize(HitLoc - Location) < MaxHitError)
 		return true;
-
+	
 	for (i = 0; i < 10; i++)
 	{
 		Loc = zzLast10Positions[i];
 		if (VSize(HitLoc - Loc) < MaxHitError)
 			return true;
 	}
-
+	
 	return false;
-
+	
 }
 
 function xxServerReceiveMenuItems(string zzMenuItem, bool zzbLast)
@@ -1940,38 +2019,19 @@ function bool xxWeaponIsNewNet( optional bool bAlt )
 {
 	if (Weapon == None)
 		return false;
-
-	return ( Weapon.IsA('ST_ImpactHammer') // UT weapons
-		|| Weapon.IsA('ST_Translocator')
-		//|| Weapon.IsA('ST_enforcer')
-		|| Weapon.IsA('ST_ut_biorifle')
-		|| Weapon.IsA('ST_ShockRifle')
-		|| Weapon.IsA('ST_SuperShockRifle')
-		|| Weapon.IsA('ST_PulseGun') && !bAlt
-		|| Weapon.IsA('ST_ripper')
-		//|| Weapon.IsA('ST_minigun2')
-		|| Weapon.IsA('ST_UT_FlakCannon')
-		|| Weapon.IsA('ST_UT_Eightball')
-		|| Weapon.IsA('ST_SniperRifle')
-
-		|| Weapon.IsA('ST_DispersionPistol') // Unreal weapons
-		|| Weapon.IsA('ST_AutoMag')
-		|| Weapon.IsA('ST_GESBioRifle')
-		|| Weapon.IsA('ST_QuadShot')
-		|| Weapon.IsA('ST_ASMD')
-		|| Weapon.IsA('ST_Stinger')
-		|| Weapon.IsA('ST_RazorJack')
-		//|| Weapon.IsA('ST_Minigun')
-		|| Weapon.IsA('ST_FlakCannon')
-		|| Weapon.IsA('ST_Eightball')
-		|| Weapon.IsA('ST_Rifle')
-
-		|| Weapon.GetPropertyText("Allow55") == "TRUE"
-
-		// For custom weapons
-		|| Weapon.IsA('TOWeapons')
-		|| Weapon.IsA('AXWeapons')
-		|| Weapon.IsA('ST_WildcardsWeapons')
+	
+	return ( Weapon.IsA('ImpactHammer')
+		//|| Weapon.IsA('enforcer')
+		//|| Weapon.IsA('minigun2')
+		|| Weapon.IsA('PulseGun') && !bAlt
+		|| Weapon.IsA('ripper')
+		|| Weapon.IsA('ShockRifle')
+		|| Weapon.IsA('SuperShockRifle')
+		|| Weapon.IsA('SniperRifle')
+		|| Weapon.IsA('Translocator')
+		|| Weapon.IsA('ut_biorifle')
+		|| Weapon.IsA('UT_Eightball')
+		|| Weapon.IsA('UT_FlakCannon')
 		);
 }
 
@@ -2002,10 +2062,10 @@ simulated function actor NN_TraceShot(out vector HitLocation, out vector HitNorm
 simulated function xxEnableCarcasses()
 {
 	local Carcass C;
-
+	
 	if (!bShootDead)
 		return;
-
+	
 	ForEach AllActors(class'Carcass', C)
 		if (C.Physics != PHYS_Falling)
 		{
@@ -2017,20 +2077,20 @@ simulated function xxEnableCarcasses()
 simulated function xxDisableCarcasses()
 {
 	local Carcass C;
-
+	
 	if (!bShootDead)
 		return;
-
+	
 	ForEach AllActors(class'Carcass', C)
 		if (C.Physics != PHYS_Falling)
 			C.SetCollision(false, false, false);
-
+	
 }
 
 exec function Fire( optional float F )
 {
 	local bbPlayer bbP;
-
+	
 	xxEnableCarcasses();
 	if (!bNewNet || !xxWeaponIsNewNet())
 	{
@@ -2048,7 +2108,7 @@ function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator V
 {
 	local ImpactHammer IH;
 	local bbPlayer bbP;
-
+	
 	if (!bNewNet || !xxWeaponIsNewNet() || Role < ROLE_Authority)
 		return;
 
@@ -2059,7 +2119,6 @@ function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator V
 	zzNN_ViewRot = ViewRot;
 	zzNN_HitActor = HitActor;
 	zzNN_LastHitActor = HitActor;
-	//Log("Player:"@Self@"LastHitActor:"@zzNN_LastHitActor);
 	zzNN_HitLoc = HitLoc;
 	zzNN_HitDiff = HitDiff;
 	zzNN_FRVI = ClientFRVI;
@@ -2068,9 +2127,9 @@ function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator V
 	zzbNN_ReleasedFire = false;
 	zzbNN_ReleasedAltFire = false;
 	zzbNN_Special = bSpecial;
-
+	
 	IH = ImpactHammer(Weapon);
-
+	
 	if (IH != None)
 	{
 		if (bSpecial)
@@ -2108,7 +2167,7 @@ function xxNN_AltFire( int ProjIndex, vector ClientLoc, vector ClientVel, rotato
 {
 	if (!bNewNet || !xxWeaponIsNewNet(true) || Role < ROLE_Authority)
 		return;
-
+	
 	xxEnableCarcasses();
 	zzNN_ProjIndex = ProjIndex;
 	zzNN_ClientLoc = ClientLoc;
@@ -2124,7 +2183,7 @@ function xxNN_AltFire( int ProjIndex, vector ClientLoc, vector ClientVel, rotato
 	zzbNN_ReleasedFire = false;
 	zzbNN_ReleasedAltFire = false;
 	zzbNN_Special = bSpecial;
-
+	
 	if (xxCanFire())
 	{
 		Super.AltFire(1);
@@ -2138,7 +2197,7 @@ function xxNN_ReleaseFire( int ProjIndex, vector ClientLoc, vector ClientVel, ro
 {
 	if (!bNewNet || !xxWeaponIsNewNet() || Role < ROLE_Authority)
 		return;
-
+	
 	zzNN_ProjIndex = ProjIndex;
 	zzNN_ClientLoc = ClientLoc;
 	zzNN_ClientVel = ClientVel;
@@ -2152,7 +2211,7 @@ function xxNN_ReleaseAltFire( int ProjIndex, vector ClientLoc, vector ClientVel,
 {
 	if (!bNewNet || !xxWeaponIsNewNet(true) || Role < ROLE_Authority)
 		return;
-
+	
 	zzNN_ProjIndex = ProjIndex;
 	zzNN_ClientLoc = ClientLoc;
 	zzNN_ClientVel = ClientVel;
@@ -2165,17 +2224,17 @@ function xxNN_ReleaseAltFire( int ProjIndex, vector ClientLoc, vector ClientVel,
 simulated function int xxNN_AddProj(Projectile Proj)
 {
 	local int ProjIndex;
-
+	
 	if (Proj == None || zzNN_ProjIndex < 0)
 		return -1;
-
+	
 	zzNN_Projectiles[zzNN_ProjIndex] = Proj;
-
+	
 	ProjIndex = zzNN_ProjIndex;
 	zzNN_ProjIndex++;
 	if (zzNN_ProjIndex >= NN_ProjLength)
 		zzNN_ProjIndex = 0;
-
+	
 	return ProjIndex;
 }
 
@@ -2183,10 +2242,10 @@ simulated function xxNN_RemoveProj(int ProjIndex, optional vector HitLocation, o
 {
 	if (zzNN_Projectiles[ProjIndex] == None || xxGarbageLocation(zzNN_Projectiles[ProjIndex]))
 		return;
-
+	
 	zzNN_ProjLocations[ProjIndex] = zzNN_Projectiles[ProjIndex].Location;
 	zzNN_Projectiles[ProjIndex] = None;
-
+	
 	if (Level.NetMode == NM_Client)
 		xxNN_ProjExplode(ProjIndex, HitLocation, HitNormal, bCombo);
 	else
@@ -2196,10 +2255,10 @@ simulated function xxNN_RemoveProj(int ProjIndex, optional vector HitLocation, o
 simulated function xxNN_ProjExplode( int ProjIndex, optional vector HitLocation, optional vector HitNormal, optional bool bCombo )
 {
 	local Projectile Proj;
-
+	
 	if (Level.NetMode == NM_Client)
 		return;
-
+	
 	xxEnableCarcasses();
 	if (ProjIndex < 0)
 	{
@@ -2234,10 +2293,10 @@ simulated function xxNN_ProjExplode( int ProjIndex, optional vector HitLocation,
 simulated function xxNN_ClientProjExplode( int ProjIndex, optional vector HitLocation, optional vector HitNormal, optional bool bCombo )
 {
 	local Projectile Proj;
-
+	
 	if (Level.NetMode != NM_Client)
 		return;
-
+	
 	xxEnableCarcasses();
 	if (ProjIndex < 0)
 	{
@@ -2287,30 +2346,162 @@ simulated function vector GetVector( BetterVector SomeVector )
 	return Vec;
 }
 
-// Think about what you're doing.  Look at the bigger picture of it all, if you're able to.  This is a 15+ year old video game.
-// Is this really the legacy you want to leave behind?  You'll never amount to anything if you keep this up.
-// Seriously.  Do something good with your time.  Build something that improves lives.
-// I understand that you are bitter, but you'll feel better if you listen to me.
-// Doing good things will make you feel good.
-
-function xxNN_TeleFrag( Teleporter Tele, Pawn Other )
+simulated function xxNN_TakeDamage( actor Other, class<Weapon> WeapClass, int Damage, Pawn InstigatedBy, Vector HitLocation, Vector Momentum, name DamageType, int ProjIndex, optional int DamageRadius, optional int Which, optional vector HitNormal, optional bool bSpecial)
 {
-	if (!IsInState('Dying') && !Other.IsInState('Dying') && !xxGarbageLocation(Other) && (!Other.IsA('bbPlayer') || VSize(Other.Location - Tele.Location) < TeleRadius))
-		Other.GibbedBy(Self);
+	//if (Other.IsA('Mover'))
+	//	xxMover_TakeDamage(Mover(Other), Damage, Self, HitLocation, Momentum, DamageType);
+	xxEnableCarcasses();
+	xxNN_ServerTakeDamage( Other, WeapClass, Damage, InstigatedBy, HitLocation, GetBetterVector(Momentum), DamageType, ProjIndex, DamageRadius, Which, HitNormal, bSpecial);
+	xxDisableCarcasses();
 }
 
-function xxNN_TransFrag( Pawn Other )
+function xxNN_ServerTakeDamage( actor Other, class<Weapon> WeapClass, int Damage, Pawn InstigatedBy, Vector HitLocation, BetterVector BetterMomentum, name DamageType, int ProjIndex, optional int DamageRadius, optional int Which, optional vector HitNormal, optional bool bSpecial)
 {
-	if (!IsInState('Dying') && !Other.IsInState('Dying') && !xxGarbageLocation(Other) && (!Other.IsA('bbPlayer') || VSize(Other.Location - TTarget.Location) < TeleRadius))
+	local bbPlayer bbP, bbK;
+	local Weapon W;
+	local bool bHack;
+	local Projectile Proj;
+	local vector ProjLocation;
+	local int MaxHitError;
+	local vector Momentum;
+	
+	bbP = bbPlayer(Other);
+	if (Other == None || InstigatedBy == None || xxGarbageLocation(Other) || bbP != None && !bbP.xxCloseEnough(HitLocation))
+		return;
+	
+	xxEnableCarcasses();
+	bbK = bbPlayer(InstigatedBy);
+	bHack = bbK != None && WeapClass != None && (bbK.Weapon == None || !bbK.Weapon.IsA(WeapClass.name));
+	if (bHack)
+	{
+		W = bbK.Weapon;
+		bbK.Weapon = Spawn(WeapClass, InstigatedBy);
+	}
+	
+	if (bbP != None && ProjIndex > -1)
+	{
+		Proj = zzNN_Projectiles[ProjIndex];
+		if (Proj == None)
+			ProjLocation = zzNN_ProjLocations[ProjIndex];
+		else
+			ProjLocation = Proj.Location;
+		//zzNN_ProjLocations[ProjIndex] = vect(0, 0, 0);
+		
+		MaxHitError = zzUTPure.default.MaxHitError;
+		if (ProjLocation.X == 0 && ProjLocation.Y == 0 && ProjLocation.Z == 0 || VSize(HitLocation - ProjLocation) > MaxHitError || !bbP.xxCloseEnough(HitLocation, DamageRadius))
+			Other = None;
+	}
+	
+	if (bSpecial)
+	{
+		if (bbK.Weapon.IsA('PulseGun'))
+		{
+			bbK.zzNN_HitActorLast = Other;
+			bbK.zzNN_HitLocLast = HitLocation;
+			bbK.zzNN_HitNormalLast = HitNormal;
+		}
+	}
+	
+	bbK.zzNN_HitActor = Other;
+	bbK.zzNN_HitLoc = HitLocation;
+	
+	if (Other != None)
+	{
+		Momentum = GetVector(BetterMomentum);
+		//if (bbP != None && Which == 1)
+		//	bbP.GiveHealth(Damage, bbPlayer(InstigatedBy), HitLocation, Momentum, DamageType);
+		//else if (bbP != None && Which == 2)
+		//	bbP.StealHealth(Damage, bbPlayer(InstigatedBy), HitLocation, Momentum, DamageType);
+		//else
+			Other.TakeDamage(Damage, InstigatedBy, HitLocation, Momentum, DamageType);
+	}
+	
+	if (bHack)
+	{
+		bbK.Weapon.Destroy();
+		bbK.Weapon = W;
+	}
+	xxDisableCarcasses();
+	
+}
+
+function xxNN_RadiusDamage( actor Other, class<Weapon> WeapClass, int Damage, float DamageRadius, Pawn InstigatedBy, Vector HitLocation, Vector HitDiff, float MomentumXfer, name damageType, int ProjIndex, optional int Which)
+{
+	local bbPlayer bbP, bbK;
+	local float damageScale, dist;
+	local vector dir, momentum;
+	local Weapon W;
+	local bool bHack;
+	local Projectile Proj;
+	local vector ProjLocation;
+	local int MaxHitError;
+	
+	if (Other == None || xxGarbageLocation(Other))
+		return;
+	
+	xxEnableCarcasses();
+	bbP = bbPlayer(Other);
+	if (bbP != None && ProjIndex > -1)
+	{
+		Proj = zzNN_Projectiles[ProjIndex];
+		if (Proj == None)
+			ProjLocation = zzNN_ProjLocations[ProjIndex];
+		else
+			ProjLocation = Proj.Location;
+		//zzNN_ProjLocations[ProjIndex] = vect(0, 0, 0);
+		
+		if (zzUTPure == None)
+			MaxHitError = class'UTPure'.default.MaxHitError;
+		else
+			MaxHitError = zzUTPure.default.MaxHitError;
+		if (ProjLocation.X == 0 && ProjLocation.Y == 0 && ProjLocation.Z == 0 || VSize(HitLocation - ProjLocation) > MaxHitError || !bbP.xxCloseEnough(HitLocation, DamageRadius))
+			return;
+	}
+	
+	//dir = Other.Location - HitLocation;
+	dist = FMax(1,VSize(HitDiff));
+	dir = HitDiff/dist; 
+	damageScale = 1 - FMax(0,(dist - Other.CollisionRadius)/DamageRadius);
+	
+	HitLocation = Other.Location - 0.5 * (Other.CollisionHeight + Other.CollisionRadius) * dir;
+	momentum = damageScale * MomentumXfer * dir;
+	
+	bbK = bbPlayer(InstigatedBy);
+	bHack = bbK != None && WeapClass != None && !bbK.Weapon.IsA(WeapClass.name);
+	if (bHack)
+	{
+		W = bbK.Weapon;
+		bbK.Weapon = Spawn(WeapClass, InstigatedBy);
+	}
+	
+	//if (bbP != None && bbPlayer(InstigatedBy) != None && Which == 1)
+	//	bbP.GiveHealth(Damage, bbPlayer(InstigatedBy), HitLocation, momentum, damageType);
+	//else if (bbP != None && bbPlayer(InstigatedBy) != None && Which == 2)
+	//	bbP.StealHealth(Damage, bbPlayer(InstigatedBy), HitLocation, momentum, damageType);
+	//else
+		Other.TakeDamage(Damage, InstigatedBy, HitLocation, momentum, damageType);
+	
+	if (bHack && bbK.Weapon != None)
+	{
+		bbK.Weapon.Destroy();
+		bbK.Weapon = W;
+	}
+	xxDisableCarcasses();
+	
+}
+
+function xxNN_TeleFrag( Pawn Other, vector TeleLocation )
+{
+	if (!IsInState('Dying') && !Other.IsInState('Dying') && !xxGarbageLocation(Other) && (!Other.IsA('bbPlayer') || VSize(Other.Location - TeleLocation) < TeleRadius))
 		Other.GibbedBy(Self);
 }
 
 function xxNN_MoveTTarget( vector NewLoc, optional int Damage, optional Pawn EventInstigator, optional vector HitLocation, optional vector Momentum, optional name DamageType)
 {
 	local vector OldLoc;
-	if (Role < ROLE_Authority || TTarget == None || xxGarbageLocation(TTarget) || VSize(NewLoc - TTarget.Location) > Class'UTPure'.Default.MaxPosError)
+	if (Role < ROLE_Authority || TTarget == None || xxGarbageLocation(TTarget))
 		return;
-
+		
 	OldLoc = TTarget.Location;
 	if (!TTarget.SetLocation(NewLoc))
 		TTarget.SetLocation(OldLoc);
@@ -2323,7 +2514,7 @@ simulated function xxNN_MoveClientTTarget( vector NewLoc, optional int Damage, o
 	local vector OldLoc;
 	if (Role == ROLE_Authority || zzClientTTarget == None || xxGarbageLocation(zzClientTTarget))
 		return;
-
+	
 	OldLoc = zzClientTTarget.Location;
 	if (!zzClientTTarget.SetLocation(NewLoc))
 		zzClientTTarget.SetLocation(OldLoc);
@@ -2348,11 +2539,6 @@ simulated function xxSetDefaultWeapon(name W)
 	zzDefaultWeapon = W;
 }
 
-simulated function xxSetSniperSpeed(float SniperSpeed)
-{
-	class'UTPure'.default.SniperSpeed = SniperSpeed;
-}
-
 simulated function xxSetTimes(int RemainingTime, int ElapsedTime)
 {
 	if (GameReplicationInfo == None)
@@ -2361,12 +2547,11 @@ simulated function xxSetTimes(int RemainingTime, int ElapsedTime)
 	GameReplicationInfo.ElapsedTime = ElapsedTime;
 }
 
-
 function ReplicateMove
 (
-	float DeltaTime,
-	vector NewAccel,
-	eDodgeDir DodgeMove,
+	float DeltaTime, 
+	vector NewAccel, 
+	eDodgeDir DodgeMove, 
 	rotator DeltaRot
 )
 {
@@ -2375,9 +2560,9 @@ function ReplicateMove
 
 function xxReplicateMove
 (
-	float DeltaTime,
-	vector NewAccel,
-	eDodgeDir DodgeMove,
+	float DeltaTime, 
+	vector NewAccel, 
+	eDodgeDir DodgeMove, 
 	rotator DeltaRot
 )
 {
@@ -2385,17 +2570,16 @@ function xxReplicateMove
 	local byte ClientRoll;
 	local float OldTimeDelta, TotalTime, NetMoveDelta;
 	local int OldAccel;
-	local vector BuildAccel, AccelNorm, Dir;
-	local Pawn P;
+	local vector BuildAccel, AccelNorm;
 
 	// Get a SavedMove actor to store the movement in.
 	if ( PendingMove != None )
 	{
 		//add this move to the pending move
-		PendingMove.TimeStamp = Level.TimeSeconds;
+		PendingMove.TimeStamp = Level.TimeSeconds; 
 		if ( VSize(NewAccel) > 3072)
 			NewAccel = 3072 * Normal(NewAccel);
-		if (bDrawDebugData) {
+			if (bDrawDebugData) {
 			debugNewAccel = Normal(NewAccel);
 			debugPlayerLocation = Location;
 		}
@@ -2419,7 +2603,7 @@ function xxReplicateMove
 		{
 			// find most recent interesting move to send redundantly
 			if ( NewMove.bPressedJump || ((NewMove.DodgeMove != Dodge_NONE) && (NewMove.DodgeMove < 5))
-				|| ((NewMove.Acceleration != NewAccel) && ((normal(NewMove.Acceleration) Dot AccelNorm) < 0.95)) ) // default value is 0.95
+				|| ((NewMove.Acceleration != NewAccel) && ((normal(NewMove.Acceleration) Dot AccelNorm) < 0.95)) )
 				OldMove = NewMove;
 			NewMove = NewMove.NextMove;
 		}
@@ -2445,7 +2629,7 @@ function xxReplicateMove
 		Weapon.bPointing = ((bFire != 0) || (bAltFire != 0));
 	bJustFired = false;
 	bJustAltFired = false;
-
+	
 	/* // adjust radius of nearby players with uncertain location
 	ForEach AllActors(class'Pawn', P)
 		if ( (P != self) && (P.Velocity != vect(0,0,0)) && P.bBlockPlayers )
@@ -2476,9 +2660,9 @@ function xxReplicateMove
 		}*/
 	}
 	//log("Role "$Role$" repmove at "$Level.TimeSeconds$" Move time "$100 * DeltaTime$" ("$Level.TimeDilation$")");
-
+	
 	zzOldBase = Base;
-
+	
 	// Decide whether to hold off on move
 	// send if dodge, jump, or fire unless really too soon, or if newmove.delta big enough
 	// on client side, save extra buffered time in LastUpdateTime
@@ -2491,11 +2675,9 @@ function xxReplicateMove
 		FreeMoves.Clear();
 		NewMove = PendingMove;
 	}
-	if (Player.CurrentNetSpeed != 0) {
+	if (Player.CurrentNetSpeed != 0)
 		NetMoveDelta = FMax(64.0/Player.CurrentNetSpeed, 0.011);
-		//Log("NetMoveDelta:"@NetMoveDelta);
-	}
-
+	
 	if ( !PendingMove.bForceFire && !PendingMove.bForceAltFire && !PendingMove.bPressedJump
 		&& (PendingMove.Delta < NetMoveDelta - ClientUpdateTime) )
 	{
@@ -2521,28 +2703,28 @@ function xxReplicateMove
 		// old move important to replicate redundantly
 		OldTimeDelta = FMin(255, (Level.TimeSeconds - OldMove.TimeStamp) * 500);
 		BuildAccel = 0.05 * OldMove.Acceleration + vect(0.5, 0.5, 0.5);
-		OldAccel = (CompressAccel(BuildAccel.X) << 23)
-					+ (CompressAccel(BuildAccel.Y) << 15)
+		OldAccel = (CompressAccel(BuildAccel.X) << 23) 
+					+ (CompressAccel(BuildAccel.Y) << 15) 
 					+ (CompressAccel(BuildAccel.Z) << 7);
 		if ( OldMove.bRun )
-			OldAccel += 64; // 64
+			OldAccel += 64;
 		if ( OldMove.bDuck )
-			OldAccel += 32; // 32
+			OldAccel += 32;
 		if ( OldMove.bPressedJump )
-			OldAccel += 16; // 16
+			OldAccel += 16;
 		OldAccel += OldMove.DodgeMove;
 	}
 	//else
 	//	log("No redundant timestamp at "$Level.TimeSeconds$" with accel "$NewAccel);
-
+	
 	// Send to the server
 	ClientRoll = (Rotation.Roll >> 8) & 255;
 	if ( NewMove.bPressedJump )
 		bJumpStatus = !bJumpStatus;
 	xxServerMove
 	(
-		NewMove.TimeStamp,
-		NewMove.Acceleration * 10, // old value was 10
+		NewMove.TimeStamp, 
+		NewMove.Acceleration * 10, 
 		Location,
 		Velocity,
 		NewMove.bRun,
@@ -2553,7 +2735,7 @@ function xxReplicateMove
 		//(32767 & (zzViewRotation.Pitch/2)) * 32768 + (32767 & (zzViewRotation.Yaw/2)),
 		((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF),
 		OldTimeDelta,
-		OldAccel
+		OldAccel 
 	);
 	//log("Replicated "$self$" stamp "$NewMove.TimeStamp$" location "$Location$" dodge "$NewMove.DodgeMove$" to "$DodgeDir);
 	if ( (Weapon != None) && !Weapon.IsAnimating() )
@@ -2585,13 +2767,13 @@ simulated function bool xxUsingDefaultWeapon()
 {
 	local int x;
 	local name W;
-
+	
 	if (Weapon == None || zzUTPure == None)
 		return false;
-
+	
 	if (Weapon.IsA(zzDefaultWeapon))
 		return true;
-
+	
 	for (x = 0; x < 8; x++)
 	{
 		W = zzUTPure.zzDefaultWeapons[x];
@@ -2600,18 +2782,18 @@ simulated function bool xxUsingDefaultWeapon()
 		if (Weapon.Class.Name == W)
 			return true;
 	}
-
+	
 	return false;
 }
 
 exec function ThrowWeapon()
 {
 	local vector ThrowVelocity;
-
+	
 	if( Weapon==None || (Weapon.Class==Level.Game.BaseMutator.MutatedDefaultWeapon())
 		|| !Weapon.bCanThrow )
 		return;
-
+	
 	zzThrownWeapon = Weapon;
 	zzThrownTime = Level.TimeSeconds;
 	ThrowVelocity.X = zzThrowVelocity;
@@ -2838,7 +3020,7 @@ function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation,
 		ViewDist = FMin( (CameraLocation - HitLocation) Dot View, Dist );
 	else
 		ViewDist = Dist;
-	CameraLocation -= (ViewDist - 30) * View;
+	CameraLocation -= (ViewDist - 30) * View; 
 }
 
 event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator CameraRotation )
@@ -2921,7 +3103,7 @@ function ViewShake(float DeltaTime)
 			if ( verttimer < 0 )
 			{
 				verttimer = 0.2 * FRand();
-				shakeVert = (2 * FRand() - 1) * maxshake;
+				shakeVert = (2 * FRand() - 1) * maxshake;  
 			}
 		}
 		zzViewRotation.Roll = zzViewRotation.Roll & 65535;
@@ -2969,7 +3151,7 @@ function ViewShake(float DeltaTime)
 	ViewRotation = RotRand(False);
 //	ViewRotation.Yaw = -32768;
 //	ViewRotation.Pitch = Rand(65536)-32768;
-	ViewRotation.Roll = zzViewRotation.Roll;
+	ViewRotation.Roll = zzViewRotation.Roll; 
 }
 
 function UpdateRotation(float DeltaTime, float maxPitch);
@@ -2977,13 +3159,13 @@ function UpdateRotation(float DeltaTime, float maxPitch);
 function xxUpdateRotation(float DeltaTime, float maxPitch)
 {
 	local rotator newRotation;
-
+	
 	DesiredRotation = zzViewRotation; //save old rotation
 	zzViewRotation.Pitch += 32.0 * DeltaTime * aLookUp;
 	zzViewRotation.Pitch = zzViewRotation.Pitch & 65535;
 	If ((zzViewRotation.Pitch > 18000) && (zzViewRotation.Pitch < 49152))
 	{
-		If (aLookUp > 0)
+		If (aLookUp > 0) 
 			zzViewRotation.Pitch = 18000;
 		else
 			zzViewRotation.Pitch = 49152;
@@ -2998,13 +3180,13 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 	newRotation.Pitch = zzViewRotation.Pitch;
 	If ( (newRotation.Pitch > maxPitch * RotationRate.Pitch) && (newRotation.Pitch < 65536 - maxPitch * RotationRate.Pitch) )
 	{
-		If (zzViewRotation.Pitch < 32768)
+		If (zzViewRotation.Pitch < 32768) 
 			newRotation.Pitch = maxPitch * RotationRate.Pitch;
 		else
 			newRotation.Pitch = 65536 - maxPitch * RotationRate.Pitch;
 	}
 	setRotation(newRotation);
-
+	
 	if (!zzbRepVRData)
 	{
 		xxReplicateVRToDemo(zzViewRotation.Yaw, zzViewRotation.Pitch, EyeHeight);
@@ -3030,7 +3212,7 @@ function ServerTaunt(name Sequence )
 {
 	if (Level.TimeSeconds - zzLastTaunt > 1.0)
 	{
-		if ( GetAnimGroup(Sequence) == 'Gesture' )
+		if ( GetAnimGroup(Sequence) == 'Gesture' ) 
 			PlayAnim(Sequence, 0.7, 0.2);
 	}
 	else
@@ -3051,11 +3233,11 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	local vector delta;
 
 	TraceDir = Normal(TraceDir);
-	HitLocation = HitLocation + 0.33 * CollisionRadius * TraceDir; // default value is 0.4
+	HitLocation = HitLocation + 0.33 * CollisionRadius * TraceDir;
 
 	if ( (GetAnimGroup(AnimSequence) == 'Ducking') && (AnimFrame > -0.03) )
 	{
-		maxZ = Location.Z + 0.3 * CollisionHeight; // default value is 0.3
+		maxZ = Location.Z + 0.3 * CollisionHeight;
 		if ( HitLocation.Z > maxZ )
 		{
 			if ( TraceDir.Z >= 0 )
@@ -3064,7 +3246,7 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 			HitLocation.Z = maxZ;
 			HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
 			HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
-			/* if ( VSize(HitLocation - Location) > CollisionRadius )
+			/* if ( VSize(HitLocation - Location) > CollisionRadius )	
 				return false; */
 			delta = (HitLocation - Location) * vect(1,1,0);
 			if (delta dot delta > CollisionRadius * CollisionRadius)
@@ -3081,7 +3263,7 @@ simulated function AddVelocity( vector NewVelocity )
 		Super.AddVelocity(NewVelocity);
 		return;
 	}
-
+	
 	if (zzAddVelocityCount > 0)
 	{
 		if ( (zzExpectedVelocity.Z > 380) && (NewVelocity.Z > 0) )
@@ -3095,7 +3277,7 @@ simulated function AddVelocity( vector NewVelocity )
 		zzExpectedVelocity = Velocity + NewVelocity;
 		zzAddVelocityCount = 0;
 	}
-
+	
 	zzAddVelocityCount++;
 	xxClientSetVelocity(zzExpectedVelocity);
 }
@@ -3104,9 +3286,8 @@ simulated function xxClientSetVelocity( vector NewVelocity )
 {
 	if (Level.NetMode != NM_Client)
 		return;
-	if (Physics == PHYS_Walking  || Physics == PHYS_None) // RX Fix
+	if (Physics == PHYS_Walking)
 		SetPhysics(PHYS_Falling);
-
 	Velocity = NewVelocity;
 	xxServerSetVelocity(NewVelocity);
 }
@@ -3124,16 +3305,74 @@ simulated function xxServerSetVelocity( vector NewVelocity )
 	}
 }
 
+function NN_HurtRadius( actor ActualSelf, class<Weapon> WeapClass, float DamageAmount, float DamageRadius, name DamageName, float MomentumXfer, vector HitLocation, int ProjIndex, optional bool bNoSelf )
+{
+	local actor Victims, TracedTo;
+	local float damageScale, dist;
+	local vector diff, dir, MoverHitLocation, MoverHitNormal;
+	local Mover M;
+	
+	if( ActualSelf == None || ActualSelf.bHurtEntry )
+		return;
+	
+	xxEnableCarcasses();
+	ActualSelf.bHurtEntry = true;
+	foreach VisibleCollidingActors( class 'Actor', Victims, DamageRadius, HitLocation )
+	{
+		if ( Victims != ActualSelf && (!bNoSelf || Victims != Self) )
+		{
+			if (Victims == zzClientTTarget)
+				zzClientTTarget.TakeDamage(0, Self, HitLocation, 60000.0*vector(zzViewRotation), DamageName);
+			else
+			{
+				diff = Victims.Location - HitLocation;
+				dist = FMax(1,VSize(diff));
+				dir = diff/dist; 
+				damageScale = 1 - FMax(0,(dist - Victims.CollisionRadius)/DamageRadius);
+				xxNN_RadiusDamage
+				(
+					Victims,
+					WeapClass,
+					damageScale * DamageAmount,
+					DamageRadius,
+					ActualSelf.Instigator, 
+					HitLocation,
+					diff,
+					MomentumXfer,
+					DamageName,
+					ProjIndex
+				);
+			}
+		} 
+	}
+	
+	foreach RadiusActors( class 'Mover', M, DamageRadius, HitLocation )
+	{
+		TracedTo = Trace(MoverHitLocation, MoverHitNormal, M.Location, HitLocation, True);
+		dir = MoverHitLocation - HitLocation;
+		dist = FMax(1,VSize(dir));
+		if (TracedTo != M || dist > DamageRadius)
+			continue;
+		dir = dir/dist;
+		damageScale = 1 - FMax(0,(dist - M.CollisionRadius)/DamageRadius);
+		xxNN_ServerTakeDamage( M, WeapClass, damageScale * DamageAmount, ActualSelf.Instigator, HitLocation, GetBetterVector(damageScale * MomentumXfer * dir), DamageName, ProjIndex);
+		//xxMover_TakeDamage( M, damageScale * DamageAmount, Self, M.Location - 0.5 * (M.CollisionHeight + M.CollisionRadius) * dir, damageScale * MomentumXfer * dir, DamageName );
+	}
+	
+	ActualSelf.bHurtEntry = false;
+	xxDisableCarcasses();
+}
+
 simulated function NN_Momentum( Vector momentum, name DamageType )
 {
 	local bool bPreventLockdown;		// Avoid the lockdown effect.
-
+	
 //	Log("DamageType"@DamageType);
 
 	if (DamageType == 'shot' || DamageType == 'zapped')
 		bPreventLockdown = true; //zzUTPure.bNoLockdown;
 
-	//log(self@"take damage in state"@GetStateName());
+	//log(self@"take damage in state"@GetStateName());	
 
 	if (Base != None)
 		momentum.Z = FMax(momentum.Z, 0.4 * VSize(momentum));
@@ -3144,10 +3383,10 @@ simulated function NN_Momentum( Vector momentum, name DamageType )
 
 //	Log("PL"@!bPreventLockdown);
 	if (!bPreventLockdown)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
-		AddVelocity( momentum );
+		AddVelocity( momentum ); 
 }
 
-function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
+function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation, 
 						Vector momentum, name damageType)
 {
 	local int actualDamage;
@@ -3156,7 +3395,6 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 	local bool bPreventLockdown;		// Avoid the lockdown effect.
 	local Pawn P;
 	local Inventory Inv;
-	local Weapon W;
 
 	if ( Role < ROLE_Authority )
 	{
@@ -3164,11 +3402,11 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 		return;
 	}
 //	Log("DamageType"@DamageType);
-
+	
 	if (DamageType == 'shot' || DamageType == 'zapped')
 		bPreventLockdown = true; //zzUTPure.bNoLockdown;
 
-	//log(self@"take damage in state"@GetStateName());
+	//log(self@"take damage in state"@GetStateName());	
 	bAlreadyDead = (Health <= 0);
 
 	if (Physics == PHYS_None)
@@ -3195,8 +3433,8 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 	}
 	else if ( (InstigatedBy != None) &&
 				(InstigatedBy.IsA(Class.Name) || self.IsA(InstigatedBy.Class.Name)) )
-		ActualDamage = ActualDamage * FMin(1 - ReducedDamagePct, 0.35);
-	else if ( (ReducedDamageType == 'All') ||
+		ActualDamage = ActualDamage * FMin(1 - ReducedDamagePct, 0.35); 
+	else if ( (ReducedDamageType == 'All') || 
 		((ReducedDamageType != '') && (ReducedDamageType == damageType)) )
 		actualDamage = float(actualDamage) * (1 - ReducedDamagePct);
 
@@ -3216,7 +3454,7 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 
 	if (InstigatedBy != Self && PlayerPawn(InstigatedBy) != None)
 	{	// Send the hitsound local message.
-
+	
 		RecentDamage = 1;
 		for ( Inv = InstigatedBy.Inventory; Inv != None; Inv = Inv.Inventory )
 			if (Inv.IsA('UDamage'))
@@ -3225,7 +3463,7 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 				break;
 			}
 		RecentDamage = RecentDamage * 1.5 * Damage;
-
+		
 		PlayerPawn(InstigatedBy).ReceiveLocalizedMessage(Class'PureHitSound', RecentDamage, PlayerReplicationInfo, InstigatedBy.PlayerReplicationInfo);
 		for (P = Level.PawnList; P != None; P = P.NextPawn)
 		{
@@ -3234,33 +3472,16 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 		}
 	}
 
-	// Boost Fix
-	//zzIgnoreUpdateUntil = 1.0;
-	// Boost Fix End //
-
 //	Log("PL"@!bPreventLockdown);
-  	if (MMSupport)
+	if (!bPreventLockdown && InstigatedBy != self && (momentum dot momentum) > 0)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
 	{
-		if (!bPreventLockdown && (momentum dot momentum) > 0)	// Fixed by Deepu
-		{
-			if (bNewNet)
-				AddVelocity( momentum );
-			else
-				AddVelocity( momentum );
-		}
-	}
-	else
-	{
-		if (!bPreventLockdown && InstigatedBy != self && (momentum dot momentum) > 0)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
-		{
-			if (bNewNet)
-				AddVelocity( momentum );
-			else
-				AddVelocity( momentum );
-		}
+		if (bNewNet)
+			AddVelocity( momentum );
+		else
+			AddVelocity( momentum );
 	}
 	Health -= actualDamage;
-
+	
 	if (CarriedDecoration != None)
 		DropDecoration();
 	if ( HitLocation == vect(0,0,0) )
@@ -3294,10 +3515,10 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 		else
 			Destroy();
 	}
-	MakeNoise(1.0);
+	MakeNoise(1.0); 
 }
 
-function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
+function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation, 
 						Vector momentum, name damageType)
 {
 	local int actualDamage;
@@ -3320,7 +3541,7 @@ function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 	if (DamageType == 'shot' || DamageType == 'zapped')
 		bPreventLockdown = true; //zzUTPure.bNoLockdown;
 
-	//log(self@"take damage in state"@GetStateName());
+	//log(self@"take damage in state"@GetStateName());	
 	bAlreadyDead = (Health <= 0);
 
 	if (Physics == PHYS_None)
@@ -3368,7 +3589,7 @@ function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 				break;
 			}
 		RecentDamage = RecentDamage * 1.5 * Damage;
-
+		
 		InstigatedBy.ReceiveLocalizedMessage(Class'PureHitSound', RecentDamage, PlayerReplicationInfo, InstigatedBy.PlayerReplicationInfo);
 		for (P = Level.PawnList; P != None; P = P.NextPawn)
 		{
@@ -3424,10 +3645,10 @@ function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 		else
 			InstigatedBy.Destroy();
 	}
-	MakeNoise(1.0);
+	MakeNoise(1.0); 
 }
 
-function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
+function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation, 
 						Vector momentum, name damageType)
 {
 	local int actualDamage;
@@ -3450,7 +3671,7 @@ function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 	if (DamageType == 'shot' || DamageType == 'zapped')
 		bPreventLockdown = true; //zzUTPure.bNoLockdown;
 
-	//log(self@"take damage in state"@GetStateName());
+	//log(self@"take damage in state"@GetStateName());	
 	bAlreadyDead = (Health <= 0);
 
 	if (Physics == PHYS_None)
@@ -3476,8 +3697,8 @@ function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 	}
 	else if ( (InstigatedBy != None) &&
 				(InstigatedBy.IsA(Class.Name) || self.IsA(InstigatedBy.Class.Name)) )
-		ActualDamage = ActualDamage * FMin(1 - ReducedDamagePct, 0.35);
-	else if ( (ReducedDamageType == 'All') ||
+		ActualDamage = ActualDamage * FMin(1 - ReducedDamagePct, 0.35); 
+	else if ( (ReducedDamageType == 'All') || 
 		((ReducedDamageType != '') && (ReducedDamageType == damageType)) )
 		actualDamage = float(actualDamage) * (1 - ReducedDamagePct);
 
@@ -3505,7 +3726,7 @@ function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 				break;
 			}
 		RecentDamage = RecentDamage * 1.5 * Damage;
-
+		
 		InstigatedBy.ReceiveLocalizedMessage(Class'PureHitSound', RecentDamage, PlayerReplicationInfo, InstigatedBy.PlayerReplicationInfo);
 		for (P = Level.PawnList; P != None; P = P.NextPawn)
 		{
@@ -3561,7 +3782,7 @@ function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 		else
 			Destroy();
 	}
-	MakeNoise(1.0);
+	MakeNoise(1.0); 
 }
 
 function bool Gibbed(name damageType)
@@ -3580,7 +3801,7 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 	local carcass carc;
 	local Weapon W;
 	local bbPlayer bbK;
-
+	
 	// mutator hook to prevent deaths
 	// WARNING - don't prevent bot suicides - they suicide when really needed
 	if ( Level.Game.BaseMutator.PreventDeath(self, Killer, damageType, HitLocation) )
@@ -3592,7 +3813,7 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 		return; //already destroyed
 	StopZoom();
 	Health = Min(0, Health);
-
+	
 	for ( OtherPawn=Level.PawnList; OtherPawn!=None; OtherPawn=OtherPawn.nextPawn )
 		OtherPawn.Killed(Killer, self, damageType);
 	if ( CarriedDecoration != None )
@@ -3604,9 +3825,9 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 	if( Event != '' )
 		foreach AllActors( class 'Actor', A, Event )
 			A.Trigger( Self, Killer );
-
+	
 	//Level.Game.DiscardInventory(self);
-
+	
 	Velocity.Z *= 1.3;
 	if ( Gibbed(damageType) )
 	{
@@ -3619,88 +3840,87 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 	PlayDying(DamageType, HitLocation);
 	if ( Level.Game.bGameEnded )
 		return;
-
+	
 	if ( RemoteRole == ROLE_AutonomousProxy )
 		ClientDying(DamageType, HitLocation);
 	GotoState('Dying');
 }
 
 simulated function PlayHitSound(int Dmg)
-{
+{	
 	local Actor SoundPlayer;
 	local float Pitch;
 	local int HS;
-	local PlayerPawn PP;
-
+	
 	if (Dmg > 0) {
-
+	
 		zzRecentDmgGiven += Dmg;
-
+		
 	} else if (zzRecentDmgGiven > 0) {
-
+	
 		LastPlaySound = Level.TimeSeconds;	// so voice messages won't overlap
-
+		
 		if ( ViewTarget != None )
 			SoundPlayer = ViewTarget;
 		else
 			SoundPlayer = Self;
-
+			
 		Pitch = FClamp(42/zzRecentDmgGiven, 0.22, 3.2);
 		zzRecentDmgGiven = 0;
-
+		
 		if (bForceDefaultHitSounds && !bDisableForceHitSounds)
 			HS = DefaultHitSound;
 		else
 			HS = HitSound;
-
+		
 		if (HS == 1)
 			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
 		else if (HS == 2)
 			SoundPlayer.PlaySound(Sound'HitSound', SLOT_None, 255.0, True,, Pitch);
 		else if (HS == 3)
 			SoundPlayer.PlaySound(Sound'HitSoundFriendly', SLOT_None, 255.0, True);
-
+		
 		zzLastHitSound = LastPlaySound;
-
+		
 	}
 }
 
 simulated function PlayTeamHitSound(int Dmg)
-{
+{	
 	local Actor SoundPlayer;
 	local float Pitch;
 	local int HS;
-
+	
 	if (Dmg > 0) {
-
+	
 		zzRecentTeamDmgGiven += Dmg;
-
+		
 	} else if (zzRecentTeamDmgGiven > 0) {
-
+	
 		LastPlaySound = Level.TimeSeconds;	// so voice messages won't overlap
-
+		
 		if ( ViewTarget != None )
 			SoundPlayer = ViewTarget;
 		else
 			SoundPlayer = Self;
-
+			
 		Pitch = FClamp(42/zzRecentTeamDmgGiven, 0.22, 3.2);
 		zzRecentTeamDmgGiven = 0;
-
+		
 		if (bForceDefaultHitSounds && !bDisableForceHitSounds)
 			HS = DefaultTeamHitSound;
 		else
 			HS = TeamHitSound;
-
+		
 		if (HS == 1)
 			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
 		else if (HS == 2)
 			SoundPlayer.PlaySound(Sound'HitSound', SLOT_None, 255.0, True,, Pitch);
 		else if (HS == 3)
 			SoundPlayer.PlaySound(Sound'HitSoundFriendly', SLOT_None, 255.0, True);
-
+		
 		zzLastTeamHitSound = LastPlaySound;
-
+		
 	}
 }
 
@@ -3708,7 +3928,7 @@ simulated function CheckHitSound()
 {
 	if (zzRecentDmgGiven > 0 && Level.TimeSeconds - zzLastHitSound > 0.1)
 		PlayHitSound(0);
-
+		
 	if (zzRecentTeamDmgGiven > 0 && Level.TimeSeconds - zzLastTeamHitSound > 0.1)
 		PlayTeamHitSound(0);
 }
@@ -3723,8 +3943,8 @@ state FeigningDeath
 {
 	function xxServerMove
 	(
-		float TimeStamp,
-		vector Accel,
+		float TimeStamp, 
+		vector Accel, 
 		vector ClientLoc,
 		vector ClientVel,
 		bool NewbRun,
@@ -3741,7 +3961,7 @@ state FeigningDeath
 							//bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, (32767 & (Rotation.Pitch/2)) * 32768 + (32767 & (Rotation.Yaw/2)));
 							DodgeMove, ClientRoll, ((Rotation.Pitch & 0xFFFF) << 16) | (Rotation.Yaw & 0xFFFF));
 	}
-
+	
 	function PlayerMove( float DeltaTime)
 	{
 		local rotator currentRot;
@@ -3761,7 +3981,7 @@ state FeigningDeath
 		xxUpdateRotation(DeltaTime, 1);
 		SetRotation(currentRot);
 
-		//if (!zzbWeaponTracer)
+		if (!zzbWeaponTracer)
 			ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
@@ -3782,7 +4002,7 @@ state FeigningDeath
 	function BeginState()
 	{
 		local byte zzOldbfire, zzOldbAlt;
-
+	
 		Super.BeginState();
 		// Stop weapon firing
  		//UsAaR33: prevent weapon from firing (brought on by missing bchangedweapon checks)
@@ -3803,7 +4023,7 @@ state FeigningDeath
 			zzbAltFire=zzOldbAlt;
 		}
 	}
-
+	
 	function EndState()
 	{
 		zzbForceUpdate = true;
@@ -3822,10 +4042,10 @@ state PlayerSwimming
 			xxMover_DoBump(Mover(Other));
 	}
 	*/
-	function ProcessMove(float DeltaTime, vector NewAccel, eDodgeDir DodgeMove, rotator DeltaRot)
+	function ProcessMove(float DeltaTime, vector NewAccel, eDodgeDir DodgeMove, rotator DeltaRot)	
 	{
 		local vector X,Y,Z, Temp;
-
+	
 		GetAxes(ViewRotation,X,Y,Z);
 		Acceleration = NewAccel;
 
@@ -3838,7 +4058,7 @@ state PlayerSwimming
 			velocity.Z = 220 + 2 * CollisionRadius; //set here so physics uses this for remainder of tick
 			PlayDuck();
 			GotoState('PlayerWalking');
-		}
+		}				
 	}
 
 	event PlayerTick( float DeltaTime )
@@ -3854,17 +4074,17 @@ state PlayerSwimming
 		local rotator oldRotation;
 		local vector X,Y,Z, NewAccel;
 		local float Speed2D;
-
+	
 		GetAxes(zzViewRotation,X,Y,Z);
 
 		aForward *= 0.2;
 		aStrafe  *= 0.1;
 		aLookup  *= 0.24;
 		aTurn    *= 0.24;
-		aUp		 *= 0.1;
-
-		NewAccel = aForward*X + aStrafe*Y + aUp*vect(0,0,1);
-
+		aUp		 *= 0.1;  
+		
+		NewAccel = aForward*X + aStrafe*Y + aUp*vect(0,0,1); 
+	
 		//add bobbing when swimming
 		if ( !bShowMenu )
 		{
@@ -3877,7 +4097,7 @@ state PlayerSwimming
 		oldRotation = Rotation;
 		xxUpdateRotation(DeltaTime, 2);
 
-		//if (!zzbWeaponTracer)
+		if (!zzbWeaponTracer)
 			ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
@@ -3902,10 +4122,10 @@ state PlayerSwimming
 			GotoState('PlayerWalking');
 			AnimEnd();
 		}
-
+	
 		Disable('Timer');
 	}
-
+	
 	function BeginState()
 	{
 		Disable('Timer');
@@ -3943,11 +4163,11 @@ state PlayerFlying
 		aLookup  *= 0.24;
 		aTurn    *= 0.24;
 
-		Acceleration = aForward*X + aStrafe*Y;
+		Acceleration = aForward*X + aStrafe*Y;  
 		// Update rotation.
 		xxUpdateRotation(DeltaTime, 2);
 
-		//if (!zzbWeaponTracer)
+		if (!zzbWeaponTracer)
 			ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
@@ -3987,12 +4207,12 @@ state CheatFlying
 		aLookup  *= 0.24;
 		aTurn    *= 0.24;
 		aUp		 *= 0.1;
-
-		Acceleration = aForward*X + aStrafe*Y + aUp*vect(0,0,1);
+	
+		Acceleration = aForward*X + aStrafe*Y + aUp*vect(0,0,1);  
 
 		xxUpdateRotation(DeltaTime, 1);
 
-		//if (!zzbWeaponTracer)
+		if (!zzbWeaponTracer)
 			ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
@@ -4005,7 +4225,7 @@ state CheatFlying
 state PlayerWalking
 {
 ignores SeePlayer, HearNoise;
-
+	
 	/*
 	simulated function Bump( actor Other )
 	{
@@ -4020,7 +4240,7 @@ ignores SeePlayer, HearNoise;
 		{
 			DodgeDir = DODGE_Done;
 			DodgeClickTimer = 0.0;
-			Velocity.X *= 0.1; // 0.1
+			Velocity.X *= 0.1;
 			Velocity.Y *= 0.1;
 		}
 		else
@@ -4055,7 +4275,7 @@ ignores SeePlayer, HearNoise;
 		aTurn    *= 0.24;
 
 		// Update acceleration.
-		NewAccel = aForward*X + aStrafe*Y;
+		NewAccel = aForward*X + aStrafe*Y; 
 		NewAccel.Z = 0;
 		// Check for Dodge move
 		if ( DodgeDir == DODGE_Active )
@@ -4069,7 +4289,7 @@ ignores SeePlayer, HearNoise;
 				Now = Level.TimeSeconds;
 				OldDodge = DodgeDir;
 				DodgeDir = DODGE_None;
-
+				
 				if (bEdgeForward && bWasForward)
 				{
 					if (MinDodgeClickTime == 0 || Now - zzLastTimeForward > MinDodgeClickTime)
@@ -4098,27 +4318,27 @@ ignores SeePlayer, HearNoise;
 					else
 						bIgnoreDodge = true;
 				}
-
+				
 				if ( DodgeDir == DODGE_None)
 					DodgeDir = OldDodge;
 				else if ( DodgeDir != OldDodge )
 					DodgeClickTimer = DodgeClickTime + 0.5 * DeltaTime;
-				else
+				else 
 					DodgeMove = DodgeDir;
 			}
-
+			
 			if (DodgeDir == DODGE_Done || DodgeDir == DODGE_Active && Base != None)
 			{
 				DodgeClickTimer -= DeltaTime;
-				if (DodgeClickTimer < -0.35 || bIgnoreDodge)
+				if (DodgeClickTimer < -0.35 || bIgnoreDodge) 
 				{
 					DodgeDir = DODGE_None;
 					DodgeClickTimer = DodgeClickTime;
 				}
-			}
+			}		
 			else if ((DodgeDir != DODGE_None) && (DodgeDir != DODGE_Active))
 			{
-				DodgeClickTimer -= DeltaTime;
+				DodgeClickTimer -= DeltaTime;			
 				if (DodgeClickTimer < 0 || bIgnoreDodge)
 				{
 					DodgeDir = DODGE_None;
@@ -4126,11 +4346,11 @@ ignores SeePlayer, HearNoise;
 				}
 			}
 		}
-
+		
 		// Fix by DB
 		if (AnimSequence != '')
 			AnimGroupName = GetAnimGroup(AnimSequence);
-
+		
 		if ( (Physics == PHYS_Walking) && (AnimGroupName != 'Dodge') )
 		{
 			//if walking, look up/down stairs - unless player is rotating view
@@ -4145,7 +4365,7 @@ ignores SeePlayer, HearNoise;
 						zzViewRotation.Pitch -= 65536;
 					zzViewRotation.Pitch = zzViewRotation.Pitch * (1 - 12 * FMin(0.0833, deltaTime));
 					if ( Abs(zzViewRotation.Pitch) < 1000 )
-						zzViewRotation.Pitch = 0;
+						zzViewRotation.Pitch = 0;	
 				}
 			}
 
@@ -4153,9 +4373,9 @@ ignores SeePlayer, HearNoise;
 			//add bobbing when walking
 			if ( !bShowMenu )
 				CheckBob(DeltaTime, Speed2D, Y);
-		}
+		}	
 		else if ( !bShowMenu )
-		{
+		{ 
 			BobTime = 0;
 			WalkBob = WalkBob * (1 - FMin(1, 8 * deltatime));
 		}
@@ -4172,7 +4392,7 @@ ignores SeePlayer, HearNoise;
 		else
 			bSaveJump = false;
 
-		//if (!zzbWeaponTracer)
+		if (!zzbWeaponTracer)
 			ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
@@ -4204,7 +4424,7 @@ ignores SeePlayer, HearNoise;
 			PlayWaiting();
 //		Log("BeginState: PlayerWalking");
 	}
-
+	
 	function EndState()
 	{
 		WalkBob = vect(0,0,0);
@@ -4236,17 +4456,17 @@ state PlayerWaiting
 
 		GetAxes(zzViewRotation,X,Y,Z);
 
-		aForward *= 0.12; // 0.1
+		aForward *= 0.12;
 		aStrafe  *= 0.12;
 		aLookup  *= 0.24;
 		aTurn    *= 0.24;
 		aUp		 *= 0.12;
-
-		Acceleration = aForward*X + aStrafe*Y + aUp*vect(0,0,1);
+	
+		Acceleration = aForward*X + aStrafe*Y + aUp*vect(0,0,1);  
 
 		xxUpdateRotation(DeltaTime, 1);
 
-		//if (!zzbWeaponTracer)
+		if (!zzbWeaponTracer)
 			ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
@@ -4254,7 +4474,7 @@ state PlayerWaiting
 		else
 			ProcessMove(DeltaTime, Acceleration, DODGE_None, rot(0,0,0));
 	}
-
+	
 	exec function Fire(optional float F)
 	{
 		if (!bIsFinishedLoading) {
@@ -4264,7 +4484,7 @@ state PlayerWaiting
 		bReadyToPlay = true;
 		xxServerSetReadyToPlay();
 	}
-
+	
 	exec function AltFire(optional float F)
 	{
 		if (!bIsFinishedLoading) {
@@ -4286,7 +4506,7 @@ function PlayDodge(eDodgeDir DodgeMove)
 		TweenAnim('DodgeR', 0.75);
 	else if ( DodgeMove == DODGE_Back )
 		TweenAnim('DodgeB', 0.75);
-	else
+	else 
 		PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.2);
 }*/
 
@@ -4325,11 +4545,11 @@ function GiveMeWeapons()
 
 	if (DMP.BaseMutator != None)			// Add the default weapon
 		WeaponList[WeapCnt++] = string(DMP.BaseMutator.MutatedDefaultWeapon());
-
+	
 	/* if (bNewNet)
 	{
 		PreFix = "UN"$class'UTPure'.default.ThisVer$".";
-
+		
 		WeaponList[WeapCnt++] = PreFix$"ST_enforcer";	// If it is instagib/other the enforcer will be removed upon spawn
 
 		if (DMP.bUseTranslocator)			// Sneak in translocator
@@ -4338,7 +4558,7 @@ function GiveMeWeapons()
 	else
 	{
 		PreFix = "Botpack.";
-
+		
 		WeaponList[WeapCnt++] = "Botpack.Enforcer";	// If it is instagib/other the enforcer will be removed upon spawn
 
 		if (DMP.bUseTranslocator)			// Sneak in translocator
@@ -4374,7 +4594,7 @@ function GiveMeWeapons()
 	{	// Distribute weapons.
 		DMP.GiveWeapon(Self, WeaponList[x]);
 	}
-
+	
 	for ( Inv = Inventory; Inv != None; Inv = Inv.Inventory )
 	{	// This gives max ammo.
 		w = Weapon(Inv);
@@ -4396,7 +4616,7 @@ function GiveMeWeapons()
 			}
 		}
 	}
-
+	
 	if (!bNewNet)
 		SwitchToBestWeapon();
 	else if (Best != None)
@@ -4411,11 +4631,11 @@ state PlayerWarmup extends PlayerWalking
 	function BeginState()
 	{
 		local float NewJumpZ;
-
+		
 		NewJumpZ = Default.JumpZ * 1.1;
 		if (NewJumpZ > 0)
 			JumpZ = NewJumpZ;
-
+			
 		zzbIsWarmingUp = true;
 		GiveMeWeapons();
 		Super.BeginState();
@@ -4432,7 +4652,7 @@ state PlayerWarmup extends PlayerWalking
 		Super.SetProgressMessage( S, Index );
 	}
 
-	function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
+	function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation, 
 							Vector momentum, name damageType)
 	{
 		//if (Self == InstigatedBy)
@@ -4469,12 +4689,12 @@ state PlayerSpectating
 		aLookup  *= 0.24;
 		aTurn    *= 0.24;
 		aUp		 *= 0.1;
-
-		Acceleration = aForward*X + aStrafe*Y + aUp*vect(0,0,1);
+	
+		Acceleration = aForward*X + aStrafe*Y + aUp*vect(0,0,1);  
 
 		xxUpdateRotation(DeltaTime, 1);
 
-		//if (!zzbWeaponTracer)
+		if (!zzbWeaponTracer)
 			ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
@@ -4561,12 +4781,11 @@ state Dying
 		//log("calling restartplayer in dying with netmode "$Level.NetMode);
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
 			return;
-
+		
 		Level.Game.DiscardInventory(self);
 
 		if ( /* xxRestartPlayer() || */ Level.Game.RestartPlayer(self) )
 		{
-			//Log("Calling ServerReStartPlayer()");
 			ServerTimeStamp = 0;
 			TimeMargin = 0;
 			Enemy = None;
@@ -4575,7 +4794,7 @@ state Dying
 				PlayWaiting();
 			if (!zzbClientRestartedPlayer)
 				ClientReStart();
-
+			
 			//ChangedWeapon();
 			zzSpawnedTime = Level.TimeSeconds;
 		}
@@ -4583,9 +4802,9 @@ state Dying
 		{
 			log("Restartplayer failed");
 		}
-
+		
 	}
-
+	
 	event PlayerTick( float DeltaTime )
 	{
 		zzbCanCSL = zzFalse;
@@ -4593,29 +4812,29 @@ state Dying
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 	}
-
+	
 	simulated function BeginState()
 	{
 		local bbPlayer bbP;
-    	local float LKT;
-
-    	/* xxSendNextStartSpot(); */
-
-    	bJumpStatus = false;
-    	zzbForceUpdate = true;
-    	zzIgnoreUpdateUntil = 0;
-    	if (zzClientTTarget != None)
-        	zzClientTTarget.Destroy();
-
-    	LKT = LastKillTime;
-    	Super.BeginState();
-    	LastKillTime = LKT;
+		local float LKT;
+		
+		/* xxSendNextStartSpot(); */
+		
+		bJumpStatus = false;
+		zzbForceUpdate = true;
+		zzIgnoreUpdateUntil = 0;
+		if (zzClientTTarget != None)
+			zzClientTTarget.Destroy();
+		
+		LKT = LastKillTime;
+		Super.BeginState();
+		LastKillTime = LKT;
 	}
 
 	function PlayerMove(float DeltaTime)
 	{
 		local vector X,Y,Z;
-
+		
 		if ( !bFrozen )
 		{
 			if ( bPressedJump )
@@ -4632,7 +4851,7 @@ state Dying
 			zzViewRotation.Pitch = zzViewRotation.Pitch & 65535;
 			If ((zzViewRotation.Pitch > 18000) && (zzViewRotation.Pitch < 49152))
 			{
-				If (aLookUp > 0)
+				If (aLookUp > 0) 
 					zzViewRotation.Pitch = 18000;
 				else
 					zzViewRotation.Pitch = 49152;
@@ -4648,8 +4867,8 @@ state Dying
 
 	function xxServerMove
 	(
-		float TimeStamp,
-		vector Accel,
+		float TimeStamp, 
+		vector Accel, 
 		vector ClientLoc,
 		vector ClientVel,
 		bool NewbRun,
@@ -4675,17 +4894,17 @@ state Dying
 		local float bestdist, newdist;
 		local int startYaw;
 		local actor ViewActor;
-
+		
 		//fixme - try to pick view with killer visible
 		//fixme - also try varying starting pitch
 		////log("Find good death scene view");
-
+		
 		zzViewRotation.Pitch = 56000;
 		tries = 0;
 		besttry = 0;
 		bestdist = 0.0;
 		startYaw = zzViewRotation.Yaw;
-
+		
 		for (tries=0; tries<16; tries++)
 		{
 			cameraLoc = Location;
@@ -4693,18 +4912,18 @@ state Dying
 			newdist = VSize(cameraLoc - Location);
 			if (newdist > bestdist)
 			{
-				bestdist = newdist;
+				bestdist = newdist;	
 				besttry = tries;
 			}
 			zzViewRotation.Yaw += 4096;
 		}
 		if (zzInfoThing != None)
 			zzInfoThing.zzPlayerCalcViewCalls = 1;
-
+			
 		zzViewRotation.Yaw = startYaw + besttry * 4096;
 		ViewRotation.Yaw = zzViewRotation.Yaw;
 	}
-
+	
 	function EndState()
 	{
 		if (zzbClientRestartedPlayer)
@@ -4723,7 +4942,7 @@ state Dying
 		Super.EndState();
 		LastKillTime = 0;
 	}
-
+	
 }
 
 state CountdownDying extends Dying
@@ -4806,7 +5025,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	function PlayerMove(float DeltaTime)
 	{
 		local vector X,Y,Z;
-
+		
 		GetAxes(zzViewRotation,X,Y,Z);
 		// Update view rotation.
 
@@ -4819,7 +5038,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 			zzViewRotation.Pitch = zzViewRotation.Pitch & 65535;
 			If ((zzViewRotation.Pitch > 18000) && (zzViewRotation.Pitch < 49152))
 			{
-				If (aLookUp > 0)
+				If (aLookUp > 0) 
 					zzViewRotation.Pitch = 18000;
 				else
 					zzViewRotation.Pitch = 49152;
@@ -4841,8 +5060,8 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 
 	function xxServerMove
 	(
-		float TimeStamp,
-		vector InAccel,
+		float TimeStamp, 
+		vector InAccel, 
 		vector ClientLoc,
 		vector ClientVel,
 		bool NewbRun,
@@ -4868,13 +5087,13 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 		local float bestdist, newdist;
 		local int startYaw;
 		local actor ViewActor;
-
+		
 		zzViewRotation.Pitch = 56000;
 		tries = 0;
 		besttry = 0;
 		bestdist = 0.0;
 		startYaw = zzViewRotation.Yaw;
-
+		
 		for (tries=0; tries<16; tries++)
 		{
 			if ( ViewTarget != None )
@@ -4885,14 +5104,14 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 			newdist = VSize(cameraLoc - Location);
 			if (newdist > bestdist)
 			{
-				bestdist = newdist;
+				bestdist = newdist;	
 				besttry = tries;
 			}
 			zzViewRotation.Yaw += 4096;
 		}
 		if (zzInfoThing != None)
 			zzInfoThing.zzPlayerCalcViewCalls = 1;
-
+			
 		zzViewRotation.Yaw = startYaw + besttry * 4096;
 	}
 }
@@ -4919,13 +5138,13 @@ function PlayWaiting()
 			LoopAnim('TreadLG');
 	}
 	else
-	{
+	{	
 		BaseEyeHeight = Default.BaseEyeHeight;
 		zzViewRotation.Pitch = zzViewRotation.Pitch & 65535;
-		If ( (zzViewRotation.Pitch > RotationRate.Pitch)
+		If ( (zzViewRotation.Pitch > RotationRate.Pitch) 
 			&& (zzViewRotation.Pitch < 65536 - RotationRate.Pitch) )
 		{
-			If (zzViewRotation.Pitch < 32768)
+			If (zzViewRotation.Pitch < 32768) 
 			{
 				if ( (Weapon == None) || (Weapon.Mass < 20) )
 					TweenAnim('AimUpSm', 0.3);
@@ -4978,7 +5197,7 @@ function PlayWaiting()
 					else
 						newAnim = 'Breath2L';
 				}
-
+								
 				if ( AnimSequence == newAnim )
 					LoopAnim(newAnim, 0.4 + 0.4 * FRand());
 				else
@@ -5004,12 +5223,12 @@ function PlayHit(float Damage, vector HitLocation, name damageType, vector Momen
 	{
 		if (damageType == 'Drowned')
 		{
-			bub = spawn(class 'Bubble1',,, Location
+			bub = spawn(class 'Bubble1',,, Location 
 				+ 0.7 * CollisionRadius * vector(zzViewRotation) + 0.3 * EyeHeight * vect(0,0,1));
 			if (bub != None)
-				bub.DrawScale = FRand()*0.06+0.04;
+				bub.DrawScale = FRand()*0.06+0.04; 
 		}
-		else if ( (damageType != 'Burned') && (damageType != 'Corroded')
+		else if ( (damageType != 'Burned') && (damageType != 'Corroded') 
 					&& (damageType != 'Fell') )
 		{
 			BloodOffset = 0.2 * CollisionRadius * Normal(HitLocation - Location);
@@ -5024,7 +5243,7 @@ function PlayHit(float Damage, vector HitLocation, name damageType, vector Momen
 			else
 				spawn(class 'UT_BloodBurst',self,,HitLocation + BloodOffset);
 		}
-	}
+	}	
 
 	rnd = FClamp(Damage, 20, 60);
 	if ( damageType == 'Burned' )
@@ -5033,15 +5252,15 @@ function PlayHit(float Damage, vector HitLocation, name damageType, vector Momen
 		ClientFlash( -0.01171875 * rnd, rnd * vect(9.375, 14.0625, 4.6875));
 	else if ( damageType == 'Drowned' )
 		ClientFlash(-0.390, vect(312.5,468.75,468.75));
-	else
+	else 
 		ClientFlash( -0.019 * rnd, rnd * vect(26.5, 4.5, 4.5));
 
-	ShakeView(0.15 + 0.005 * Damage, Damage * 30, 0.3 * Damage);
+	ShakeView(0.15 + 0.005 * Damage, Damage * 30, 0.3 * Damage); 
 	PlayTakeHitSound(Damage, damageType, 1);
 	bServerGuessWeapon = ( ((Weapon != None) && Weapon.bPointing) || (GetAnimGroup(AnimSequence) == 'Dodge') );
 	iDam = Clamp(Damage,0,200);
-	ClientPlayTakeHit(HitLocation - Location, iDam, bServerGuessWeapon );
-	if ( !bServerGuessWeapon
+	ClientPlayTakeHit(HitLocation - Location, iDam, bServerGuessWeapon ); 
+	if ( !bServerGuessWeapon 
 		&& ((Level.NetMode == NM_DedicatedServer) || (Level.NetMode == NM_ListenServer)) )
 	{
 		Enable('AnimEnd');
@@ -5107,12 +5326,12 @@ function xxDoShot()
 	zzbReportScreenshot = zzFalse;
 }
 
-simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode, optional bool bIgnoreFireTime)
+simulated function bool ClientCannotShoot()
 {
-  	local bool bCant;
+	local bool bCant;
 	local float Diff;
 	local name WeapState;
-
+	
 	if (zzSwitchedTime > 0)
 	{
 		Weapon.bChangeWeapon = true;
@@ -5139,35 +5358,26 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 		else
 			bCant = true;
 	}
-  	else if (Weapon.IsInState('ClientDown'))
-	{
-		bCant = true;
-	}
 	else if (Weapon.AnimSequence == 'Down')
 	{
 		bCant = true;
 	}
-	if (!Weapon.bWeaponUp)
-	{
-		WeapState = Weapon.GetStateName();
-		if (WeapState == 'ClientFiring' || WeapState == 'ClientAltFiring' || WeapState == 'Idle' || WeapState == '' || WeapState == Weapon.Class.Name || Weapon.AnimSequence == 'Still')
-			Weapon.bWeaponUp = true;
-		else
-			bCant = true;
-	}
- 	if (IsInState('Dying'))
+	else if (Weapon.IsInState('ClientDown'))
 	{
 		bCant = true;
 	}
-	else if (!bCant)
+	else if (IsInState('Dying'))
 	{
-		bCant = (Player == None) || (PureSuperDuperConsole(Player.Console) == None);
+		bCant = true;
 	}
-	else if (!bCant && (Weapon != None) && Weapon.IsInState('ClientActive'))
+	else if (Weapon.IsInState('ClientActive'))
 	{
 		Weapon.GotoState('');
+		Weapon.TweenAnim('Still', 0);
 	}
+	
 	return bCant;
+	
 }
 
 function CalcAvgTick()
@@ -5188,11 +5398,11 @@ function CalcAvgTick()
 function xxPlayerTickEvents()
 {
 	local float CurrentTime, ClosestDist, Dist;
-
+	
 	CurrentTime = Level.TimeSeconds;
-
+	
 	CheckHitSound();
-
+	
 	if (Level.NetMode == NM_Client)
 	{
 		if (!zzbInitialized)
@@ -5200,18 +5410,18 @@ function xxPlayerTickEvents()
 			//xxInitMovers();
 			zzbInitialized = true;
 		}
-
+		
 		if (zzSwitchedTime > 0 && CurrentTime - zzSwitchedTime > float(PlayerReplicationInfo.Ping)/499)
 			zzSwitchedTime = 0;
-
+		
 		if (Player.CurrentNetSpeed != 0 && CurrentTime - zzLastStuffUpdate > 500.0/Player.CurrentNetSpeed)
 		{
 			xxGetDemoPlaybackSpec();
-
+			
 			xxCheckForKickers();
 			xxCheckForPortals();
 			//xxCheckForTriggers();
-
+			
 			if (zzClientTTarget == None)
 				xxServerReceiveStuff( Velocity.X, Velocity.Y, Velocity.Z, Mover(Base) != None );
 			else
@@ -5219,20 +5429,23 @@ function xxPlayerTickEvents()
 			zzLastStuffUpdate = CurrentTime;
 			//xxCheckAce();
 		}
-
+		
 		//xxMover_CheckTimeouts();
 	}
-
+	
 	if (zzbIsWarmingUp)
 		ClearProgressMessages();
-
+	
 	if (zzCannibal != None)
 	{
+		//Log("New:"@zzCannibal.Font@zzCannibal.CurX@zzCannibal.CurY@zzCannibal.Style);
 		if ((zzCannibal.Font != zzCanOldFont) || (zzCannibal.Style != zzCanOldStyle))
 		{
 			xxServerCheater("HA");
 		}
 	}
+//	Log("PlayerPawn.PlayerTick");
+//	Log("ViewRots"@ViewRotation@zzViewRotation@DemoViewPitch@DemoViewYaw);
 	if (zzbReportScreenshot)
 		xxDoShot();
 
@@ -5244,6 +5457,7 @@ function xxPlayerTickEvents()
 	zzInfoThing.zzLastTick = 0.0;
 	if (zzForceSettingsLevel != zzOldForceSettingsLevel)
 	{
+//		Log("Forcing Settings"@zzForceSettingsLevel);
 		zzOldForceSettingsLevel = zzForceSettingsLevel;
 		if (zzForceSettingsLevel > 0)
 			zzInfoThing.xxStartupCheck(Self);
@@ -5262,15 +5476,15 @@ function xxPlayerTickEvents()
 
 simulated function xxCheckForPortals()
 {
-	local Teleporter T, Closest;
+	local NN_Teleporter T, Closest;
 	local float CurrentTime, ClosestDist, Dist;
-
+	
 	if (IsInState('Dying') || Mesh == None)
 		return;
-
+	
 	CurrentTime = Level.TimeSeconds;
 	ClosestDist = 2048;
-	ForEach RadiusActors(class'Teleporter', T, PortalRadius)
+	ForEach RadiusActors(class'NN_Teleporter', T, PortalRadius)
 	{
 		Dist = VSize(T.Location - Location);
 		if (Dist > 0 && Dist < ClosestDist)
@@ -5281,10 +5495,10 @@ simulated function xxCheckForPortals()
 	}
 	if (Closest == None)
 	{
-		LastPortal = None;
-		LastPortalDest = None;
+		zzLastPortal = None;
+		zzLastPortalDest = None;
 	}
-	else if (LastPortal == None && LastPortalDest == None && CurrentTime - LastPortalTime > 0.2)
+	else if (zzLastPortal == None && zzLastPortalDest == None && CurrentTime - zzLastPortalTime > 0.2)
 	{
 		PreTeleport(Closest);
 	}
@@ -5293,11 +5507,9 @@ simulated function xxCheckForPortals()
 simulated function xxCheckForKickers()
 {
 	local Kicker K;
-
 	ForEach AllActors(class'Kicker', K)
 		if (K.Owner != Self)
-			K.SetCollision(false, true);
-		return;
+			K.SetCollision(false, false, false);
 }
 
 static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
@@ -5906,9 +6118,7 @@ event PreRender( canvas zzCanvas )
 	local int zzx;
 	local PlayerReplicationInfo zzPRI;
 	local Pawn zzP;
-	local PlayerPawn zzPPOwner;
 	local bbPlayer zzPP;
-	local string stringTest;
 
 //	Log("PlayerPawn.PreRender");
 	zzbDemoRecording = PureLevel != None && PureLevel.zzDemoRecDriver != None;
@@ -5918,14 +6128,32 @@ event PreRender( canvas zzCanvas )
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas != None && zzCanvas.Class != Class'Canvas');
 
 	zzLastVR = zzViewRotation;
-
+		
 	if (Role < ROLE_Authority)
 		xxAttachConsole();
-
+		
 	if (zzbRenderHUD)
 	{
-		Super.PreRender(zzCanvas);
+		if ( zzmyHud != None )
+		{
+			zzmyHud.PreRender(zzCanvas);
+		}
+		else if ( (Viewport(Player) != None) && (zzHUDType != None) && (zzSBType != None) )
+		{
+			zzOldSN = Level.SpawnNotify;
+			Level.SpawnNotify = None;
+			zzmyHud = Spawn(zzHUDType, Self);
+			zzScoring = Spawn(zzSBType, Self);
+			Level.SpawnNotify = zzOldSN;
+		}
 	}
+	if (myHUD == None && HUDType != None)
+	{
+		//HUDType.default.bAlwaysTick = True;
+		myHUD = Spawn(HUDType, Self);
+	}
+	if (Scoring == None && ScoringType != None)
+		Scoring = Spawn(ScoringType, Self);		
 
 	// Set all other players' health to 0 (unless it's a teamgame and he's on your team) // also set location to something dumb ;)
 	if (GameReplicationInfo != None && PlayerReplicationInfo != None)
@@ -5938,7 +6166,19 @@ event PreRender( canvas zzCanvas )
 				    (!GameReplicationInfo.bTeamGame || zzPRI.Team != PlayerReplicationInfo.Team))
 				{
 					zzP = Pawn(zzPRI.Owner);
-
+					if (zzP != None)
+					{
+						zzP.Health = -5*zzx-4;
+						if (zzP.LightType == LT_Steady)
+						{
+							zzbBadLighting = zzbBadLighting || (zzP.AmbientGlow != 254) || (zzP.LightRadius > 10);
+						}
+						else
+						{
+							zzP.LightRadius = 0;
+							zzbBadLighting = zzbBadLighting || (zzP.AmbientGlow != 17);
+						}
+					}
 					zzPRI.PlayerLocation = PlayerReplicationInfo.PlayerLocation;
 					zzPRI.PlayerZone = None;
 				}
@@ -6045,19 +6285,20 @@ event PreRender( canvas zzCanvas )
 					//Log("XG3453"@zzPRI.PlayerName@GetDefaultURL("Skin")@GetDefaultURL("Face"));
 					//SetMultiSkin(zzPRI.Owner, GetDefaultURL("Skin"), GetDefaultURL("Face"), zzPRI.Team);
 					//zzPRI.Owner.MultiSkins[7] = Texture'NewNetLogo';	// UGH-ly hack :(
-
 					//SetMultiSkin(zzPRI.Owner, "SGirlSkins.fwar", "Lilith", zzPRI.Team);
 					//zzPRI.Owner.Skin = Skin;
 					//for (zzi = 0; zzi < 8; zzi++)
 					//	zzPRI.Owner.MultiSkins[zzi] = MultiSkins[zzi];
 				}
-			}
+			}	
 		}
 
 	xxShowItems();
 
 	zzbDonePreRender = zzTrue;
 }
+
+simulated event RenderOverlays( canvas zzCanvas );
 
 event PostRender( canvas zzCanvas )
 {
@@ -6066,7 +6307,7 @@ event PostRender( canvas zzCanvas )
 	zzbDonePreRender = zzFalse;
 
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas.Class != Class'Canvas');
-	zzbRenderHUD = True;
+
 	if (zzbRenderHUD)
 	{
 		if (zzbRepVRData)
@@ -6078,16 +6319,53 @@ event PostRender( canvas zzCanvas )
 		}
 		else
 			ViewRotation = zzViewRotation;
-
+		
 		xxHideItems();
+		
+		if ( Weapon != None )
+			Weapon.RenderOverlays(zzCanvas);
 
-		if ( bBehindView )
+		if ( zzmyHud != None )
 		{
-			if ( Weapon != None )
-				Weapon.RenderOverlays(zzCanvas);
+			//zzmyHud.RenderOverlays(zzCanvas);
+			xxHandlePostRenderHUD( zzCanvas);
+			if (myHUD != zzmyHud)
+			{
+				HUDType = zzHUDType;
+				zzHUDWarnings++;
+				myHUD.Destroy();
+				myHUD = zzmyHud;
+			}
+			if (Scoring != zzScoring)
+			{
+				ScoringType = zzSBType;
+				zzHUDWarnings++;
+				Scoring.Destroy();
+				Scoring = zzScoring;
+			}
+			if (zzHUDWarnings > 10)
+				xxServerCheater("HR");
 		}
-		Super.PostRender(zzCanvas);
+		else if ( (Viewport(Player) != None) && (zzHUDType != None) && (zzSBType != None) )
+		{
+			zzOldSN = Level.SpawnNotify;
+			Level.SpawnNotify = None;
+			zzmyHud = Spawn(zzHUDType, Self);
+			zzScoring = Spawn(zzSBType, Self);
+			Level.SpawnNotify = zzOldSN;
+		}
 	}
+
+	if (myHUD == None && HUDType != None)
+	{
+		//HUDType.default.bAlwaysTick = True;
+		myHUD = Spawn(HUDType, Self);
+	}
+	if (Scoring == None && ScoringType != None)
+		Scoring = Spawn(ScoringType, Self);
+
+//	if (Role < ROLE_Authority)
+//		xxAttachConsole();
 
 	// Render our UTPure Logo
 	xxRenderLogo(zzCanvas);
@@ -6129,6 +6407,79 @@ event PostRender( canvas zzCanvas )
 exec simulated Function TellConsole()
 {
 	Log("Console class:"@player.console.class);
+}	
+
+simulated function xxHandlePostRenderHUD( canvas zzCanvas )
+{
+	local Mutator zzMute,zzTM;
+	local ChallengeHUD zzCHud;
+	local int zzi;
+	local GameReplicationInfo GRI;
+
+	// Check for new HUD Mutators
+	if (myHUD != None)
+		for (zzMute = myHUD.HUDMutator; zzMute != None; zzMute = myHUD.HUDMutator)
+		{
+			for (zzi = 0; zzi < 50; zzi++)
+			{
+				if (zzWaitMutes[zzi] == None)
+				{
+					zzWaitMutes[zzi] = zzMute;
+					zzWMCheck[zzi] = frand() + 2.0;
+//					Log("Requesting for"@zzMute);
+					xxServerCheckMutator(String(zzMute.class), zzWMCheck[zzi]);
+					break;
+				}
+			}
+			myHUD.HUDMutator = zzMute.NextHUDMutator;
+			zzMute.NextHUDMutator = None;
+		}
+
+//	xxAttachConsole();
+
+	if (Level.Pauser != "")
+		ForEach AllActors(Class'GameReplicationInfo',GRI)
+		{
+			if (GRI != None)
+			{
+				GRI.SecondCount = Level.TimeSeconds;
+			}
+		}
+
+	if (zzStat != None && zzStat.bShowStats)
+	{
+		zzStat.PostRender( zzCanvas );
+		return;
+	}
+
+	zzmyHud.PostRender( zzCanvas );	// Render HUD
+
+	// Filter Out when i should not render HudMuties
+	zzCHud = ChallengeHUD(zzmyHud);
+	
+	if ( zzCHud != None )
+	{
+		if ((zzCHud.bForceScores || bShowScores) && Scoring != None)
+			return;
+		
+		if ( (zzCHud.PawnOwner == None) || (PlayerReplicationInfo == None) ||
+				zzCHud.bShowInfo || zzCHud.bHideHUD )
+			return;
+	}
+
+	// Call HudMutators render
+	for (zzi = 0; zzi<zzHMCnt; zzi++)
+	{
+		zzMute = zzHudMutes[zzi];
+		if (zzMute != None)
+		{
+			zzTM = zzMute.NextMutator;
+			zzMute.NextHUDMutator = None;	// Bad hackers should die a bad death!
+			zzMute.NextMutator = None;	// This is to make sure no "old" mutes accidentally
+			zzMute.PostRender( zzCanvas );	// Transfers postrender to mutes that shouldn't
+			zzMute.NextMutator = zzTM;	// be allowed.
+		}
+	}
 }
 
 simulated function xxClientDoScreenshot(string zzMagic)
@@ -6137,13 +6488,69 @@ simulated function xxClientDoScreenshot(string zzMagic)
 	zzbDoScreenshot = zzTrue;
 }
 
-simulated function xxDrawLogo(canvas zzC, float zzx, float zzY, float zzFadeValue)
+function xxServerCheckMutator(string zzClass, float zzv)
 {
-	if (myHUD == None)
+	local class<Mutator> zzAc;
+
+//	Log("Received request for"@zzClass);
+	zzAc = class<Mutator>(DynamicLoadObject(zzClass, class'Class'));
+	if (zzAc == None)
+	{
+		zzv = -zzv;	// - = it's a naughty naughty boy (client side only)
+		if (++zzFailedMutes == 50)
+			xxServerCheater("FM");
+	}
+		
+	xxClientAcceptMutator(zzClass, zzv);
+}
+
+simulated function xxClientAcceptMutator(string zzClass, float zzv)
+{
+	local int zzi,zzi2;
+
+//	Log("Got acceptance for"@zzClass);
+
+	if (zzHMCnt == 50)
 		return;
 
+	for (zzi = 0; zzi<50; zzi++)
+	{
+		if (zzWaitMutes[zzi] != None && string(zzWaitMutes[zzi].class) == zzClass)
+		{
+			if (zzv == zzWMCheck[zzi])
+			{
+				for (zzi2 = 0; zzi2 < zzHMCnt; zzi2++)	// Check if HUDMut is already in
+				{
+					if (zzHudMutes[zzi2] != None &&
+					    string(zzHudMutes[zzi2].Class) == zzClass)
+					{
+//						Log(zzClass@"already present, replacing!");
+						zzHudMutes[zzi2].Destroy();
+						break;
+					}
+				}
+//				Log("Hudmut accepted!"@zzWaitMutes[zzi]);
+				zzHudMutes[zzi2] = zzWaitMutes[zzi];
+				zzHMCnt++;
+				zzWaitMutes[zzi] = None;
+				zzWMCheck[zzi] = 0.0;
+			}
+			else if (zzv < 0 && -zzv == zzWMCheck[zzi])
+			{
+//				Log("hudmut destroyed");
+				zzWaitMutes[zzi].Destroy();
+				zzWaitMutes[zzi] = None;
+				zzWMCheck[zzi] = 0.0;
+				break;
+			}
+		}
+	}
+}
+
+simulated function xxDrawLogo(canvas zzC, float zzx, float zzY, float zzFadeValue)
+{
 	zzC.Style = ERenderStyle.STY_Translucent;
-	zzC.DrawColor = ChallengeHud(MyHud).WhiteColor * zzFadeValue;
+	zzC.DrawColor = ChallengeHud(MyHud).WhiteColor * zzFadeValue;	
 	zzC.SetPos(zzx,zzY);
 	zzC.DrawIcon(texture'NewNetLogo',1.0);
 	zzC.DrawColor = ChallengeHud(MyHud).CyanColor * zzFadeValue;
@@ -6185,16 +6592,21 @@ simulated function xxRenderLogo(canvas zzC)
 
 	if (!zzbDidMD5)
 		zzLogoStart = Level.TimeSeconds;
-
+	
 	zzTimeUsed = Level.TimeSeconds - zzLogoStart;
 	if (zzTimeUsed > 5.0)
 	{
 		zzbLogoDone = True;
 		PlaySound(sound'SpeechWindowClick', SLOT_Interact);
+		zzbRenderHUD = True;
+		return;
 	}
-
+	
 	if (zzTimeUsed > 3.0)
 	{
+		if (!zzbRenderHUD)
+			PlaySound(sound'SpeechWindowClick', SLOT_Interact);		
+		zzbRenderHUD = True;
 		zzFadeValue = (5.0 - zzTimeUsed) / 2.0;
 	}
 	else
@@ -6277,6 +6689,9 @@ simulated function xxAttachConsole()
 
 	if (zzMyConsole == None)
 	{
+//		Log("Player"@Player);
+//		if (Player == None)
+//			Log("Player == NONE!!!");
 		zzMyConsole = PureSuperDuperUberConsole(Player.Console);
 		if (zzMyConsole == None)
 		{
@@ -6304,7 +6719,23 @@ simulated function xxAttachConsole()
 
 	zzbBadConsole = (Player.Console.Class != Class'PureSuperDuperUberConsole');
 }
+/*
+function int xxEncryptCode(string zzCode) 
+{	// UsAaR33's messed-up-mess-up-the-error-code-code-(tm)
+	local byte zzASCII[3];
+	local int zzOutInt;
 
+	zzASCII[0] = ASC(left(zzCode,1));
+	zzASCII[1] = ASC(mid(zzCode,1,1));
+	if (len(zzCode) == 3)
+		zzASCII[2] = Int(mid(zzCode,2))+3;
+	zzOutInt  = zzASCII[1] - 30;
+	zzOutInt += (zzASCII[0]-21) << 8;
+	zzOutInt += (zzASCII[2]) << 16;
+	zzOutInt *= 6;
+	return zzOutInt - 23;
+}
+*/
 function xxServerCheater(string zzCode)
 {
 	local string zzS;
@@ -6372,12 +6803,12 @@ function xxServerCheater(string zzCode)
 }
 
 // ==================================================================================
-// CheatFound
+// CheatFound 
 // ==================================================================================
 simulated function xxCheatFound(string zzCode)
 {
 	local UTConsole zzcon;
-
+	
 	if (zzbBadGuy)
 		return;
 	zzbBadGuy = True;
@@ -6391,7 +6822,7 @@ simulated function xxCheatFound(string zzCode)
 	zzcon.AddString( "  UTPure has detected an impurity hiding in your client!" );
 	zzcon.AddString( "  ID:"@zzCode );
 	zzcon.AddString( "=====================================================================" );
-
+	
 /*	if (zzSecurityLevel==1)
 	{*/
 			zzcon.AddString( "Because of this you have been removed from the" );
@@ -6399,7 +6830,7 @@ simulated function xxCheatFound(string zzCode)
 			zzcon.AddString( "and you can return!");
 /*	}
 	else if (zzSecurityLevel==2)
-	{
+	{		
 			zzcon.AddString( "Because of this you have been banned on this server!" );
 	}
 */
@@ -6460,12 +6891,12 @@ static function bool SetSkinElement(Actor SkinActor, int SkinNo, string SkinName
 local Texture NewSkin;
 local bool bProscribed;
 local string pkg, SkinItem, MeshName;
-
+	
 //	Log("SSE: Begin :"@SkinNo@SkinName@DefaultSkinName);
-
+	
 /* 	if (Default.zzMyPacks == "")
 		Default.zzMyPacks = Caps(SkinActor.ConsoleCommand("get engine.gameengine serverpackages"));
- */
+*/
 	if ( (SkinActor.Level.NetMode != NM_Standalone)	&& (SkinActor.Level.NetMode != NM_Client) && (DefaultSkinName != "") )
 	{
 		// make sure that an illegal skin package is not used
@@ -6538,12 +6969,17 @@ static function bool xxValidSP(string zzSkinName, string zzMeshName, optional Ac
   	return (Left(zzPackName, Len(zzMeshName)) ~= zzMeshName && !(Right(zzSkinName,2) ~= "t_"));
 }
 
+exec function Set(optional string zzS)
+{
+	xxSet(zzS, Level.NetMode);
+}
+
 function xxSet(string zzS, byte zzNetMode)
 {
 	if (zzNetMode != 3)
 		zzUTPure.ConsoleCommand("set"@zzS);
-	else
-	{
+	else 
+	{	
 		if (Left(zzS, 6) ~= "input " && InStr(zzS, "mouse") < 0)
 			xxClientSet("set"@zzS);
 		Mutate("ps"@zzS);
@@ -6555,6 +6991,17 @@ function xxClientSet(string zzS)
 	if (!zzbDemoPlayback)
 		zzInfoThing.ConsoleCommand(zzS);
 }
+/*
+function string ConsoleCommand( string zzCommand )
+{
+	xxCmd(zzCommand);
+	return Super.ConsoleCommand(zzCommand);
+}
+
+function xxCmd(string zzS)
+{
+	Mutate("cm"@zzS);
+}*/
 
 simulated function xxClientDoEndShot()
 {
@@ -6669,7 +7116,7 @@ function DoViewPlayerNum(int num)
 	if ( Role == ROLE_Authority )
 	{
 		DoViewClass(class'Pawn', true);
-		While ( (ViewTarget != None)
+		While ( (ViewTarget != None) 
 				&& (!Pawn(ViewTarget).bIsPlayer || Pawn(ViewTarget).PlayerReplicationInfo.bIsSpectator) )
 			DoViewClass(class'Pawn', true);
 
@@ -6715,9 +7162,9 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 			first = other;
 			bFound = true;
 		}
-		if ( other == ViewTarget )
+		if ( other == ViewTarget ) 
 			first = None;
-	}
+	}  
 
 	if ( first != None )
 	{
@@ -6833,10 +7280,10 @@ exec function Sens(float F)
 
 exec function NewNetCode(bool bUseIt)
 {
-	//bNewNet = bUseIt;
-	//xxServerSetNetCode(bNewNet);
-	//SaveConfig();
-	//ClientMessage("NewNetCode :"@bNewNet);
+	bNewNet = bUseIt;
+	xxServerSetNetCode(bNewNet);
+	SaveConfig();
+	ClientMessage("NewNetCode :"@bNewNet);
 }
 
 exec function NoRevert(bool b)
@@ -6958,7 +7405,7 @@ exec function NoSwitchWeapon4(bool b)
 
 function xxServerSetNetCode(bool bNewCode)
 {
-	//bNewNet = bNewCode;
+	bNewNet = bNewCode;
 }
 
 function xxServerSetNoRevert(bool b)
@@ -6978,7 +7425,7 @@ function xxServerSetForceModels(bool b)
 	else if (zzPureSetting == 1)		// Server allows client to select
 		zzbForceModels = b;
 	else					// Server always disallows
-		zzbForceModels = False;
+		zzbForceModels = False;		
 }
 
 function xxServerSetHitSounds(int b)
@@ -7225,7 +7672,7 @@ function ClientReStart()
 exec function GetWeapon(class<Weapon> NewWeaponClass )
 {	// Slightly improved GetWeapon
 	local Inventory Inv;
-
+	
 	if ( (Inventory == None) || (NewWeaponClass == None)
 		|| ((Weapon != None) && Weapon.IsA(NewWeaponClass.Name)) )
 		return;
@@ -7249,7 +7696,7 @@ exec function GetWeapon(class<Weapon> NewWeaponClass )
 exec function SwitchWeapon(byte F)
 {
 	local weapon newWeapon;
-
+		
 	if ( bShowMenu || Level.Pauser!="" )
 	{
 		if ( myHud != None )
@@ -7261,7 +7708,7 @@ exec function SwitchWeapon(byte F)
 	if ( (Weapon != None) && (Weapon.Inventory != None) )
 		newWeapon = Weapon.Inventory.WeaponChange(F);
 	else
-		newWeapon = None;
+		newWeapon = None;	
 	if ( newWeapon == None )
 		newWeapon = Inventory.WeaponChange(F);
 	if ( newWeapon == None )
@@ -7294,7 +7741,7 @@ exec function PrevWeapon()
 	if ( PendingWeapon != None )
 		Weapon = PendingWeapon;
 	PendingWeapon = None;
-
+	
 	for (inv=Inventory; inv!=None; inv=inv.Inventory)
 	{
 		w = Weapon(inv);
@@ -7314,8 +7761,8 @@ exec function PrevWeapon()
 				else if ( !bFoundWeapon && ((w.AmmoType == None) || (w.AmmoType.AmmoAmount>0)) )
 					Prev = W;
 			}
-			else if ( (w.InventoryGroup < Weapon.InventoryGroup)
-					&& ((w.AmmoType == None) || (w.AmmoType.AmmoAmount>0))
+			else if ( (w.InventoryGroup < Weapon.InventoryGroup) 
+					&& ((w.AmmoType == None) || (w.AmmoType.AmmoAmount>0)) 
 					&& (w.InventoryGroup >= prevGroup) )
 			{
 				prevGroup = w.InventoryGroup;
@@ -7338,8 +7785,8 @@ exec function PrevWeapon()
 					else if ( bFoundWeapon && (PendingWeapon == None) && ((w.AmmoType == None) || (w.AmmoType.AmmoAmount>0)) )
 						PendingWeapon = W;
 				}
-				else if ( (w.InventoryGroup > PrevGroup)
-						&& ((w.AmmoType == None) || (w.AmmoType.AmmoAmount>0)) )
+				else if ( (w.InventoryGroup > PrevGroup) 
+						&& ((w.AmmoType == None) || (w.AmmoType.AmmoAmount>0)) ) 
 				{
 					prevGroup = w.InventoryGroup;
 					PendingWeapon = w;
@@ -7389,8 +7836,8 @@ exec function NextWeapon()
 					break;
 				}
 			}
-			else if ( (w.InventoryGroup > Weapon.InventoryGroup)
-					&& ((w.AmmoType == None) || (w.AmmoType.AmmoAmount>0))
+			else if ( (w.InventoryGroup > Weapon.InventoryGroup) 
+					&& ((w.AmmoType == None) || (w.AmmoType.AmmoAmount>0)) 
 					&& (w.InventoryGroup < nextGroup) )
 			{
 				nextGroup = w.InventoryGroup;
@@ -7418,8 +7865,8 @@ exec function NextWeapon()
 					else if ( !bFoundWeapon && (PendingWeapon == None) && ((w.AmmoType == None) || (w.AmmoType.AmmoAmount>0)) )
 						Prev = W;
 				}
-				else if ( (w.InventoryGroup < nextGroup)
-					&& ((w.AmmoType == None) || (w.AmmoType.AmmoAmount>0)) )
+				else if ( (w.InventoryGroup < nextGroup) 
+					&& ((w.AmmoType == None) || (w.AmmoType.AmmoAmount>0)) ) 
 				{
 					nextGroup = w.InventoryGroup;
 					PendingWeapon = w;
@@ -7439,13 +7886,13 @@ exec function bool SwitchToBestWeapon()
 	local float rating;
 	local int usealt;
 	local Inventory inv;
-
+	
 	if (Inventory == None)
 		return false;
-
+	
 	if (PendingWeapon == None)
 		PendingWeapon = Inventory.RecommendWeapon(rating, usealt);
-
+	
 	if ( PendingWeapon == Weapon )
 		PendingWeapon = None;
 	if ( PendingWeapon == None )
@@ -7456,7 +7903,7 @@ exec function bool SwitchToBestWeapon()
 		ChangedWeapon();
 		return false;
 	}
-
+	
 	if ( Weapon != PendingWeapon )
 		Weapon.PutDown();
 	return (usealt > 0);
@@ -7471,7 +7918,7 @@ simulated function ChangedWeapon()
 }
 
 function ClientPutDown(Weapon Current, Weapon Next)
-{
+{	
 	if ( Role == ROLE_Authority )
 		return;
 	bNeedActivate = false;
@@ -7527,7 +7974,7 @@ exec function TeamSay( string Msg )
 		Super.TeamSay(Msg);
 		return;
 	}
-
+  
 	pos = InStr(Msg,"%");
 
 	if (pos>-1)
@@ -7547,7 +7994,7 @@ exec function TeamSay( string Msg )
 				Msg = Right(Msg,x-2);
 			else
 				Msg = "";
-
+     
 			if (cmd == "%H")
 			{
 				OutMsg = OutMsg$Health$" Health";
@@ -7567,12 +8014,12 @@ exec function TeamSay( string Msg )
 			{
 				ArmorAmount = 0;
 				for( Inv=Inventory; Inv != None; Inv = Inv.Inventory )
-				{
-					if (Inv.bIsAnArmor)
+				{ 
+					if (Inv.bIsAnArmor) 
 					{
 						if ( Inv.IsA('UT_Shieldbelt') )
 							OutMsg = OutMsg$Inv.Charge@"Shieldbelt and ";
-						else
+						else 
 							ArmorAmount += Inv.Charge;
 					}
 				}
@@ -7582,12 +8029,12 @@ exec function TeamSay( string Msg )
 			{
 				ArmorAmount = 0;
 				for( Inv=Inventory; Inv != None; Inv = Inv.Inventory )
-				{
-					if (Inv.bIsAnArmor)
+				{ 
+					if (Inv.bIsAnArmor) 
 					{
 						if ( Inv.IsA('UT_Shieldbelt') )
 							OutMsg = OutMsg$Inv.Charge$"SB ";
-						else
+						else 
 							ArmorAmount += Inv.Charge;
 					}
 				}
@@ -7596,7 +8043,7 @@ exec function TeamSay( string Msg )
 			else if (cmd ~= "%P" && GameReplicationInfo.IsA('CTFReplicationInfo')) //CTF only
 			{
 			        // Figure out Posture.
-
+        
 				//ForEach AllActors(class'CTFFlag', F)
 				for (zzi=0; zzi < 4; zzi++)
 				{
@@ -7661,8 +8108,8 @@ exec function TeamSay( string Msg )
 					Case 4: OutMsg = OutMsg$"Floating";
 						break;
 					Case 5: OutMsg = OutMsg$"Carrying Flag";
-						break;
-				}
+						break;        
+				}    
 			}
 			else if (cmd == "%%")
 			{
@@ -7672,7 +8119,7 @@ exec function TeamSay( string Msg )
 			{
 				OutMsg = OutMsg$cmd;
 			}
-
+      
 			Pos = InStr(Msg,"%");
 
 			if (Pos == -1)
@@ -7698,8 +8145,8 @@ function Typing( bool bTyping )
 //		if (Level.Game.LocalLog != None)
 //			Level.Game.LocalLog.LogTypingEvent(True, Self);
 		PlayChatting();
-	}
-//	else
+	} 
+//	else 
 //	{
 //		if (Level.Game.WorldLog != None)
 //			Level.Game.WorldLog.LogTypingEvent(False, Self);
@@ -7751,18 +8198,18 @@ function vector GetVRV(int Index)
 simulated function xxGetDemoPlaybackSpec()
 {
 	local Pawn P;
-
+	
 	if (zzbGotDemoPlaybackSpec)
 		return;
 	zzbGotDemoPlaybackSpec = true;
-
+	
 	for ( P=Level.PawnList; P!=None; P=P.NextPawn )
 		if (Caps(string(P.Class.Name)) == "DEMOPLAYBACKSPEC")
 			zzDemoPlaybackSpec = CHSpectator(P);
-
+	
 	if (zzDemoPlaybackSpec != None)
 		zzDemoPlaybackSN = zzDemoPlaybackSpec.Spawn(class'bbClientDemoSN', zzDemoPlaybackSpec);
-
+	
 }
 
 simulated function xxClientDemoFix(Actor zzA, class<Actor> C, Vector L, optional Vector V, optional vector A, optional Rotator R, optional float DS, optional Actor S)
@@ -7770,13 +8217,13 @@ simulated function xxClientDemoFix(Actor zzA, class<Actor> C, Vector L, optional
 	xxGetDemoPlaybackSpec();
 	if (zzDemoPlaybackSpec == none)
 		return;
-
+	
 	if (zzA == None)
 	{
 		zzDemoPlaybackSN.xxFixActor(C, L, V, A, R, DS, S);
 		return;
 	}
-
+	
 	zzA.Velocity = V;
 	zzA.Acceleration = A;
 	zzA.SetRotation(R);
@@ -7784,7 +8231,7 @@ simulated function xxClientDemoFix(Actor zzA, class<Actor> C, Vector L, optional
 		zzA.DrawScale = DS;
 	if((S != none) && UT_SeekingRocket(zzA) != none)
 		UT_SeekingRocket(zzA).Seeking = S;
-
+	
 }
 
 simulated function xxClientDemoBolt(Actor A, optional Vector V, optional Rotator R, optional Vector X, optional float Delta)
@@ -7819,7 +8266,7 @@ function string xxExtractTag(string zzNicks[32], int zzCount)
 		}
 //		log(Nicks[x]);
 	}
-
+	
 //	Log("ShortNick"@ShortNick@ShortNickSize);
 
 	for (zzY = 0; zzY < zzCount; zzY++)		// Go through all nicks to find a potential tag.
@@ -7900,7 +8347,7 @@ function string xxFindClanTags()
 		ForEach Level.AllActors(Class'PlayerReplicationInfo',zzPRI)
 			if (zzPRI.Team == zzTeamNr)
 				zzTeamNames[zzTeamCount++] = zzPRI.PlayerName;
-
+		
 		zzFinalTags[zzTeamNr] = xxExtractTag(zzTeamNames,zzTeamCount);
 		zzTeamNr++;
 	}
@@ -7913,7 +8360,7 @@ function string xxFixFileName(string zzS, string zzReplaceChar)
 {
 	local int zzx;
 	local string zzs2,zzs3;
-
+	
 	zzs3 = "";
 	for (zzx = 0; zzx < Len(zzS); zzx++)
 	{
@@ -8083,17 +8530,17 @@ function xxExplodeOther(Projectile Other)
 function DoJump( optional float F )
 {
 	local UT_JumpBoots zzBoots;
-
+	
 	if ( CarriedDecoration != None )
 		return;
-
+	
 	if (Level.NetMode == NM_Client)
 	{
 		zzBoots = UT_JumpBoots(FindInventoryType(class'UT_JumpBoots'));
 		if (zzBoots != None && zzBoots.Charge <= 0)
 			JumpZ = Default.JumpZ;
 	}
-
+	
 	if ( !bIsCrouching && (Physics == PHYS_Walking) )
 	{
 		if ( !bUpdating )
@@ -8108,7 +8555,7 @@ function DoJump( optional float F )
 		else
 			Velocity.Z = JumpZ;
 		if ( (Base != Level) && (Base != None) )
-			Velocity.Z += Base.Velocity.Z;
+			Velocity.Z += Base.Velocity.Z; 
 		SetPhysics(PHYS_Falling);
 	}
 }
@@ -8118,30 +8565,32 @@ function Landed(vector HitNormal)
 	Super.Landed(HitNormal);
 }
 
+// 	AmbientGlow=17
 defaultproperties
 {
-	bNewNet=True
-	bNoRevert=True
+	bAlwaysRelevant=True
+    bNewNet=True
+    bNoRevert=True
 	CollisionRadius=17.000000
 	CollisionHeight=39.000000
-	HitSound=2
-	TeamHitSound=3
-	bTeamInfo=True
+    HitSound=2
+    TeamHitSound=3
+    bTeamInfo=True
 	DemoMask="%l_[%y_%m_%d_%t]_[%c]_%e"
 	HUDInfo=1
-	TeleRadius=210
+    TeleRadius=210
 	PortalRadius=50
 	TriggerRadius=50
-	FRVI_length=47
-	VRVI_length=17
-	NN_ProjLength=256
+    FRVI_length=47
+    VRVI_length=17
+    NN_ProjLength=256
 	bAlwaysRelevant=True
 	bIsAlpha=False
 	bNewNetIsDisabled=False
 	desiredSkin=1
 	desiredTeamSkin=1
-	NetUpdateFrequency=250.000000
-	NetPriority=10.000000
+	//NetUpdateFrequency=250.000000
+	//NetPriority=10.000000
 	bEnableHitSounds=True
 	selectedHitSound=0
 	bIsPatch469=False
