@@ -177,13 +177,10 @@ simulated function PlayAltFiring()
 	LoopAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
 }
 
-/* function AltFire( float Value )
+function AltFire( float Value )
 {
-	bAltFired = true;
-	Super.AltFire(Value);
-} */
-
-function AltFire( float Value ) {
+	/* bAltFired = true;
+	Super.AltFire(Value); */
 	local bbPlayer bbP;
 
 	if (Owner.IsA('Bot'))
@@ -201,22 +198,11 @@ function AltFire( float Value ) {
 
 state ClientFiring
 {
-	simulated function bool ClientFire(float Value)
-	{
-		/* local float MinTapTime;
-
+	simulated function bool ClientFire(float Value) {
 		if (Owner.IsA('Bot'))
 			return Super.ClientFire(Value);
 
-		if (bNewNet)
-			MinTapTime = 0.7;
-		else
-			MinTapTime = 0.2;
-
-		if ( Level.TimeSeconds - TapTime < MinTapTime )
-			return false;
-		bForceFire = bForceFire || ( bCanClientFire && (Pawn(Owner) != None) && (AmmoType.AmmoAmount > 0) );
-		return bForceFire; */
+		return false;
 	}
 }
 
@@ -310,8 +296,8 @@ simulated function NN_TraceFire()
 			bbP.bClientPawnHit = True;
 		}
 
-		/* 
-		
+		/*
+
 		What is all this for? It works just fine without this, seriously, this actually makes it worse. Don't try to fix what's not broken.
 
 		zzbbP = bbPlayer(Other);
@@ -326,8 +312,8 @@ simulated function NN_TraceFire()
 			zzOther = bbP.NN_TraceShot(zzHitLocation,zzHitNormal,zzEndTrace,zzStartTrace,Pawn(Owner));
 			zzbbP.SetCollisionSize(oRadius, oHeight);
 			//bbP.xxChecked(Other != zzOther);
-		} 
-		
+		}
+
 		*/
 	}
 
@@ -423,7 +409,7 @@ simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vect
 		Smoke2 = Spawn(class'NN_SuperShockBeam',Owner,,SmokeLocation,SmokeRotation);
 		Smoke2.MoveAmount = DVector/NumPoints;
 		Smoke2.NumPuffs = NumPoints - 1;
-	} 	
+	}
 	else if (bbPlayer(Owner).cShockBeam == 2) {
 		Smoke = Spawn(class'NN_AlternateSuperShockBeam',Owner,,SmokeLocation,SmokeRotation);
 		Smoke.SetProperties(Pawn(Owner).PlayerReplicationInfo.Team,bbPlayer(Owner).BeamScale,BeamFadeCurve,BeamDuration);
@@ -438,6 +424,7 @@ simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vect
 function TraceFire( float Accuracy )
 {
 	local bbPlayer bbP;
+	local bbPlayer bbPP;
 	local actor NN_Other;
 	local bool bShockCombo;
 	local NN_ShockProjOwnerHidden NNSP;
@@ -461,6 +448,7 @@ function TraceFire( float Accuracy )
 		bbP.zzNN_HitActor = None;
 
 	NN_Other = bbP.zzNN_HitActor;
+	bbPP = bbPlayer(NN_Other);
 	bShockCombo = bbP.zzbNN_Special && (NN_Other == None || NN_ShockProjOwnerHidden(NN_Other) != None && NN_Other.Owner != Owner);
 
 	if (bShockCombo && NN_Other == None)
@@ -502,7 +490,8 @@ function TraceFire( float Accuracy )
 		/* NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
 		bbP.TraceShot(HitLocation,HitNormal,NN_HitLoc,StartTrace); */
 		NN_HitLoc = bbP.zzNN_HitLoc;
-		//bbP.zzNN_HitActor.SetLocation(NN_HitLoc - bbP.zzNN_HitDiff);
+		if (bbP.zzNN_LastHitActor.IsA('bbPlayer') && bbP.PlayerReplicationInfo.Team != bbPP.PlayerReplicationInfo.Team)
+			bbP.zzNN_LastHitActor.SetLocation(NN_HitLoc - bbP.zzNN_HitDiff);
 	}
 	else
 	{
@@ -664,7 +653,7 @@ simulated function AnimEnd ()
 state NormalFire
 {
 	function Fire(float F)
-	{	
+	{
 		if (Owner.IsA('Bot'))
 		{
 			Super.Fire(F);
