@@ -1732,7 +1732,7 @@ function xxServerMove(
 		MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
 
 	if (bNewNet)
-		MaxPosError = FMax(3.0, 0.150 * VSize(ClientVel));
+		MaxPosError = FMax(3.0, 0.150 * 0.150 * (ClientVel dot ClientVel));
 		//MaxPosError = Class'UTPure'.Default.MaxPosError;
 	else
 		MaxPosError = 3.0;
@@ -1740,6 +1740,7 @@ function xxServerMove(
 	LocDiff = Location - ClientLocAbs;
 	ClientLocErr = LocDiff Dot LocDiff;
 	debugClientLocError = ClientLocErr;
+
 	PlayerReplicationInfo.Ping = int(ConsoleCommand("GETPING"));
 	if (zzPendingWeapon != PendingWeapon) {
 		xxSetPendingWeapon(PendingWeapon);
