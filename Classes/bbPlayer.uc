@@ -2399,7 +2399,8 @@ function xxReplicateMove
 		NewMove = PendingMove;
 	}
 	if (Player.CurrentNetSpeed != 0) {
-		NetMoveDelta = FMax(64.0/Player.CurrentNetSpeed, 0.011);
+		NetMoveDelta = FMax(64.0/Player.CurrentNetSpeed, 0.0095);
+	}
 
 	if ( !PendingMove.bForceFire && !PendingMove.bForceAltFire && !PendingMove.bPressedJump
 		&& (PendingMove.Delta < NetMoveDelta - ClientUpdateTime) )
