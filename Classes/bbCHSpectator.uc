@@ -95,10 +95,10 @@ simulated function xxReceivePosition( bbPlayer Other, vector Loc, vector Vel, bo
 {
 	local vector Diff;
 	local float VS;
-
+	
 	if (Level.NetMode != NM_Client || Other == None)
 		return;
-
+	
 	Diff = Loc - Other.Location;
 	VS = VSize(Diff);
 	if (VS < 50)
@@ -139,7 +139,7 @@ function xxPlayerTickEvents()
 			xxInitMovers();
 			zzbInitialized = true;
 		}
-
+		
 		xxMover_CheckTimeouts();
 	}*/
 }
@@ -172,7 +172,7 @@ simulated function xxSetTimes(int RemainingTime, int ElapsedTime)
 event Possess()
 {
 	local Mover M;
-
+	
 	if ( Level.Netmode == NM_Client )
 	{	// Only do this for clients.
 		xxServerSetHitSounds(HitSound);
@@ -184,7 +184,7 @@ event Possess()
 		DefaultTeamHitSound = zzUTPure.Default.DefaultTeamHitSound;
 		bForceDefaultHitSounds = zzUTPure.Default.bForceDefaultHitSounds;
 		//xxSetHitSounds(DefaultHitSound, DefaultTeamHitSound, bForceDefaultHitSounds);
-
+		
 		GameReplicationInfo.RemainingTime = DeathMatchPlus(Level.Game).RemainingTime;
 		GameReplicationInfo.ElapsedTime = DeathMatchPlus(Level.Game).ElapsedTime;
 		//xxSetTimes(GameReplicationInfo.RemainingTime, GameReplicationInfo.ElapsedTime);
@@ -196,7 +196,7 @@ event PreRender( canvas zzCanvas )
 {
 	if (Role < ROLE_Authority)
 		xxAttachConsole();
-
+	
 	Super.PreRender(zzCanvas);
 }
 
@@ -317,14 +317,14 @@ event PostBeginPlay()
 
 	if (cStat != None)
 		Stat = Spawn(cStat, Self);
-
+	
 	Super.PostBeginPlay();
 }
 
 event PostRender( canvas Canvas )
 {
 	local GameReplicationInfo GRI;
-
+	
 	if (Level.Pauser != "")				// Pause Fix/Hack.
 		ForEach AllActors(Class'GameReplicationInfo',GRI)
 		{
@@ -334,7 +334,7 @@ event PostRender( canvas Canvas )
 			}
 		}
 
-	if ( myHud != None )
+	if ( myHud != None )	
 		myHUD.PostRender(Canvas);
 	else if ( (Viewport(Player) != None) && (HUDType != None) )
 	{
@@ -505,7 +505,7 @@ state PlayerSwimming
 	{
 		GotoState('CheatFlying');
 	}
-
+	
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
@@ -536,7 +536,7 @@ function DoViewPlayerNum(int num)
 			return;
 		}
 		for ( P=Level.PawnList; P!=None; P=P.NextPawn )
-			if ( (P.PlayerReplicationInfo != None)
+			if ( (P.PlayerReplicationInfo != None) 
 				&& !P.PlayerReplicationInfo.bIsSpectator
 				&& (P.PlayerReplicationInfo.PlayerID == num) )
 			{
@@ -552,7 +552,7 @@ function DoViewPlayerNum(int num)
 	if ( Role == ROLE_Authority )
 	{
 		DoViewClass(class'Pawn', true);
-		While ( (ViewTarget != None)
+		While ( (ViewTarget != None) 
 				&& (!Pawn(ViewTarget).bIsPlayer || Pawn(ViewTarget).PlayerReplicationInfo.bIsSpectator) )
 			DoViewClass(class'Pawn', true);
 
@@ -598,9 +598,9 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 			first = other;
 			bFound = true;
 		}
-		if ( other == ViewTarget )
+		if ( other == ViewTarget ) 
 			first = None;
-	}
+	}  
 
 	if ( first != None )
 	{
@@ -678,66 +678,66 @@ simulated event Destroyed()
 */
 
 simulated function PlayHitSound(int Dmg)
-{
+{	
 	local Actor SoundPlayer;
 	local float Pitch;
 	local int HS;
-
+	
 	if (Dmg > 0) {
-
+	
 		zzRecentDmgGiven += Dmg;
-
+		
 	} else if (zzRecentDmgGiven > 0) {
-
+	
 		LastPlaySound = Level.TimeSeconds;	// so voice messages won't overlap
-
+		
 		if ( ViewTarget != None )
 			SoundPlayer = ViewTarget;
 		else
 			SoundPlayer = Self;
-
+			
 		Pitch = FClamp(42/zzRecentDmgGiven, 0.22, 3.2);
 		zzRecentDmgGiven = 0;
-
+		
 		if (bForceDefaultHitSounds && !bDisableForceHitSounds)
 			HS = DefaultHitSound;
 		else
 			HS = HitSound;
-
+		
 		if (HS == 1)
 			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
 		else if (HS == 2)
 			SoundPlayer.PlaySound(Sound'HitSound', SLOT_None, 255.0, True,, Pitch);
 		else if (HS == 3)
 			SoundPlayer.PlaySound(Sound'HitSoundFriendly', SLOT_None, 255.0, True);
-
+		
 		zzLastHitSound = LastPlaySound;
-
+		
 	}
 }
 
 simulated function PlayTeamHitSound(int Dmg)
-{
+{	
 	local Actor SoundPlayer;
 	local float Pitch;
 	local int HS;
-
+	
 	if (Dmg > 0) {
-
+	
 		zzRecentTeamDmgGiven += Dmg;
-
+		
 	} else if (zzRecentTeamDmgGiven > 0) {
-
+	
 		LastPlaySound = Level.TimeSeconds;	// so voice messages won't overlap
-
+		
 		if ( ViewTarget != None )
 			SoundPlayer = ViewTarget;
 		else
 			SoundPlayer = Self;
-
+			
 		Pitch = FClamp(42/zzRecentTeamDmgGiven, 0.22, 3.2);
 		zzRecentTeamDmgGiven = 0;
-
+		
 		if (bForceDefaultHitSounds && !bDisableForceHitSounds)
 			HS = DefaultTeamHitSound;
 		else
@@ -749,9 +749,9 @@ simulated function PlayTeamHitSound(int Dmg)
 			SoundPlayer.PlaySound(Sound'HitSound', SLOT_None, 255.0, True,, Pitch);
 		else if (HS == 3)
 			SoundPlayer.PlaySound(Sound'HitSoundFriendly', SLOT_None, 255.0, True);
-
+		
 		zzLastTeamHitSound = LastPlaySound;
-
+		
 	}
 }
 
@@ -759,7 +759,7 @@ simulated function CheckHitSound()
 {
 	if (zzRecentDmgGiven > 0 && Level.TimeSeconds - zzLastHitSound > 0.1)
 		PlayHitSound(0);
-
+		
 	if (zzRecentTeamDmgGiven > 0 && Level.TimeSeconds - zzLastTeamHitSound > 0.1)
 		PlayTeamHitSound(0);
 }
@@ -774,7 +774,7 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 	{
 		if (RelatedPRI_1 == None)
 			return;
-
+			
 		if (GameReplicationInfo != None && GameReplicationInfo.bTeamGame && RelatedPRI_2 != None && RelatedPRI_1.Team == RelatedPRI_2.Team)
 		{
 			if (TeamHitSound > 0)
@@ -823,7 +823,7 @@ exec function FindFlag()
 {
 	local PlayerReplicationInfo zzPRI,zzLastFC,zzFC;
 	local PlayerPawn zzPP;
-
+	
 	zzPP = PlayerPawn(ViewTarget);
 
 	if (zzPP != None && CTFFlag(zzPP.PlayerReplicationInfo.HasFlag) != None)

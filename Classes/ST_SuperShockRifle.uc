@@ -177,13 +177,10 @@ simulated function PlayAltFiring()
 	LoopAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
 }
 
-/* function AltFire( float Value )
+function AltFire( float Value )
 {
-	bAltFired = true;
-	Super.AltFire(Value);
-} */
-
-function AltFire( float Value ) {
+	/* bAltFired = true;
+	Super.AltFire(Value); */
 	local bbPlayer bbP;
 
 	if (Owner.IsA('Bot'))
@@ -427,6 +424,7 @@ simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vect
 function TraceFire( float Accuracy )
 {
 	local bbPlayer bbP;
+	local bbPlayer bbPP;
 	local actor NN_Other;
 	local bool bShockCombo;
 	local NN_ShockProjOwnerHidden NNSP;
@@ -450,6 +448,7 @@ function TraceFire( float Accuracy )
 		bbP.zzNN_HitActor = None;
 
 	NN_Other = bbP.zzNN_HitActor;
+	bbPP = bbPlayer(NN_Other);
 	bShockCombo = bbP.zzbNN_Special && (NN_Other == None || NN_ShockProjOwnerHidden(NN_Other) != None && NN_Other.Owner != Owner);
 
 	if (bShockCombo && NN_Other == None)
@@ -491,7 +490,8 @@ function TraceFire( float Accuracy )
 		/* NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
 		bbP.TraceShot(HitLocation,HitNormal,NN_HitLoc,StartTrace); */
 		NN_HitLoc = bbP.zzNN_HitLoc;
-		//bbP.zzNN_HitActor.SetLocation(NN_HitLoc - bbP.zzNN_HitDiff);
+		if (bbP.zzNN_LastHitActor.IsA('bbPlayer') && bbP.PlayerReplicationInfo.Team != bbPP.PlayerReplicationInfo.Team)
+			bbP.zzNN_LastHitActor.SetLocation(NN_HitLoc - bbP.zzNN_HitDiff);
 	}
 	else
 	{

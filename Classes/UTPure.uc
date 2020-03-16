@@ -1571,8 +1571,8 @@ defaultproperties
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
-    MinPosError=100
-    MaxPosError=2000
-    MaxHitError=10000
+	MinPosError=100
+	MaxPosError=3000
+	MaxHitError=10000
 	ShowTouchedPackage=False
 }
