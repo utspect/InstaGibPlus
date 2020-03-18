@@ -35,4 +35,5 @@ simulated function PostBeginPlay()
 
 defaultproperties
 {
+	bAlwaysRelevant=True
 }

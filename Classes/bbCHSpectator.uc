@@ -431,6 +431,44 @@ auto state CheatFlying
 		Super.PlayerTick(DeltaTime);
 	}
 
+	function ClientUpdatePosition()
+    {
+        local SavedMove CurrentMove;
+        local int realbRun, realbDuck;
+        local bool bRealJump;
+
+        local float TotalTime, AdjPCol;
+        local pawn P;
+        local vector Dir;
+
+        bUpdatePosition = false;
+        realbRun= bRun;
+        realbDuck = bDuck;
+        bRealJump = bPressedJump;
+        CurrentMove = SavedMoves;
+        bUpdating = true;
+        while ( CurrentMove != None )
+        {
+            if ( CurrentMove.TimeStamp <= CurrentTimeStamp )
+            {
+                SavedMoves = CurrentMove.NextMove;
+                CurrentMove.NextMove = FreeMoves;
+                FreeMoves = CurrentMove;
+                FreeMoves.Clear();
+                CurrentMove = SavedMoves;
+            }
+            else
+            {
+                TotalTime += CurrentMove.Delta;
+                CurrentMove = CurrentMove.NextMove;
+            }
+        }
+        bUpdating = false;
+        bDuck = realbDuck;
+        bRun = realbRun;
+        bPressedJump = bRealJump;
+    }
+
 	function ServerMove(
 		float TimeStamp,
 		vector InAccel,

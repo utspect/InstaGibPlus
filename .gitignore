@@ -4,3 +4,6 @@
 *.uc_ig
 make.ini
 *.uc_nn
+
+*.sublime-project
+*.sublime-workspace
