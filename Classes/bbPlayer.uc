@@ -96,6 +96,9 @@ var bool	zzbDemoPlayback;	// Is currently a demo playback (via xxServerMove dete
 var bool	zzbGotDemoPlaybackSpec;
 var CHSpectator zzDemoPlaybackSpec;
 var bbClientDemoSN zzDemoPlaybackSN;
+var bool zzbRestartedPlayer;
+var bool bIsAlive;
+var bool zzbJustConnected;
 
 // Stuff
 var rotator	zzViewRotation;		// Our special View Rotation
@@ -284,12 +287,12 @@ replication
 
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
-		/* zzHUDType, zzSBType, zzSIType,*/ xxClientAcceptMutator, /* zzbWeaponTracer, */ zzForceSettingsLevel,
+		zzHUDType, zzSBType, zzSIType, xxClientAcceptMutator, /* zzbWeaponTracer, */ zzForceSettingsLevel,
 		zzbForceModels, zzbForceDemo, zzbGameStarted, zzbUsingTranslocator, HUDInfo;
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		clientLastUpdateTime, bMustUpdate, bClientIsWalking, debugClientPing, debugNumOfForcedUpdates, debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
+		bIsAlive, clientLastUpdateTime, bMustUpdate, bClientIsWalking, debugClientPing, debugNumOfForcedUpdates, debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
 		xxClientKicker, xxClientSetVelocity; //, xxClientTrigger, xxClientActivateMover;
@@ -418,7 +421,7 @@ simulated function Touch( actor Other )
 						Package != "Unreali"
 			)
 		{
-			zzForceUpdateUntil = Level.TimeSeconds + 0.15;
+			//zzForceUpdateUntil = Level.TimeSeconds + 0.15;
 		}
     }
     Super.Touch(Other);
@@ -624,11 +627,12 @@ event Possess()
 
 	if ( Level.Netmode == NM_Client )
 	{	// Only do this for clients.
-		SetTimer(5, false);
+		zzbJustConnected = true;
+		SetTimer(3, false);
 		Log("Possessed PlayerPawn (bbPlayer) by InstaGib Plus");
 		if (!bIsPatch469) {
 			clientFPS = int(ConsoleCommand("get ini:engine.engine.gamerenderdevice frameratelimit"));
-			setClientNetspeed();
+			//setClientNetspeed();
 		}
 		if (clientFPS > 200) {
 			ConsoleCommand("set ini:engine.engine.gamerenderdevice frameratelimit 200");
@@ -1423,7 +1427,7 @@ function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics, vector N
 	OldLoc = Location;
 
 	bCanTeleport = false;
-	xxNewSetLocation(NewLoc, NewVel);
+	SetLocation(NewLoc);
 	bCanTeleport = true;
 
 	if ( Carried != None )
@@ -1742,10 +1746,29 @@ function xxServerMove(
 	debugClientLocError = ClientLocErr;
 
 	PlayerReplicationInfo.Ping = int(ConsoleCommand("GETPING"));
-	if (zzPendingWeapon != PendingWeapon) {
-		xxSetPendingWeapon(PendingWeapon);
-		zzPendingWeapon = PendingWeapon;
-	}
+	if (SetPendingWeapon)
+    {
+        xxSetPendingWeapon(PendingWeapon);
+        zzPendingWeapon = PendingWeapon;
+    }
+    else
+    {
+        if (MMSupport)
+        {
+            xxSetPendingWeapon(PendingWeapon);
+            zzPendingWeapon = PendingWeapon;
+        }
+        else
+        {
+            if (zzPendingWeapon != PendingWeapon)
+            {
+                xxSetPendingWeapon(PendingWeapon);
+                zzPendingWeapon = PendingWeapon;
+                if (PendingWeapon != None && PendingWeapon.Owner == Self && Weapon != None && !Weapon.IsInState('DownWeapon'))
+                    Weapon.GotoState('DownWeapon');
+            }
+        }
+    }
 
 	if (zzDisabledPlayerCollision > 0) {
 		zzDisabledPlayerCollision--;
@@ -1757,7 +1780,7 @@ function xxServerMove(
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
 
-	if (zzForceUpdateUntil > 0 || zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError || ServerTimeStamp - zzGrappleTime < 0.5) {
+	if (zzForceUpdateUntil > 0 || zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError) {
 		zzbForceUpdate = true;
 		if (ServerTimeStamp > zzForceUpdateUntil)
 			zzForceUpdateUntil = 0;
@@ -1800,6 +1823,11 @@ function xxServerMove(
 		zzLastClientErr = ClientLocErr;
 
 	if (FastTrace(ClientLocAbs)) {
+		// hack fix to stop players from stuttering on respawn
+		if (zzbRestartedPlayer) {
+			zzbRestartedPlayer = false;
+			return;
+		}
 		xxNewMoveSmooth(ClientLocAbs, ClientVel);
 		zzLastClientErr = 0;
 	} else {
@@ -2538,7 +2566,6 @@ exec function ThrowWeapon()
 
 simulated function Sound loadHitSound(int c) {
 	cHitSound[c] = Sound(DynamicLoadObject(sHitSound[c], class'Sound'));
-	Log("Loaded hitsound:"@cHitSound[c]);
 	return cHitSound[c];
 }
 
@@ -4113,6 +4140,7 @@ ignores SeePlayer, HearNoise;
 		bIsCrouching = false;
 		bIsTurning = false;
 		bPressedJump = false;
+		bIsAlive = true;
 		if (Physics != PHYS_Falling) SetPhysics(PHYS_Walking);
 		if ( !IsAnimating() )
 			PlayWaiting();
@@ -4297,7 +4325,8 @@ function GiveMeWeapons()
 			w.WeaponSet(Self);
 			if ( w.AmmoType != None )
 			{
-				w.AmmoType.AmmoAmount = w.AmmoType.MaxAmmo;
+				//w.AmmoType.AmmoAmount = w.AmmoType.MaxAmmo;
+				w.AmmoType.AmmoAmount = 999;
 				if (w.AmmoType != None && w.AmmoType.AmmoAmount <= 0)
 					continue;
 				w.SetSwitchPriority(self);
@@ -4432,6 +4461,7 @@ state PlayerWaking
 
 	function BeginState()
 	{
+		zzbForceUpdate = false;
 		if ( bWokeUp )
 		{
 			zzViewRotation.Pitch = 0;
@@ -4495,10 +4525,7 @@ state Dying
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
 			return;
 
-		Level.Game.DiscardInventory(self);
-
-		bClientIsWalking = true;
-		justRespawned = true;
+		//Level.Game.DiscardInventory(self);
 
 		if ( /* xxRestartPlayer() || */ Level.Game.RestartPlayer(self) )
 		{
@@ -4512,7 +4539,7 @@ state Dying
 			if (!zzbClientRestartedPlayer)
 				ClientReStart();
 
-			//ChangedWeapon();
+			ChangedWeapon();
 			zzSpawnedTime = Level.TimeSeconds;
 		}
 		else
@@ -4539,7 +4566,7 @@ state Dying
 		bMustUpdate = true;
 		bClientIsWalking = false;
     	bJumpStatus = false;
-    	zzbForceUpdate = true;
+		bIsAlive = false;
     	zzIgnoreUpdateUntil = 0;
     	if (zzClientTTarget != None)
         	zzClientTTarget.Destroy();
@@ -4655,11 +4682,12 @@ state Dying
 		else
 		{
 			zzbForceUpdate = true;
-			zzForceUpdateUntil = Level.TimeSeconds + 0.15;
 			zzIgnoreUpdateUntil = 0;
 		}
 		Super.EndState();
 		LastKillTime = 0;
+		zzbForceUpdate = false;
+		zzbRestartedPlayer = true;
 	}
 
 }
@@ -5858,6 +5886,8 @@ event PreRender( canvas zzCanvas )
 
 	zzLastVR = zzViewRotation;
 
+
+
 	if (Role < ROLE_Authority)
 		xxAttachConsole();
 
@@ -6032,8 +6062,13 @@ event PostRender( canvas zzCanvas )
 	xxCleanAvars();
 
 	zzNetspeed = Player.CurrentNetspeed;
-	if (zzMinimumNetspeed != 0 && zzNetspeed < zzMinimumNetspeed)
+	if (zzMinimumNetspeed != 0 && zzNetspeed < zzMinimumNetspeed) {
 		ConsoleCommand("Netspeed"@zzMinimumNetspeed);
+	}
+
+	if (zzNetspeed > 20000) {
+		ConsoleCommand("Netspeed"@zzMinimumNetspeed);
+	}
 
 	if (zzDelayedStartTime != 0.0)
 	{
@@ -6263,7 +6298,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.SetPos(zzx, zzY + 240);
 	zzC.DrawText("ClientPing:"@debugClientPing);
 	zzC.SetPos(zzx, zzY + 260);
-	zzC.DrawText("Is Walking?"@bClientIsWalking);
+	zzC.DrawText("Is Alive?"@bIsAlive);
 	zzC.SetPos(zzx, zzY + 280);
 	zzC.DrawText("LastUpdateTime:"@clientLastUpdateTime);
 	zzC.SetPos(zzx, zzY + 300);
@@ -8135,6 +8170,7 @@ function Landed(vector HitNormal)
 
 defaultproperties
 {
+	bAlwaysRelevant=True
 	bNewNet=True
 	bNoRevert=True
 	CollisionRadius=17.000000
@@ -8150,13 +8186,10 @@ defaultproperties
 	FRVI_length=47
 	VRVI_length=17
 	NN_ProjLength=256
-	bAlwaysRelevant=True
 	bIsAlpha=False
 	bNewNetIsDisabled=False
 	desiredSkin=1
 	desiredTeamSkin=1
-	NetUpdateFrequency=250.000000
-	NetPriority=10.000000
 	bEnableHitSounds=True
 	selectedHitSound=0
 	bIsPatch469=False
