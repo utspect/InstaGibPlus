@@ -78,6 +78,9 @@ var float	zzPauseCountdown;		// Give 120 seconds of "ignore FT"
 var localized config int MinPosError;
 var localized config int MaxPosError;
 var localized config int MaxHitError;
+var localized config float MaxJitterTime;
+var localized config float MinNetUpdateRate;
+var localized config float MaxNetUpdateRate;
 var localized config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
@@ -331,7 +334,7 @@ function PostBeginPlay()
 	if (bDelayedPickupSpawn)
 		Spawn(Class'PureDPS');
 
-// Necessary functions to let the "bExludeKickers" list work	
+// Necessary functions to let the "bExludeKickers" list work
 /////////////////////////////////////////////////////////////////////////
 	if(GetCurrentMapName(MapName))
 		if(IsMapExcluded(MapName))
@@ -1021,10 +1024,11 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		Sender.ClientMessage("- SetForcedTeamSkins x (Set forced skins for your team mates. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- SetForcedSkins x (Set forced skins for your enemies. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- EnableHitSounds x (Enables or disables hitsounds, 0 is disabled, 1 is enabled. Default: 1)");
-		Sender.ClientMessage("- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0)"); 
+		Sender.ClientMessage("- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- ListSkins (Lists the available skins that can be forced)");
 		Sender.ClientMessage("- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam) - Sets your Shock Rifle beam type.");
 		Sender.ClientMessage("- SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
+		Sender.ClientMessage("- SetNetUpdateRate x (Changes how often you update the server on your position, Default: 90)");
 		if (Sender.PlayerReplicationInfo.bAdmin)
 		{
 			Sender.ClientMessage("InstaGib Plus Admin Commands:");
@@ -1574,5 +1578,8 @@ defaultproperties
 	MinPosError=100
 	MaxPosError=3000
 	MaxHitError=10000
+	MaxJitterTime=0.034
+	MinNetUpdateRate=60.0
+	MaxNetUpdateRate=200.0
 	ShowTouchedPackage=False
 }

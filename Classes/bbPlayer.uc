@@ -35,6 +35,7 @@ var globalconfig string sHitSound[16];
 var globalconfig int cShockBeam;
 var globalconfig float BeamScale;
 var globalconfig bool bDrawDebugData;
+var globalconfig float DesiredNetUpdateRate;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
@@ -267,6 +268,9 @@ var bool MMSupport;
 var bool DisablePortals;
 var bool SetPendingWeapon;
 
+var float MaxPosErrorFactor;
+var float TimeBetweenNetUpdates;
+
 replication
 {
 	//	Client->Demo
@@ -295,7 +299,7 @@ replication
 		bIsAlive, clientLastUpdateTime, bMustUpdate, bClientIsWalking, debugClientPing, debugNumOfForcedUpdates, debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
-		xxClientKicker, xxClientSetVelocity; //, xxClientTrigger, xxClientActivateMover;
+		xxClientKicker, xxClientSetVelocity, TimeBetweenNetUpdates; //, xxClientTrigger, xxClientActivateMover;
 
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( bNetOwner && Role == ROLE_Authority && !bDemoRecording )
@@ -323,7 +327,7 @@ replication
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
 		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
-		xxExplodeOther, xxServerSetVelocity; //, xxServerActivateMover;
+		xxExplodeOther, xxServerSetVelocity, xxSetNetUpdateRate; //, xxServerActivateMover;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ProjExplode, /* xxNN_ServerTakeDamage, */ /* xxNN_RadiusDamage, */ xxNN_TeleFrag, xxNN_TransFrag,
@@ -583,6 +587,8 @@ event PostBeginPlay()
 		zzWaitTime = 5.0;
 	}
 	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
+
+	MaxPosErrorFactor = class'UTPure'.default.MaxJitterTime * class'UTPure'.default.MaxJitterTime;
 }
 
 // called after PostBeginPlay on net client
@@ -614,6 +620,7 @@ simulated event PostNetBeginPlay()
 		&& (PlayerReplicationInfo.Owner == None) )
 		PlayerReplicationInfo.SetOwner(self);
 
+	SetNetUpdateRate(DesiredNetUpdateRate);
 }
 
 event Possess()
@@ -1736,7 +1743,7 @@ function xxServerMove(
 		MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
 
 	if (bNewNet)
-		MaxPosError = FMax(3.0, 0.150 * 0.150 * (ClientVel dot ClientVel));
+		MaxPosError = FMax(3.0, MaxPosErrorFactor * (ClientVel dot ClientVel));
 		//MaxPosError = Class'UTPure'.Default.MaxPosError;
 	else
 		MaxPosError = 3.0;
@@ -2427,7 +2434,7 @@ function xxReplicateMove
 		NewMove = PendingMove;
 	}
 	if (Player.CurrentNetSpeed != 0) {
-		NetMoveDelta = FMax(64.0/Player.CurrentNetSpeed, 0.0095);
+		NetMoveDelta = TimeBetweenNetUpdates;
 	}
 
 	if ( !PendingMove.bForceFire && !PendingMove.bForceAltFire && !PendingMove.bPressedJump
@@ -8119,6 +8126,15 @@ simulated function xxClientDemoRec()
 		xxServerDemoReply(zzS);
 }
 
+function xxSetNetUpdateRate(float NewVal) {
+	TimeBetweenNetUpdates = 1.0 / FClamp(NewVal, class'UTPure'.default.MinNetUpdateRate, class'UTPure'.default.MaxNetUpdateRate);
+}
+
+exec function SetNetUpdateRate(float NewVal) {
+	DesiredNetUpdateRate = NewVal;
+	xxSetNetUpdateRate(NewVal);
+}
+
 function xxServerDemoReply(string zzS)
 {
 	zzUTPure.xxLog("Forced Demo:"@PlayerReplicationInfo.PlayerName@zzS);
@@ -8199,4 +8215,6 @@ defaultproperties
 	BeamScale=0.45
 	bIsFinishedLoading=False
 	bDrawDebugData=False
+	DesiredNetUpdateRate=90.0
+	TimeBetweenNetUpdates=0.011
 }
