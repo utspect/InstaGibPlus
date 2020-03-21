@@ -47,6 +47,7 @@ When connected to the server type <b>'mutate playerhelp'</b> in the console to v
 - EnablePure/DisablePure
 - ShowDemos (Will show who is recording demos)
 
+As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickrate)
 
 # Credits<br>
 <b>TimTim</b> - Original NewNet.<br>
