@@ -82,6 +82,10 @@ replication
 	// Client -> Server
 	reliable if (ROLE < ROLE_Authority)
 		ShowStats, xxServerSetHitSounds, xxServerSetTeamHitSounds; //, xxServerActivateMover;
+
+	unreliable if (RemoteRole == ROLE_AutonomousProxy)
+		NewCAP;
+
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
 		xxSetHitSounds, xxSetTimes, xxReceivePosition; //, xxClientActivateMover;
@@ -405,14 +409,126 @@ exec function Jump( optional float F )
 	}
 }
 
+function NewCAP(float TimeStamp, name NewState, EPhysics NewPhysics) {
+	if (CurrentTimeStamp >= TimeStamp) return;
+	CurrentTimeStamp = TimeStamp;
+
+	if (IsInState(NewState) == false)
+		GotoState(NewState);
+
+	SetPhysics(NewPhysics);
+
+	bUpdatePosition = true;
+}
+
 auto state CheatFlying
 {
 	ignores Speech,ShowInventory,ShowPath,Profile,ServerTaunt;
-	
+
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
 		Super.PlayerTick(DeltaTime);
+	}
+
+	function ClientUpdatePosition()
+    {
+        local SavedMove CurrentMove;
+        local int realbRun, realbDuck;
+        local bool bRealJump;
+
+        local float TotalTime, AdjPCol;
+        local pawn P;
+        local vector Dir;
+
+        bUpdatePosition = false;
+        realbRun= bRun;
+        realbDuck = bDuck;
+        bRealJump = bPressedJump;
+        CurrentMove = SavedMoves;
+        bUpdating = true;
+        while ( CurrentMove != None )
+        {
+            if ( CurrentMove.TimeStamp <= CurrentTimeStamp )
+            {
+                SavedMoves = CurrentMove.NextMove;
+                CurrentMove.NextMove = FreeMoves;
+                FreeMoves = CurrentMove;
+                FreeMoves.Clear();
+                CurrentMove = SavedMoves;
+            }
+            else
+            {
+                TotalTime += CurrentMove.Delta;
+                CurrentMove = CurrentMove.NextMove;
+            }
+        }
+        bUpdating = false;
+        bDuck = realbDuck;
+        bRun = realbRun;
+        bPressedJump = bRealJump;
+    }
+
+	function ServerMove(
+		float TimeStamp,
+		vector InAccel,
+		vector ClientLoc,
+		bool NewbRun,
+		bool NewbDuck,
+		bool NewbJumpStatus,
+		bool bFired,
+		bool bAltFired,
+		bool bForceFire,
+		bool bForceAltFire,
+		eDodgeDir DodgeMove,
+		byte ClientRoll,
+		int View,
+		optional byte OldTimeDelta,
+		optional int OldAccel
+	) {
+		local float DeltaTime, clientErr, OldTimeStamp;
+		local rotator DeltaRot, Rot;
+		local vector Accel, LocDiff;
+		local int maxPitch, ViewPitch, ViewYaw;
+		local actor OldBase;
+		local bool NewbPressedJump, OldbRun, OldbDuck;
+		local eDodgeDir OldDodgeMove;
+
+		// If this move is outdated, discard it.
+		if ( CurrentTimeStamp >= TimeStamp )
+			return;
+
+		NewbPressedJump = (bJumpStatus != NewbJumpStatus);
+		bJumpStatus = NewbJumpStatus;
+
+		// handle firing and alt-firing
+		if ( bFired )
+		{
+			if ( bForceFire && (Weapon != None) )
+				Weapon.ForceFire();
+			else if ( bFire == 0 )
+				Fire(0);
+			bFire = 1;
+		}
+		else
+			bFire = 0;
+
+
+		if ( bAltFired )
+		{
+			if ( bForceAltFire && (Weapon != None) )
+				Weapon.ForceAltFire();
+			else if ( bAltFire == 0 )
+				AltFire(0);
+			bAltFire = 1;
+		}
+		else
+			bAltFire = 0;
+
+		CurrentTimeStamp = TimeStamp;
+		ServerTimeStamp = Level.TimeSeconds;
+
+		NewCAP(TimeStamp, GetStateName(), Physics);
 	}
 }
 
@@ -422,7 +538,7 @@ state PlayerWalking
 	{
 		GotoState('CheatFlying');
 	}
-	
+
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
