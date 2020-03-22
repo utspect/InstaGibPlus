@@ -34,7 +34,6 @@ var globalconfig int selectedHitSound;
 var globalconfig string sHitSound[16];
 var globalconfig int cShockBeam;
 var globalconfig float BeamScale;
-var globalconfig bool bDrawDebugData;
 var globalconfig float DesiredNetUpdateRate;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
@@ -68,6 +67,7 @@ var bool	zzbUsingTranslocator;
 var byte	HUDInfo;		// 0 = Off, 1 = boots/timer, 2 = Team Info too.
 
 // Debug Stuff
+var bool bDrawDebugData;
 var vector debugNewAccel;
 var vector debugPlayerLocation;
 var vector debugClientHitLocation;
@@ -304,11 +304,18 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		clientForcedPosition, bIsAlive, clientLastUpdateTime, bMustUpdate, bClientIsWalking, debugClientPing, debugNumOfForcedUpdates, debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
+		bIsAlive, bMustUpdate, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
 		xxClientKicker, xxClientSetVelocity, TimeBetweenNetUpdates, xxClientSpawnSSRBeam; //, xxClientTrigger, xxClientActivateMover;
 
+	// Client->Server debug data
+	reliable if ( Role == ROLE_AutonomousProxy )
+		bDrawDebugData;
+	// Server->Client debug data
+	reliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
+		clientLastUpdateTime, clientForcedPosition, debugClientPing, debugNumOfForcedUpdates,
+		debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError;
 
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( bNetOwner && Role == ROLE_Authority && !bDemoRecording )
@@ -325,13 +332,13 @@ replication
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
-		/* xxServerMove, */ bIsFinishedLoading, zzNN_LastHitActor, xxServerCheater,
+		xxServerMove, bIsFinishedLoading, zzNN_LastHitActor, xxServerCheater,
 		zzbConsoleInvalid, zzFalse, zzTrue, zzNetspeed, zzbBadConsole, zzbBadCanvas, zzbVRChanged,
 		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD;
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
+		xxServerCheckMutator, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
 		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay,Hold,Go,
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
@@ -1759,6 +1766,12 @@ function xxServerMove(
 	LocDiff = Location - ClientLocAbs;
 	ClientLocErr = LocDiff Dot LocDiff;
 	debugClientLocError = ClientLocErr;
+
+	if (ClientLocErr > MaxPosError) {
+		// fix for stairs
+		LocDiff.Z = FMax(Abs(LocDiff.Z) - MaxStepHeight, 0);
+		ClientLocErr = LocDiff Dot LocDiff;
+	}
 
 	debugClientForceUpdate = false;
 
@@ -4003,11 +4016,11 @@ ignores SeePlayer, HearNoise, Bump;
         if (DodgeMove == DODGE_Forward)
             Velocity = 1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
         else if (DodgeMove == DODGE_Back)
-            Velocity = -1.5*GroundSpeed*X + (Velocity Dot Y)*Y; 
+            Velocity = -1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
         else if (DodgeMove == DODGE_Left)
-            Velocity = 1.5*GroundSpeed*Y + (Velocity Dot X)*X; 
+            Velocity = 1.5*GroundSpeed*Y + (Velocity Dot X)*X;
         else if (DodgeMove == DODGE_Right)
-            Velocity = -1.5*GroundSpeed*Y + (Velocity Dot X)*X; 
+            Velocity = -1.5*GroundSpeed*Y + (Velocity Dot X)*X;
 
         Velocity.Z = 160;
         PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, true, 800, 1.0 );
@@ -4285,7 +4298,7 @@ simulated function TweenToWalking(float tweentime)
     BaseEyeHeight = Default.BaseEyeHeight;
     if (Weapon == None)
         LoopAnim('Walk', 1.15, 0.055);
-    else if ( Weapon.bPointing || (CarriedDecoration != None) ) 
+    else if ( Weapon.bPointing || (CarriedDecoration != None) )
     {
         if (Weapon.Mass < 20)
             LoopAnim('WalkSMFR', 1.15, 0.001);
@@ -4298,7 +4311,7 @@ simulated function TweenToWalking(float tweentime)
             LoopAnim('WalkSM', 1.15, 0.001);
         else
             LoopAnim('WalkLG', 1.15, 0.001);
-    } 
+    }
 }
 
 simulated function PlayWalking()
@@ -4306,7 +4319,7 @@ simulated function PlayWalking()
     BaseEyeHeight = Default.BaseEyeHeight;
     if (Weapon == None)
         LoopAnim('Walk', 1.3, 0.055);
-    else if ( Weapon.bPointing || (CarriedDecoration != None) ) 
+    else if ( Weapon.bPointing || (CarriedDecoration != None) )
     {
         if (Weapon.Mass < 20)
             LoopAnim('WalkSMFR', 1.15, 0.055);
@@ -4375,7 +4388,7 @@ simulated function TweenToRunning(float tweentime)
     }
     else if (Weapon == None)
         PlayAnim('RunSM', 1.1, 0.055);
-    else if ( Weapon.bPointing ) 
+    else if ( Weapon.bPointing )
     {
         if (Weapon.Mass < 20)
             PlayAnim('RunSMFR', 1.1, 0.055);
@@ -4388,7 +4401,7 @@ simulated function TweenToRunning(float tweentime)
             PlayAnim('RunSM', 1.1, 0.055);
         else
             PlayAnim('RunLG', 1.1, 0.055);
-    } 
+    }
 }
 
 simulated function PlayRunning()
@@ -4412,7 +4425,7 @@ simulated function PlayRunning()
     }
     else if (Weapon == None)
         LoopAnim('RunSM', 1.1);
-    else if ( Weapon.bPointing ) 
+    else if ( Weapon.bPointing )
     {
         if (Weapon.Mass < 20)
             LoopAnim('RunSMFR', 1.1);
@@ -6178,7 +6191,7 @@ event PreRender( canvas zzCanvas )
 								// Set the skin
 								if (zzPRI.Team == Self.PlayerReplicationInfo.Team)
 									setForcedTeamSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
-								else 
+								else
 									setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
 							}
 						}
