@@ -74,6 +74,7 @@ var vector debugClientHitLocation;
 var vector debugClientHitNormal;
 var vector debugClientHitDiff;
 var vector debugClientEnemyHitLocation;
+var vector clientForcedPosition;
 var bool bClientPawnHit;
 var float debugClientLocError;
 var bool debugClientForceUpdate;
@@ -100,6 +101,8 @@ var bbClientDemoSN zzDemoPlaybackSN;
 var bool zzbRestartedPlayer;
 var bool bIsAlive;
 var bool zzbJustConnected;
+var bool bIsForcingEnemyMaleSkin;
+var bool bIsForcingFriendMaleSkin;
 
 // Stuff
 var rotator	zzViewRotation;		// Our special View Rotation
@@ -301,7 +304,7 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		bIsAlive, clientLastUpdateTime, bMustUpdate, bClientIsWalking, debugClientPing, debugNumOfForcedUpdates, debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
+		clientForcedPosition, bIsAlive, clientLastUpdateTime, bMustUpdate, bClientIsWalking, debugClientPing, debugNumOfForcedUpdates, debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
 		xxClientKicker, xxClientSetVelocity, TimeBetweenNetUpdates, xxClientSpawnSSRBeam; //, xxClientTrigger, xxClientActivateMover;
@@ -624,8 +627,6 @@ simulated event PostNetBeginPlay()
 	if ( (PlayerReplicationInfo != None)
 		&& (PlayerReplicationInfo.Owner == None) )
 		PlayerReplicationInfo.SetOwner(self);
-
-	SetNetUpdateRate(DesiredNetUpdateRate);
 }
 
 event Possess()
@@ -654,6 +655,7 @@ event Possess()
 		zzInfoThing = Spawn(Class'PureInfo');
 		//xxServerSetNetCode(bNewNet);
 		playedHitSound = loadHitSound(selectedHitSound);
+		SetNetUpdateRate(DesiredNetUpdateRate);
 		xxServerSetNoRevert(bNoRevert);
 		xxServerSetForceModels(bForceModels);
 		xxServerSetHitSounds(HitSound);
@@ -1418,7 +1420,7 @@ function xxCAPWalkingWalking(float TimeStamp,
 	xxPureCAP(TimeStamp,'PlayerWalking',PHYS_Walking,Loc,Vel,NewBase);
 }
 
-function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics, vector NewLoc, vector NewVel, Actor NewBase)
+simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics, vector NewLoc, vector NewVel, Actor NewBase)
 {
 	local Decoration Carried;
 	local vector OldLoc;
@@ -1757,6 +1759,8 @@ function xxServerMove(
 	ClientLocErr = LocDiff Dot LocDiff;
 	debugClientLocError = ClientLocErr;
 
+	debugClientForceUpdate = false;
+
 	PlayerReplicationInfo.Ping = int(ConsoleCommand("GETPING"));
 	if (SetPendingWeapon)
     {
@@ -1840,9 +1844,15 @@ function xxServerMove(
 			zzbRestartedPlayer = false;
 			return;
 		}
+
 		xxNewMoveSmooth(ClientLocAbs, ClientVel);
+		clientForcedPosition = ClientLocAbs;
 		zzLastClientErr = 0;
 	} else {
+		if (zzbRestartedPlayer) {
+			zzbRestartedPlayer = false;
+			return;
+		}
 		Carried = CarriedDecoration;
 		OldLoc = Location;
 
@@ -3957,7 +3967,7 @@ state CheatFlying
 
 state PlayerWalking
 {
-ignores SeePlayer, HearNoise;
+ignores SeePlayer, HearNoise, Bump;
 
 	/*
 	simulated function Bump( actor Other )
@@ -3980,6 +3990,30 @@ ignores SeePlayer, HearNoise;
 			DodgeDir = DODGE_None;
 		Global.Landed(HitNormal);
 	}
+
+	simulated function Dodge(eDodgeDir DodgeMove)
+    {
+        local vector X,Y,Z;
+
+        if ( bIsCrouching || (Physics != PHYS_Walking) )
+            return;
+
+        GetAxes(Rotation,X,Y,Z);
+        if (DodgeMove == DODGE_Forward)
+            Velocity = 1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
+        else if (DodgeMove == DODGE_Back)
+            Velocity = -1.5*GroundSpeed*X + (Velocity Dot Y)*Y; 
+        else if (DodgeMove == DODGE_Left)
+            Velocity = 1.5*GroundSpeed*Y + (Velocity Dot X)*X; 
+        else if (DodgeMove == DODGE_Right)
+            Velocity = -1.5*GroundSpeed*Y + (Velocity Dot X)*X; 
+
+        Velocity.Z = 160;
+        PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, true, 800, 1.0 );
+        PlayDodge(DodgeMove);
+        DodgeDir = DODGE_Active;
+        SetPhysics(PHYS_Falling);
+    }
 
 	function PlayerMove( float DeltaTime )
 	{
@@ -4230,19 +4264,168 @@ state PlayerWaiting
 	}
 
 }
-/*
-function PlayDodge(eDodgeDir DodgeMove)
+
+/******************************************
+ *				Animations
+ ******************************************
+*/
+
+simulated function PlayTurning()
 {
+    BaseEyeHeight = Default.BaseEyeHeight;
+    if ( (Weapon == None) || (Weapon.Mass < 20) )
+        PlayAnim('TurnSM', 0.3, 0.055);
+    else
+        PlayAnim('TurnLG', 0.3, 0.055);
+}
+
+simulated function TweenToWalking(float tweentime)
+{
+    BaseEyeHeight = Default.BaseEyeHeight;
+    if (Weapon == None)
+        LoopAnim('Walk', 1.15, 0.055);
+    else if ( Weapon.bPointing || (CarriedDecoration != None) ) 
+    {
+        if (Weapon.Mass < 20)
+            LoopAnim('WalkSMFR', 1.15, 0.001);
+        else
+            LoopAnim('WalkLGFR', 1.15, 0.001);
+    }
+    else
+    {
+        if (Weapon.Mass < 20)
+            LoopAnim('WalkSM', 1.15, 0.001);
+        else
+            LoopAnim('WalkLG', 1.15, 0.001);
+    } 
+}
+
+simulated function PlayWalking()
+{
+    BaseEyeHeight = Default.BaseEyeHeight;
+    if (Weapon == None)
+        LoopAnim('Walk', 1.3, 0.055);
+    else if ( Weapon.bPointing || (CarriedDecoration != None) ) 
+    {
+        if (Weapon.Mass < 20)
+            LoopAnim('WalkSMFR', 1.15, 0.055);
+        else
+            LoopAnim('WalkLGFR', 1.15, 0.055);
+    }
+    else
+    {
+        if (Weapon.Mass < 20)
+            LoopAnim('WalkSM', 1.15, 0.055);
+        else
+            LoopAnim('WalkLG', 1.15, 0.055);
+    }
+}
+
+simulated function PlayForcedSkinDodge(eDodgeDir DodgeMove)
+{
+	local bbPlayer bbP;
 	Velocity.Z = 210;
 	if ( DodgeMove == DODGE_Left )
-		TweenAnim('DodgeL', 0.75);
+		TweenAnim('DodgeL', 0.1);
 	else if ( DodgeMove == DODGE_Right )
-		TweenAnim('DodgeR', 0.75);
+		TweenAnim('DodgeR', 0.1);
 	else if ( DodgeMove == DODGE_Back )
-		TweenAnim('DodgeB', 0.75);
+		TweenAnim('DodgeB', 0.1);
 	else
-		PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.2);
-}*/
+		PlayAnim('Flip', 2.55);
+}
+
+simulated function PlayDodge(eDodgeDir DodgeMove)
+{
+	local bbPlayer bbP;
+	Velocity.Z = 210;
+	if ( DodgeMove == DODGE_Left )
+		TweenAnim('DodgeL', 0.1);
+	else if ( DodgeMove == DODGE_Right )
+		TweenAnim('DodgeR', 0.1);
+	else if ( DodgeMove == DODGE_Back )
+		TweenAnim('DodgeB', 0.1);
+	else
+		PlayAnim('Flip', 2.35, 0.055); // attempt at trying to fix forced skins forward dodging, but looks weird on female models
+}
+
+simulated function TweenToRunning(float tweentime)
+{
+    local vector X,Y,Z, Dir;
+
+    BaseEyeHeight = Default.BaseEyeHeight;
+    if (bIsWalking)
+    {
+        TweenToWalking(0); // 0? yeah, it doesn't matter, check above
+        return;
+    }
+
+    GetAxes(Rotation, X,Y,Z);
+    Dir = Normal(Acceleration);
+    if ( (Dir Dot X < 0.75) && (Dir != vect(0,0,0)) )
+    {
+        // strafing or backing up
+        if ( Dir Dot X < -0.75 )
+            PlayAnim('BackRun', 1.1, 0.055);
+        else if ( Dir Dot Y > 0 )
+            PlayAnim('StrafeR', 1.1, 0.055);
+        else
+            PlayAnim('StrafeL', 1.1, 0.055);
+    }
+    else if (Weapon == None)
+        PlayAnim('RunSM', 1.1, 0.055);
+    else if ( Weapon.bPointing ) 
+    {
+        if (Weapon.Mass < 20)
+            PlayAnim('RunSMFR', 1.1, 0.055);
+        else
+            PlayAnim('RunLGFR', 1.1, 0.055);
+    }
+    else
+    {
+        if (Weapon.Mass < 20)
+            PlayAnim('RunSM', 1.1, 0.055);
+        else
+            PlayAnim('RunLG', 1.1, 0.055);
+    } 
+}
+
+simulated function PlayRunning()
+{
+    local vector X,Y,Z, Dir;
+
+    BaseEyeHeight = Default.BaseEyeHeight;
+
+    // determine facing direction
+    GetAxes(Rotation, X,Y,Z);
+    Dir = Normal(Acceleration);
+    if ( (Dir Dot X < 0.75) && (Dir != vect(0,0,0)) )
+    {
+        // strafing or backing up
+        if ( Dir Dot X < -0.75 )
+            LoopAnim('BackRun', 1.1);
+        else if ( Dir Dot Y > 0 )
+            LoopAnim('StrafeR', 1.1);
+        else
+            LoopAnim('StrafeL', 1.1);
+    }
+    else if (Weapon == None)
+        LoopAnim('RunSM', 1.1);
+    else if ( Weapon.bPointing ) 
+    {
+        if (Weapon.Mass < 20)
+            LoopAnim('RunSMFR', 1.1);
+        else
+            LoopAnim('RunLGFR', 1.1);
+    }
+    else
+    {
+        if (Weapon.Mass < 20)
+            LoopAnim('RunSM', 1.1);
+        else
+            LoopAnim('RunLG', 1.1);
+    }
+}
 
 function xxServerSetReadyToPlay()
 {
@@ -4337,8 +4520,7 @@ function GiveMeWeapons()
 			w.WeaponSet(Self);
 			if ( w.AmmoType != None )
 			{
-				//w.AmmoType.AmmoAmount = w.AmmoType.MaxAmmo;
-				w.AmmoType.AmmoAmount = 999;
+				w.AmmoType.AmmoAmount = w.AmmoType.MaxAmmo;
 				if (w.AmmoType != None && w.AmmoType.AmmoAmount <= 0)
 					continue;
 				w.SetSwitchPriority(self);
@@ -4906,10 +5088,11 @@ function PlayWaiting()
 		{
 			If (zzViewRotation.Pitch < 32768)
 			{
-				if ( (Weapon == None) || (Weapon.Mass < 20) )
+				if ( (Weapon == None) || (Weapon.Mass < 20) ) {
 					TweenAnim('AimUpSm', 0.3);
-				else
+				} else {
 					TweenAnim('AimUpLg', 0.3);
+				}
 			}
 			else
 			{
@@ -5279,6 +5462,7 @@ simulated function xxCheckForKickers()
 		return;
 }
 
+
 static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 
 	/**
@@ -5600,7 +5784,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.aphe4Indina", "FCommandoSkins.aphe");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 1: // Female Commando Anna
 			if (TeamNum == 0) {
@@ -5616,7 +5799,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.cmdo4Anna", "FCommandoSkins.anna");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 2: // Female Commando Mercenary
 			if (TeamNum == 0) {
@@ -5632,7 +5814,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.daco4Jayce", "FCommandoSkins.daco");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 3: // Female Commando Necris
 			if (TeamNum == 0) {
@@ -5648,7 +5829,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.goth4Cryss", "FCommandoSkins.goth");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 4: // Female Soldier Marine
 			if (TeamNum == 0) {
@@ -5664,7 +5844,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "SGirlSkins.fbth4Annaka", "SGirlSkins.fbth");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 5: // Female Soldier Metal Guard
 			if (TeamNum == 0) {
@@ -5680,7 +5859,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "SGirlSkins.Garf4Isis", "SGirlSkins.Garf");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 6: // Female Soldier Soldier
 			if (TeamNum == 0) {
@@ -5696,7 +5874,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "SGirlSkins.army4Lauren", "SGirlSkins.army");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 7: // Female Soldier Venom
 			if (TeamNum == 0) {
@@ -5712,7 +5889,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "SGirlSkins.Venm4Athena", "SGirlSkins.Venm");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 8: // Female Soldier War Machine
 			if (TeamNum == 0) {
@@ -5728,7 +5904,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "SGirlSkins.fwar4Cathode", "SGirlSkins.fwar");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 9: // Male Commando Commando
 			if (TeamNum == 0) {
@@ -5744,7 +5919,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 1, "CommandoSkins.cmdo2Blake", "CommandoSkins.cmdo");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 10: // Male Commando Mercenary
 			if (TeamNum == 0) {
@@ -5760,7 +5934,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 1, "CommandoSkins.daco2Boris", "CommandoSkins.daco");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 11: // Male Commando Necris
 			if (TeamNum == 0) {
@@ -5776,7 +5949,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 1, "CommandoSkins.goth2Grail", "CommandoSkins.goth");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 12: // Male Soldier Marine
 			if (TeamNum == 0) {
@@ -5792,7 +5964,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "SoldierSkins.blkt4Malcom", "SoldierSkins.blkt");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 13: // Male Soldier Metal Guard
 			if (TeamNum == 0) {
@@ -5808,7 +5979,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "SoldierSkins.Gard4Drake", "SoldierSkins.Gard");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 14: // Male Soldier Raw Steel
 			if (TeamNum == 0) {
@@ -5824,7 +5994,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "SoldierSkins.RawS4Arkon", "SoldierSkins.RawS");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 15: // Male Soldier Soldier
 			if (TeamNum == 0) {
@@ -5840,7 +6009,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "SoldierSkins.sldr4Brock", "SoldierSkins.sldr");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 16: // Male Soldier War Machine
 			if (TeamNum == 0) {
@@ -5856,7 +6024,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			SetSkinElement(SkinActor, 3, "SoldierSkins.hkil4Matrix", "SoldierSkins.hkil");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 17: // Boss
 			if (TeamNum == 0) {
@@ -5874,7 +6041,6 @@ static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int Tea
 			}
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTBoss'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 	}
 }
@@ -5897,7 +6063,6 @@ event PreRender( canvas zzCanvas )
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas != None && zzCanvas.Class != Class'Canvas');
 
 	zzLastVR = zzViewRotation;
-
 
 
 	if (Role < ROLE_Authority)
@@ -6012,7 +6177,7 @@ event PreRender( canvas zzCanvas )
 								// Set the skin
 								if (zzPRI.Team == Self.PlayerReplicationInfo.Team)
 									setForcedTeamSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
-								else
+								else 
 									setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
 							}
 						}
@@ -6317,6 +6482,10 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.DrawText("MaxTimeMargin:"@MaxTimeMargin);
 	zzC.SetPos(zzx, zzY + 320);
 	zzC.DrawText("finishedLoading?:"@bIsFinishedLoading);
+	zzC.SetPos(zzx, zzY + 340);
+	zzC.DrawText("NetUpdateRate:"@DesiredNetUpdateRate);
+	zzC.SetPos(zzx, zzY + 360);
+	zzC.DrawText("UpdatedPosition:"@clientForcedPosition);
 	zzC.Style = ERenderStyle.STY_Normal;
 }
 
@@ -8206,6 +8375,7 @@ function xxSetNetUpdateRate(float NewVal) {
 exec function SetNetUpdateRate(float NewVal) {
 	DesiredNetUpdateRate = NewVal;
 	xxSetNetUpdateRate(NewVal);
+	SaveConfig();
 }
 
 function xxServerDemoReply(string zzS)
@@ -8262,8 +8432,6 @@ defaultproperties
 	bAlwaysRelevant=True
 	bNewNet=True
 	bNoRevert=True
-	CollisionRadius=17.000000
-	CollisionHeight=39.000000
 	HitSound=2
 	TeamHitSound=3
 	bTeamInfo=True
