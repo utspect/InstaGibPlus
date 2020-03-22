@@ -192,8 +192,6 @@ simulated function PlayAltFiring()
 
 function AltFire( float Value )
 {
-	/* bAltFired = true;
-	Super.AltFire(Value); */
 	local bbPlayer bbP;
 
 	if (Owner.IsA('Bot'))
@@ -425,20 +423,10 @@ simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vect
 	SmokeRotation = rotator(DVector);
 	SmokeRotation.roll = Rand(65535);
 
-	if (bbPlayer(Owner).cShockBeam == 1) {
-		Smoke2 = Spawn(class'NN_SuperShockBeam',Owner,,SmokeLocation,SmokeRotation);
-		Smoke2.MoveAmount = DVector/NumPoints;
-		Smoke2.NumPuffs = NumPoints - 1;
-	}
-	else if (bbPlayer(Owner).cShockBeam == 2) {
-		Smoke = Spawn(class'NN_AlternateSuperShockBeam',Owner,,SmokeLocation,SmokeRotation);
-		Smoke.SetProperties(Pawn(Owner).PlayerReplicationInfo.Team,bbPlayer(Owner).BeamScale,BeamFadeCurve,BeamDuration);
-		Smoke.MoveAmount = DVector/NumPoints;
-		Smoke.NumPuffs = NumPoints - 1;
-	}
-	//Smoke2 = Spawn(class'NN_SuperShockBeam',Owner,,SmokeLocation,SmokeRotation);
+	bbPlayer(Owner).xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, Owner);
+
 	if (bbPlayer(Owner) != None)
-		bbPlayer(Owner).xxClientDemoFix(None, class'NN_AlternateSuperShockBeam',SmokeLocation,,,SmokeRotation);
+		bbPlayer(Owner).xxClientDemoFix(None, class'NN_SuperShockBeam',SmokeLocation,,,SmokeRotation);
 }
 
 function TraceFire( float Accuracy )
@@ -622,10 +610,7 @@ simulated function DoSuperRing2(PlayerPawn Pwner, vector HitLocation, vector Hit
 
 function SpawnEffect(vector HitLocation, vector SmokeLocation)
 {
-	local NN_SuperShockBeam Smoke,shock;
-	local Vector DVector;
-	local int NumPoints;
-	local rotator SmokeRotation;
+	local Pawn P;
 
 	if (Owner.IsA('Bot'))
 	{
@@ -633,21 +618,13 @@ function SpawnEffect(vector HitLocation, vector SmokeLocation)
 		return;
 	}
 
-	DVector = HitLocation - SmokeLocation;
-	NumPoints = VSize(DVector)/135.0;
-	if ( NumPoints < 1 )
-		return;
-	SmokeRotation = rotator(DVector);
-	SmokeRotation.roll = Rand(65535);
-
-	if (bNewNet && !bAltFired)
-		Smoke = Spawn(class'NN_SuperShockBeamOwnerHidden',Owner,,SmokeLocation,SmokeRotation);
-	else
-		Smoke = Spawn(class'NN_SuperShockBeam',,,SmokeLocation,SmokeRotation);
-	Smoke.MoveAmount = DVector/NumPoints;
-	Smoke.NumPuffs = NumPoints - 1;
-//	Log("MoveAmount="$Smoke.MoveAmount);
-//	Log("NumPuffs="$Smoke.NumPuffs);
+	for (P = Level.PawnList; P != none; P = P.NextPawn) {
+		if (P == Owner) continue;
+		if (bbPlayer(P) != none)
+			bbPlayer(P).xxClientSpawnSSRBeam(HitLocation, SmokeLocation, Owner);
+		else if (bbCHSpectator(P) != none)
+			bbCHSpectator(P).xxClientSpawnSSRBeam(HitLocation, SmokeLocation, Owner);
+	}
 }
 
 function SetSwitchPriority(pawn Other)

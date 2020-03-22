@@ -78,7 +78,7 @@ replication
 {
 	// Server -> Client
 	reliable if (bNetOwner && ROLE == ROLE_Authority)
-		Stat;
+		Stat, xxClientSpawnSSRBeam;
 	// Client -> Server
 	reliable if (ROLE < ROLE_Authority)
 		ShowStats, xxServerSetHitSounds, xxServerSetTeamHitSounds; //, xxServerActivateMover;
@@ -91,14 +91,82 @@ replication
 		xxSetHitSounds, xxSetTimes, xxReceivePosition; //, xxClientActivateMover;
 }
 
+simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, actor O) {
+	local ClientSuperShockBeam Smoke;
+	local Vector DVector;
+	local int NumPoints;
+	local rotator SmokeRotation;
+	local vector MoveAmount;
+
+	if (Level.NetMode == NM_DedicatedServer) return;
+
+	DVector = HitLocation - SmokeLocation;
+	NumPoints = VSize(DVector) / 135.0;
+	if ( NumPoints < 1 )
+		return;
+	SmokeRotation = rotator(DVector);
+	SmokeRotation.roll = Rand(65535);
+
+	if (class'bbPlayer'.default.cShockBeam == 3) return;
+
+	Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
+	if (Smoke == none) return;
+	MoveAmount = DVector / NumPoints;
+
+	if (class'bbPlayer'.default.cShockBeam == 1) {
+		Smoke.SetProperties(
+			-1,
+			1,
+			1,
+			0.27,
+			MoveAmount,
+			NumPoints - 1);
+
+	} else if (class'bbPlayer'.default.cShockBeam == 2) {
+		Smoke.SetProperties(
+			PlayerPawn(O).PlayerReplicationInfo.Team,
+			class'bbPlayer'.default.BeamScale,
+			class'bbPlayer'.default.BeamFadeCurve,
+			class'bbPlayer'.default.BeamDuration,
+			MoveAmount,
+			NumPoints - 1);
+
+	} else if (class'bbPlayer'.default.cShockBeam == 4) {
+		Smoke.SetProperties(
+			PlayerPawn(O).PlayerReplicationInfo.Team,
+			class'bbPlayer'.default.BeamScale,
+			class'bbPlayer'.default.BeamFadeCurve,
+			class'bbPlayer'.default.BeamDuration,
+			MoveAmount,
+			0);
+
+		for (NumPoints = NumPoints - 1; NumPoints > 0; NumPoints--) {
+			SmokeLocation += MoveAmount;
+			Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
+			if (Smoke == None) break;
+			Smoke.SetProperties(
+				PlayerPawn(O).PlayerReplicationInfo.Team,
+				class'bbPlayer'.default.BeamScale,
+				class'bbPlayer'.default.BeamFadeCurve,
+				class'bbPlayer'.default.BeamDuration,
+				MoveAmount,
+				0);
+		}
+	}
+}
+
+simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, actor O) {
+	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, O);
+}
+
 simulated function xxReceivePosition( bbPlayer Other, vector Loc, vector Vel, bool bSet )
 {
 	local vector Diff;
 	local float VS;
-	
+
 	if (Level.NetMode != NM_Client || Other == None)
 		return;
-	
+
 	Diff = Loc - Other.Location;
 	VS = VSize(Diff);
 	if (VS < 50)
