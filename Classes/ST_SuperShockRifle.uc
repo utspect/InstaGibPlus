@@ -102,27 +102,6 @@ simulated function bool ClientFire(float Value)
 	return Super.ClientFire(Value);
 }
 
-/* simulated function bool ClientAltFire(float Value)
-{
-	local bbPlayer bbP;
-
-	if (Owner.IsA('Bot'))
-		return Super.ClientAltFire(Value);
-
-	bbP = bbPlayer(Owner);
-	if (bbP != None)
-	{
-		LastFiredTime = Level.TimeSeconds;
-	}
-	bCanClientFire = true;
-	Instigator = Pawn(Owner);
-	if (bbP != None)
-	{
-		bbP.xxNN_AltFire(-1, bbP.Location, bbP.Velocity, bbP.zzViewRotation);
-	}
-	return Super.ClientAltFire(Value);
-} */
-
 simulated function bool ClientAltFire(float Value) {
 
 	local bbPlayer bbP;
@@ -407,8 +386,6 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 
 simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vector HitNormal)
 {
-	local NN_AlternateSuperShockBeam Smoke;
-	local NN_SuperShockBeam Smoke2;
 	local Vector DVector;
 	local int NumPoints;
 	local rotator SmokeRotation;
