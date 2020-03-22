@@ -34,7 +34,6 @@ var globalconfig int selectedHitSound;
 var globalconfig string sHitSound[16];
 var globalconfig int cShockBeam;
 var globalconfig float BeamScale;
-var globalconfig bool bDrawDebugData;
 var globalconfig float DesiredNetUpdateRate;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
@@ -68,6 +67,7 @@ var bool	zzbUsingTranslocator;
 var byte	HUDInfo;		// 0 = Off, 1 = boots/timer, 2 = Team Info too.
 
 // Debug Stuff
+var bool bDrawDebugData;
 var vector debugNewAccel;
 var vector debugPlayerLocation;
 var vector debugClientHitLocation;
@@ -304,11 +304,18 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		clientForcedPosition, bIsAlive, clientLastUpdateTime, bMustUpdate, bClientIsWalking, debugClientPing, debugNumOfForcedUpdates, debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
+		bIsAlive, bMustUpdate, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
 		xxClientKicker, xxClientSetVelocity, TimeBetweenNetUpdates, xxClientSpawnSSRBeam; //, xxClientTrigger, xxClientActivateMover;
 
+	// Client->Server debug data
+	reliable if ( Role == ROLE_AutonomousProxy )
+		bDrawDebugData;
+	// Server->Client debug data
+	reliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
+		clientLastUpdateTime, clientForcedPosition, debugClientPing, debugNumOfForcedUpdates,
+		debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError;
 
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( bNetOwner && Role == ROLE_Authority && !bDemoRecording )
