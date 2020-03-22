@@ -23,6 +23,31 @@ otherwise make sure the mutator <b>InstaGibPlus.NewNetIG</b> is loaded via your 
 InstaGib+ has minimal weapons code and will load the default UT weapons if the NewNetIG mutator is not loaded, so it is absolutely unusable in normal weapons, make sure to use it only if your objective is to play or to run an InstaGib centered server.<br><br>
 When connected to the server type <b>'mutate playerhelp'</b> in the console to view the available commands and options.
 
+# InstaGib Plus Player Commands:
+	
+- ForceModels x (0 = Off, 1 = On. Default = 0) - The models will be forced to the model you select.
+- TeamInfo x (0 = Off, 1 = On, Default = 1)
+- MyIGSettings (Displays your current IG+ settings)
+- ShowNetSpeeds (Shows the netspeeds other players currently have)
+- ShowTickrate (Shows the tickrate server is running on)
+- SetForcedTeamSkins x (Set forced skins for your team mates. Range: 0-16, Default: 0)
+- SetForcedSkins x (Set forced skins for your enemies. Range: 0-16, Default: 0)
+- EnableHitSounds x (Enables or disables hitsounds, 0 is disabled, 1 is enabled. Default: 1)
+- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0 )
+- ListSkins (Lists the available skins that can be forced)
+- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam) - Sets your Shock Rifle beam type.
+- SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)
+
+
+# InstaGib Plus Admin Commands:
+- ShowIPs (Shows the IP of players)
+- ShowID (Shows the ID of players)
+- KickID x (Will Kick player with ID x)
+- BanID x (Will Ban & Kick player with ID x)
+- EnablePure/DisablePure
+- ShowDemos (Will show who is recording demos)
+
+As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickrate)
 
 # Credits<br>
 <b>TimTim</b> - Original NewNet.<br>
