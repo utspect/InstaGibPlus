@@ -271,8 +271,13 @@ var bool MMSupport;
 var bool DisablePortals;
 var bool SetPendingWeapon;
 
+// Net Updates
 var float MaxPosErrorFactor;
 var float TimeBetweenNetUpdates;
+
+// SSR Beam
+var byte BeamFadeCurve;
+var float BeamDuration;
 
 replication
 {
@@ -302,7 +307,8 @@ replication
 		clientForcedPosition, bIsAlive, clientLastUpdateTime, bMustUpdate, bClientIsWalking, debugClientPing, debugNumOfForcedUpdates, debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
-		xxClientKicker, xxClientSetVelocity, TimeBetweenNetUpdates; //, xxClientTrigger, xxClientActivateMover;
+		xxClientKicker, xxClientSetVelocity, TimeBetweenNetUpdates, xxClientSpawnSSRBeam; //, xxClientTrigger, xxClientActivateMover;
+
 
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( bNetOwner && Role == ROLE_Authority && !bDemoRecording )
@@ -2005,9 +2011,6 @@ exec function Fire( optional float F )
 {
 	local bbPlayer bbP;
 
-	if (Weapon.Owner != self)
-        Weapon.SetOwner(self);
-
 	xxEnableCarcasses();
 	if (!bNewNet || !xxWeaponIsNewNet())
 	{
@@ -2068,10 +2071,6 @@ function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator V
 
 exec function AltFire( optional float F )
 {
-
-	if (Weapon.Owner != self)
-        Weapon.SetOwner(self);
-
 	xxEnableCarcasses();
 	if (!bNewNet || !xxWeaponIsNewNet(true))
 	{
@@ -2452,7 +2451,7 @@ function xxReplicateMove
 	}
 	if (Player.CurrentNetSpeed != 0) {
 		NetMoveDelta = TimeBetweenNetUpdates;
-    }
+	}
 
 	if ( !PendingMove.bForceFire && !PendingMove.bForceAltFire && !PendingMove.bPressedJump
 		&& (PendingMove.Delta < NetMoveDelta - ClientUpdateTime) )
@@ -2739,12 +2738,12 @@ exec function setHitSound(int hs) {
 }
 
 exec function setShockBeam(int sb) {
-	if (sb > 0 && sb <= 3) {
+	if (sb > 0 && sb <= 4) {
 		cShockBeam = sb;
 		SaveConfig();
 		ClientMessage("Shock beam set!");
 	} else
-		ClientMessage("Please input a value between 1 and 3");
+		ClientMessage("Please input a value between 1 and 4");
 }
 
 exec function setBeamScale(float bs) {
@@ -7189,6 +7188,74 @@ exec function NoSwitchWeapon4(bool b)
 	ClientMessage("GetWeapon ShockRifle doesn't trigger SwitchWeapon 4:"@bNoSwitchWeapon4);
 }
 
+simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, actor O) {
+	local ClientSuperShockBeam Smoke;
+	local Vector DVector;
+	local int NumPoints;
+	local rotator SmokeRotation;
+	local vector MoveAmount;
+
+	if (Level.NetMode == NM_DedicatedServer) return;
+
+	DVector = HitLocation - SmokeLocation;
+	NumPoints = VSize(DVector) / 135.0;
+	if ( NumPoints < 1 )
+		return;
+	SmokeRotation = rotator(DVector);
+	SmokeRotation.roll = Rand(65535);
+
+	if (cShockBeam == 3) return;
+
+	Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
+	if (Smoke == none) return;
+	MoveAmount = DVector / NumPoints;
+
+	if (cShockBeam == 1) {
+		Smoke.SetProperties(
+			-1,
+			1,
+			1,
+			0.27,
+			MoveAmount,
+			NumPoints - 1);
+
+	} else if (cShockBeam == 2) {
+		Smoke.SetProperties(
+			PlayerPawn(O).PlayerReplicationInfo.Team,
+			BeamScale,
+			BeamFadeCurve,
+			BeamDuration,
+			MoveAmount,
+			NumPoints - 1);
+
+	} else if (cShockBeam == 4) {
+		Smoke.SetProperties(
+			PlayerPawn(O).PlayerReplicationInfo.Team,
+			BeamScale,
+			BeamFadeCurve,
+			BeamDuration,
+			MoveAmount,
+			0);
+
+		for (NumPoints = NumPoints - 1; NumPoints > 0; NumPoints--) {
+			SmokeLocation += MoveAmount;
+			Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
+			if (Smoke == None) break;
+			Smoke.SetProperties(
+				PlayerPawn(O).PlayerReplicationInfo.Team,
+				BeamScale,
+				BeamFadeCurve,
+				BeamDuration,
+				MoveAmount,
+				0);
+		}
+	}
+}
+
+simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, actor O) {
+	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, O);
+}
+
 function xxServerSetNetCode(bool bNewCode)
 {
 	//bNewNet = bNewCode;
@@ -8388,8 +8455,10 @@ defaultproperties
 	sHitSound(1)="UnrealShare.StingerFire"
 	cShockBeam=1
 	BeamScale=0.45
+    BeamFadeCurve=4
+ 	BeamDuration=0.75
 	bIsFinishedLoading=False
 	bDrawDebugData=False
-	DesiredNetUpdateRate=90.0
-	TimeBetweenNetUpdates=0.011
+	DesiredNetUpdateRate=100.0
+	TimeBetweenNetUpdates=0.01
 }

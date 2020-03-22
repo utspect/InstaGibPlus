@@ -334,7 +334,7 @@ function PostBeginPlay()
 	if (bDelayedPickupSpawn)
 		Spawn(Class'PureDPS');
 
-// Necessary functions to let the "bExludeKickers" list work	
+// Necessary functions to let the "bExludeKickers" list work
 /////////////////////////////////////////////////////////////////////////
 	if(GetCurrentMapName(MapName))
 		if(IsMapExcluded(MapName))
@@ -1024,9 +1024,9 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		Sender.ClientMessage("- SetForcedTeamSkins x (Set forced skins for your team mates. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- SetForcedSkins x (Set forced skins for your enemies. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- EnableHitSounds x (Enables or disables hitsounds, 0 is disabled, 1 is enabled. Default: 1)");
-		Sender.ClientMessage("- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0)"); 
+		Sender.ClientMessage("- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- ListSkins (Lists the available skins that can be forced)");
-		Sender.ClientMessage("- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam) - Sets your Shock Rifle beam type.");
+		Sender.ClientMessage("- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam, 4 = instant beam) - Sets your Shock Rifle beam type.");
 		Sender.ClientMessage("- SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
 		Sender.ClientMessage("- SetNetUpdateRate x (Changes how often you update the server on your position, Default: 90)");
 		if (Sender.PlayerReplicationInfo.bAdmin)
@@ -1581,5 +1581,8 @@ defaultproperties
 	MinNetUpdateRate=60.0
 	MaxNetUpdateRate=200.0
 	MaxHitError=10000
+	MaxJitterTime=0.050
+	MinNetUpdateRate=60.0
+	MaxNetUpdateRate=200.0
 	ShowTouchedPackage=False
 }
