@@ -35,7 +35,7 @@ When connected to the server type <b>'mutate playerhelp'</b> in the console to v
 - EnableHitSounds x (Enables or disables hitsounds, 0 is disabled, 1 is enabled. Default: 1)
 - SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0 )
 - ListSkins (Lists the available skins that can be forced)
-- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam) - Sets your Shock Rifle beam type.
+- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam, 4 = instant beam) - Sets your Shock Rifle beam type.
 - SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)
 
 
