@@ -2727,12 +2727,12 @@ exec function setHitSound(int hs) {
 }
 
 exec function setShockBeam(int sb) {
-	if (sb > 0 && sb <= 3) {
+	if (sb > 0 && sb <= 4) {
 		cShockBeam = sb;
 		SaveConfig();
 		ClientMessage("Shock beam set!");
 	} else
-		ClientMessage("Please input a value between 1 and 3");
+		ClientMessage("Please input a value between 1 and 4");
 }
 
 exec function setBeamScale(float bs) {
