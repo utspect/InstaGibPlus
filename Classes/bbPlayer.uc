@@ -332,13 +332,13 @@ replication
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
-		/* xxServerMove, */ bIsFinishedLoading, zzNN_LastHitActor, xxServerCheater,
+		xxServerMove, bIsFinishedLoading, zzNN_LastHitActor, xxServerCheater,
 		zzbConsoleInvalid, zzFalse, zzTrue, zzNetspeed, zzbBadConsole, zzbBadCanvas, zzbVRChanged,
 		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD;
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
+		xxServerCheckMutator, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
 		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay,Hold,Go,
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
