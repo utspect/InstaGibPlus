@@ -4522,8 +4522,7 @@ function GiveMeWeapons()
 			w.WeaponSet(Self);
 			if ( w.AmmoType != None )
 			{
-				//w.AmmoType.AmmoAmount = w.AmmoType.MaxAmmo;
-				w.AmmoType.AmmoAmount = 999;
+				w.AmmoType.AmmoAmount = w.AmmoType.MaxAmmo;
 				if (w.AmmoType != None && w.AmmoType.AmmoAmount <= 0)
 					continue;
 				w.SetSwitchPriority(self);
