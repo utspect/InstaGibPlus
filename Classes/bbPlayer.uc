@@ -460,8 +460,6 @@ simulated function bool xxNewMoveSmooth(vector NewLoc, vector NewVel)
 {
 	local bool bSuccess;
 	bSuccess = MoveSmooth(NewLoc - Location);
-	if (bSuccess == false)
-		bSuccess = Move(NewLoc - Location);
 	if (bSuccess)
 		Velocity = NewVel;
 	return bSuccess;
@@ -1607,7 +1605,6 @@ function xxServerMove(
 	local vector OldLoc;
 	local Carcass Carc;
 	local vector ClientLocAbs;
-	local bool bSuccess;
 
 	if (bDeleteMe)
 		return;
@@ -1855,7 +1852,6 @@ function xxServerMove(
 	if (zzLastClientErr == 0 || ClientLocErr < zzLastClientErr)
 		zzLastClientErr = ClientLocErr;
 
-	bSuccess = false;
 	if (FastTrace(ClientLocAbs)) {
 		// hack fix to stop players from stuttering on respawn
 		if (zzbRestartedPlayer) {
@@ -1863,12 +1859,10 @@ function xxServerMove(
 			return;
 		}
 
-		bSuccess = xxNewMoveSmooth(ClientLocAbs, ClientVel);
+		xxNewMoveSmooth(ClientLocAbs, ClientVel);
 		clientForcedPosition = ClientLocAbs;
 		zzLastClientErr = 0;
-	}
-
-	if (bSuccess == false) {
+	} else {
 		if (zzbRestartedPlayer) {
 			zzbRestartedPlayer = false;
 			return;
