@@ -452,6 +452,8 @@ simulated function bool xxNewMoveSmooth(vector NewLoc, vector NewVel)
 {
 	local bool bSuccess;
 	bSuccess = MoveSmooth(NewLoc - Location);
+	if (bSuccess == false)
+		bSuccess = Move(NewLoc - Location);
 	if (bSuccess)
 		Velocity = NewVel;
 	return bSuccess;
@@ -1597,6 +1599,7 @@ function xxServerMove(
 	local vector OldLoc;
 	local Carcass Carc;
 	local vector ClientLocAbs;
+	local bool bSuccess;
 
 	if (bDeleteMe)
 		return;
@@ -1844,6 +1847,7 @@ function xxServerMove(
 	if (zzLastClientErr == 0 || ClientLocErr < zzLastClientErr)
 		zzLastClientErr = ClientLocErr;
 
+	bSuccess = false;
 	if (FastTrace(ClientLocAbs)) {
 		// hack fix to stop players from stuttering on respawn
 		if (zzbRestartedPlayer) {
@@ -1851,10 +1855,12 @@ function xxServerMove(
 			return;
 		}
 
-		xxNewMoveSmooth(ClientLocAbs, ClientVel);
+		bSuccess = xxNewMoveSmooth(ClientLocAbs, ClientVel);
 		clientForcedPosition = ClientLocAbs;
 		zzLastClientErr = 0;
-	} else {
+	}
+
+	if (bSuccess == false) {
 		if (zzbRestartedPlayer) {
 			zzbRestartedPlayer = false;
 			return;
@@ -4008,11 +4014,11 @@ ignores SeePlayer, HearNoise, Bump;
         if (DodgeMove == DODGE_Forward)
             Velocity = 1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
         else if (DodgeMove == DODGE_Back)
-            Velocity = -1.5*GroundSpeed*X + (Velocity Dot Y)*Y; 
+            Velocity = -1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
         else if (DodgeMove == DODGE_Left)
-            Velocity = 1.5*GroundSpeed*Y + (Velocity Dot X)*X; 
+            Velocity = 1.5*GroundSpeed*Y + (Velocity Dot X)*X;
         else if (DodgeMove == DODGE_Right)
-            Velocity = -1.5*GroundSpeed*Y + (Velocity Dot X)*X; 
+            Velocity = -1.5*GroundSpeed*Y + (Velocity Dot X)*X;
 
         Velocity.Z = 160;
         PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, true, 800, 1.0 );
@@ -4290,7 +4296,7 @@ simulated function TweenToWalking(float tweentime)
     BaseEyeHeight = Default.BaseEyeHeight;
     if (Weapon == None)
         LoopAnim('Walk', 1.15, 0.055);
-    else if ( Weapon.bPointing || (CarriedDecoration != None) ) 
+    else if ( Weapon.bPointing || (CarriedDecoration != None) )
     {
         if (Weapon.Mass < 20)
             LoopAnim('WalkSMFR', 1.15, 0.001);
@@ -4303,7 +4309,7 @@ simulated function TweenToWalking(float tweentime)
             LoopAnim('WalkSM', 1.15, 0.001);
         else
             LoopAnim('WalkLG', 1.15, 0.001);
-    } 
+    }
 }
 
 simulated function PlayWalking()
@@ -4311,7 +4317,7 @@ simulated function PlayWalking()
     BaseEyeHeight = Default.BaseEyeHeight;
     if (Weapon == None)
         LoopAnim('Walk', 1.3, 0.055);
-    else if ( Weapon.bPointing || (CarriedDecoration != None) ) 
+    else if ( Weapon.bPointing || (CarriedDecoration != None) )
     {
         if (Weapon.Mass < 20)
             LoopAnim('WalkSMFR', 1.15, 0.055);
@@ -4380,7 +4386,7 @@ simulated function TweenToRunning(float tweentime)
     }
     else if (Weapon == None)
         PlayAnim('RunSM', 1.1, 0.055);
-    else if ( Weapon.bPointing ) 
+    else if ( Weapon.bPointing )
     {
         if (Weapon.Mass < 20)
             PlayAnim('RunSMFR', 1.1, 0.055);
@@ -4393,7 +4399,7 @@ simulated function TweenToRunning(float tweentime)
             PlayAnim('RunSM', 1.1, 0.055);
         else
             PlayAnim('RunLG', 1.1, 0.055);
-    } 
+    }
 }
 
 simulated function PlayRunning()
@@ -4417,7 +4423,7 @@ simulated function PlayRunning()
     }
     else if (Weapon == None)
         LoopAnim('RunSM', 1.1);
-    else if ( Weapon.bPointing ) 
+    else if ( Weapon.bPointing )
     {
         if (Weapon.Mass < 20)
             LoopAnim('RunSMFR', 1.1);
@@ -6183,7 +6189,7 @@ event PreRender( canvas zzCanvas )
 								// Set the skin
 								if (zzPRI.Team == Self.PlayerReplicationInfo.Team)
 									setForcedTeamSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
-								else 
+								else
 									setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
 							}
 						}
