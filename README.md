@@ -8,6 +8,7 @@ Working client hitsounds with the option to use custom hitsound packages.<br>
 Different Shock beam types.<br>
 
 # Installation
+Extract the zipped files to your system folder.<br>
 Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or Deepu's Ultimate NewNet.<br>
 Add the following lines to your server's <b>UnrealTournament.ini</b> under <b>[Engine.GameEngine]</b>:<br><br>
 <b>ServerPackages=InstaGibPlus</b><br>
