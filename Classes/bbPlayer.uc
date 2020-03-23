@@ -605,6 +605,7 @@ event PostBeginPlay()
 	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
 
 	MaxPosErrorFactor = class'UTPure'.default.MaxJitterTime * class'UTPure'.default.MaxJitterTime;
+	PlayerReplicationInfo.NetUpdateFrequency = 10;
 }
 
 // called after PostBeginPlay on net client
