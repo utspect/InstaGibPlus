@@ -588,11 +588,22 @@ simulated function DoSuperRing2(PlayerPawn Pwner, vector HitLocation, vector Hit
 function SpawnEffect(vector HitLocation, vector SmokeLocation)
 {
 	local Pawn P;
+	local SuperShockBeam SSB;
 
 	if (Owner.IsA('Bot'))
 	{
 		Super.SpawnEffect(HitLocation, SmokeLocation);
 		return;
+	}
+
+	// This is only done to fix stats, because stats count the number of
+	// SuperShockBeams that were spawned
+	if (Role == ROLE_Authority) {
+		SSB = Spawn(class'SuperShockBeam');
+		// Dont show locally
+		SSB.bHidden = true;
+		// Dont replicate to clients
+		SSB.RemoteRole = ROLE_None;
 	}
 
 	for (P = Level.PawnList; P != none; P = P.NextPawn) {
