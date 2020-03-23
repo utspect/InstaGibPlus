@@ -338,7 +338,7 @@ replication
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
+		bIsForcingEnemyMaleSkin, bIsForcingFriendMaleSkin, xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
 		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay,Hold,Go,
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
@@ -4353,6 +4353,7 @@ simulated function PlayForcedSkinDodge(eDodgeDir DodgeMove)
 simulated function PlayDodge(eDodgeDir DodgeMove)
 {
 	local bbPlayer bbP;
+
 	Velocity.Z = 210;
 	if ( DodgeMove == DODGE_Left )
 		TweenAnim('DodgeL', 0.1);
@@ -4361,7 +4362,19 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 	else if ( DodgeMove == DODGE_Back )
 		TweenAnim('DodgeB', 0.1);
 	else
-		PlayAnim('Flip', 2.35, 0.055); // attempt at trying to fix forced skins forward dodging, but looks weird on female models
+		if (Role == ROLE_AutonomousProxy)
+			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
+		else {
+			ForEach AllActors(class'bbPlayer', bbP) {
+				if (bbP != Self) {
+					//Log("bIsFemale:"@bbP.PlayerReplicationInfo.bIsFemale@"Team:"@bbP.PlayerReplicationInfo.Team@"bIsForcingEnemyMaleSkin:"@Self.bIsForcingEnemyMaleSkin);
+					if (!bbP.PlayerReplicationInfo.bIsFemale && Self.bIsForcingEnemyMaleSkin) {
+						PlayAnim('Flip', 2.15 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
+					} else
+						PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
+				}
+			}
+		}
 }
 
 simulated function TweenToRunning(float tweentime)
@@ -5506,7 +5519,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.aphe4Indina", "FCommandoSkins.aphe");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 1: // Female Commando Anna
 			if (TeamNum == 0) {
@@ -5522,7 +5534,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.cmdo4Anna", "FCommandoSkins.anna");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 2: // Female Commando Mercenary
 			if (TeamNum == 0) {
@@ -5538,7 +5549,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.daco4Jayce", "FCommandoSkins.daco");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 3: // Female Commando Necris
 			if (TeamNum == 0) {
@@ -5554,7 +5564,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.goth4Cryss", "FCommandoSkins.goth");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 4: // Female Soldier Marine
 			if (TeamNum == 0) {
@@ -5570,7 +5579,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			SetSkinElement(SkinActor, 3, "SGirlSkins.fbth4Annaka", "SGirlSkins.fbth");
 			// Set the Mesh
 			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 5: // Female Soldier Metal Guard
 			if (TeamNum == 0) {
@@ -5585,7 +5593,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.Garf4Isis", "SGirlSkins.Garf");
 			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 6: // Female Soldier Soldier
 			if (TeamNum == 0) {
@@ -5600,7 +5607,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.army4Lauren", "SGirlSkins.army");
 			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 7: // Female Soldier Venom
 			if (TeamNum == 0) {
@@ -5615,7 +5621,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.Venm4Athena", "SGirlSkins.Venm");
 			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 8: // Female Soldier War Machine
 			if (TeamNum == 0) {
@@ -5630,7 +5635,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.fwar4Cathode", "SGirlSkins.fwar");
 			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 9: // Male Commando Commando
 			if (TeamNum == 0) {
@@ -5645,7 +5649,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 1, "CommandoSkins.cmdo2Blake", "CommandoSkins.cmdo");
 			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 10: // Male Commando Mercenary
 			if (TeamNum == 0) {
@@ -5660,7 +5663,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 1, "CommandoSkins.daco2Boris", "CommandoSkins.daco");
 			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 11: // Male Commando Necris
 			if (TeamNum == 0) {
@@ -5675,7 +5677,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 1, "CommandoSkins.goth2Grail", "CommandoSkins.goth");
 			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 12: // Male Soldier Marine
 			if (TeamNum == 0) {
@@ -5690,7 +5691,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.blkt4Malcom", "SoldierSkins.blkt");
 			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 13: // Male Soldier Metal Guard
 			if (TeamNum == 0) {
@@ -5705,7 +5705,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.Gard4Drake", "SoldierSkins.Gard");
 			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 14: // Male Soldier Raw Steel
 			if (TeamNum == 0) {
@@ -5720,7 +5719,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.RawS4Arkon", "SoldierSkins.RawS");
 			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 15: // Male Soldier Soldier
 			if (TeamNum == 0) {
@@ -5735,7 +5733,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.sldr4Brock", "SoldierSkins.sldr");
 			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 16: // Male Soldier War Machine
 			if (TeamNum == 0) {
@@ -5750,7 +5747,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.hkil4Matrix", "SoldierSkins.hkil");
 			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 		case 17: // Boss
 			if (TeamNum == 0) {
@@ -5767,7 +5763,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 				SetSkinElement(SkinActor, 3, "BossSkins.Boss4t_1", "BossSkins.Boss");
 			}
 			bbPlayer(SkinActor).Mesh = class'bbTBoss'.Default.Mesh;
-			bbPlayer(SkinActor).PlayerReplicationInfo.bIsFemale = True;
 			break;
 	}
 }
@@ -6190,10 +6185,19 @@ event PreRender( canvas zzCanvas )
 								}
 
 								// Set the skin
-								if (zzPRI.Team == Self.PlayerReplicationInfo.Team)
+								if (zzPRI.Team == Self.PlayerReplicationInfo.Team) {
 									setForcedTeamSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
-								else
+									if (desiredSkin > 8)
+										bIsForcingFriendMaleSkin = true;
+									else
+										bIsForcingFriendMaleSkin = false;
+								} else {
 									setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
+									if (desiredSkin > 8)
+										bIsForcingEnemyMaleSkin = true;
+									else
+										bIsForcingEnemyMaleSkin = false;
+								}
 							}
 						}
 					}
