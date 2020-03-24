@@ -4355,25 +4355,25 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 		else {
 			ForEach AllActors(class'bbPlayer', bbP) {
 				if (bbP != Self) {
-					Log("bIsFemale:"@bbP.PlayerReplicationInfo.bIsFemale@"Self.bIsForcingEnemyMaleSkin:"@Self.bIsForcingEnemyMaleSkin);
+					//Log("bIsFemale:"@bbP.PlayerReplicationInfo.bIsFemale@"Self.bIsForcingEnemyMaleSkin:"@Self.bIsForcingEnemyMaleSkin);
 					if (!bbP.PlayerReplicationInfo.bIsFemale) { // Forcing male skin on female
 						if (Self.bIsForcingEnemyMaleSkin) {
-							Log("Playing forced male skin on female animation for:"@Self.PlayerReplicationInfo.PlayerName);
+							//Log("Playing forced male skin on female animation for:"@Self.PlayerReplicationInfo.PlayerName);
 							PlayAnim('Flip', 2.15 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
 						} else {
-							Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
+							//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
 							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
 						}
 					} else if (bbP.PlayerReplicationInfo.bIsFemale) {
 						if (Self.bIsForcingEnemyFemaleSkin) {
-							Log("Playing forced female skin on male animation for:"@Self.PlayerReplicationInfo.PlayerName);
+							//Log("Playing forced female skin on male animation for:"@Self.PlayerReplicationInfo.PlayerName);
 							PlayAnim('Flip', 1.05 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
 						} else {
-							Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
+							//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
 							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
 						}
 					} else {
-						Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
+						//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
 						PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
 					}
 				}
