@@ -103,6 +103,8 @@ var bool bIsAlive;
 var bool zzbJustConnected;
 var bool bIsForcingEnemyMaleSkin;
 var bool bIsForcingFriendMaleSkin;
+var bool bIsForcingEnemyFemaleSkin;
+var bool bIsForcingFriendFemaleSkin;
 
 // Stuff
 var rotator	zzViewRotation;		// Our special View Rotation
@@ -338,7 +340,7 @@ replication
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		bIsForcingEnemyMaleSkin, bIsForcingFriendMaleSkin, xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
+		bIsForcingEnemyFemaleSkin, bIsForcingFriendFemaleSkin, bIsForcingEnemyMaleSkin, bIsForcingFriendMaleSkin, xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
 		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay,Hold,Go,
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
@@ -4338,20 +4340,6 @@ simulated function PlayWalking()
     }
 }
 
-simulated function PlayForcedSkinDodge(eDodgeDir DodgeMove)
-{
-	local bbPlayer bbP;
-	Velocity.Z = 210;
-	if ( DodgeMove == DODGE_Left )
-		TweenAnim('DodgeL', 0.1);
-	else if ( DodgeMove == DODGE_Right )
-		TweenAnim('DodgeR', 0.1);
-	else if ( DodgeMove == DODGE_Back )
-		TweenAnim('DodgeB', 0.1);
-	else
-		PlayAnim('Flip', 2.55);
-}
-
 simulated function PlayDodge(eDodgeDir DodgeMove)
 {
 	local bbPlayer bbP;
@@ -4369,11 +4357,27 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 		else {
 			ForEach AllActors(class'bbPlayer', bbP) {
 				if (bbP != Self) {
-					//Log("bIsFemale:"@bbP.PlayerReplicationInfo.bIsFemale@"Team:"@bbP.PlayerReplicationInfo.Team@"bIsForcingEnemyMaleSkin:"@Self.bIsForcingEnemyMaleSkin);
-					if (!bbP.PlayerReplicationInfo.bIsFemale && Self.bIsForcingEnemyMaleSkin) {
-						PlayAnim('Flip', 2.15 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
-					} else
+					//Log("bIsFemale:"@bbP.PlayerReplicationInfo.bIsFemale@"Self.bIsForcingEnemyMaleSkin:"@Self.bIsForcingEnemyMaleSkin);
+					if (!bbP.PlayerReplicationInfo.bIsFemale) { // Forcing male skin on female
+						if (Self.bIsForcingEnemyMaleSkin) {
+							//Log("Playing forced male skin on female animation for:"@Self.PlayerReplicationInfo.PlayerName);
+							PlayAnim('Flip', 2.15 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
+						} else {
+							//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
+							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
+						}
+					} else if (bbP.PlayerReplicationInfo.bIsFemale) {
+						if (Self.bIsForcingEnemyFemaleSkin) {
+							//Log("Playing forced female skin on male animation for:"@Self.PlayerReplicationInfo.PlayerName);
+							PlayAnim('Flip', 1.05 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
+						} else {
+							//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
+							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
+						}
+					} else {
+						//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
 						PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
+					}
 				}
 			}
 		}
@@ -6189,16 +6193,22 @@ event PreRender( canvas zzCanvas )
 								// Set the skin
 								if (zzPRI.Team == Self.PlayerReplicationInfo.Team) {
 									setForcedTeamSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
-									if (desiredSkin > 8)
+									if (desiredSkin > 8) {
 										bIsForcingFriendMaleSkin = true;
-									else
+										bIsForcingFriendFemaleSkin = false;
+									} else {
 										bIsForcingFriendMaleSkin = false;
+										bIsForcingFriendFemaleSkin = true;
+									}
 								} else {
 									setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
-									if (desiredSkin > 8)
+									if (desiredSkin > 8) {
 										bIsForcingEnemyMaleSkin = true;
-									else
+										bIsForcingEnemyFemaleSkin = false;
+									} else {
 										bIsForcingEnemyMaleSkin = false;
+										bIsForcingEnemyFemaleSkin = true;
+									}
 								}
 							}
 						}
