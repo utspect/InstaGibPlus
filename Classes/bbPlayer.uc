@@ -6073,7 +6073,6 @@ event PreRender( canvas zzCanvas )
 	if (Role < ROLE_Authority)
 		if (!zzbRenderHUD)
 			Super.PreRender(lmaoCanvas);
-			return;
 
 	if (zzbRenderHUD)
 	{
