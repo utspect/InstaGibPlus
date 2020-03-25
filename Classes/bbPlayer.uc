@@ -4302,7 +4302,7 @@ simulated function TweenToWalking(float tweentime)
 {
     BaseEyeHeight = Default.BaseEyeHeight;
     if (Weapon == None)
-        LoopAnim('Walk', 1.15, 0.055);
+        LoopAnim('Walk', 1.15, 0.001);
     else if ( Weapon.bPointing || (CarriedDecoration != None) )
     {
         if (Weapon.Mass < 20)
@@ -4351,37 +4351,23 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 		TweenAnim('DodgeR', 0.1);
 	else if ( DodgeMove == DODGE_Back )
 		TweenAnim('DodgeB', 0.1);
-	else
+	else {
 		if (Role == ROLE_AutonomousProxy)
-			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
+			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 		else {
-			ForEach AllActors(class'bbPlayer', bbP) {
-				if (bbP != Self) {
-					//Log("bIsFemale:"@bbP.PlayerReplicationInfo.bIsFemale@"Self.bIsForcingEnemyMaleSkin:"@Self.bIsForcingEnemyMaleSkin);
-					if (!bbP.PlayerReplicationInfo.bIsFemale) { // Forcing male skin on female
-						if (Self.bIsForcingEnemyMaleSkin) {
-							//Log("Playing forced male skin on female animation for:"@Self.PlayerReplicationInfo.PlayerName);
-							PlayAnim('Flip', 2.15 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
-						} else {
-							//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
-							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
-						}
-					} else if (bbP.PlayerReplicationInfo.bIsFemale) {
-						if (Self.bIsForcingEnemyFemaleSkin) {
-							//Log("Playing forced female skin on male animation for:"@Self.PlayerReplicationInfo.PlayerName);
-							PlayAnim('Flip', 1.05 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
-						} else {
-							//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
-							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
-						}
-					} else {
-						//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
-						PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
-					}
+			if (Self.bIsForcingEnemyMaleSkin) {
+				ForEach AllActors(class'bbPlayer', bbP) {
+					bbP.Mesh = LodMesh'Botpack.Commando';
+				}
+			} else if (Self.bIsForcingEnemyMaleSkin) {
+				ForEach AllActors(class'bbPlayer', bbP) {
+					bbP.Mesh = LodMesh'Botpack.FCommando';
 				}
 			}
+			PlayAnim('Flip', 1.15, 0.065);
 		}
-}
+	}
+}	
 
 simulated function TweenToRunning(float tweentime)
 {
@@ -6738,7 +6724,7 @@ local string pkg, SkinItem, MeshName;
 			MeshName = SkinActor.GetItemName(string(SkinActor.Default.Mesh));
 		SkinItem = SkinActor.GetItemName(SkinName);
 		pkg = Left(SkinName, Len(SkinName) - Len(SkinItem) - 1);
-		bProscribed = !xxValidSP(SkinName, MeshName, SkinActor);
+		//bProscribed = !xxValidSP(SkinName, MeshName, SkinActor);
 		if ( bProscribed )
 			log("Attempted to use illegal skin from package "$pkg$" for "$Meshname);
 	}
@@ -6790,7 +6776,7 @@ static function bool xxValidSP(string zzSkinName, string zzMeshName, optional Ac
       }
    }
 	//Extra pass before potentially crash code
-	if ( zzPackName ~= "BOTPACK" || zzPackName ~= "UNREALI" || zzPackName ~= "UNREALSHARE")
+	if ( zzPackName ~= "BOTPACK" || zzPackName ~= "UNREALI" || zzPackName ~= "UNREALSHARE" || zzPackName ~= "INSTAGIBPLUS")
     	return false;
 	if (Default.zzMyPacks == "")
 		Default.zzMyPacks = Caps(SkinActor.ConsoleCommand("get ini:engine.engine.gameengine serverpackages")); //Can still crash a server
