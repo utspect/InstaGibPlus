@@ -4739,7 +4739,7 @@ state Dying
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
 			return;
 
-		//Level.Game.DiscardInventory(self);
+		Level.Game.DiscardInventory(self);
 
 		if ( /* xxRestartPlayer() || */ Level.Game.RestartPlayer(self) )
 		{
