@@ -751,6 +751,7 @@ function Timer() {
 	}
 
 	bIsFinishedLoading = true;
+	zzbRenderHUD = True;
 	Self.ClientMessage("[IG+] To view available commands type 'mutate playerhelp' in the console");
 }
 
@@ -1618,7 +1619,6 @@ function xxServerMove(
 	{
 		zzbDidMD5 = True;
 		zzbLogoDone = True;
-		zzbRenderHUD = True;
 		zzTrackFOV = 0;
 		zzbDemoPlayback = True;
 		return;
@@ -6055,6 +6055,7 @@ event PreRender( canvas zzCanvas )
 	local Pawn zzP;
 	local PlayerPawn zzPPOwner;
 	local bbPlayer zzPP;
+	local canvas lmaoCanvas;
 	local string stringTest;
 
 //	Log("PlayerPawn.PreRender");
@@ -6066,12 +6067,17 @@ event PreRender( canvas zzCanvas )
 
 	zzLastVR = zzViewRotation;
 
-
 	if (Role < ROLE_Authority)
 		xxAttachConsole();
 
-	if (zzbRenderHUD && bIsFinishedLoading)
+	if (Role < ROLE_Authority)
+		if (!zzbRenderHUD)
+			Super.PreRender(lmaoCanvas);
+			return;
+
+	if (zzbRenderHUD)
 	{
+		lmaoCanvas = None;
 		Super.PreRender(zzCanvas);
 	}
 
@@ -6228,7 +6234,6 @@ event PostRender( canvas zzCanvas )
 	zzbDonePreRender = zzFalse;
 
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas.Class != Class'Canvas');
-	zzbRenderHUD = True;
 	if (zzbRenderHUD)
 	{
 		if (zzbRepVRData)
@@ -6724,7 +6729,7 @@ local string pkg, SkinItem, MeshName;
 			MeshName = SkinActor.GetItemName(string(SkinActor.Default.Mesh));
 		SkinItem = SkinActor.GetItemName(SkinName);
 		pkg = Left(SkinName, Len(SkinName) - Len(SkinItem) - 1);
-		//bProscribed = !xxValidSP(SkinName, MeshName, SkinActor);
+		bProscribed = !xxValidSP(SkinName, MeshName, SkinActor);
 		if ( bProscribed )
 			log("Attempted to use illegal skin from package "$pkg$" for "$Meshname);
 	}
