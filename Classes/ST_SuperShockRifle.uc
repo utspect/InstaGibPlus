@@ -73,18 +73,12 @@ simulated function bool ClientFire(float Value)
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
-		Log("bbP.Weapon:"@bbP.Weapon);
-		Log("Ammotype:"@AmmoType);
-		Log("AmmoName:"@AmmoName);
 		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.9)
 			return false;
 		if ( (AmmoType == None) && (AmmoName != None) )
 		{
 			// ammocheck
-			Log("Giving ammo to:"@Pawn(Owner));
 			GiveAmmo(Pawn(Owner));
-			Log("After ammo AmmoType:"@AmmoType);
-			Log("AmmoType.AmmoAmount:"@AmmoType.AmmoAmount);
 		}
 		if ( AmmoType.AmmoAmount > 0 )
 		{
@@ -96,7 +90,6 @@ simulated function bool ClientFire(float Value)
 				Pawn(Owner).PlayRecoil(FiringSpeed);
 			NN_TraceFire();
 			LastFiredTime = Level.TimeSeconds;
-			Log("LastFiredTime:"@LastFiredTime);
 		}
 	}
 	return Super.ClientFire(Value);
