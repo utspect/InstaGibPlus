@@ -4736,6 +4736,7 @@ state Dying
 	function ServerReStartPlayer()
 	{
 		//log("calling restartplayer in dying with netmode "$Level.NetMode);
+
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
 			return;
 
@@ -4908,63 +4909,12 @@ state Dying
 
 state CountdownDying extends Dying
 {
-	/*
-	exec function Fire( optional float F )
-	{
-		if ( (Level.NetMode == NM_Standalone) && !Level.Game.bDeathMatch )
-		{
-			if ( bFrozen )
-				return;
-			ShowLoadMenu();
-		}
-		else if ( !bFrozen || (TimerRate <= 0.0) )
-		{
-			if (Level.NetMode == NM_Client)
-			{
-				ClientMessage(zzNextStartSpot);
-				xxRestartPlayer();
-			}
-			ServerReStartPlayer();
-		}
-	}
-	*/
-    exec function Fire( optional float F )
-    {
-        return;
-    }
 
-	 function PlayerMove(float DeltaTime)
-	{
-		local vector X,Y,Z;
+	exec function Fire( optional float F ) {}
 
-		if ( !bFrozen )
-		{
-			if ( bPressedJump )
-			{
-				Fire(0);
-				bPressedJump = false;
-			}
-			GetAxes(zzViewRotation,X,Y,Z);
-			// Update view rotation.
-			aLookup  *= 0.24;
-			aTurn    *= 0.24;
-			zzViewRotation.Yaw += 32.0 * DeltaTime * aTurn;
-			zzViewRotation.Pitch += 32.0 * DeltaTime * aLookUp;
-			zzViewRotation.Pitch = zzViewRotation.Pitch & 65535;
-			If ((zzViewRotation.Pitch > 18000) && (zzViewRotation.Pitch < 49152))
-			{
-				If (aLookUp > 0)
-					zzViewRotation.Pitch = 18000;
-				else
-					zzViewRotation.Pitch = 49152;
-			}
-			ViewRotation = zzViewRotation;
-			if ( Role < ROLE_Authority ) // then save this move and replicate it
-				xxReplicateMove(DeltaTime, vect(0,0,0), DODGE_None, rot(0,0,0));
-		}
-		//ViewShake(DeltaTime);
-		//ViewFlash(DeltaTime);
-		//ViewRotation = zzViewRotation;
+	function EndState() {
+		Self.bBehindView = false;
+		ServerReStartPlayer();
 	}
 
 }
