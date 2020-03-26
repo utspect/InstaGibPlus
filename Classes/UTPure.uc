@@ -725,8 +725,8 @@ function xxResetPlayer(bbPlayer zzP)
 	zzP.zzbIsWarmingUp = false;
 	//zzP.PlayerRestartState = 'PlayerWaiting';
 	zzP.PlayerRestartState = 'CountdownDying';
-	zzP.GoToState('CountdownDying');
 	zzP.Died(None, 'Suicided', Location);	// Nuke teh sukar!
+	zzP.GoToState('CountdownDying');
 
 	zzP.DieCount = 0; zzP.ItemCount = 0; zzP.KillCount = 0; zzP.SecretCount = 0; zzP.Spree = 0;
 	zzPRI = zzP.PlayerReplicationInfo;
