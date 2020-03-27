@@ -127,7 +127,7 @@ var Projectile zzNN_Projectiles[256];
 var vector zzNN_ProjLocations[256];
 var int     zzFRVI, zzNN_FRVI, FRVI_length, zzVRVI, zzNN_VRVI, VRVI_length, zzNN_ProjIndex, NN_ProjLength, zzEdgeCount, zzCheckedCount;
 var rotator zzNN_ViewRot;
-var actor   zzNN_HitActor, zzNN_HitActorLast, zzOldBase, zzNN_LastHitActor;
+var actor   zzNN_HitActor, zzOldBase;
 var Vector  zzNN_HitLoc, zzClientHitNormal, zzClientHitLocation, zzNN_HitDiff, zzNN_HitLocLast, zzNN_HitNormalLast, zzNN_ClientLoc, zzNN_ClientVel;
 var bool    zzbIsWarmingUp, zzbFakeUpdate, zzbForceUpdate, zzbOnMover, zzbNN_Special, zzbNN_ReleasedFire, zzbNN_ReleasedAltFire;
 var float   zzNN_Accuracy, zzLastStuffUpdate, zzNextTimeTime, zzLastFallVelZ, zzLastClientErr, zzForceUpdateUntil, zzIgnoreUpdateUntil, zzLastLocDiff, zzSpawnedTime;
@@ -334,7 +334,7 @@ replication
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
-		/* xxServerMove, */ bIsFinishedLoading, zzNN_LastHitActor, xxServerCheater,
+		/* xxServerMove, */ bIsFinishedLoading, xxServerCheater,
 		zzbConsoleInvalid, zzFalse, zzTrue, zzNetspeed, zzbBadConsole, zzbBadCanvas, zzbVRChanged,
 		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD;
 
@@ -380,10 +380,6 @@ exec function Ghost()
 simulated function xxSetPortals(bool DP)
 {
 	DisablePortals = DP;
-}
-
-simulated function setNullKiller() {
-	zzNN_LastHitActor = None;
 }
 
 function string ParseDelimited(string Text, string Delimiter, int Count, optional bool bToEndOfLine)
@@ -2056,8 +2052,6 @@ function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator V
 	zzNN_ClientVel = ClientVel;
 	zzNN_ViewRot = ViewRot;
 	zzNN_HitActor = HitActor;
-	zzNN_LastHitActor = HitActor;
-	//Log("Player:"@Self@"LastHitActor:"@zzNN_LastHitActor);
 	zzNN_HitLoc = HitLoc;
 	zzNN_HitDiff = HitDiff;
 	zzNN_FRVI = ClientFRVI;
@@ -2113,7 +2107,6 @@ function xxNN_AltFire( int ProjIndex, vector ClientLoc, vector ClientVel, rotato
 	zzNN_ClientVel = ClientVel;
 	zzNN_ViewRot = ViewRot;
 	zzNN_HitActor = HitActor;
-	zzNN_LastHitActor = HitActor;
 	zzNN_HitLoc = HitLoc;
 	zzNN_HitDiff = HitDiff;
 	zzNN_FRVI = ClientFRVI;
@@ -3145,9 +3138,6 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 	}
 //	Log("DamageType"@DamageType);
 
-	if (DamageType == 'shot' || DamageType == 'zapped')
-		bPreventLockdown = true; //zzUTPure.bNoLockdown;
-
 	//log(self@"take damage in state"@GetStateName());
 	bAlreadyDead = (Health <= 0);
 
@@ -3214,31 +3204,11 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 		}
 	}
 
-	// Boost Fix
-	//zzIgnoreUpdateUntil = 1.0;
-	// Boost Fix End //
+	if (InstigatedBy != self && (momentum dot momentum) > 0)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
+	{
+		AddVelocity( momentum );
+	}
 
-//	Log("PL"@!bPreventLockdown);
-  	if (MMSupport)
-	{
-		if (!bPreventLockdown && (momentum dot momentum) > 0)	// Fixed by Deepu
-		{
-			if (bNewNet)
-				AddVelocity( momentum );
-			else
-				AddVelocity( momentum );
-		}
-	}
-	else
-	{
-		if (!bPreventLockdown && InstigatedBy != self && (momentum dot momentum) > 0)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
-		{
-			if (bNewNet)
-				AddVelocity( momentum );
-			else
-				AddVelocity( momentum );
-		}
-	}
 	Health -= actualDamage;
 
 	if (CarriedDecoration != None)
@@ -7736,7 +7706,6 @@ simulated function ChangedWeapon()
 {
 	zzbNN_ForceFire = false;
 	zzbNN_ForceAltFire = false;
-	zzNN_HitActorLast = None;
 	Super.ChangedWeapon();
 }
 

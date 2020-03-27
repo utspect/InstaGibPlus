@@ -8,7 +8,7 @@ class ST_SuperShockRifle extends SuperShockRifle;
 
 var bool bNewNet;				// Self-explanatory lol
 var Rotator GV;
-var Vector CDO, clientHitNormal, clientHitLoc, clientX;
+var Vector CDO;
 var float yMod;
 var bool bAltFired;
 var float LastFiredTime;
@@ -307,8 +307,6 @@ simulated function NN_TraceFire()
 		*/
 	}
 
-	clientHitNormal = HitNormal;
-	clientHitLoc = HitLocation;
 	NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(GV),Y,Z);
 	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.zzViewRotation, Other, HitLocation, HitDiff, false);
 	if (Other == bbP.zzClientTTarget)
@@ -465,26 +463,13 @@ function TraceFire( float Accuracy )
 
 	if (bbP.zzNN_HitActor != None && (bbP.zzNN_HitActor.IsA('Pawn') || bbP.zzNN_HitActor.IsA('Projectile')) && FastTrace(bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff, StartTrace))
 	{
-		/* NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
-		bbP.TraceShot(HitLocation,HitNormal,NN_HitLoc,StartTrace); */
 		NN_HitLoc = bbP.zzNN_HitLoc;
-		if (bbP.zzNN_LastHitActor.IsA('bbPlayer') && bbP.PlayerReplicationInfo.Team != bbPP.PlayerReplicationInfo.Team)
-			bbP.zzNN_LastHitActor.SetLocation(NN_HitLoc - bbP.zzNN_HitDiff);
 	}
 	else
 	{
 		bbP.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
-		//bbP.zzNN_HitActor = bbP.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
-		//bbP.zzNN_HitActor.SetLocation(NN_HitLoc - bbP.zzNN_HitDiff);
 		NN_HitLoc = bbP.zzNN_HitLoc;
 	}
-
-	//ProcessTraceHit(bbP.zzNN_HitActor, clientHitLoc, clientHitNormal, vector(AdjustedAim), Y, Z);
-	clientHitLoc = NN_HitLoc;
-	//clientX = vector(AdjustedAim);
-	//bbP.zzNN_LastHitActor = bbP.zzNN_HitActor;
-	/* if (!bbP.zzNN_LastHitActor.IsA('bbPlayer'))
-		bbP.zzNN_LastHitActor = None; */
 	ProcessTraceHit(bbP.zzNN_HitActor, NN_HitLoc, HitNormal, vector(AdjustedAim), Y, Z);
 	bbP.zzNN_HitActor = None;
 	Tracked = None;
@@ -537,27 +522,8 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 	if ( (Other != self) && (Other != Owner) && (Other != None) )
 	{
-		if (Other.IsA('bbPlayer') && bbPlayer(Other).PlayerReplicationInfo.Team == bbP.PlayerReplicationInfo.Team) {
-			//Log("Same team player boosting player");
-			Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
-			bbP.zzNN_LastHitActor = None;
-		}
-		ClientX = X;
+		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
 	}
-}
-
-event Tick(float DeltaTime) {
-	local bbPlayer bbPC;
-	// If they both hit, they both die
-	ForEach AllActors(class'bbPlayer', bbPC) {
-		if (bbPC.zzNN_LastHitActor != None) {
-			bbPC.zzNN_LastHitActor.TakeDamage(clientDamage, bbPC, clientHitLoc, 60000.0*ClientX, MyDamageType);
-			//Log("Got a client hit! Killing:"@bbPC.zzNN_LastHitActor);
-			bbPC.zzNN_LastHitActor = None;
-			clientHitLoc = vect(0,0,0);
-		}
-	}
-	Super.Tick(DeltaTime);
 }
 
 simulated function DoSuperRing2(PlayerPawn Pwner, vector HitLocation, vector HitNormal)
