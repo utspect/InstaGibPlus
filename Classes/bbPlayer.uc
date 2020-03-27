@@ -302,11 +302,11 @@ replication
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
 		zzHUDType, zzSBType, zzSIType, xxClientAcceptMutator, /* zzbWeaponTracer, */ zzForceSettingsLevel,
-		zzbForceModels, zzbForceDemo, zzbGameStarted, zzbUsingTranslocator, HUDInfo;
+		zzbForceDemo, zzbGameStarted, zzbUsingTranslocator, HUDInfo;
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		bIsAlive, bMustUpdate, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
+		zzbForceModels, bIsAlive, bMustUpdate, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
 		xxClientKicker, xxClientSetVelocity, TimeBetweenNetUpdates, xxClientSpawnSSRBeam; //, xxClientTrigger, xxClientActivateMover;
@@ -4325,19 +4325,24 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 		if (Role == ROLE_AutonomousProxy)
 			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 		else {
-			if (Self.bIsForcingEnemyMaleSkin) {
-				ForEach AllActors(class'bbPlayer', bbP) {
-					bbP.Mesh = LodMesh'Botpack.Commando';
-				}
-			} else if (Self.bIsForcingEnemyMaleSkin) {
-				ForEach AllActors(class'bbPlayer', bbP) {
-					bbP.Mesh = LodMesh'Botpack.FCommando';
+			ForEach AllActors(class'bbPlayer', bbP) {
+				if (bbP != Self) {
+					if (bbP.zzbForceModels) {
+						if (bbP.bIsForcingEnemyMaleSkin && Self.IsA('bbTournamentFemale')) {
+							PlayAnim('Flip', 1.65 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+						} else if (bbP.bIsForcingEnemyFemaleSkin && Self.IsA('bbTournamentMale')) {
+							PlayAnim('Flip', 0.95 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+						} else {
+							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+						}
+					} else {
+						PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+					}
 				}
 			}
-			PlayAnim('Flip', 1.15, 0.065);
 		}
 	}
-}	
+}
 
 simulated function TweenToRunning(float tweentime)
 {
@@ -4706,7 +4711,6 @@ state Dying
 	function ServerReStartPlayer()
 	{
 		//log("calling restartplayer in dying with netmode "$Level.NetMode);
-
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
 			return;
 
