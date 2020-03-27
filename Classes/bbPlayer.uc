@@ -747,6 +747,7 @@ function Timer() {
 	}
 
 	bIsFinishedLoading = true;
+	zzbRenderHUD = True;
 	Self.ClientMessage("[IG+] To view available commands type 'mutate playerhelp' in the console");
 }
 
@@ -1614,7 +1615,6 @@ function xxServerMove(
 	{
 		zzbDidMD5 = True;
 		zzbLogoDone = True;
-		zzbRenderHUD = True;
 		zzTrackFOV = 0;
 		zzbDemoPlayback = True;
 		return;
@@ -4272,7 +4272,7 @@ simulated function TweenToWalking(float tweentime)
 {
     BaseEyeHeight = Default.BaseEyeHeight;
     if (Weapon == None)
-        LoopAnim('Walk', 1.15, 0.055);
+        LoopAnim('Walk', 1.15, 0.001);
     else if ( Weapon.bPointing || (CarriedDecoration != None) )
     {
         if (Weapon.Mass < 20)
@@ -4321,37 +4321,23 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 		TweenAnim('DodgeR', 0.1);
 	else if ( DodgeMove == DODGE_Back )
 		TweenAnim('DodgeB', 0.1);
-	else
+	else {
 		if (Role == ROLE_AutonomousProxy)
-			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
+			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 		else {
-			ForEach AllActors(class'bbPlayer', bbP) {
-				if (bbP != Self) {
-					//Log("bIsFemale:"@bbP.PlayerReplicationInfo.bIsFemale@"Self.bIsForcingEnemyMaleSkin:"@Self.bIsForcingEnemyMaleSkin);
-					if (!bbP.PlayerReplicationInfo.bIsFemale) { // Forcing male skin on female
-						if (Self.bIsForcingEnemyMaleSkin) {
-							//Log("Playing forced male skin on female animation for:"@Self.PlayerReplicationInfo.PlayerName);
-							PlayAnim('Flip', 2.15 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
-						} else {
-							//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
-							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
-						}
-					} else if (bbP.PlayerReplicationInfo.bIsFemale) {
-						if (Self.bIsForcingEnemyFemaleSkin) {
-							//Log("Playing forced female skin on male animation for:"@Self.PlayerReplicationInfo.PlayerName);
-							PlayAnim('Flip', 1.05 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
-						} else {
-							//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
-							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
-						}
-					} else {
-						//Log("Playing normal skin animation for:"@Self.PlayerReplicationInfo.PlayerName);
-						PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.055);
-					}
+			if (Self.bIsForcingEnemyMaleSkin) {
+				ForEach AllActors(class'bbPlayer', bbP) {
+					bbP.Mesh = LodMesh'Botpack.Commando';
+				}
+			} else if (Self.bIsForcingEnemyMaleSkin) {
+				ForEach AllActors(class'bbPlayer', bbP) {
+					bbP.Mesh = LodMesh'Botpack.FCommando';
 				}
 			}
+			PlayAnim('Flip', 1.15, 0.065);
 		}
-}
+	}
+}	
 
 simulated function TweenToRunning(float tweentime)
 {
@@ -4720,10 +4706,11 @@ state Dying
 	function ServerReStartPlayer()
 	{
 		//log("calling restartplayer in dying with netmode "$Level.NetMode);
+
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
 			return;
 
-		//Level.Game.DiscardInventory(self);
+		Level.Game.DiscardInventory(self);
 
 		if ( /* xxRestartPlayer() || */ Level.Game.RestartPlayer(self) )
 		{
@@ -4892,63 +4879,12 @@ state Dying
 
 state CountdownDying extends Dying
 {
-	/*
-	exec function Fire( optional float F )
-	{
-		if ( (Level.NetMode == NM_Standalone) && !Level.Game.bDeathMatch )
-		{
-			if ( bFrozen )
-				return;
-			ShowLoadMenu();
-		}
-		else if ( !bFrozen || (TimerRate <= 0.0) )
-		{
-			if (Level.NetMode == NM_Client)
-			{
-				ClientMessage(zzNextStartSpot);
-				xxRestartPlayer();
-			}
-			ServerReStartPlayer();
-		}
-	}
-	*/
-    exec function Fire( optional float F )
-    {
-        return;
-    }
 
-	 function PlayerMove(float DeltaTime)
-	{
-		local vector X,Y,Z;
+	exec function Fire( optional float F ) {}
 
-		if ( !bFrozen )
-		{
-			if ( bPressedJump )
-			{
-				Fire(0);
-				bPressedJump = false;
-			}
-			GetAxes(zzViewRotation,X,Y,Z);
-			// Update view rotation.
-			aLookup  *= 0.24;
-			aTurn    *= 0.24;
-			zzViewRotation.Yaw += 32.0 * DeltaTime * aTurn;
-			zzViewRotation.Pitch += 32.0 * DeltaTime * aLookUp;
-			zzViewRotation.Pitch = zzViewRotation.Pitch & 65535;
-			If ((zzViewRotation.Pitch > 18000) && (zzViewRotation.Pitch < 49152))
-			{
-				If (aLookUp > 0)
-					zzViewRotation.Pitch = 18000;
-				else
-					zzViewRotation.Pitch = 49152;
-			}
-			ViewRotation = zzViewRotation;
-			if ( Role < ROLE_Authority ) // then save this move and replicate it
-				xxReplicateMove(DeltaTime, vect(0,0,0), DODGE_None, rot(0,0,0));
-		}
-		//ViewShake(DeltaTime);
-		//ViewFlash(DeltaTime);
-		//ViewRotation = zzViewRotation;
+	function EndState() {
+		Self.bBehindView = false;
+		ServerReStartPlayer();
 	}
 
 }
@@ -6039,6 +5975,7 @@ event PreRender( canvas zzCanvas )
 	local Pawn zzP;
 	local PlayerPawn zzPPOwner;
 	local bbPlayer zzPP;
+	local canvas lmaoCanvas;
 	local string stringTest;
 
 //	Log("PlayerPawn.PreRender");
@@ -6050,12 +5987,16 @@ event PreRender( canvas zzCanvas )
 
 	zzLastVR = zzViewRotation;
 
-
 	if (Role < ROLE_Authority)
 		xxAttachConsole();
 
-	if (zzbRenderHUD && bIsFinishedLoading)
+	if (Role < ROLE_Authority)
+		if (!zzbRenderHUD)
+			Super.PreRender(lmaoCanvas);
+
+	if (zzbRenderHUD)
 	{
+		lmaoCanvas = None;
 		Super.PreRender(zzCanvas);
 	}
 
@@ -6212,7 +6153,6 @@ event PostRender( canvas zzCanvas )
 	zzbDonePreRender = zzFalse;
 
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas.Class != Class'Canvas');
-	zzbRenderHUD = True;
 	if (zzbRenderHUD)
 	{
 		if (zzbRepVRData)
@@ -6760,7 +6700,7 @@ static function bool xxValidSP(string zzSkinName, string zzMeshName, optional Ac
       }
    }
 	//Extra pass before potentially crash code
-	if ( zzPackName ~= "BOTPACK" || zzPackName ~= "UNREALI" || zzPackName ~= "UNREALSHARE")
+	if ( zzPackName ~= "BOTPACK" || zzPackName ~= "UNREALI" || zzPackName ~= "UNREALSHARE" || zzPackName ~= "INSTAGIBPLUS")
     	return false;
 	if (Default.zzMyPacks == "")
 		Default.zzMyPacks = Caps(SkinActor.ConsoleCommand("get ini:engine.engine.gameengine serverpackages")); //Can still crash a server
