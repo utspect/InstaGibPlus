@@ -280,12 +280,13 @@ var float TimeBetweenNetUpdates;
 // SSR Beam
 var byte BeamFadeCurve;
 var float BeamDuration;
+var float LastSSRBeamCreated;
 
 replication
 {
 	//	Client->Demo
 	unreliable if ( bClientDemoRecording )
-		xxReplicateVRToDemo, xxClientDemoMessage, xxClientLogToDemo;
+		xxReplicateVRToDemo, xxClientDemoMessage, xxClientLogToDemo, xxDemoSpawnSSRBeam;
 
     reliable if (bClientDemoRecording && !bClientDemoNetFunc)
         xxClientDemoFix, xxClientDemoBolt;
@@ -7139,6 +7140,8 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 	local rotator SmokeRotation;
 	local vector MoveAmount;
 
+	LastSSRBeamCreated = Level.TimeSeconds;
+
 	if (Level.NetMode == NM_DedicatedServer) return;
 
 	DVector = HitLocation - SmokeLocation;
@@ -7197,6 +7200,15 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 }
 
 simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, actor O) {
+	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, O);
+	LastSSRBeamCreated = -1.0;
+}
+
+simulated function xxDemoSpawnSSRBeam(vector HitLocation, vector SmokeLocation, actor O) {
+	if (LastSSRBeamCreated == Level.TimeSeconds) {
+		LastSSRBeamCreated = -1.0;
+		return;
+	}
 	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, O);
 }
 
