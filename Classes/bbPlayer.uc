@@ -282,6 +282,13 @@ var byte BeamFadeCurve;
 var float BeamDuration;
 var float LastSSRBeamCreated;
 
+//
+var int CompressedViewRotation; // Compressed Pitch/Yaw
+// 31               16               0
+// +----------------+----------------+
+// |     Pitch      |      Yaw       |
+// +----------------+----------------+
+
 replication
 {
 	//	Client->Demo
@@ -351,6 +358,10 @@ replication
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ProjExplode, /* xxNN_ServerTakeDamage, */ /* xxNN_RadiusDamage, */ xxNN_TeleFrag, xxNN_TransFrag,
 		xxNN_Fire, xxNN_AltFire, xxNN_ReleaseFire, xxNN_ReleaseAltFire, xxNN_MoveTTarget, ServerPreTeleport;
+
+	// Server->Client
+	unreliable if (Role == ROLE_Authority && bViewTarget)
+		CompressedViewRotation;
 }
 
 //XC_Engine interface
@@ -1710,6 +1721,7 @@ function xxServerMove(
 	}
 
 	// View components
+	CompressedViewRotation = View;
 	ViewPitch = (View >>> 16);
 	ViewYaw = (View & 0xFFFF);
 	// Make acceleration.

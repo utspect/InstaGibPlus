@@ -52,27 +52,21 @@ var bool zzbInitialized;
 var PureSuperDuperUberConsole	zzMyConsole;
 var bool	zzbBadConsole;
 var bool zzTrue,zzFalse;		// True & False
-/*
-struct MoverTimeout {
-	var bool bClear;
-	var Mover M;
-	var float EndTime;
-	var name For;
-	var name Which;
+
+// Smooth ViewRotation when spectating in 1st person
+struct PIDController {
+    var int PrevErr;
+    var float Integral;
 };
 
-var MoverTimeout zzMoverTimeouts[256];
-var int zzNumMoverTimeouts;
+var PIDController PitchController;
+var PIDController YawController;
+var rotator LastRotation;
+var bool bLogMessageWritten;
 
-var Mover zzMoverTriggerDisabled[256];
-var int zzMoverTriggerDisabledLength;
-var Mover zzMoverBumpDisabled[256];
-var int zzMoverBumpDisabledLength;
-var Mover zzMoverAttachDisabled[256];
-var int zzMoverAttachDisabledLength;
-var float zzMoverEncroachedTime;
-var float zzMoverAttachedTime;
-*/
+var globalconfig float Kp;
+var globalconfig float Ki;
+var globalconfig float Kd;
 
 replication
 {
@@ -196,20 +190,32 @@ simulated function xxReceivePosition( bbPlayer Other, vector Loc, vector Vel, bo
 	}
 }
 
+function int NormRotDiff(int diff) {
+    return (diff << 16) >> 16;
+}
+
+function int NormRot(int a) {
+    return a & 0xFFFF;
+}
+
+function InitPID(out PIDController C) {
+    C.Integral = 0;
+    C.PrevErr = 0;
+}
+
+function int TickPID(out PIDController C, float DeltaTime, int Error) {
+    local float Derivative;
+
+    C.Integral += Error * DeltaTime;
+    Derivative = (Error - C.PrevErr) / DeltaTime;
+    C.PrevErr = Error;
+
+    return NormRotDiff(Kp * Error + Ki * C.Integral + Kd * Derivative);
+}
+
 function xxPlayerTickEvents()
 {
 	CheckHitSound();
-	/*
-	if (Level.NetMode == NM_Client)
-	{
-		if (!zzbInitialized)
-		{
-			xxInitMovers();
-			zzbInitialized = true;
-		}
-
-		xxMover_CheckTimeouts();
-	}*/
 }
 
 function xxServerSetHitSounds(int b)
@@ -306,6 +312,7 @@ auto state InvalidState
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
+		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
 	}
 }
@@ -315,6 +322,7 @@ state FeigningDeath
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
+		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
 	}
 }
@@ -324,6 +332,7 @@ state PlayerFlying
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
+		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
 	}
 }
@@ -333,6 +342,7 @@ state PlayerWaiting
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
+		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
 	}
 }
@@ -342,6 +352,7 @@ state PlayerSpectating
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
+		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
 	}
 }
@@ -351,6 +362,7 @@ state PlayerWaking
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
+		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
 	}
 }
@@ -360,6 +372,7 @@ state Dying
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
+		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
 	}
 }
@@ -369,13 +382,40 @@ state GameEnded
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
+		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
 	}
 }
 
-event PlayerTick( float Time )
+function SmoothRotation(float DeltaTime)
+{
+	local bbPlayer P;
+	local int Pitch, Yaw;
+	local int DeltaPitch, DeltaYaw;
+
+	P = bbPlayer(ViewTarget);
+	if (P != none) {
+		if (LastRotation.Pitch != TargetViewRotation.Pitch || LastRotation.Yaw != TargetViewRotation.Yaw)
+			TargetViewRotation = LastRotation;
+
+		Pitch = P.CompressedViewRotation >>> 16;
+		Yaw = P.CompressedViewRotation & 0xFFFF;
+
+		DeltaPitch = TickPID(PitchController, DeltaTime, NormRotDiff(Pitch - TargetViewRotation.Pitch));
+		DeltaYaw = TickPID(YawController, DeltaTime, NormRotDiff(Yaw - TargetViewRotation.Yaw));
+
+		TargetViewRotation.Pitch = NormRot(TargetViewRotation.Pitch + DeltaPitch);
+		TargetViewRotation.Yaw = NormRot(TargetViewRotation.Yaw + DeltaYaw);
+		TargetViewRotation.Roll = 0;
+
+		LastRotation = TargetViewRotation;
+	}
+}
+
+event PlayerTick( float DeltaTime )
 {
 	xxPlayerTickEvents();
+	SmoothRotation(DeltaTime);
 }
 
 event PostBeginPlay()
@@ -496,6 +536,7 @@ auto state CheatFlying
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
+		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
 	}
 
@@ -601,6 +642,7 @@ state PlayerWalking
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
+		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
 	}
 }
@@ -615,6 +657,7 @@ state PlayerSwimming
 	event PlayerTick( float DeltaTime )
 	{
 		xxPlayerTickEvents();
+		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
 	}
 }
@@ -960,4 +1003,7 @@ defaultproperties
 {
      HitSound=2
      TeamHitSound=3
+     Kp=0.09
+     Ki=0.05
+     Kd=0.00
 }
