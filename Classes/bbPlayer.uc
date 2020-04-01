@@ -5696,294 +5696,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 	}
 }
 
-static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int TeamNum) {
-
-	/**
-	 * @Author: spect
-	 * @Date: 2020-02-22 17:18:19
-	 * @Desc: Sets the selected forced skin for team mates
-	 * @TODO: Set green and yellow colors. Shit is gonna hit the fan when this is used in xtdm.
-	 */
-
-	if (selectedTeamSkin > 17)
-		selectedTeamSkin = 12;
-
-	switch (selectedTeamSkin) {
-		case 0: // Female Commando Aphex
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.aphe1t_0", "FCommandoSkins.aphe");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2t_0", "FCommandoSkins.aphe");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.aphe2t_0", "FCommandoSkins.aphe");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.aphe1t_1", "FCommandoSkins.aphe");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2t_1", "FCommandoSkins.aphe");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.aphe2t_1", "FCommandoSkins.aphe");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "FCommandoSkins.aphe4Indina", "FCommandoSkins.aphe");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			break;
-		case 1: // Female Commando Anna
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.cmdo1t_0", "FCommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.cmdo2t_0", "FCommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.cmdo2t_0", "FCommandoSkins.cmdo");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.cmdo1t_1", "FCommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.cmdo2t_1", "FCommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.cmdo2t_1", "FCommandoSkins.cmdo");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "FCommandoSkins.cmdo4Anna", "FCommandoSkins.anna");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			break;
-		case 2: // Female Commando Mercenary
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.daco1t_0", "FCommandoSkins.daco");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.daco2t_0", "FCommandoSkins.daco");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.daco2t_0", "FCommandoSkins.daco");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.daco1t_1", "FCommandoSkins.daco");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.daco2t_1", "FCommandoSkins.daco");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.daco2t_1", "FCommandoSkins.daco");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "FCommandoSkins.daco4Jayce", "FCommandoSkins.daco");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			break;
-		case 3: // Female Commando Necris
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.goth1t_0", "FCommandoSkins.goth");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.goth2t_0", "FCommandoSkins.goth");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.goth2t_0", "FCommandoSkins.goth");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.goth1t_1", "FCommandoSkins.goth");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.goth2t_1", "FCommandoSkins.goth");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.goth2t_1", "FCommandoSkins.goth");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "FCommandoSkins.goth4Cryss", "FCommandoSkins.goth");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			break;
-		case 4: // Female Soldier Marine
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.fbth1t_0", "SGirlSkins.fbth");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.fbth2t_0", "SGirlSkins.fbth");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.fbth2t_0", "SGirkSkins.fbth");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.fbth1t_1", "SGirkSkins.fbth");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.fbth2t_1", "SGirlSkins.fbth");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.fbth2t_1", "SGirlSkins.fbth");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SGirlSkins.fbth4Annaka", "SGirlSkins.fbth");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			break;
-		case 5: // Female Soldier Metal Guard
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.Garf1t_0", "SGirlSkins.Garf");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.Garf2t_0", "SGirlSkins.Garf");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.Garf2t_0", "SGirlSkins.Garf");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.Garf1t_1", "SGirlSkins.Garf");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.Garf2t_1", "SGirlSkins.Garf");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.Garf2t_1", "SGirlSkins.Garf");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SGirlSkins.Garf4Isis", "SGirlSkins.Garf");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			break;
-		case 6: // Female Soldier Soldier
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.army1t_0", "SGirlSkins.army");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.army2t_0", "SGirlSkins.army");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.army2t_0", "SGirlSkins.army");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.army1t_1", "SGirlSkins.army");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.army2t_1", "SGirlSkins.army");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.army2t_1", "SGirlSkins.army");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SGirlSkins.army4Lauren", "SGirlSkins.army");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			break;
-		case 7: // Female Soldier Venom
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.Venm1t_0", "SGirlSkins.Venm");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.Venm2t_0", "SGirlSkins.Venm");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.Venm2t_0", "SGirlSkins.Venm");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.Venm1t_1", "SGirlSkins.Venm");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.Venm2t_1", "SGirlSkins.Venm");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.Venm2t_1", "SGirlSkins.Venm");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SGirlSkins.Venm4Athena", "SGirlSkins.Venm");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			break;
-		case 8: // Female Soldier War Machine
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.fwar1t_0", "SGirlSkins.fwar");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.fwar2t_0", "SGirlSkins.fwar");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.fwar2t_0", "SGirlSkins.fwar");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.fwar1t_1", "SGirlSkins.fwar");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.fwar2t_1", "SGirlSkins.fwar");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.fwar2t_1", "SGirlSkins.fwar");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SGirlSkins.fwar4Cathode", "SGirlSkins.fwar");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			break;
-		case 9: // Male Commando Commando
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.cmdo4t_0", "CommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.cmdo3t_0", "CommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.cmdo1", "CommandoSkins.cmdo");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.cmdo4t_1", "CommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.cmdo3t_1", "CommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.cmdo1", "CommandoSkins.cmdo");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 1, "CommandoSkins.cmdo2Blake", "CommandoSkins.cmdo");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			break;
-		case 10: // Male Commando Mercenary
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.daco4t_0", "CommandoSkins.daco");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.daco3t_0", "CommandoSkins.daco");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.daco1", "CommandoSkins.daco");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.daco4t_1", "CommandoSkins.daco");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.daco3t_1", "CommandoSkins.daco");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.daco1", "CommandoSkins.daco");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 1, "CommandoSkins.daco2Boris", "CommandoSkins.daco");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			break;
-		case 11: // Male Commando Necris
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.goth4t_0", "CommandoSkins.goth");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.goth3t_0", "CommandoSkins.goth");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.goth1", "CommandoSkins.goth");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.goth4t_1", "CommandoSkins.goth");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.goth3t_1", "CommandoSkins.goth");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.goth1", "CommandoSkins.goth");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 1, "CommandoSkins.goth2Grail", "CommandoSkins.goth");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			break;
-		case 12: // Male Soldier Marine
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.blkt1t_0", "SoldierSkins.blkt");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.blkt2t_0", "SoldierSkins.blkt");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.blkt2t_0", "SoldierSkins.blkt");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.blkt1t_1", "SoldierSkins.blkt");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.blkt2t_1", "SoldierSkins.blkt");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.blkt2t_1", "SoldierSkins.blkt");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SoldierSkins.blkt4Malcom", "SoldierSkins.blkt");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			break;
-		case 13: // Male Soldier Metal Guard
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.Gard1t_0", "SoldierSkins.Gard");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.Gard2t_0", "SoldierSkins.Gard");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.Gard2t_0", "SoldierSkins.Gard");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.Gard1t_1", "SoldierSkins.Gard");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.Gard2t_1", "SoldierSkins.Gard");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.Gard2t_1", "SoldierSkins.Gard");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SoldierSkins.Gard4Drake", "SoldierSkins.Gard");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			break;
-		case 14: // Male Soldier Raw Steel
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.RawS1t_0", "SoldierSkins.RawS");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.RawS2t_0", "SoldierSkins.RawS");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.RawS2t_0", "SoldierSkins.RawS");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.RawS1t_1", "SoldierSkins.RawS");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.RawS2t_1", "SoldierSkins.RawS");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.RawS2t_1", "SoldierSkins.RawS");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SoldierSkins.RawS4Arkon", "SoldierSkins.RawS");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			break;
-		case 15: // Male Soldier Soldier
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.sldr1t_0", "SoldierSkins.sldr");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.sldr2t_0", "SoldierSkins.sldr");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.sldr2t_0", "SoldierSkins.sldr");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.sldr1t_1", "SoldierSkins.sldr");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.sldr2t_1", "SoldierSkins.sldr");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.sldr2t_1", "SoldierSkins.sldr");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SoldierSkins.sldr4Brock", "SoldierSkins.sldr");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			break;
-		case 16: // Male Soldier War Machine
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.hkil1t_0", "SoldierSkins.hkil");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.hkil2t_0", "SoldierSkins.hkil");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.hkil2t_0", "SoldierSkins.hkil");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.hkil1t_1", "SoldierSkins.hkil");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.hkil2t_1", "SoldierSkins.hkil");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.hkil2t_1", "SoldierSkins.hkil");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SoldierSkins.hkil4Matrix", "SoldierSkins.hkil");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			break;
-		case 17: // Boss
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "BossSkins.Boss1t_0", "BossSkins.Boss");
-				SetSkinElement(SkinActor, 1, "BossSkins.Boss2t_0", "BossSkins.Boss");
-				SetSkinElement(SkinActor, 2, "BossSkins.Boss2t_0", "BossSkins.Boss");
-				// Set the face (Xan has different head colours? Makes sense, he's a robot.)
-				SetSkinElement(SkinActor, 3, "BossSkins.Boss4t_0", "BossSkins.Boss");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "BossSkins.Boss1t_1", "BossSkins.Boss");
-				SetSkinElement(SkinActor, 1, "BossSKins.Boss2t_1", "BossSkins.Boss");
-				SetSkinElement(SkinActor, 2, "BossSkins.Boss2t_1", "BossSkins.Boss");
-				// Set the face (Xan has different head colours? Makes sense, he's a robot.)
-				SetSkinElement(SkinActor, 3, "BossSkins.Boss4t_1", "BossSkins.Boss");
-			}
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTBoss'.Default.Mesh;
-			break;
-	}
-}
-
 event PreRender( canvas zzCanvas )
 {
 	local SpawnNotify zzOldSN;
@@ -6017,146 +5729,47 @@ event PreRender( canvas zzCanvas )
 		Super.PreRender(zzCanvas);
 	}
 
-	// Set all other players' health to 0 (unless it's a teamgame and he's on your team) // also set location to something dumb ;)
-	if (GameReplicationInfo != None && PlayerReplicationInfo != None)
-		for (zzx = 0; zzx < 32; zzx++)
-		{
+	// Set all other players' health to 0 (unless it's a teamgame and he's on your team)
+	// also set location to something dumb ;)
+	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
+		for (zzx = 0; zzx < 32; zzx++) {
 			zzPRI = GameReplicationInfo.PRIArray[zzx];
-			if (zzPRI != None)
-			{
-				if (zzPRI != PlayerReplicationInfo &&
-				    (!GameReplicationInfo.bTeamGame || zzPRI.Team != PlayerReplicationInfo.Team))
-				{
-					zzP = Pawn(zzPRI.Owner);
+			if (zzPRI == None) continue;
 
-					zzPRI.PlayerLocation = PlayerReplicationInfo.PlayerLocation;
-					zzPRI.PlayerZone = None;
-				}
+			if (zzPRI != PlayerReplicationInfo &&
+			    (!GameReplicationInfo.bTeamGame || zzPRI.Team != PlayerReplicationInfo.Team)
+		    ) {
+				zzP = Pawn(zzPRI.Owner);
 
-				/**
-				 * @Author: spect
-				 * @Date: 2020-02-18 02:20:22
-				 * @Desc: Applies the forced skin client side if force models is enabled.
-				 */
+				zzPRI.PlayerLocation = PlayerReplicationInfo.PlayerLocation;
+				zzPRI.PlayerZone = None;
+			}
 
-				if (zzbForceModels) {
-					if (!zzPRI.bIsSpectator && zzPRI.Owner != None && zzPRI.Owner != Self && zzPRI.Owner.Mesh != None && Mesh != None) {
-						ForEach Level.AllActors(class'bbPlayer', zzPP) {
-							if (zzPP != None && zzPP != Self) {
-								switch (desiredSkin) {
-									case 0: // Female Commando Aphex
-										defaultSkin = "FCommandoSkins.aphe";
-										defaultFace = "FCommandoSkins.Indina";
-										break;
-									case 1: // Female Commando Commando
-										defaultSkin = "FCommandoSkins.cmdo";
-										defaultFace = "FCommandoSkins.anna";
-										break;
-									case 2: // Female Commando Mercenary
-										defaultSkin = "FCommandoSkins.daco";
-										defaultFace = "FCommandoSkins.jayce";
-										break;
-									case 3: // Female Commando Necris
-										defaultSkin = "FCommandoSkins.goth";
-										defaultFace = "FCommandoSkins.Cryss";
-										break;
-									case 4: // Female Soldier Marine
-										defaultSkin = "SGirlSkins.fbth";
-										defaultFace = "SGirlSkins.Annaka";
-										break;
-									case 5: // Female Soldier Metal Guard
-										defaultSkin = "SGirlSkins.Garf";
-										defaultFace = "SGirlSkins.Isis";
-										break;
-									case 6: // Female Soldier Soldier
-										defaultSkin = "SGirlSkins.army";
-										defaultFace = "SGirlSkins.Lauren";
-										break;
-									case 7: // Female Soldier Venom
-										defaultSkin = "SGirlSkins.Venm";
-										defaultFace = "SGirlSkins.Athena";
-										break;
-									case 8: // Female Soldier War Machine
-										defaultSkin = "SGirlSkins.fwar";
-										defaultFace = "SGirlSkins.Cathode";
-										break;
-									case 9: // Male Commando Commando
-										defaultSkin = "CommandoSkins.cmdo";
-										defaultFace = "CommandoSkins.Blake";
-										break;
-									case 10: // Male Commando Mercenary
-										defaultSkin = "CommandoSkins.daco";
-										defaultFace = "CommandoSkins.Boris";
-										break;
-									case 11: // Male Commando Necris
-										defaultSkin = "CommandoSkins.goth";
-										defaultFace = "CommandoSkins.Grail";
-										break;
-									case 12: // Male Soldier Marine
-										defaultSkin = "SoldierSkins.blkt";
-										defaultFace = "SoldierSkins.Malcom";
-										break;
-									case 13: // Male Soldier Metal Guard
-										defaultSkin = "SoldierSkins.Gard";
-										defaultFace = "SoldierSkins.Drake";
-										break;
-									case 14: // Male Soldier Raw Steel
-										defaultSkin = "SoldierSkins.RawS";
-										defaultFace = "SoldierSkins.Arkon";
-										break;
-									case 15: // Male Soldier Soldier
-										defaultSkin = "SoldierSkins.sldr";
-										defaultFace = "SoldierSkins.Brock";
-										break;
-									case 16: // Male Soldier War Machine
-										defaultSkin = "SoldierSkins.hkil";
-										defaultFace = "SoldierSkins.Matrix";
-										break;
-									case 17: // Boss
-										defaultSkin = "BossSkins.Boss";
-										defaultFace = "BossSkins.Xan";
-										break;
-								}
+			/**
+			 * @Author: spect
+			 * @Date: 2020-02-18 02:20:22
+			 * @Desc: Applies the forced skin client side if force models is enabled.
+			 */
 
-								// Set the skin
-								if (zzPRI.Team == Self.PlayerReplicationInfo.Team) {
-									setForcedTeamSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
-									if (desiredSkin > 8) {
-										bIsForcingFriendMaleSkin = true;
-										bIsForcingFriendFemaleSkin = false;
-									} else {
-										bIsForcingFriendMaleSkin = false;
-										bIsForcingFriendFemaleSkin = true;
-									}
-								} else {
-									setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
-									if (desiredSkin > 8) {
-										bIsForcingEnemyMaleSkin = true;
-										bIsForcingEnemyFemaleSkin = false;
-									} else {
-										bIsForcingEnemyMaleSkin = false;
-										bIsForcingEnemyFemaleSkin = true;
-									}
-								}
-							}
-						}
-					}
-				}
-
-
-				if (zzbForceModels && !zzPRI.bIsSpectator && zzPRI.Owner != None && zzPRI.Owner != Self && zzPRI.Owner.MultiSkins[7] != Texture'NewNetLogo' && zzPRI.Owner.Mesh != None && Mesh != None)
-				{	// Whew. Hard one that \o/
-					//zzPRI.Owner.Mesh = Mesh;
-					//Log("XG3453"@zzPRI.PlayerName@GetDefaultURL("Skin")@GetDefaultURL("Face"));
-					//SetMultiSkin(zzPRI.Owner, GetDefaultURL("Skin"), GetDefaultURL("Face"), zzPRI.Team);
-					//zzPRI.Owner.MultiSkins[7] = Texture'NewNetLogo';	// UGH-ly hack :(
-					//SetMultiSkin(zzPRI.Owner, "SGirlSkins.fwar", "Lilith", zzPRI.Team);
-					//zzPRI.Owner.Skin = Skin;
-					//for (zzi = 0; zzi < 8; zzi++)
-					//	zzPRI.Owner.MultiSkins[zzi] = MultiSkins[zzi];
+			if (   zzbForceModels
+				&& zzPRI.bIsSpectator == false
+				&& zzPRI.Owner != None
+				&& zzPRI.Owner != Self
+			) {
+				// Set the skin
+				if (zzPRI.Team == Self.PlayerReplicationInfo.Team) {
+					setForcedSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
+				} else {
+					setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
 				}
 			}
 		}
+	}
+
+	bIsForcingFriendMaleSkin = (desiredTeamSkin > 8);
+	bIsForcingFriendFemaleSkin = !(desiredTeamSkin > 8);
+	bIsForcingEnemyMaleSkin = (desiredSkin > 8);
+	bIsForcingEnemyFemaleSkin = !(desiredSkin > 8);
 
 	xxShowItems();
 
