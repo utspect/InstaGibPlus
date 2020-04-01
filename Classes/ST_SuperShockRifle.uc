@@ -262,10 +262,7 @@ simulated function NN_TraceFire()
 	if (bbP == None)
 		return;
 
-//	Owner.MakeNoise(Pawn(Owner).SoundDampening);
-
 	GetAxes(GV,X,Y,Z);
-	//StartTrace = Owner.Location + CDO + yMod * Y + FireOffset.Z * Z;
 	StartTrace = Owner.Location + CDO;
 	EndTrace = StartTrace + (100000 * vector(GV));
 
@@ -285,26 +282,6 @@ simulated function NN_TraceFire()
 			bbP.debugClientEnemyHitLocation = Other.Location;
 			bbP.bClientPawnHit = True;
 		}
-
-		/*
-
-		What is all this for? It works just fine without this, seriously, this actually makes it worse. Don't try to fix what's not broken.
-
-		zzbbP = bbPlayer(Other);
-		if (zzbbP != None)
-		{
-			GetAxes(GV,zzX,zzY,zzZ);
-			zzStartTrace = Owner.Location + CDO + yMod * zzY + FireOffset.Z * zzZ;
-			zzEndTrace = zzStartTrace + (100000 * vector(GV));
-			oRadius = zzbbP.CollisionRadius;
-			oHeight = zzbbP.CollisionHeight;
-			zzbbP.SetCollisionSize(zzbbP.CollisionRadius * 1, zzbbP.CollisionHeight * 1);
-			zzOther = bbP.NN_TraceShot(zzHitLocation,zzHitNormal,zzEndTrace,zzStartTrace,Pawn(Owner));
-			zzbbP.SetCollisionSize(oRadius, oHeight);
-			//bbP.xxChecked(Other != zzOther);
-		}
-
-		*/
 	}
 
 	NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(GV),Y,Z);
@@ -347,13 +324,6 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		}
 	}
 
-	/* if ( ST_ShockProj(Other)!=None )
-	{
-		ST_ShockProj(Other).NN_SuperDuperExplosion(Pawn(Owner));
-		zzbNN_Combo = true;
-	}
-	else
-	{ */
 	if (bbPlayer(Owner).cShockBeam == 2) {
 		if (bbPlayer(Owner).PlayerReplicationInfo.Team == 1) {
 			Spawn(class'ut_RingExplosion',,, HitLocation+HitNormal*8,rotator(HitNormal));
@@ -363,38 +333,18 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 			Spawn(class'ut_SuperRing2',,, HitLocation+HitNormal*8,rotator(HitNormal));
 	} else
 		Spawn(class'ut_SuperRing2',,, HitLocation+HitNormal*8,rotator(HitNormal));
-	//Spawn(class'NN_AlternateSuperShockBeamImpact',,, HitLocation+HitNormal,rotator(HitNormal));
-	//impact.SetProperties(Pawn(Owner).PlayerReplicationInfo.Team,is,ImpactDuration,CustImpactSound,ImpactPitch);
 
 	if (bbPlayer(Owner) != None)
 		bbPlayer(Owner).xxClientDemoFix(None, class'ut_SuperRing2',HitLocation+HitNormal*8,,, rotator(HitNormal));
-	//}
-
-	//if ( (Other != self) && (Other != Owner) && (bbPlayer(Other) != None) )
-	//	bbPlayer(Other).NN_Momentum( 60000.0*X );
-	//return zzbNN_Combo;
 }
 
 simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vector HitNormal)
 {
-	local Vector DVector;
-	local int NumPoints;
-	local rotator SmokeRotation;
-
 	if (Owner.IsA('Bot'))
 		return;
 
-	DVector = HitLocation - SmokeLocation;
-	NumPoints = VSize(DVector)/135.0;
-	if ( NumPoints < 1 )
-		return;
-	SmokeRotation = rotator(DVector);
-	SmokeRotation.roll = Rand(65535);
-
 	bbPlayer(Owner).xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, Owner);
-
-	if (bbPlayer(Owner) != None)
-		bbPlayer(Owner).xxClientDemoFix(None, class'NN_SuperShockBeam',SmokeLocation,,,SmokeRotation);
+	bbPlayer(Owner).xxDemoSpawnSSRBeam(HitLocation, SmokeLocation, Owner);
 }
 
 function TraceFire( float Accuracy )

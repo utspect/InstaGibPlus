@@ -280,12 +280,20 @@ var float TimeBetweenNetUpdates;
 // SSR Beam
 var byte BeamFadeCurve;
 var float BeamDuration;
+var float LastSSRBeamCreated;
+
+//
+var int CompressedViewRotation; // Compressed Pitch/Yaw
+// 31               16               0
+// +----------------+----------------+
+// |     Pitch      |      Yaw       |
+// +----------------+----------------+
 
 replication
 {
 	//	Client->Demo
 	unreliable if ( bClientDemoRecording )
-		xxReplicateVRToDemo, xxClientDemoMessage, xxClientLogToDemo;
+		xxReplicateVRToDemo, xxClientDemoMessage, xxClientLogToDemo, xxDemoSpawnSSRBeam;
 
     reliable if (bClientDemoRecording && !bClientDemoNetFunc)
         xxClientDemoFix, xxClientDemoBolt;
@@ -350,6 +358,10 @@ replication
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ProjExplode, /* xxNN_ServerTakeDamage, */ /* xxNN_RadiusDamage, */ xxNN_TeleFrag, xxNN_TransFrag,
 		xxNN_Fire, xxNN_AltFire, xxNN_ReleaseFire, xxNN_ReleaseAltFire, xxNN_MoveTTarget, ServerPreTeleport;
+
+	// Server->Client
+	unreliable if (Role == ROLE_Authority && bViewTarget)
+		CompressedViewRotation;
 }
 
 //XC_Engine interface
@@ -1709,6 +1721,7 @@ function xxServerMove(
 	}
 
 	// View components
+	CompressedViewRotation = View;
 	ViewPitch = (View >>> 16);
 	ViewYaw = (View & 0xFFFF);
 	// Make acceleration.
@@ -7139,6 +7152,8 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 	local rotator SmokeRotation;
 	local vector MoveAmount;
 
+	LastSSRBeamCreated = Level.TimeSeconds;
+
 	if (Level.NetMode == NM_DedicatedServer) return;
 
 	DVector = HitLocation - SmokeLocation;
@@ -7197,6 +7212,15 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 }
 
 simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, actor O) {
+	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, O);
+	LastSSRBeamCreated = -1.0;
+}
+
+simulated function xxDemoSpawnSSRBeam(vector HitLocation, vector SmokeLocation, actor O) {
+	if (LastSSRBeamCreated == Level.TimeSeconds) {
+		LastSSRBeamCreated = -1.0;
+		return;
+	}
 	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, O);
 }
 
