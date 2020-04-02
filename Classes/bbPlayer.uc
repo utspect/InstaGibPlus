@@ -1154,10 +1154,6 @@ event PlayerInput( float DeltaTime )
 
 	// Check for Dodge move
 	// flag transitions
-	bEdgeForward = (bWasForward ^^ (aBaseY > 0));
-	bEdgeBack = (bWasBack ^^ (aBaseY < 0));
-	bEdgeLeft = (bWasLeft ^^ (aStrafe > 0));
-	bEdgeRight = (bWasRight ^^ (aStrafe < 0));
 	bOldWasForward = bWasForward;
 	bOldWasBack = bWasBack;
 	bOldWasLeft = bWasLeft;
@@ -1166,6 +1162,11 @@ event PlayerInput( float DeltaTime )
 	bWasBack = (aBaseY < 0);
 	bWasLeft = (aStrafe > 0);
 	bWasRight = (aStrafe < 0);
+	bEdgeForward = bOldWasForward != bWasForward;
+	bEdgeBack = bOldWasBack != bWasBack;
+	bEdgeLeft = bOldWasLeft != bWasLeft;
+	bEdgeRight = bOldWasRight != bWasRight;
+
 	if (bOldWasForward && !bWasForward)
 		zzLastTimeForward = Now;
 	if (bOldWasBack && !bWasBack)
