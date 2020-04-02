@@ -101,10 +101,6 @@ var bbClientDemoSN zzDemoPlaybackSN;
 var bool zzbRestartedPlayer;
 var bool bIsAlive;
 var bool zzbJustConnected;
-var bool bIsForcingEnemyMaleSkin;
-var bool bIsForcingFriendMaleSkin;
-var bool bIsForcingEnemyFemaleSkin;
-var bool bIsForcingFriendFemaleSkin;
 
 // Stuff
 var rotator	zzViewRotation;		// Our special View Rotation
@@ -265,6 +261,7 @@ var PureStatMutator zzStatMut;	// The mutator that receives special calls
 var PureLevelBase PureLevel;	// And Level.
 var PurePlayer PurePlayer;	// And player.
 //var PurexxLinker PureLinker;
+var PlayerPawn LocalPlayer;
 
 var TranslocatorTarget zzClientTTarget, TTarget;
 var float LastTick, AvgTickDiff;
@@ -348,7 +345,7 @@ replication
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		bIsForcingEnemyFemaleSkin, bIsForcingFriendFemaleSkin, bIsForcingEnemyMaleSkin, bIsForcingFriendMaleSkin, xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
+		xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
 		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay,Hold,Go,
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
@@ -4324,6 +4321,20 @@ simulated function PlayWalking()
     }
 }
 
+function PlayerPawn GetLocalPlayer() {
+	local Pawn P;
+
+	if (LocalPlayer != none) return LocalPlayer;
+
+	for (P = Level.PawnList; P != none; P = P.NextPawn) {
+		if ((PlayerPawn(P) != none) && Viewport(PlayerPawn(P).Player) != none) {
+			LocalPlayer = PlayerPawn(P);
+			break;
+		}
+	}
+	return LocalPlayer;
+}
+
 simulated function PlayDodge(eDodgeDir DodgeMove)
 {
 	local bbPlayer bbP;
@@ -4336,25 +4347,31 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 	else if ( DodgeMove == DODGE_Back )
 		TweenAnim('DodgeB', 0.1);
 	else {
-		if (Role == ROLE_AutonomousProxy)
+		bbP = bbPlayer(GetLocalPlayer());
+		if ((Role >= ROLE_AutonomousProxy) || (bbP == none)) {
 			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-		else {
-			ForEach AllActors(class'bbPlayer', bbP) {
-				if (bbP != Self) {
-					if (bbP.zzbForceModels) {
-						if (bbP.bIsForcingEnemyMaleSkin && Self.IsA('bbTournamentFemale')) {
-							PlayAnim('Flip', 1.65 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-						} else if (bbP.bIsForcingEnemyFemaleSkin && Self.IsA('bbTournamentMale')) {
-							PlayAnim('Flip', 0.95 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-						} else {
-							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-						}
-					} else {
-						PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-					}
-				}
+			return;
+		}
+
+		if (GameReplicationInfo.bTeamGame && bbP.PlayerReplicationInfo.Team == PlayerReplicationInfo.Team) {
+			if (DesiredTeamSkin > 8 && PlayerReplicationInfo.bIsFemale) {
+				PlayAnim('Flip', 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				return;
+			} else if (DesiredTeamSkin <= 8 && PlayerReplicationInfo.bIsFemale == false) {
+				PlayAnim('Flip', 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				return;
+			}
+		} else {
+			if (DesiredSkin > 8 && PlayerReplicationInfo.bIsFemale) {
+				PlayAnim('Flip', 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				return;
+			} else if (DesiredSkin <= 8 && PlayerReplicationInfo.bIsFemale == false) {
+				PlayAnim('Flip', 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				return;
 			}
 		}
+
+		PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 	}
 }
 
@@ -5766,11 +5783,6 @@ event PreRender( canvas zzCanvas )
 			}
 		}
 	}
-
-	bIsForcingFriendMaleSkin = (desiredTeamSkin > 8);
-	bIsForcingFriendFemaleSkin = !(desiredTeamSkin > 8);
-	bIsForcingEnemyMaleSkin = (desiredSkin > 8);
-	bIsForcingEnemyFemaleSkin = !(desiredSkin > 8);
 
 	xxShowItems();
 
