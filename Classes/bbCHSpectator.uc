@@ -72,7 +72,7 @@ replication
 {
 	// Server -> Client
 	reliable if (bNetOwner && ROLE == ROLE_Authority)
-		Stat, xxClientSpawnSSRBeam;
+		Stat;
 	// Client -> Server
 	reliable if (ROLE < ROLE_Authority)
 		ShowStats, xxServerSetHitSounds, xxServerSetTeamHitSounds; //, xxServerActivateMover;
@@ -82,7 +82,7 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		xxSetHitSounds, xxSetTimes, xxReceivePosition; //, xxClientActivateMover;
+		xxSetHitSounds, xxSetTimes, xxReceivePosition, xxClientSpawnSSRBeam; //, xxClientActivateMover;
 }
 
 simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, actor O) {

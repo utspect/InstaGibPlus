@@ -4343,16 +4343,21 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 					if (bbP.zzbForceModels) {
 						if (bbP.bIsForcingEnemyMaleSkin && Self.IsA('bbTournamentFemale')) {
 							PlayAnim('Flip', 1.65 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+							return;
 						} else if (bbP.bIsForcingEnemyFemaleSkin && Self.IsA('bbTournamentMale')) {
 							PlayAnim('Flip', 0.95 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+							return;
 						} else {
 							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+							return;
 						}
 					} else {
 						PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+						return;
 					}
 				}
 			}
+			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 		}
 	}
 }
