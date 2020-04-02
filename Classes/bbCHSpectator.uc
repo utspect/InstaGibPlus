@@ -62,7 +62,6 @@ struct PIDController {
 var PIDController PitchController;
 var PIDController YawController;
 var rotator LastRotation;
-var bool bLogMessageWritten;
 
 var globalconfig float Kp;
 var globalconfig float Ki;
