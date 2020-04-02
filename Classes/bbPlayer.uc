@@ -5814,10 +5814,6 @@ event PostRender( canvas zzCanvas )
 		ConsoleCommand("Netspeed"@zzMinimumNetspeed);
 	}
 
-	if (zzNetspeed > 20000) {
-		ConsoleCommand("Netspeed"@zzMinimumNetspeed);
-	}
-
 	if (zzDelayedStartTime != 0.0)
 	{
 		if (Level.TimeSeconds - zzDelayedStartTime > zzWaitTime)
