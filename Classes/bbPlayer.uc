@@ -261,6 +261,7 @@ var PureStatMutator zzStatMut;	// The mutator that receives special calls
 var PureLevelBase PureLevel;	// And Level.
 var PurePlayer PurePlayer;	// And player.
 //var PurexxLinker PureLinker;
+var bool bDeterminedLocalPlayer;
 var PlayerPawn LocalPlayer;
 
 var TranslocatorTarget zzClientTTarget, TTarget;
@@ -1441,7 +1442,7 @@ function xxCAPWalkingWalking(float TimeStamp,
 simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics, vector NewLoc, vector NewVel, Actor NewBase)
 {
 	local Decoration Carried;
-	local vector OldLoc;
+	local vector OldLoc, DeltaLoc;
 	local bbPlayer bbP;
 	local bbSavedMove CurrentMove;
 
@@ -1468,12 +1469,14 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 				// if this is a small adjustment that does not
 				// change our state, then reject it. This way
 				// we can ensure that movement remains smooth
-				if (VSize(CurrentMove.SavedLocation - NewLoc) < 3 &&
+				DeltaLoc = CurrentMove.SavedLocation - NewLoc;
+				DeltaLoc.Z = FMax(Abs(DeltaLoc.Z) - MaxStepHeight, 0);
+				if ((DeltaLoc dot DeltaLoc) < 9 &&
 				    // VSize(CurrentMove.SavedVelocity - NewVelocity) < 3 &&  // stijn: UE2 also checked velocity but honestly there isn't really any point in doing that...
 				    IsInState(newState))
 				{
 					// log("> ClientAdjustPosition REJECT");
-					debugNumOfIgnoredForceUpdates++;
+					debugNumOfIgnoredForceUpdates += 1;
 					FreeMoves.Clear();
 					return;
 				}
@@ -4438,7 +4441,7 @@ simulated function PlayWalking()
 simulated function PlayerPawn GetLocalPlayer() {
 	local Pawn P;
 
-	if (LocalPlayer != none) return LocalPlayer;
+	if (bDeterminedLocalPlayer) return LocalPlayer;
 
 	for (P = Level.PawnList; P != none; P = P.NextPawn) {
 		if ((PlayerPawn(P) != none) && Viewport(PlayerPawn(P).Player) != none) {
@@ -4446,6 +4449,7 @@ simulated function PlayerPawn GetLocalPlayer() {
 			break;
 		}
 	}
+	bDeterminedLocalPlayer = true;
 	return LocalPlayer;
 }
 
@@ -4469,18 +4473,18 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 
 		if (GameReplicationInfo.bTeamGame && bbP.PlayerReplicationInfo.Team == PlayerReplicationInfo.Team) {
 			if (DesiredTeamSkin > 8 && PlayerReplicationInfo.bIsFemale) {
-				PlayAnim('Flip', 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				PlayAnim('Flip', 1.65 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 				return;
 			} else if (DesiredTeamSkin <= 8 && PlayerReplicationInfo.bIsFemale == false) {
-				PlayAnim('Flip', 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				PlayAnim('Flip', 0.95 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 				return;
 			}
 		} else {
 			if (DesiredSkin > 8 && PlayerReplicationInfo.bIsFemale) {
-				PlayAnim('Flip', 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				PlayAnim('Flip', 1.65 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 				return;
 			} else if (DesiredSkin <= 8 && PlayerReplicationInfo.bIsFemale == false) {
-				PlayAnim('Flip', 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				PlayAnim('Flip', 0.95 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 				return;
 			}
 		}
