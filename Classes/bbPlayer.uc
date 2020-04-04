@@ -147,7 +147,6 @@ var PlayerStart zzDisabledPS[64];
 var int zzNumDisabledPS, zzDisabledPlayerCollision;
 var Weapon zzPendingWeapon;
 var NavigationPoint zzNextStartSpot;
-var bool zzbClientRestartedPlayer;
 var string zzKeys[1024], zzAliases[1024], zzActorNames[2048];
 var int zzNumActorNames;
 var byte zzPressing[1024];
@@ -463,14 +462,12 @@ simulated function bool xxNewSetLocation(vector NewLoc, vector NewVel, optional 
 	return true;
 }
 
-simulated function bool xxNewMoveSmooth(vector NewLoc, vector NewVel)
+simulated function bool xxNewMoveSmooth(vector NewLoc)
 {
 	local bool bSuccess;
 	bSuccess = MoveSmooth(NewLoc - Location);
 	if (bSuccess == false)
 		bSuccess = Move(NewLoc - Location);
-	if (bSuccess)
-		Velocity = NewVel;
 	return bSuccess;
 }
 
@@ -1617,6 +1614,8 @@ function xxServerMove(
 	local vector OldLoc;
 	local Carcass Carc;
 	local vector ClientLocAbs;
+	local vector ClientVelCalc;
+	local bool bCanTraceNewLoc, bMovedToNewLoc;
 
 	if (bDeleteMe)
 		return;
@@ -1663,6 +1662,9 @@ function xxServerMove(
 		xxServerCheater("VR");
 
 	zzKickReady = Max(zzKickReady - 1,0);
+
+	if (TimeStamp > Level.TimeSeconds)
+		TimeStamp = Level.TimeSeconds;
 
 	if ( CurrentTimeStamp >= TimeStamp )
 		return;
@@ -1765,15 +1767,20 @@ function xxServerMove(
 	zzViewRotation = ViewRotation;
 	SetRotation(Rot);
 
-	// Perform actual movement.
+	// Maximum of old and new velocity
+	// Ensures we dont force updates when slowing down or speeding up
+	ClientVelCalc.X = FMax(ClientVel.X, Velocity.X);
+	ClientVelCalc.Y = FMax(ClientVel.Y, Velocity.Y);
+	ClientVelCalc.Z = FMax(ClientVel.Z, Velocity.Z);
+
+	// Predict new position
 	if ((Level.Pauser == "") && (DeltaTime > 0))
 		MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
 
+	// Calculate how far off we allow the client to be from the predicted position
+	MaxPosError = 3.0;
 	if (bNewNet)
-		MaxPosError = FMax(3.0, MaxPosErrorFactor * (ClientVel dot ClientVel));
-		//MaxPosError = Class'UTPure'.Default.MaxPosError;
-	else
-		MaxPosError = 3.0;
+		MaxPosError += MaxPosErrorFactor * (ClientVelCalc dot ClientVelCalc);
 
 	LocDiff = Location - ClientLocAbs;
 	ClientLocErr = LocDiff Dot LocDiff;
@@ -1864,21 +1871,15 @@ function xxServerMove(
 	if (zzLastClientErr == 0 || ClientLocErr < zzLastClientErr)
 		zzLastClientErr = ClientLocErr;
 
-	if (FastTrace(ClientLocAbs)) {
-		// hack fix to stop players from stuttering on respawn
-		if (zzbRestartedPlayer) {
-			zzbRestartedPlayer = false;
-			return;
-		}
-
-		xxNewMoveSmooth(ClientLocAbs, ClientVel);
+	bCanTraceNewLoc = FastTrace(ClientLocAbs);
+	if (bCanTraceNewLoc) {
 		clientForcedPosition = ClientLocAbs;
 		zzLastClientErr = 0;
-	} else {
-		if (zzbRestartedPlayer) {
-			zzbRestartedPlayer = false;
-			return;
-		}
+		bMovedToNewLoc = xxNewMoveSmooth(ClientLocAbs);
+		if (bMovedToNewLoc)
+			Velocity = ClientVel;
+	}
+	if (bCanTraceNewLoc == false) {
 		Carried = CarriedDecoration;
 		OldLoc = Location;
 
@@ -1897,6 +1898,26 @@ function xxServerMove(
 	}
 	xxFakeCAP(TimeStamp);
 	xxRememberPosition();
+}
+
+function bool OtherPawnAtLocation(vector Loc) {
+	local Pawn P;
+	local vector RadiusDelta;
+	local float HeightDelta;
+
+	for (P = Level.PawnList; P != none; P = P.NextPawn) {
+		if (P == self) continue;
+
+		RadiusDelta = vect(1,1,0) * (P.Location - Loc);
+		if ((RadiusDelta dot RadiusDelta) > CollisionRadius * CollisionRadius) continue;
+
+		HeightDelta = P.Location.Z - Loc.Z;
+		if (Abs(HeightDelta) > CollisionHeight) continue;
+
+		return true;
+	}
+
+	return false;
 }
 
 function xxRememberPosition()
@@ -4756,8 +4777,8 @@ state Dying
 			Level.Game.StartPlayer(self);
 			if ( Mesh != None )
 				PlayWaiting();
-			if (!zzbClientRestartedPlayer)
-				ClientReStart();
+
+			ClientReStart();
 
 			ChangedWeapon();
 			zzSpawnedTime = Level.TimeSeconds;
@@ -4892,22 +4913,10 @@ state Dying
 
 	function EndState()
 	{
-		if (zzbClientRestartedPlayer)
-		{
-			zzbForceUpdate = false;
-			zzForceUpdateUntil = 0;
-			zzIgnoreUpdateUntil = 0;
-			zzbClientRestartedPlayer = false;
-		}
-		else
-		{
-			zzbForceUpdate = true;
-			zzIgnoreUpdateUntil = 0;
-		}
+		zzbForceUpdate = true;
+		zzIgnoreUpdateUntil = 0;
 		Super.EndState();
 		LastKillTime = 0;
-		zzbForceUpdate = false;
-		zzbRestartedPlayer = true;
 	}
 
 }
