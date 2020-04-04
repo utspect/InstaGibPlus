@@ -81,6 +81,7 @@ var bool debugClientForceUpdate;
 var bool debugClientbMoveSmooth;
 var vector debugPlayerServerLocation;
 var int debugNumOfForcedUpdates;
+var int debugNumOfIgnoredForceUpdates;
 var int debugClientPing;
 var float clientLastUpdateTime;
 
@@ -101,10 +102,6 @@ var bbClientDemoSN zzDemoPlaybackSN;
 var bool zzbRestartedPlayer;
 var bool bIsAlive;
 var bool zzbJustConnected;
-var bool bIsForcingEnemyMaleSkin;
-var bool bIsForcingFriendMaleSkin;
-var bool bIsForcingEnemyFemaleSkin;
-var bool bIsForcingFriendFemaleSkin;
 
 // Stuff
 var rotator	zzViewRotation;		// Our special View Rotation
@@ -151,7 +148,6 @@ var PlayerStart zzDisabledPS[64];
 var int zzNumDisabledPS, zzDisabledPlayerCollision;
 var Weapon zzPendingWeapon;
 var NavigationPoint zzNextStartSpot;
-var bool zzbClientRestartedPlayer;
 var string zzKeys[1024], zzAliases[1024], zzActorNames[2048];
 var int zzNumActorNames;
 var byte zzPressing[1024];
@@ -265,6 +261,7 @@ var PureStatMutator zzStatMut;	// The mutator that receives special calls
 var PureLevelBase PureLevel;	// And Level.
 var PurePlayer PurePlayer;	// And player.
 //var PurexxLinker PureLinker;
+var PlayerPawn LocalPlayer;
 
 var TranslocatorTarget zzClientTTarget, TTarget;
 var float LastTick, AvgTickDiff;
@@ -348,7 +345,7 @@ replication
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		bIsForcingEnemyFemaleSkin, bIsForcingFriendFemaleSkin, bIsForcingEnemyMaleSkin, bIsForcingFriendMaleSkin, xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
+		xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
 		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay,Hold,Go,
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
@@ -466,14 +463,12 @@ simulated function bool xxNewSetLocation(vector NewLoc, vector NewVel, optional 
 	return true;
 }
 
-simulated function bool xxNewMoveSmooth(vector NewLoc, vector NewVel)
+simulated function bool xxNewMoveSmooth(vector NewLoc)
 {
 	local bool bSuccess;
 	bSuccess = MoveSmooth(NewLoc - Location);
 	if (bSuccess == false)
 		bSuccess = Move(NewLoc - Location);
-	if (bSuccess)
-		Velocity = NewVel;
 	return bSuccess;
 }
 
@@ -1154,10 +1149,6 @@ event PlayerInput( float DeltaTime )
 
 	// Check for Dodge move
 	// flag transitions
-	bEdgeForward = (bWasForward ^^ (aBaseY > 0));
-	bEdgeBack = (bWasBack ^^ (aBaseY < 0));
-	bEdgeLeft = (bWasLeft ^^ (aStrafe > 0));
-	bEdgeRight = (bWasRight ^^ (aStrafe < 0));
 	bOldWasForward = bWasForward;
 	bOldWasBack = bWasBack;
 	bOldWasLeft = bWasLeft;
@@ -1166,6 +1157,11 @@ event PlayerInput( float DeltaTime )
 	bWasBack = (aBaseY < 0);
 	bWasLeft = (aStrafe > 0);
 	bWasRight = (aStrafe < 0);
+	bEdgeForward = bOldWasForward != bWasForward;
+	bEdgeBack = bOldWasBack != bWasBack;
+	bEdgeLeft = bOldWasLeft != bWasLeft;
+	bEdgeRight = bOldWasRight != bWasRight;
+
 	if (bOldWasForward && !bWasForward)
 		zzLastTimeForward = Now;
 	if (bOldWasBack && !bWasBack)
@@ -1447,12 +1443,56 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 	local Decoration Carried;
 	local vector OldLoc;
 	local bbPlayer bbP;
+	local bbSavedMove CurrentMove;
 
 	if ( CurrentTimeStamp > TimeStamp )
 		return;
 	CurrentTimeStamp = TimeStamp;
 
-	Velocity = NewVel;
+	// stijn: Backported hugely influential fix from UE2 here
+	// Remove acknowledged moves from the savedmoves list
+	CurrentMove = bbSavedMove(SavedMoves);
+	while (CurrentMove != None)
+	{
+		if (CurrentMove.TimeStamp <= CurrentTimeStamp)
+		{
+			SavedMoves = bbSavedMove(CurrentMove.NextMove);
+			CurrentMove.NextMove = FreeMoves;
+			FreeMoves = CurrentMove;
+			if (CurrentMove.TimeStamp == CurrentTimeStamp)
+			{
+				// log("> Server NACK "@CurrentMove.ToString());
+				// log("> Position Error"@VSize(CurrentMove.SavedLocation - NewLocation));
+				// log("> Velocity Error"@VSize(CurrentMove.SavedVelocity - NewVelocity));
+
+				// if this is a small adjustment that does not
+				// change our state, then reject it. This way
+				// we can ensure that movement remains smooth
+				if (VSize(CurrentMove.SavedLocation - NewLoc) < 3 &&
+				    // VSize(CurrentMove.SavedVelocity - NewVelocity) < 3 &&  // stijn: UE2 also checked velocity but honestly there isn't really any point in doing that...
+				    IsInState(newState))
+				{
+					// log("> ClientAdjustPosition REJECT");
+					debugNumOfIgnoredForceUpdates++;
+					FreeMoves.Clear();
+					return;
+				}
+				// log("> ClientAdjustPosition ACCEPT");
+				// ok, this is a serious adjustment. Proceed
+				FreeMoves.Clear();
+				break;
+		    }
+			// log("> Server ACK "@CurrentMove.ToString());
+			FreeMoves.Clear();
+			CurrentMove = bbSavedMove(SavedMoves);
+		}
+		else
+		{
+			// not yet acknowledged. break out of the loop
+			break;
+		}
+	}
+	// stijn: End of fix
 
 	SetBase(NewBase);
 	if ( Mover(NewBase) != None )
@@ -1465,6 +1505,7 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 	bCanTeleport = false;
 	SetLocation(NewLoc);
 	bCanTeleport = true;
+	Velocity = NewVel;
 
 	if ( Carried != None )
 	{
@@ -1494,15 +1535,22 @@ function xxFakeCAP(float TimeStamp)
 
 function ClientUpdatePosition()
 {
-	local SavedMove CurrentMove;
+	local bbSavedMove CurrentMove, PendMove;
 	local int realbRun, realbDuck;
 	local bool bRealJump;
+	local rotator RealViewRotation, RealRotation;
+
+	local float TotalTime;
+	local Pawn P;
+	local vector Dir;
 
 	bUpdatePosition = false;
 	realbRun= bRun;
 	realbDuck = bDuck;
 	bRealJump = bPressedJump;
-	CurrentMove = SavedMoves;
+	RealRotation = Rotation;
+	RealViewRotation = ViewRotation;
+	CurrentMove = bbSavedMove(SavedMoves);
 	bUpdating = true;
 	while ( CurrentMove != None )
 	{
@@ -1512,19 +1560,40 @@ function ClientUpdatePosition()
 			CurrentMove.NextMove = FreeMoves;
 			FreeMoves = CurrentMove;
 			FreeMoves.Clear();
-			CurrentMove = SavedMoves;
+			CurrentMove = bbSavedMove(SavedMoves);
 		}
 		else
 		{
-			if (!zzbFakeUpdate)
+			TotalTime += CurrentMove.Delta;
+			if (!zzbFakeUpdate) {
+				SetRotation( CurrentMove.Rotation);
+				ViewRotation = CurrentMove.SavedViewRotation;
 				MoveAutonomous(CurrentMove.Delta, CurrentMove.bRun, CurrentMove.bDuck, CurrentMove.bPressedJump, CurrentMove.DodgeMove, CurrentMove.Acceleration, rot(0,0,0));
-			CurrentMove = CurrentMove.NextMove;
+				CurrentMove.SavedLocation = Location;
+				CurrentMove.SavedVelocity = Velocity;
+			}
+			CurrentMove = bbSavedMove(CurrentMove.NextMove);
 		}
+	}
+	// stijn: The original code was not replaying the pending move
+	// here. This was a huge oversight and caused non-stop resynchronizations
+	// because the playerpawn position would be off constantly until the player
+	// stopped moving!
+	if (!zzbFakeUpdate && PendingMove != none)
+	{
+		PendMove = bbSavedMove(PendingMove);
+		SetRotation(PendingMove.Rotation);
+		ViewRotation = PendMove.SavedViewRotation;
+		MoveAutonomous(PendingMove.Delta, PendingMove.bRun, PendingMove.bDuck, PendingMove.bPressedJump, PendingMove.DodgeMove, PendingMove.Acceleration, rot(0,0,0));
+		PendMove.SavedLocation = Location;
+		PendMove.SavedVelocity = Velocity;
 	}
 	bUpdating = false;
 	bDuck = realbDuck;
 	bRun = realbRun;
 	bPressedJump = bRealJump;
+	SetRotation( RealRotation);
+	ViewRotation = RealViewRotation;
 	zzbFakeUpdate = false;
 	//log("Client adjusted "$self$" stamp "$CurrentTimeStamp$" location "$Location$" dodge "$DodgeDir);
 }
@@ -1619,6 +1688,8 @@ function xxServerMove(
 	local vector OldLoc;
 	local Carcass Carc;
 	local vector ClientLocAbs;
+	local vector ClientVelCalc;
+	local bool bCanTraceNewLoc, bMovedToNewLoc;
 
 	if (bDeleteMe)
 		return;
@@ -1665,6 +1736,9 @@ function xxServerMove(
 		xxServerCheater("VR");
 
 	zzKickReady = Max(zzKickReady - 1,0);
+
+	if (TimeStamp > Level.TimeSeconds)
+		TimeStamp = Level.TimeSeconds;
 
 	if ( CurrentTimeStamp >= TimeStamp )
 		return;
@@ -1767,15 +1841,20 @@ function xxServerMove(
 	zzViewRotation = ViewRotation;
 	SetRotation(Rot);
 
-	// Perform actual movement.
+	// Maximum of old and new velocity
+	// Ensures we dont force updates when slowing down or speeding up
+	ClientVelCalc.X = FMax(ClientVel.X, Velocity.X);
+	ClientVelCalc.Y = FMax(ClientVel.Y, Velocity.Y);
+	ClientVelCalc.Z = FMax(ClientVel.Z, Velocity.Z);
+
+	// Predict new position
 	if ((Level.Pauser == "") && (DeltaTime > 0))
 		MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
 
+	// Calculate how far off we allow the client to be from the predicted position
+	MaxPosError = 3.0;
 	if (bNewNet)
-		MaxPosError = FMax(3.0, MaxPosErrorFactor * (ClientVel dot ClientVel));
-		//MaxPosError = Class'UTPure'.Default.MaxPosError;
-	else
-		MaxPosError = 3.0;
+		MaxPosError += MaxPosErrorFactor * (ClientVelCalc dot ClientVelCalc);
 
 	LocDiff = Location - ClientLocAbs;
 	ClientLocErr = LocDiff Dot LocDiff;
@@ -1866,21 +1945,15 @@ function xxServerMove(
 	if (zzLastClientErr == 0 || ClientLocErr < zzLastClientErr)
 		zzLastClientErr = ClientLocErr;
 
-	if (FastTrace(ClientLocAbs)) {
-		// hack fix to stop players from stuttering on respawn
-		if (zzbRestartedPlayer) {
-			zzbRestartedPlayer = false;
-			return;
-		}
-
-		xxNewMoveSmooth(ClientLocAbs, ClientVel);
+	bCanTraceNewLoc = FastTrace(ClientLocAbs);
+	if (bCanTraceNewLoc) {
 		clientForcedPosition = ClientLocAbs;
 		zzLastClientErr = 0;
-	} else {
-		if (zzbRestartedPlayer) {
-			zzbRestartedPlayer = false;
-			return;
-		}
+		bMovedToNewLoc = xxNewMoveSmooth(ClientLocAbs);
+		if (bMovedToNewLoc)
+			Velocity = ClientVel;
+	}
+	if (bCanTraceNewLoc == false) {
 		Carried = CarriedDecoration;
 		OldLoc = Location;
 
@@ -1899,6 +1972,26 @@ function xxServerMove(
 	}
 	xxFakeCAP(TimeStamp);
 	xxRememberPosition();
+}
+
+function bool OtherPawnAtLocation(vector Loc) {
+	local Pawn P;
+	local vector RadiusDelta;
+	local float HeightDelta;
+
+	for (P = Level.PawnList; P != none; P = P.NextPawn) {
+		if (P == self) continue;
+
+		RadiusDelta = vect(1,1,0) * (P.Location - Loc);
+		if ((RadiusDelta dot RadiusDelta) > CollisionRadius * CollisionRadius) continue;
+
+		HeightDelta = P.Location.Z - Loc.Z;
+		if (Abs(HeightDelta) > CollisionHeight) continue;
+
+		return true;
+	}
+
+	return false;
 }
 
 function xxRememberPosition()
@@ -2377,6 +2470,20 @@ function ReplicateMove
 	xxServerCheater("RM");
 }
 
+function bbSavedMove xxGetFreeMove() {
+	local bbSavedMove s;
+
+	if ( FreeMoves == None )
+		return Spawn(class'bbSavedMove');
+	else
+	{
+		s = bbSavedMove(FreeMoves);
+		FreeMoves = FreeMoves.NextMove;
+		s.NextMove = None;
+		return s;
+	}
+}
+
 function xxReplicateMove
 (
 	float DeltaTime,
@@ -2385,7 +2492,7 @@ function xxReplicateMove
 	rotator DeltaRot
 )
 {
-	local SavedMove NewMove, OldMove, LastMove;
+	local bbSavedMove NewMove, OldMove, LastMove;
 	local byte ClientRoll;
 	local float OldTimeDelta, TotalTime, NetMoveDelta;
 	local int OldAccel;
@@ -2417,7 +2524,7 @@ function xxReplicateMove
 	}
 	if ( SavedMoves != None )
 	{
-		NewMove = SavedMoves;
+		NewMove = bbSavedMove(SavedMoves);
 		AccelNorm = Normal(NewAccel);
 		while ( NewMove.NextMove != None )
 		{
@@ -2425,7 +2532,7 @@ function xxReplicateMove
 			if ( NewMove.bPressedJump || ((NewMove.DodgeMove != Dodge_NONE) && (NewMove.DodgeMove < 5))
 				|| ((NewMove.Acceleration != NewAccel) && ((normal(NewMove.Acceleration) Dot AccelNorm) < 0.95)) ) // default value is 0.95
 				OldMove = NewMove;
-			NewMove = NewMove.NextMove;
+			NewMove = bbSavedMove(NewMove.NextMove);
 		}
 		if ( NewMove.bPressedJump || ((NewMove.DodgeMove != Dodge_NONE) && (NewMove.DodgeMove < 5))
 			|| ((NewMove.Acceleration != NewAccel) && ((normal(NewMove.Acceleration) Dot AccelNorm) < 0.95)) )
@@ -2433,7 +2540,7 @@ function xxReplicateMove
 	}
 
 	LastMove = NewMove;
-	NewMove = GetFreeMove();
+	NewMove = xxGetFreeMove();
 	NewMove.Delta = DeltaTime;
 	if ( VSize(NewAccel) > 3072 )
 		NewAccel = 3072 * Normal(NewAccel);
@@ -2471,8 +2578,13 @@ function xxReplicateMove
 		NewMove.NextMove = FreeMoves;
 		FreeMoves = NewMove;
 		FreeMoves.Clear();
-		NewMove = PendingMove;
+		NewMove = bbSavedMove(PendingMove);
 	}
+	NewMove.SetRotation( Rotation );
+	NewMove.SavedViewRotation = ViewRotation;
+	NewMove.SavedLocation = Location;
+	NewMove.SavedVelocity = Velocity;
+
 	if (Player.CurrentNetSpeed != 0) {
 		NetMoveDelta = TimeBetweenNetUpdates;
 	}
@@ -4323,6 +4435,20 @@ simulated function PlayWalking()
     }
 }
 
+simulated function PlayerPawn GetLocalPlayer() {
+	local Pawn P;
+
+	if (LocalPlayer != none) return LocalPlayer;
+
+	for (P = Level.PawnList; P != none; P = P.NextPawn) {
+		if ((PlayerPawn(P) != none) && Viewport(PlayerPawn(P).Player) != none) {
+			LocalPlayer = PlayerPawn(P);
+			break;
+		}
+	}
+	return LocalPlayer;
+}
+
 simulated function PlayDodge(eDodgeDir DodgeMove)
 {
 	local bbPlayer bbP;
@@ -4335,30 +4461,31 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 	else if ( DodgeMove == DODGE_Back )
 		TweenAnim('DodgeB', 0.1);
 	else {
-		if (Role == ROLE_AutonomousProxy)
+		bbP = bbPlayer(GetLocalPlayer());
+		if ((Role >= ROLE_AutonomousProxy) || (bbP == none)) {
 			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-		else {
-			ForEach AllActors(class'bbPlayer', bbP) {
-				if (bbP != Self) {
-					if (bbP.zzbForceModels) {
-						if (bbP.bIsForcingEnemyMaleSkin && Self.IsA('bbTournamentFemale')) {
-							PlayAnim('Flip', 1.65 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-							return;
-						} else if (bbP.bIsForcingEnemyFemaleSkin && Self.IsA('bbTournamentMale')) {
-							PlayAnim('Flip', 0.95 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-							return;
-						} else {
-							PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-							return;
-						}
-					} else {
-						PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-						return;
-					}
-				}
-			}
-			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+			return;
 		}
+
+		if (GameReplicationInfo.bTeamGame && bbP.PlayerReplicationInfo.Team == PlayerReplicationInfo.Team) {
+			if (DesiredTeamSkin > 8 && PlayerReplicationInfo.bIsFemale) {
+				PlayAnim('Flip', 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				return;
+			} else if (DesiredTeamSkin <= 8 && PlayerReplicationInfo.bIsFemale == false) {
+				PlayAnim('Flip', 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				return;
+			}
+		} else {
+			if (DesiredSkin > 8 && PlayerReplicationInfo.bIsFemale) {
+				PlayAnim('Flip', 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				return;
+			} else if (DesiredSkin <= 8 && PlayerReplicationInfo.bIsFemale == false) {
+				PlayAnim('Flip', 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
+				return;
+			}
+		}
+
+		PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 	}
 }
 
@@ -4685,26 +4812,6 @@ state PlayerWaking
 
 state Dying
 {
-	/*
-	exec function Fire( optional float F )
-	{
-		if ( (Level.NetMode == NM_Standalone) && !Level.Game.bDeathMatch )
-		{
-			if ( bFrozen )
-				return;
-			ShowLoadMenu();
-		}
-		else if ( !bFrozen || (TimerRate <= 0.0) )
-		{
-			if (Level.NetMode == NM_Client)
-			{
-				ClientMessage(zzNextStartSpot);
-				xxRestartPlayer();
-			}
-			ServerReStartPlayer();
-		}
-	}
-	*/
     exec function Fire( optional float F )
     {
         if (Level.NetMode == NM_DedicatedServer && Role == ROLE_Authority) {
@@ -4743,8 +4850,8 @@ state Dying
 			Level.Game.StartPlayer(self);
 			if ( Mesh != None )
 				PlayWaiting();
-			if (!zzbClientRestartedPlayer)
-				ClientReStart();
+
+			ClientReStart();
 
 			ChangedWeapon();
 			zzSpawnedTime = Level.TimeSeconds;
@@ -4879,22 +4986,10 @@ state Dying
 
 	function EndState()
 	{
-		if (zzbClientRestartedPlayer)
-		{
-			zzbForceUpdate = false;
-			zzForceUpdateUntil = 0;
-			zzIgnoreUpdateUntil = 0;
-			zzbClientRestartedPlayer = false;
-		}
-		else
-		{
-			zzbForceUpdate = true;
-			zzIgnoreUpdateUntil = 0;
-		}
+		zzbForceUpdate = true;
+		zzIgnoreUpdateUntil = 0;
 		Super.EndState();
 		LastKillTime = 0;
-		zzbForceUpdate = false;
-		zzbRestartedPlayer = true;
 	}
 
 }
@@ -5701,294 +5796,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 	}
 }
 
-static function setForcedTeamSkin(Actor SkinActor, int selectedTeamSkin, int TeamNum) {
-
-	/**
-	 * @Author: spect
-	 * @Date: 2020-02-22 17:18:19
-	 * @Desc: Sets the selected forced skin for team mates
-	 * @TODO: Set green and yellow colors. Shit is gonna hit the fan when this is used in xtdm.
-	 */
-
-	if (selectedTeamSkin > 17)
-		selectedTeamSkin = 12;
-
-	switch (selectedTeamSkin) {
-		case 0: // Female Commando Aphex
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.aphe1t_0", "FCommandoSkins.aphe");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2t_0", "FCommandoSkins.aphe");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.aphe2t_0", "FCommandoSkins.aphe");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.aphe1t_1", "FCommandoSkins.aphe");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2t_1", "FCommandoSkins.aphe");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.aphe2t_1", "FCommandoSkins.aphe");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "FCommandoSkins.aphe4Indina", "FCommandoSkins.aphe");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			break;
-		case 1: // Female Commando Anna
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.cmdo1t_0", "FCommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.cmdo2t_0", "FCommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.cmdo2t_0", "FCommandoSkins.cmdo");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.cmdo1t_1", "FCommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.cmdo2t_1", "FCommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.cmdo2t_1", "FCommandoSkins.cmdo");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "FCommandoSkins.cmdo4Anna", "FCommandoSkins.anna");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			break;
-		case 2: // Female Commando Mercenary
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.daco1t_0", "FCommandoSkins.daco");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.daco2t_0", "FCommandoSkins.daco");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.daco2t_0", "FCommandoSkins.daco");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.daco1t_1", "FCommandoSkins.daco");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.daco2t_1", "FCommandoSkins.daco");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.daco2t_1", "FCommandoSkins.daco");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "FCommandoSkins.daco4Jayce", "FCommandoSkins.daco");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			break;
-		case 3: // Female Commando Necris
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.goth1t_0", "FCommandoSkins.goth");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.goth2t_0", "FCommandoSkins.goth");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.goth2t_0", "FCommandoSkins.goth");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "FCommandoSkins.goth1t_1", "FCommandoSkins.goth");
-				SetSkinElement(SkinActor, 1, "FCommandoSkins.goth2t_1", "FCommandoSkins.goth");
-				SetSkinElement(SkinActor, 2, "FCommandoSkins.goth2t_1", "FCommandoSkins.goth");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "FCommandoSkins.goth4Cryss", "FCommandoSkins.goth");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
-			break;
-		case 4: // Female Soldier Marine
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.fbth1t_0", "SGirlSkins.fbth");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.fbth2t_0", "SGirlSkins.fbth");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.fbth2t_0", "SGirkSkins.fbth");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.fbth1t_1", "SGirkSkins.fbth");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.fbth2t_1", "SGirlSkins.fbth");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.fbth2t_1", "SGirlSkins.fbth");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SGirlSkins.fbth4Annaka", "SGirlSkins.fbth");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			break;
-		case 5: // Female Soldier Metal Guard
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.Garf1t_0", "SGirlSkins.Garf");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.Garf2t_0", "SGirlSkins.Garf");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.Garf2t_0", "SGirlSkins.Garf");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.Garf1t_1", "SGirlSkins.Garf");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.Garf2t_1", "SGirlSkins.Garf");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.Garf2t_1", "SGirlSkins.Garf");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SGirlSkins.Garf4Isis", "SGirlSkins.Garf");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			break;
-		case 6: // Female Soldier Soldier
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.army1t_0", "SGirlSkins.army");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.army2t_0", "SGirlSkins.army");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.army2t_0", "SGirlSkins.army");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.army1t_1", "SGirlSkins.army");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.army2t_1", "SGirlSkins.army");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.army2t_1", "SGirlSkins.army");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SGirlSkins.army4Lauren", "SGirlSkins.army");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			break;
-		case 7: // Female Soldier Venom
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.Venm1t_0", "SGirlSkins.Venm");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.Venm2t_0", "SGirlSkins.Venm");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.Venm2t_0", "SGirlSkins.Venm");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.Venm1t_1", "SGirlSkins.Venm");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.Venm2t_1", "SGirlSkins.Venm");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.Venm2t_1", "SGirlSkins.Venm");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SGirlSkins.Venm4Athena", "SGirlSkins.Venm");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			break;
-		case 8: // Female Soldier War Machine
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.fwar1t_0", "SGirlSkins.fwar");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.fwar2t_0", "SGirlSkins.fwar");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.fwar2t_0", "SGirlSkins.fwar");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SGirlSkins.fwar1t_1", "SGirlSkins.fwar");
-				SetSkinElement(SkinActor, 1, "SGirlSkins.fwar2t_1", "SGirlSkins.fwar");
-				SetSkinElement(SkinActor, 2, "SGirlSkins.fwar2t_1", "SGirlSkins.fwar");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SGirlSkins.fwar4Cathode", "SGirlSkins.fwar");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
-			break;
-		case 9: // Male Commando Commando
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.cmdo4t_0", "CommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.cmdo3t_0", "CommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.cmdo1", "CommandoSkins.cmdo");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.cmdo4t_1", "CommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.cmdo3t_1", "CommandoSkins.cmdo");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.cmdo1", "CommandoSkins.cmdo");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 1, "CommandoSkins.cmdo2Blake", "CommandoSkins.cmdo");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			break;
-		case 10: // Male Commando Mercenary
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.daco4t_0", "CommandoSkins.daco");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.daco3t_0", "CommandoSkins.daco");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.daco1", "CommandoSkins.daco");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.daco4t_1", "CommandoSkins.daco");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.daco3t_1", "CommandoSkins.daco");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.daco1", "CommandoSkins.daco");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 1, "CommandoSkins.daco2Boris", "CommandoSkins.daco");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			break;
-		case 11: // Male Commando Necris
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.goth4t_0", "CommandoSkins.goth");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.goth3t_0", "CommandoSkins.goth");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.goth1", "CommandoSkins.goth");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 3, "CommandoSkins.goth4t_1", "CommandoSkins.goth");
-				SetSkinElement(SkinActor, 2, "CommandoSkins.goth3t_1", "CommandoSkins.goth");
-				SetSkinElement(SkinActor, 0, "CommandoSkins.goth1", "CommandoSkins.goth");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 1, "CommandoSkins.goth2Grail", "CommandoSkins.goth");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
-			break;
-		case 12: // Male Soldier Marine
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.blkt1t_0", "SoldierSkins.blkt");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.blkt2t_0", "SoldierSkins.blkt");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.blkt2t_0", "SoldierSkins.blkt");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.blkt1t_1", "SoldierSkins.blkt");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.blkt2t_1", "SoldierSkins.blkt");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.blkt2t_1", "SoldierSkins.blkt");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SoldierSkins.blkt4Malcom", "SoldierSkins.blkt");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			break;
-		case 13: // Male Soldier Metal Guard
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.Gard1t_0", "SoldierSkins.Gard");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.Gard2t_0", "SoldierSkins.Gard");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.Gard2t_0", "SoldierSkins.Gard");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.Gard1t_1", "SoldierSkins.Gard");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.Gard2t_1", "SoldierSkins.Gard");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.Gard2t_1", "SoldierSkins.Gard");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SoldierSkins.Gard4Drake", "SoldierSkins.Gard");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			break;
-		case 14: // Male Soldier Raw Steel
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.RawS1t_0", "SoldierSkins.RawS");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.RawS2t_0", "SoldierSkins.RawS");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.RawS2t_0", "SoldierSkins.RawS");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.RawS1t_1", "SoldierSkins.RawS");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.RawS2t_1", "SoldierSkins.RawS");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.RawS2t_1", "SoldierSkins.RawS");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SoldierSkins.RawS4Arkon", "SoldierSkins.RawS");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			break;
-		case 15: // Male Soldier Soldier
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.sldr1t_0", "SoldierSkins.sldr");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.sldr2t_0", "SoldierSkins.sldr");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.sldr2t_0", "SoldierSkins.sldr");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.sldr1t_1", "SoldierSkins.sldr");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.sldr2t_1", "SoldierSkins.sldr");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.sldr2t_1", "SoldierSkins.sldr");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SoldierSkins.sldr4Brock", "SoldierSkins.sldr");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			break;
-		case 16: // Male Soldier War Machine
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.hkil1t_0", "SoldierSkins.hkil");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.hkil2t_0", "SoldierSkins.hkil");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.hkil2t_0", "SoldierSkins.hkil");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "SoldierSkins.hkil1t_1", "SoldierSkins.hkil");
-				SetSkinElement(SkinActor, 1, "SoldierSkins.hkil2t_1", "SoldierSkins.hkil");
-				SetSkinElement(SkinActor, 2, "SoldierSkins.hkil2t_1", "SoldierSkins.hkil");
-			}
-			// Set the face
-			SetSkinElement(SkinActor, 3, "SoldierSkins.hkil4Matrix", "SoldierSkins.hkil");
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
-			break;
-		case 17: // Boss
-			if (TeamNum == 0) {
-				SetSkinElement(SkinActor, 0, "BossSkins.Boss1t_0", "BossSkins.Boss");
-				SetSkinElement(SkinActor, 1, "BossSkins.Boss2t_0", "BossSkins.Boss");
-				SetSkinElement(SkinActor, 2, "BossSkins.Boss2t_0", "BossSkins.Boss");
-				// Set the face (Xan has different head colours? Makes sense, he's a robot.)
-				SetSkinElement(SkinActor, 3, "BossSkins.Boss4t_0", "BossSkins.Boss");
-			} else if (TeamNum == 1) {
-				SetSkinElement(SkinActor, 0, "BossSkins.Boss1t_1", "BossSkins.Boss");
-				SetSkinElement(SkinActor, 1, "BossSKins.Boss2t_1", "BossSkins.Boss");
-				SetSkinElement(SkinActor, 2, "BossSkins.Boss2t_1", "BossSkins.Boss");
-				// Set the face (Xan has different head colours? Makes sense, he's a robot.)
-				SetSkinElement(SkinActor, 3, "BossSkins.Boss4t_1", "BossSkins.Boss");
-			}
-			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTBoss'.Default.Mesh;
-			break;
-	}
-}
-
 event PreRender( canvas zzCanvas )
 {
 	local SpawnNotify zzOldSN;
@@ -6022,146 +5829,42 @@ event PreRender( canvas zzCanvas )
 		Super.PreRender(zzCanvas);
 	}
 
-	// Set all other players' health to 0 (unless it's a teamgame and he's on your team) // also set location to something dumb ;)
-	if (GameReplicationInfo != None && PlayerReplicationInfo != None)
-		for (zzx = 0; zzx < 32; zzx++)
-		{
+	// Set all other players' health to 0 (unless it's a teamgame and he's on your team)
+	// also set location to something dumb ;)
+	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
+		for (zzx = 0; zzx < 32; zzx++) {
 			zzPRI = GameReplicationInfo.PRIArray[zzx];
-			if (zzPRI != None)
-			{
-				if (zzPRI != PlayerReplicationInfo &&
-				    (!GameReplicationInfo.bTeamGame || zzPRI.Team != PlayerReplicationInfo.Team))
-				{
-					zzP = Pawn(zzPRI.Owner);
+			if (zzPRI == None) continue;
 
-					zzPRI.PlayerLocation = PlayerReplicationInfo.PlayerLocation;
-					zzPRI.PlayerZone = None;
-				}
+			if (zzPRI != PlayerReplicationInfo &&
+			    (!GameReplicationInfo.bTeamGame || zzPRI.Team != PlayerReplicationInfo.Team)
+		    ) {
+				zzP = Pawn(zzPRI.Owner);
 
-				/**
-				 * @Author: spect
-				 * @Date: 2020-02-18 02:20:22
-				 * @Desc: Applies the forced skin client side if force models is enabled.
-				 */
+				zzPRI.PlayerLocation = PlayerReplicationInfo.PlayerLocation;
+				zzPRI.PlayerZone = None;
+			}
 
-				if (zzbForceModels) {
-					if (!zzPRI.bIsSpectator && zzPRI.Owner != None && zzPRI.Owner != Self && zzPRI.Owner.Mesh != None && Mesh != None) {
-						ForEach Level.AllActors(class'bbPlayer', zzPP) {
-							if (zzPP != None && zzPP != Self) {
-								switch (desiredSkin) {
-									case 0: // Female Commando Aphex
-										defaultSkin = "FCommandoSkins.aphe";
-										defaultFace = "FCommandoSkins.Indina";
-										break;
-									case 1: // Female Commando Commando
-										defaultSkin = "FCommandoSkins.cmdo";
-										defaultFace = "FCommandoSkins.anna";
-										break;
-									case 2: // Female Commando Mercenary
-										defaultSkin = "FCommandoSkins.daco";
-										defaultFace = "FCommandoSkins.jayce";
-										break;
-									case 3: // Female Commando Necris
-										defaultSkin = "FCommandoSkins.goth";
-										defaultFace = "FCommandoSkins.Cryss";
-										break;
-									case 4: // Female Soldier Marine
-										defaultSkin = "SGirlSkins.fbth";
-										defaultFace = "SGirlSkins.Annaka";
-										break;
-									case 5: // Female Soldier Metal Guard
-										defaultSkin = "SGirlSkins.Garf";
-										defaultFace = "SGirlSkins.Isis";
-										break;
-									case 6: // Female Soldier Soldier
-										defaultSkin = "SGirlSkins.army";
-										defaultFace = "SGirlSkins.Lauren";
-										break;
-									case 7: // Female Soldier Venom
-										defaultSkin = "SGirlSkins.Venm";
-										defaultFace = "SGirlSkins.Athena";
-										break;
-									case 8: // Female Soldier War Machine
-										defaultSkin = "SGirlSkins.fwar";
-										defaultFace = "SGirlSkins.Cathode";
-										break;
-									case 9: // Male Commando Commando
-										defaultSkin = "CommandoSkins.cmdo";
-										defaultFace = "CommandoSkins.Blake";
-										break;
-									case 10: // Male Commando Mercenary
-										defaultSkin = "CommandoSkins.daco";
-										defaultFace = "CommandoSkins.Boris";
-										break;
-									case 11: // Male Commando Necris
-										defaultSkin = "CommandoSkins.goth";
-										defaultFace = "CommandoSkins.Grail";
-										break;
-									case 12: // Male Soldier Marine
-										defaultSkin = "SoldierSkins.blkt";
-										defaultFace = "SoldierSkins.Malcom";
-										break;
-									case 13: // Male Soldier Metal Guard
-										defaultSkin = "SoldierSkins.Gard";
-										defaultFace = "SoldierSkins.Drake";
-										break;
-									case 14: // Male Soldier Raw Steel
-										defaultSkin = "SoldierSkins.RawS";
-										defaultFace = "SoldierSkins.Arkon";
-										break;
-									case 15: // Male Soldier Soldier
-										defaultSkin = "SoldierSkins.sldr";
-										defaultFace = "SoldierSkins.Brock";
-										break;
-									case 16: // Male Soldier War Machine
-										defaultSkin = "SoldierSkins.hkil";
-										defaultFace = "SoldierSkins.Matrix";
-										break;
-									case 17: // Boss
-										defaultSkin = "BossSkins.Boss";
-										defaultFace = "BossSkins.Xan";
-										break;
-								}
+			/**
+			 * @Author: spect
+			 * @Date: 2020-02-18 02:20:22
+			 * @Desc: Applies the forced skin client side if force models is enabled.
+			 */
 
-								// Set the skin
-								if (zzPRI.Team == Self.PlayerReplicationInfo.Team) {
-									setForcedTeamSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
-									if (desiredSkin > 8) {
-										bIsForcingFriendMaleSkin = true;
-										bIsForcingFriendFemaleSkin = false;
-									} else {
-										bIsForcingFriendMaleSkin = false;
-										bIsForcingFriendFemaleSkin = true;
-									}
-								} else {
-									setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
-									if (desiredSkin > 8) {
-										bIsForcingEnemyMaleSkin = true;
-										bIsForcingEnemyFemaleSkin = false;
-									} else {
-										bIsForcingEnemyMaleSkin = false;
-										bIsForcingEnemyFemaleSkin = true;
-									}
-								}
-							}
-						}
-					}
-				}
-
-
-				if (zzbForceModels && !zzPRI.bIsSpectator && zzPRI.Owner != None && zzPRI.Owner != Self && zzPRI.Owner.MultiSkins[7] != Texture'NewNetLogo' && zzPRI.Owner.Mesh != None && Mesh != None)
-				{	// Whew. Hard one that \o/
-					//zzPRI.Owner.Mesh = Mesh;
-					//Log("XG3453"@zzPRI.PlayerName@GetDefaultURL("Skin")@GetDefaultURL("Face"));
-					//SetMultiSkin(zzPRI.Owner, GetDefaultURL("Skin"), GetDefaultURL("Face"), zzPRI.Team);
-					//zzPRI.Owner.MultiSkins[7] = Texture'NewNetLogo';	// UGH-ly hack :(
-					//SetMultiSkin(zzPRI.Owner, "SGirlSkins.fwar", "Lilith", zzPRI.Team);
-					//zzPRI.Owner.Skin = Skin;
-					//for (zzi = 0; zzi < 8; zzi++)
-					//	zzPRI.Owner.MultiSkins[zzi] = MultiSkins[zzi];
+			if (   zzbForceModels
+				&& zzPRI.bIsSpectator == false
+				&& zzPRI.Owner != None
+				&& zzPRI.Owner != Self
+			) {
+				// Set the skin
+				if (zzPRI.Team == Self.PlayerReplicationInfo.Team) {
+					setForcedSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
+				} else {
+					setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
 				}
 			}
 		}
+	}
 
 	xxShowItems();
 
@@ -6203,10 +5906,6 @@ event PostRender( canvas zzCanvas )
 
 	zzNetspeed = Player.CurrentNetspeed;
 	if (zzMinimumNetspeed != 0 && zzNetspeed < zzMinimumNetspeed) {
-		ConsoleCommand("Netspeed"@zzMinimumNetspeed);
-	}
-
-	if (zzNetspeed > 20000) {
 		ConsoleCommand("Netspeed"@zzMinimumNetspeed);
 	}
 
@@ -6432,7 +6131,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.SetPos(zzx, zzY + 180);
 	zzC.DrawText("zzbForceUpdate:"@debugClientForceUpdate);
 	zzC.SetPos(zzx, zzY + 200);
-	zzC.DrawText("ForcedUpdates:"@debugNumOfForcedUpdates);
+	zzC.DrawText("ForcedUpdates:"@debugNumOfForcedUpdates@"-"@debugNumOfIgnoredForceUpdates@"="@(debugNumOfForcedUpdates - debugNumOfIgnoredForceUpdates));
 	zzC.SetPos(zzx, zzY + 220);
 	zzC.DrawText("bMoveSmooth:"@debugClientbMoveSmooth);
 	zzC.SetPos(zzx, zzY + 240);
