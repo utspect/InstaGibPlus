@@ -261,6 +261,7 @@ var PureStatMutator zzStatMut;	// The mutator that receives special calls
 var PureLevelBase PureLevel;	// And Level.
 var PurePlayer PurePlayer;	// And player.
 //var PurexxLinker PureLinker;
+var bool bDeterminedLocalPlayer;
 var PlayerPawn LocalPlayer;
 
 var TranslocatorTarget zzClientTTarget, TTarget;
@@ -4440,7 +4441,7 @@ simulated function PlayWalking()
 simulated function PlayerPawn GetLocalPlayer() {
 	local Pawn P;
 
-	if (LocalPlayer != none) return LocalPlayer;
+	if (bDeterminedLocalPlayer) return LocalPlayer;
 
 	for (P = Level.PawnList; P != none; P = P.NextPawn) {
 		if ((PlayerPawn(P) != none) && Viewport(PlayerPawn(P).Player) != none) {
@@ -4448,6 +4449,7 @@ simulated function PlayerPawn GetLocalPlayer() {
 			break;
 		}
 	}
+	bDeterminedLocalPlayer = true;
 	return LocalPlayer;
 }
 
