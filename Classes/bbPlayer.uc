@@ -81,6 +81,7 @@ var bool debugClientForceUpdate;
 var bool debugClientbMoveSmooth;
 var vector debugPlayerServerLocation;
 var int debugNumOfForcedUpdates;
+var int debugNumOfIgnoredForceUpdates;
 var int debugClientPing;
 var float clientLastUpdateTime;
 
@@ -1442,12 +1443,56 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 	local Decoration Carried;
 	local vector OldLoc;
 	local bbPlayer bbP;
+	local bbSavedMove CurrentMove;
 
 	if ( CurrentTimeStamp > TimeStamp )
 		return;
 	CurrentTimeStamp = TimeStamp;
 
-	Velocity = NewVel;
+	// stijn: Backported hugely influential fix from UE2 here
+	// Remove acknowledged moves from the savedmoves list
+	CurrentMove = bbSavedMove(SavedMoves);
+	while (CurrentMove != None)
+	{
+		if (CurrentMove.TimeStamp <= CurrentTimeStamp)
+		{
+			SavedMoves = bbSavedMove(CurrentMove.NextMove);
+			CurrentMove.NextMove = FreeMoves;
+			FreeMoves = CurrentMove;
+			if (CurrentMove.TimeStamp == CurrentTimeStamp)
+			{
+				// log("> Server NACK "@CurrentMove.ToString());
+				// log("> Position Error"@VSize(CurrentMove.SavedLocation - NewLocation));
+				// log("> Velocity Error"@VSize(CurrentMove.SavedVelocity - NewVelocity));
+
+				// if this is a small adjustment that does not
+				// change our state, then reject it. This way
+				// we can ensure that movement remains smooth
+				if (VSize(CurrentMove.SavedLocation - NewLoc) < 3 &&
+				    // VSize(CurrentMove.SavedVelocity - NewVelocity) < 3 &&  // stijn: UE2 also checked velocity but honestly there isn't really any point in doing that...
+				    IsInState(newState))
+				{
+					// log("> ClientAdjustPosition REJECT");
+					debugNumOfIgnoredForceUpdates++;
+					FreeMoves.Clear();
+					return;
+				}
+				// log("> ClientAdjustPosition ACCEPT");
+				// ok, this is a serious adjustment. Proceed
+				FreeMoves.Clear();
+				break;
+		    }
+			// log("> Server ACK "@CurrentMove.ToString());
+			FreeMoves.Clear();
+			CurrentMove = bbSavedMove(SavedMoves);
+		}
+		else
+		{
+			// not yet acknowledged. break out of the loop
+			break;
+		}
+	}
+	// stijn: End of fix
 
 	SetBase(NewBase);
 	if ( Mover(NewBase) != None )
@@ -1460,6 +1505,7 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 	bCanTeleport = false;
 	SetLocation(NewLoc);
 	bCanTeleport = true;
+	Velocity = NewVel;
 
 	if ( Carried != None )
 	{
@@ -1489,15 +1535,22 @@ function xxFakeCAP(float TimeStamp)
 
 function ClientUpdatePosition()
 {
-	local SavedMove CurrentMove;
+	local bbSavedMove CurrentMove, PendMove;
 	local int realbRun, realbDuck;
 	local bool bRealJump;
+	local rotator RealViewRotation, RealRotation;
+
+	local float TotalTime;
+	local Pawn P;
+	local vector Dir;
 
 	bUpdatePosition = false;
 	realbRun= bRun;
 	realbDuck = bDuck;
 	bRealJump = bPressedJump;
-	CurrentMove = SavedMoves;
+	RealRotation = Rotation;
+	RealViewRotation = ViewRotation;
+	CurrentMove = bbSavedMove(SavedMoves);
 	bUpdating = true;
 	while ( CurrentMove != None )
 	{
@@ -1507,19 +1560,40 @@ function ClientUpdatePosition()
 			CurrentMove.NextMove = FreeMoves;
 			FreeMoves = CurrentMove;
 			FreeMoves.Clear();
-			CurrentMove = SavedMoves;
+			CurrentMove = bbSavedMove(SavedMoves);
 		}
 		else
 		{
-			if (!zzbFakeUpdate)
+			TotalTime += CurrentMove.Delta;
+			if (!zzbFakeUpdate) {
+				SetRotation( CurrentMove.Rotation);
+				ViewRotation = CurrentMove.SavedViewRotation;
 				MoveAutonomous(CurrentMove.Delta, CurrentMove.bRun, CurrentMove.bDuck, CurrentMove.bPressedJump, CurrentMove.DodgeMove, CurrentMove.Acceleration, rot(0,0,0));
-			CurrentMove = CurrentMove.NextMove;
+				CurrentMove.SavedLocation = Location;
+				CurrentMove.SavedVelocity = Velocity;
+			}
+			CurrentMove = bbSavedMove(CurrentMove.NextMove);
 		}
+	}
+	// stijn: The original code was not replaying the pending move
+	// here. This was a huge oversight and caused non-stop resynchronizations
+	// because the playerpawn position would be off constantly until the player
+	// stopped moving!
+	if (!zzbFakeUpdate && PendingMove != none)
+	{
+		PendMove = bbSavedMove(PendingMove);
+		SetRotation(PendingMove.Rotation);
+		ViewRotation = PendMove.SavedViewRotation;
+		MoveAutonomous(PendingMove.Delta, PendingMove.bRun, PendingMove.bDuck, PendingMove.bPressedJump, PendingMove.DodgeMove, PendingMove.Acceleration, rot(0,0,0));
+		PendMove.SavedLocation = Location;
+		PendMove.SavedVelocity = Velocity;
 	}
 	bUpdating = false;
 	bDuck = realbDuck;
 	bRun = realbRun;
 	bPressedJump = bRealJump;
+	SetRotation( RealRotation);
+	ViewRotation = RealViewRotation;
 	zzbFakeUpdate = false;
 	//log("Client adjusted "$self$" stamp "$CurrentTimeStamp$" location "$Location$" dodge "$DodgeDir);
 }
@@ -2396,6 +2470,20 @@ function ReplicateMove
 	xxServerCheater("RM");
 }
 
+function bbSavedMove xxGetFreeMove() {
+	local bbSavedMove s;
+
+	if ( FreeMoves == None )
+		return Spawn(class'bbSavedMove');
+	else
+	{
+		s = bbSavedMove(FreeMoves);
+		FreeMoves = FreeMoves.NextMove;
+		s.NextMove = None;
+		return s;
+	}
+}
+
 function xxReplicateMove
 (
 	float DeltaTime,
@@ -2404,7 +2492,7 @@ function xxReplicateMove
 	rotator DeltaRot
 )
 {
-	local SavedMove NewMove, OldMove, LastMove;
+	local bbSavedMove NewMove, OldMove, LastMove;
 	local byte ClientRoll;
 	local float OldTimeDelta, TotalTime, NetMoveDelta;
 	local int OldAccel;
@@ -2436,7 +2524,7 @@ function xxReplicateMove
 	}
 	if ( SavedMoves != None )
 	{
-		NewMove = SavedMoves;
+		NewMove = bbSavedMove(SavedMoves);
 		AccelNorm = Normal(NewAccel);
 		while ( NewMove.NextMove != None )
 		{
@@ -2444,7 +2532,7 @@ function xxReplicateMove
 			if ( NewMove.bPressedJump || ((NewMove.DodgeMove != Dodge_NONE) && (NewMove.DodgeMove < 5))
 				|| ((NewMove.Acceleration != NewAccel) && ((normal(NewMove.Acceleration) Dot AccelNorm) < 0.95)) ) // default value is 0.95
 				OldMove = NewMove;
-			NewMove = NewMove.NextMove;
+			NewMove = bbSavedMove(NewMove.NextMove);
 		}
 		if ( NewMove.bPressedJump || ((NewMove.DodgeMove != Dodge_NONE) && (NewMove.DodgeMove < 5))
 			|| ((NewMove.Acceleration != NewAccel) && ((normal(NewMove.Acceleration) Dot AccelNorm) < 0.95)) )
@@ -2452,7 +2540,7 @@ function xxReplicateMove
 	}
 
 	LastMove = NewMove;
-	NewMove = GetFreeMove();
+	NewMove = xxGetFreeMove();
 	NewMove.Delta = DeltaTime;
 	if ( VSize(NewAccel) > 3072 )
 		NewAccel = 3072 * Normal(NewAccel);
@@ -2490,8 +2578,13 @@ function xxReplicateMove
 		NewMove.NextMove = FreeMoves;
 		FreeMoves = NewMove;
 		FreeMoves.Clear();
-		NewMove = PendingMove;
+		NewMove = bbSavedMove(PendingMove);
 	}
+	NewMove.SetRotation( Rotation );
+	NewMove.SavedViewRotation = ViewRotation;
+	NewMove.SavedLocation = Location;
+	NewMove.SavedVelocity = Velocity;
+
 	if (Player.CurrentNetSpeed != 0) {
 		NetMoveDelta = TimeBetweenNetUpdates;
 	}
@@ -4342,7 +4435,7 @@ simulated function PlayWalking()
     }
 }
 
-function PlayerPawn GetLocalPlayer() {
+simulated function PlayerPawn GetLocalPlayer() {
 	local Pawn P;
 
 	if (LocalPlayer != none) return LocalPlayer;
@@ -4719,26 +4812,6 @@ state PlayerWaking
 
 state Dying
 {
-	/*
-	exec function Fire( optional float F )
-	{
-		if ( (Level.NetMode == NM_Standalone) && !Level.Game.bDeathMatch )
-		{
-			if ( bFrozen )
-				return;
-			ShowLoadMenu();
-		}
-		else if ( !bFrozen || (TimerRate <= 0.0) )
-		{
-			if (Level.NetMode == NM_Client)
-			{
-				ClientMessage(zzNextStartSpot);
-				xxRestartPlayer();
-			}
-			ServerReStartPlayer();
-		}
-	}
-	*/
     exec function Fire( optional float F )
     {
         if (Level.NetMode == NM_DedicatedServer && Role == ROLE_Authority) {
@@ -6058,7 +6131,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.SetPos(zzx, zzY + 180);
 	zzC.DrawText("zzbForceUpdate:"@debugClientForceUpdate);
 	zzC.SetPos(zzx, zzY + 200);
-	zzC.DrawText("ForcedUpdates:"@debugNumOfForcedUpdates);
+	zzC.DrawText("ForcedUpdates:"@debugNumOfForcedUpdates@"-"@debugNumOfIgnoredForceUpdates@"="@(debugNumOfForcedUpdates - debugNumOfIgnoredForceUpdates));
 	zzC.SetPos(zzx, zzY + 220);
 	zzC.DrawText("bMoveSmooth:"@debugClientbMoveSmooth);
 	zzC.SetPos(zzx, zzY + 240);
