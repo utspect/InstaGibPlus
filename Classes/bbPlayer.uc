@@ -1450,6 +1450,8 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 		return;
 	CurrentTimeStamp = TimeStamp;
 
+	SetPhysics(newPhysics);
+
 	// stijn: Backported hugely influential fix from UE2 here
 	// Remove acknowledged moves from the savedmoves list
 	CurrentMove = bbSavedMove(SavedMoves);
@@ -1517,7 +1519,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 		CarriedDecoration.SetPhysics(PHYS_None);
 		CarriedDecoration.SetBase(self);
 	}
-	SetPhysics(newPhysics);
 
 	if ( !IsInState(newState) )
 		GotoState(newState);
@@ -1851,8 +1852,25 @@ function xxServerMove(
 	ClientVelCalc.Z = FMax(ClientVel.Z, Velocity.Z);
 
 	// Predict new position
-	if ((Level.Pauser == "") && (DeltaTime > 0))
+	if ((Level.Pauser == "") && (DeltaTime > 0)) {
+		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: before MoveAutonomous"@Physics@DodgeMove@AnimSequence, 'Debug');
 		MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
+		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: after MoveAutonomous"@Physics@AnimSequence, 'Debug');
+	}
+
+	// HACK
+	// This fixes players skating around. I can't explain why they start doing
+	// that. Maybe because we're dodging in a place where we can't dodge?
+	// Symptoms of skating around are:
+	//  a) Tweening between DuckWlkL and JumpLGFR at 0.25Hz (see PlayInAir)
+	//  b) DodgeMove is DODGE_None, Physics are still PHYS_Falling
+	// This hack uses the second set of symptoms to getect when were about to
+	// start skating around and forces the Pawn to land. No idea about side-
+	// effects yet.
+	if (Physics == PHYS_Falling && DodgeMove == DODGE_None) {
+		Landed(vect(0,0,1));
+		SetPhysics(PHYS_Walking);
+	}
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxPosError = 3.0;
@@ -6101,6 +6119,8 @@ simulated function xxDrawAlphaWarning(canvas zzC, float zzx, float zzY) {
 }
 
 simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
+	local Pawn P;
+	local int y;
 
 	/**
 	 * @Author: spect
@@ -6152,6 +6172,19 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.DrawText("NetUpdateRate:"@DesiredNetUpdateRate);
 	zzC.SetPos(zzx, zzY + 360);
 	zzC.DrawText("UpdatedPosition:"@clientForcedPosition);
+	zzC.SetPos(zzx, zzY + 380);
+	zzC.DrawText("Physics:"@Physics@"Anim:"@AnimSequence);
+	zzC.SetPos(zzx+20, zzY + 400);
+	zzC.DrawText("AnimRate:"@AnimRate@"TweenRate:"@TweenRate);
+	zzC.SetPos(zzx+500, zzY);
+	zzC.DrawText("Players:");
+	y = zzY + 20;
+	foreach AllActors(class'Pawn', P) {
+		zzC.SetPos(zzx+500, y);
+		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"Physics:"@P.Physics@"Anim:"@P.AnimSequence);
+		y += 20;
+	}
+
 	zzC.Style = ERenderStyle.STY_Normal;
 }
 
