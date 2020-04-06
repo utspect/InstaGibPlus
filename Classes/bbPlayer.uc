@@ -5542,7 +5542,7 @@ simulated function xxCheckForKickers()
 }
 
 
-static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
+static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
 	local string suffix;
 	/**
  	* @Author: spect
@@ -5555,7 +5555,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, int TeamNum) {
 		selectedSkin = 12;
 
 	suffix = "";
-	if (GameReplicationInfo.bTeamGame)
+	if (bTeamGame)
 		suffix = "t_"$TeamNum;
 
 	switch (selectedSkin) {
@@ -5773,9 +5773,9 @@ event PreRender( canvas zzCanvas )
 			) {
 				// Set the skin
 				if (zzPRI.Team == Self.PlayerReplicationInfo.Team) {
-					setForcedSkin(zzPRI.Owner, desiredTeamSkin, zzPRI.Team);
+					setForcedSkin(zzPRI.Owner, desiredTeamSkin, GameReplicationInfo.bTeamGame, zzPRI.Team);
 				} else {
-					setForcedSkin(zzPRI.Owner, desiredSkin, zzPRI.Team);
+					setForcedSkin(zzPRI.Owner, desiredSkin, GameReplicationInfo.bTeamGame, zzPRI.Team);
 				}
 			}
 		}
