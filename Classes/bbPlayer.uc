@@ -1868,8 +1868,8 @@ function xxServerMove(
 	// start skating around and forces the Pawn to land. No idea about side-
 	// effects yet.
 	if (Physics == PHYS_Falling && DodgeMove == DODGE_None) {
-		Landed(vect(0,0,1));
 		SetPhysics(PHYS_Walking);
+		Landed(vect(0,0,1));
 	}
 
 	// Calculate how far off we allow the client to be from the predicted position
