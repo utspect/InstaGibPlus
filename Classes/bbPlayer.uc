@@ -287,6 +287,8 @@ var int CompressedViewRotation; // Compressed Pitch/Yaw
 // |     Pitch      |      Yaw       |
 // +----------------+----------------+
 
+var bool bWasDodging;
+
 replication
 {
 	//	Client->Demo
@@ -1661,16 +1663,29 @@ function xxSetPendingWeapon(Weapon W)
 	PendingWeapon = W;
 }
 
+function EDodgeDir GetDodgeDir(int dir) {
+	switch(dir) {
+		case 0: return DODGE_None;
+		case 1: return DODGE_Left;
+		case 2: return DODGE_Right;
+		case 3: return DODGE_Forward;
+		case 4: return DODGE_Back;
+		case 5: return DODGE_Active;
+		case 6: return DODGE_Done;
+	}
+	return DODGE_None;
+}
+
 function xxServerMove(
 	float TimeStamp,
-	vector InAccel,
-	vector ClientLoc,
+	float AccelX,
+	float AccelY,
+	float AccelZ,
+	float ClientLocX,
+	float ClientLocY,
+	float ClientLocZ,
 	vector ClientVel,
-	bool NewbRun,
-	bool NewbDuck,
-	bool NewbJumpStatus,
-	eDodgeDir DodgeMove,
-	byte ClientRoll,
+	int MiscData,
 	int View,
 	Actor ClientBase,
 	optional byte OldTimeDelta,
@@ -1694,6 +1709,15 @@ function xxServerMove(
 	local vector ClientLocAbs;
 	local vector ClientVelCalc;
 	local bool bCanTraceNewLoc, bMovedToNewLoc;
+
+	local vector InAccel;
+	local vector ClientLoc;
+
+	local bool NewbRun;
+	local bool NewbDuck;
+	local bool NewbJumpStatus;
+	local eDodgeDir DodgeMove;
+	local byte ClientRoll;
 
 	if (bDeleteMe)
 		return;
@@ -1746,6 +1770,19 @@ function xxServerMove(
 
 	if ( CurrentTimeStamp >= TimeStamp )
 		return;
+
+	InAccel.X = AccelX;
+	InAccel.Y = AccelY;
+	InAccel.Z = AccelZ;
+	ClientLoc.X = ClientLocX;
+	ClientLoc.Y = ClientLocY;
+	ClientLoc.Z = ClientLocZ;
+
+	NewbRun = (MiscData & 0x40000) != 0;
+	NewbDuck = (MiscData & 0x20000) != 0;
+	NewbJumpStatus = (MiscData & 0x10000) != 0;
+	DodgeMove = GetDodgeDir((MiscData >> 8) & 0xFF);
+	ClientRoll = (MiscData & 0xFF);
 
 	if (ClientBase == none)
 		ClientLocAbs = ClientLoc;
@@ -1827,16 +1864,14 @@ function xxServerMove(
 
 	CurrentTimeStamp = TimeStamp;
 	ServerTimeStamp = Level.TimeSeconds;
-	Rot.Roll = 256 * ClientRoll;
+	Rot.Roll = ClientRoll << 8;
 	Rot.Yaw = ViewYaw;
 	if ((Physics == PHYS_Swimming) || (Physics == PHYS_Flying))
 		maxPitch = 2 * RotationRate.Pitch;
 	else
 		maxPitch = RotationRate.Pitch;
 
-	Rot.Pitch = (ViewPitch << 16) >> 16; // sign extend
-	Rot.Pitch = Clamp(Rot.Pitch, -maxPitch, maxPitch);
-	Rot.Pitch = Rot.Pitch & 0xFFFF;
+	Rot.Pitch = Clamp((ViewPitch << 16) >> 16, -maxPitch, maxPitch) & 0xFFFF;
 
 	DeltaRot = (Rotation - Rot);
 	ViewRotation.Pitch = ViewPitch;
@@ -1855,7 +1890,7 @@ function xxServerMove(
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
 		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: before MoveAutonomous"@Physics@DodgeMove@AnimSequence, 'Debug');
 		MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
-		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: after MoveAutonomous"@Physics@AnimSequence, 'Debug');
+		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: after MoveAutonomous"@Physics@DodgeDir@AnimSequence, 'Debug');
 	}
 
 	// HACK
@@ -1867,15 +1902,20 @@ function xxServerMove(
 	// This hack uses the second set of symptoms to getect when were about to
 	// start skating around and forces the Pawn to land. No idea about side-
 	// effects yet.
-	if (Physics == PHYS_Falling && DodgeMove == DODGE_None) {
-		SetPhysics(PHYS_Walking);
-		Landed(vect(0,0,1));
+	if (Physics != PHYS_Falling) {
+		bWasDodging = false;
+	} else {
+		bWasDodging = bWasDodging || DodgeDir == DODGE_Active;
+		if (bWasDodging && DodgeMove == DODGE_None) {
+			SetPhysics(PHYS_Walking);
+			Landed(vect(0,0,1));
+		}
 	}
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxPosError = 3.0;
 	if (bNewNet)
-		MaxPosError += MaxPosErrorFactor * (ClientVelCalc dot ClientVelCalc);
+		MaxPosError += FMin(DeltaTime * DeltaTime, MaxPosErrorFactor) * (ClientVelCalc dot ClientVelCalc);
 
 	LocDiff = Location - ClientLocAbs;
 	ClientLocErr = LocDiff Dot LocDiff;
@@ -2519,6 +2559,8 @@ function xxReplicateMove
 	local int OldAccel;
 	local vector BuildAccel, AccelNorm, Dir, RelLoc;
 	local Pawn P;
+	local vector Accel;
+	local int MiscData;
 
 	// Get a SavedMove actor to store the movement in.
 	if ( PendingMove != None )
@@ -2650,26 +2692,32 @@ function xxReplicateMove
 	//	log("No redundant timestamp at "$Level.TimeSeconds$" with accel "$NewAccel);
 
 	// Send to the server
-	ClientRoll = (Rotation.Roll >> 8) & 255;
 	if ( NewMove.bPressedJump )
 		bJumpStatus = !bJumpStatus;
+
+	Accel = NewMove.Acceleration * 10;
 
 	if (Base == none)
 		RelLoc = Location;
 	else
 		RelLoc = Location - Base.Location;
 
-	xxServerMove
-	(
+	if (NewMove.bRun) MiscData = MiscData | 0x40000;
+	if (NewMove.bDuck) MiscData = MiscData | 0x20000;
+	if (bJumpStatus) MiscData = MiscData | 0x10000;
+	MiscData = MiscData | (int(NewMove.DodgeMove) << 8);
+	MiscData = MiscData | ((Rotation.Roll >> 8) & 0xFF);
+
+	xxServerMove(
 		NewMove.TimeStamp,
-		NewMove.Acceleration * 10,
-		RelLoc,
+		Accel.X,
+		Accel.Y,
+		Accel.Z,
+		RelLoc.X,
+		RelLoc.Y,
+		RelLoc.Z,
 		Velocity,
-		NewMove.bRun,
-		NewMove.bDuck,
-		bJumpStatus,
-		NewMove.DodgeMove,
-		ClientRoll,
+		MiscData,
 		((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF),
 		Base,
 		OldTimeDelta,
@@ -3821,23 +3869,34 @@ state FeigningDeath
 	function xxServerMove
 	(
 		float TimeStamp,
-		vector Accel,
-		vector ClientLoc,
+		float AccelX,
+		float AccelY,
+		float AccelZ,
+		float ClientLocX,
+		float ClientLocY,
+		float ClientLocZ,
 		vector ClientVel,
-		bool NewbRun,
-		bool NewbDuck,
-		bool NewbJumpStatus,
-		eDodgeDir DodgeMove,
-		byte ClientRoll,
+		int MiscData,
 		int View,
 		Actor ClientBase,
 		optional byte OldTimeDelta,
 		optional int OldAccel
 	)
 	{
-		Global.xxServerMove(TimeStamp, Accel, ClientLoc, ClientVel, NewbRun, NewbDuck, NewbJumpStatus,
-							//bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, (32767 & (Rotation.Pitch/2)) * 32768 + (32767 & (Rotation.Yaw/2)));
-							DodgeMove, ClientRoll, ((Rotation.Pitch & 0xFFFF) << 16) | (Rotation.Yaw & 0xFFFF), ClientBase);
+		Global.xxServerMove(
+			TimeStamp,
+			AccelX,
+			AccelY,
+			AccelZ,
+			ClientLocX,
+			ClientLocY,
+			ClientLocZ,
+			ClientVel,
+			MiscData,
+			((Rotation.Pitch & 0xFFFF) << 16) | (Rotation.Yaw & 0xFFFF),
+			ClientBase,
+			OldTimeDelta,
+			OldAccel);
 	}
 
 	function PlayerMove( float DeltaTime)
@@ -4949,23 +5008,34 @@ state Dying
 	function xxServerMove
 	(
 		float TimeStamp,
-		vector Accel,
-		vector ClientLoc,
+		float AccelX,
+		float AccelY,
+		float AccelZ,
+		float ClientLocX,
+		float ClientLocY,
+		float ClientLocZ,
 		vector ClientVel,
-		bool NewbRun,
-		bool NewbDuck,
-		bool NewbJumpStatus,
-		eDodgeDir DodgeMove,
-		byte ClientRoll,
+		int MiscData,
 		int View,
 		Actor ClientBase,
 		optional byte OldTimeDelta,
 		optional int OldAccel
 	)
 	{
-		zzbForceUpdate = true;
-		Global.xxServerMove(TimeStamp, Accel, ClientLoc, ClientVel, false, false, false,
-				DodgeMove, ClientRoll, View, ClientBase);
+		Global.xxServerMove(
+			TimeStamp,
+			AccelX,
+			AccelY,
+			AccelZ,
+			ClientLocX,
+			ClientLocY,
+			ClientLocZ,
+			ClientVel,
+			MiscData & 0xFFFF,
+			View,
+			ClientBase,
+			OldTimeDelta,
+			OldAccel);
 	}
 
 	function FindGoodView()
@@ -5081,23 +5151,34 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	function xxServerMove
 	(
 		float TimeStamp,
-		vector InAccel,
-		vector ClientLoc,
+		float AccelX,
+		float AccelY,
+		float AccelZ,
+		float ClientLocX,
+		float ClientLocY,
+		float ClientLocZ,
 		vector ClientVel,
-		bool NewbRun,
-		bool NewbDuck,
-		bool NewbJumpStatus,
-		eDodgeDir DodgeMove,
-		byte ClientRoll,
+		int MiscData,
 		int View,
 		Actor ClientBase,
 		optional byte OldTimeDelta,
 		optional int OldAccel
 	)
 	{
-		Global.xxServerMove(TimeStamp, InAccel, ClientLoc, ClientVel, NewbRun, NewbDuck, NewbJumpStatus,
-							//bFired, bAltFired, bForceFire, bForceAltFire, DodgeMove, ClientRoll, (32767 & (zzViewRotation.Pitch/2)) * 32768 + (32767 & (zzViewRotation.Yaw/2)) );
-							DodgeMove, ClientRoll, ((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF), ClientBase);
+		Global.xxServerMove(
+			TimeStamp,
+			AccelX,
+			AccelY,
+			AccelZ,
+			ClientLocX,
+			ClientLocY,
+			ClientLocZ,
+			ClientVel,
+			MiscData,
+			((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF),
+			ClientBase,
+			OldTimeDelta,
+			OldAccel);
 	}
 
 	function FindGoodView()
