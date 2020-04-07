@@ -287,6 +287,8 @@ var int CompressedViewRotation; // Compressed Pitch/Yaw
 // |     Pitch      |      Yaw       |
 // +----------------+----------------+
 
+var bool bWasDodging;
+
 replication
 {
 	//	Client->Demo
@@ -1888,7 +1890,7 @@ function xxServerMove(
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
 		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: before MoveAutonomous"@Physics@DodgeMove@AnimSequence, 'Debug');
 		MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
-		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: after MoveAutonomous"@Physics@AnimSequence, 'Debug');
+		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: after MoveAutonomous"@Physics@DodgeDir@AnimSequence, 'Debug');
 	}
 
 	// HACK
@@ -1900,15 +1902,20 @@ function xxServerMove(
 	// This hack uses the second set of symptoms to getect when were about to
 	// start skating around and forces the Pawn to land. No idea about side-
 	// effects yet.
-	if (Physics == PHYS_Falling && DodgeMove == DODGE_None) {
-		SetPhysics(PHYS_Walking);
-		Landed(vect(0,0,1));
+	if (Physics != PHYS_Falling) {
+		bWasDodging = false;
+	} else {
+		bWasDodging = bWasDodging || DodgeDir == DODGE_Active;
+		if (bWasDodging && DodgeMove == DODGE_None) {
+			SetPhysics(PHYS_Walking);
+			Landed(vect(0,0,1));
+		}
 	}
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxPosError = 3.0;
 	if (bNewNet)
-		MaxPosError += MaxPosErrorFactor * (ClientVelCalc dot ClientVelCalc);
+		MaxPosError += FMin(DeltaTime * DeltaTime, MaxPosErrorFactor) * (ClientVelCalc dot ClientVelCalc);
 
 	LocDiff = Location - ClientLocAbs;
 	ClientLocErr = LocDiff Dot LocDiff;
