@@ -4997,8 +4997,6 @@ state Dying
 					zzViewRotation.Pitch = 49152;
 			}
 			ViewRotation = zzViewRotation;
-			if ( Role < ROLE_Authority ) // then save this move and replicate it
-				xxReplicateMove(DeltaTime, vect(0,0,0), DODGE_None, rot(0,0,0));
 		}
 		ViewShake(DeltaTime);
 		ViewFlash(DeltaTime);
