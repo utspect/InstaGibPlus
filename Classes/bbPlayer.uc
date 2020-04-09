@@ -2545,14 +2545,12 @@ function bbSavedMove xxGetFreeMove() {
 	}
 }
 
-function xxReplicateMove
-(
+function xxReplicateMove(
 	float DeltaTime,
 	vector NewAccel,
 	eDodgeDir DodgeMove,
 	rotator DeltaRot
-)
-{
+) {
 	local bbSavedMove NewMove, OldMove, LastMove;
 	local byte ClientRoll;
 	local float OldTimeDelta, TotalTime, NetMoveDelta;
@@ -2562,6 +2560,11 @@ function xxReplicateMove
 	local vector Accel;
 	local int MiscData;
 
+	if (bDrawDebugData) {
+		debugNewAccel = Normal(NewAccel);
+		debugPlayerLocation = Location;
+	}
+
 	// Get a SavedMove actor to store the movement in.
 	if ( PendingMove != None )
 	{
@@ -2569,10 +2572,7 @@ function xxReplicateMove
 		PendingMove.TimeStamp = Level.TimeSeconds;
 		if ( VSize(NewAccel) > 3072)
 			NewAccel = 3072 * Normal(NewAccel);
-		if (bDrawDebugData) {
-			debugNewAccel = Normal(NewAccel);
-			debugPlayerLocation = Location;
-		}
+
 		TotalTime = PendingMove.Delta + DeltaTime;
 		if (TotalTime != 0)
 			PendingMove.Acceleration = (DeltaTime * NewAccel + PendingMove.Delta * PendingMove.Acceleration)/TotalTime;
