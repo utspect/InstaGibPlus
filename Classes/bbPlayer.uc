@@ -1709,6 +1709,8 @@ function xxServerMove(
 	local vector ClientLocAbs;
 	local vector ClientVelCalc;
 	local bool bCanTraceNewLoc, bMovedToNewLoc;
+	local float PosErrFactor;
+	local float PosErr;
 
 	local vector InAccel;
 	local vector ClientLoc;
@@ -1914,8 +1916,16 @@ function xxServerMove(
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxPosError = 3.0;
-	if (bNewNet)
-		MaxPosError += FMin(DeltaTime * DeltaTime, MaxPosErrorFactor) * (ClientVelCalc dot ClientVelCalc);
+	if (bNewNet) {
+		PosErrFactor = FMin(DeltaTime, class'UTPure'.default.MaxJitterTime);
+		PosErr =
+			3 // constant part
+			+ PosErrFactor * VSize(ClientVelCalc) // velocity
+			+ FMin(1.0, FMax(0, GroundSpeed - VSize(ClientVelCalc)) / AccelRate / PosErrFactor) // bound acceleration by how much we can still speed up
+				* 0.5 * AccelRate * PosErrFactor * PosErrFactor; // acceleration
+
+		MaxPosError = PosErr * PosErr;
+	}
 
 	LocDiff = Location - ClientLocAbs;
 	ClientLocErr = LocDiff Dot LocDiff;
