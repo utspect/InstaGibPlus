@@ -84,7 +84,7 @@ replication
 		xxSetHitSounds, xxSetTimes, xxReceivePosition, xxClientSpawnSSRBeam; //, xxClientActivateMover;
 }
 
-simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, actor O) {
+simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
 	local ClientSuperShockBeam Smoke;
 	local Vector DVector;
 	local int NumPoints;
@@ -148,8 +148,8 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 	}
 }
 
-simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, actor O) {
-	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, O);
+simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
+	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
 }
 
 simulated function xxReceivePosition( bbPlayer Other, vector Loc, vector Vel, bool bSet )

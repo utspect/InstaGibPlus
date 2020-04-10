@@ -34,6 +34,7 @@ var globalconfig int selectedHitSound;
 var globalconfig string sHitSound[16];
 var globalconfig int cShockBeam;
 var globalconfig float BeamScale;
+var globalconfig int BeamOriginMode;
 var globalconfig float DesiredNetUpdateRate;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
@@ -6868,18 +6869,26 @@ exec function NoSwitchWeapon4(bool b)
 	ClientMessage("GetWeapon ShockRifle doesn't trigger SwitchWeapon 4:"@bNoSwitchWeapon4);
 }
 
-simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, actor O) {
+simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
 	local ClientSuperShockBeam Smoke;
 	local Vector DVector;
 	local int NumPoints;
 	local rotator SmokeRotation;
 	local vector MoveAmount;
+	local vector OriginLocation;
 
 	LastSSRBeamCreated = Level.TimeSeconds;
 
 	if (Level.NetMode == NM_DedicatedServer) return;
 
-	DVector = HitLocation - SmokeLocation;
+	if (BeamOriginMode == 1) {
+		// Show beam originating from its Owner
+		OriginLocation = Owner.Location + SmokeOffset;
+	} else {
+		// Show beam originating from where it was shot
+		OriginLocation = SmokeLocation;
+	}
+	DVector = HitLocation - OriginLocation;
 	NumPoints = VSize(DVector) / 135.0;
 	if ( NumPoints < 1 )
 		return;
@@ -6888,7 +6897,7 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 
 	if (cShockBeam == 3) return;
 
-	Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
+	Smoke = Spawn(class'ClientSuperShockBeam',O,, OriginLocation, SmokeRotation);
 	if (Smoke == none) return;
 	MoveAmount = DVector / NumPoints;
 
@@ -6920,8 +6929,8 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 			0);
 
 		for (NumPoints = NumPoints - 1; NumPoints > 0; NumPoints--) {
-			SmokeLocation += MoveAmount;
-			Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
+			OriginLocation += MoveAmount;
+			Smoke = Spawn(class'ClientSuperShockBeam',O,, OriginLocation, SmokeRotation);
 			if (Smoke == None) break;
 			Smoke.SetProperties(
 				PlayerPawn(O).PlayerReplicationInfo.Team,
@@ -6934,17 +6943,17 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 	}
 }
 
-simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, actor O) {
-	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, O);
+simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
+	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
 	LastSSRBeamCreated = -1.0;
 }
 
-simulated function xxDemoSpawnSSRBeam(vector HitLocation, vector SmokeLocation, actor O) {
+simulated function xxDemoSpawnSSRBeam(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
 	if (LastSSRBeamCreated == Level.TimeSeconds) {
 		LastSSRBeamCreated = -1.0;
 		return;
 	}
-	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, O);
+	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
 }
 
 function xxServerSetNetCode(bool bNewCode)
