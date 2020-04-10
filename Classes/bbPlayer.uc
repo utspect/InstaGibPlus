@@ -6174,6 +6174,13 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"Physics:"@P.Physics@"Anim:"@P.AnimSequence);
 		y += 20;
 	}
+	zzC.SetPos(zzx, zzY + 420);
+	zzC.DrawText("Base:"@Base);
+	zzC.SetPos(zzx+20, zzY + 440);
+	if (Base != none)
+		zzC.DrawText("Velocity:"@Base.Velocity@"State:"@Base.GetStateName());
+	else
+		zzC.DrawText("Velocity:"@vect(0,0,0)@"State:");
 
 	zzC.Style = ERenderStyle.STY_Normal;
 }
