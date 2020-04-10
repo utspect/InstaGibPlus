@@ -1972,11 +1972,24 @@ function xxServerMove(
 			SetCollision(bCollideActors, bBlockActors, true);
 	}
 
+	bOnMover = Mover(Base) != None;
+	zzbOnMover = Mover(ClientBase) != none;
+	if (bOnMover && zzbOnMover && ClientLocErr < MaxPosError * 10)
+	{
+		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
+	}
+	else if (zzIgnoreUpdateUntil > 0)
+	{
+		if (zzIgnoreUpdateUntil > ServerTimeStamp && (Base == None || Mover(Base) == None || bOnMover != zzbOnMover) && Physics != PHYS_Falling)
+			zzIgnoreUpdateUntil = 0;
+		zzbForceUpdate = false;
+	}
+
 	zzMyState = GetStateName();
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
 
-	if (zzForceUpdateUntil > 0 || zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError) {
+	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && (ClientLocErr > MaxPosError || Physics != ClientPhysics))) {
 		zzbForceUpdate = true;
 		if (ServerTimeStamp > zzForceUpdateUntil)
 			zzForceUpdateUntil = 0;
