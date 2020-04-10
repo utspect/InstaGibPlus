@@ -318,7 +318,8 @@ replication
 		zzbForceModels, bIsAlive, bMustUpdate, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
-		xxClientKicker, xxClientSetVelocity, TimeBetweenNetUpdates, xxClientSpawnSSRBeam; //, xxClientTrigger, xxClientActivateMover;
+		xxClientKicker, /*xxClientSetVelocity,*/ TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
+		xxClientAddVelocity; //, xxClientTrigger, xxClientActivateMover;
 
 	// Client->Server debug data
 	reliable if ( Role == ROLE_AutonomousProxy )
@@ -3275,31 +3276,11 @@ simulated function AddVelocity( vector NewVelocity )
 	}
 
 	zzAddVelocityCount++;
-	xxClientSetVelocity(zzExpectedVelocity);
+	xxClientAddVelocity(NewVelocity);
 }
 
-simulated function xxClientSetVelocity( vector NewVelocity )
-{
-	if (Level.NetMode != NM_Client)
-		return;
-	if (Physics == PHYS_Walking  || Physics == PHYS_None) // RX Fix
-		SetPhysics(PHYS_Falling);
-
-	Velocity = NewVelocity;
-	xxServerSetVelocity(NewVelocity);
-}
-
-simulated function xxServerSetVelocity( vector NewVelocity )
-{
-	if (Level.NetMode == NM_Client)
-		return;
-	zzAddVelocityCount--;
-	if (VSize(NewVelocity) > 0)
-	{
-		if (Physics == PHYS_Walking)
-			SetPhysics(PHYS_Falling);
-		Velocity = NewVelocity;
-	}
+simulated function xxClientAddVelocity(vector Velocity) {
+	super.AddVelocity(Velocity);
 }
 
 simulated function NN_Momentum( Vector momentum, name DamageType )
