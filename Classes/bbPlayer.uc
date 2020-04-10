@@ -5068,8 +5068,6 @@ state Dying
 
 	function EndState()
 	{
-		zzbForceUpdate = true;
-		zzIgnoreUpdateUntil = 0;
 		Super.EndState();
 		LastKillTime = 0;
 	}
