@@ -5431,7 +5431,7 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 	Diff = Level.TimeSeconds - zzSpawnedTime;
 	if (Diff < 1)
 	{
-		if (Diff > 0.2)
+		if (Diff > 0.3)
 			return false;
 		else
 			return true;
