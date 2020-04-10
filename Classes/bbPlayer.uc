@@ -765,6 +765,7 @@ function Timer() {
 
 function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 {
+	local SavedMove M;
 	if (zzbCanCSL ||
 	     (zzNewRotation.Roll == 0 && zzNewRotation == ViewRotation &&
 	      (WarpZoneInfo(Region.Zone) != None || WarpZoneInfo(HeadRegion.Zone) != None || WarpZoneInfo(FootRegion.Zone) != None)))
@@ -781,6 +782,22 @@ function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 		zzNewRotation.Roll  = 0;
 		SetRotation( zzNewRotation );
 		SetLocation( zzNewLocation );
+
+		// Clean up moves
+		if (PendingMove != none) {
+			PendingMove.NextMove = FreeMoves;
+			PendingMove.Clear();
+			FreeMoves = PendingMove;
+			PendingMove = none;
+		}
+
+		while(SavedMoves != none) {
+			M = SavedMoves;
+			SavedMoves = M.NextMove;
+			M.NextMove = FreeMoves;
+			M.Clear();
+			FreeMoves = M;
+		}
 	}
 }
 
