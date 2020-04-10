@@ -355,7 +355,7 @@ replication
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
 		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
-		xxExplodeOther, xxServerSetVelocity, xxSetNetUpdateRate; //, xxServerActivateMover;
+		xxExplodeOther, /*xxServerSetVelocity,*/ xxSetNetUpdateRate; //, xxServerActivateMover;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ProjExplode, /* xxNN_ServerTakeDamage, */ /* xxNN_RadiusDamage, */ xxNN_TeleFrag, xxNN_TransFrag,
@@ -1616,8 +1616,6 @@ function xxServerReceiveStuff( float VelX, float VelY, float VelZ, bool bOnMover
 
 	if (VelZ < 0)
 		zzLastFallVelZ = VelZ;
-
-	zzbOnMover = bOnMover;
 
 	if ((TeleLoc dot TeleLoc) > 0 && TTarget != None && VSize(TeleLoc - TTarget.Location) < class'UTPure'.default.MaxPosError)
 	{
