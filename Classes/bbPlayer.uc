@@ -1695,6 +1695,7 @@ function EDodgeDir GetDodgeDir(int dir) {
 
 function xxServerMove(
 	float TimeStamp,
+	float FrameTime,
 	float AccelX,
 	float AccelY,
 	float AccelZ,
@@ -1865,6 +1866,9 @@ function xxServerMove(
 	bJumpStatus = NewbJumpStatus;
 
 	DeltaTime = TimeStamp - CurrentTimeStamp;
+	if (DeltaTime > 0.5)
+		DeltaTime = FMin(DeltaTime, FrameTime);
+
 	if ( ServerTimeStamp > 0 )
 	{
 		// allow 1% error
@@ -2750,6 +2754,7 @@ function xxReplicateMove(
 
 	xxServerMove(
 		NewMove.TimeStamp,
+		NewMove.Delta,
 		Accel.X,
 		Accel.Y,
 		Accel.Z,
@@ -3889,6 +3894,7 @@ state FeigningDeath
 	function xxServerMove
 	(
 		float TimeStamp,
+		float FrameTime,
 		float AccelX,
 		float AccelY,
 		float AccelZ,
@@ -3905,6 +3911,7 @@ state FeigningDeath
 	{
 		Global.xxServerMove(
 			TimeStamp,
+			FrameTime,
 			AccelX,
 			AccelY,
 			AccelZ,
@@ -5026,6 +5033,7 @@ state Dying
 	function xxServerMove
 	(
 		float TimeStamp,
+		float FrameTime,
 		float AccelX,
 		float AccelY,
 		float AccelZ,
@@ -5042,6 +5050,7 @@ state Dying
 	{
 		Global.xxServerMove(
 			TimeStamp,
+			FrameTime,
 			AccelX,
 			AccelY,
 			AccelZ,
@@ -5167,6 +5176,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	function xxServerMove
 	(
 		float TimeStamp,
+		float FrameTime,
 		float AccelX,
 		float AccelY,
 		float AccelZ,
@@ -5183,6 +5193,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	{
 		Global.xxServerMove(
 			TimeStamp,
+			FrameTime,
 			AccelX,
 			AccelY,
 			AccelZ,
