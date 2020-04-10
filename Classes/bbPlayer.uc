@@ -4543,13 +4543,13 @@ simulated function PlayWalking()
 }
 
 simulated function PlayerPawn GetLocalPlayer() {
-	local Pawn P;
+	local bbPlayer P;
 
 	if (bDeterminedLocalPlayer) return LocalPlayer;
 
-	for (P = Level.PawnList; P != none; P = P.NextPawn) {
-		if ((PlayerPawn(P) != none) && Viewport(PlayerPawn(P).Player) != none) {
-			LocalPlayer = PlayerPawn(P);
+	foreach AllActors(class'bbPlayer', P) {
+		if (Viewport(P.Player) != none) {
+			LocalPlayer = P;
 			break;
 		}
 	}
@@ -4559,8 +4559,6 @@ simulated function PlayerPawn GetLocalPlayer() {
 
 simulated function PlayDodge(eDodgeDir DodgeMove)
 {
-	local bbPlayer bbP;
-
 	Velocity.Z = 210;
 	if ( DodgeMove == DODGE_Left )
 		TweenAnim('DodgeL', 0.1);
@@ -4569,30 +4567,6 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 	else if ( DodgeMove == DODGE_Back )
 		TweenAnim('DodgeB', 0.1);
 	else {
-		bbP = bbPlayer(GetLocalPlayer());
-		if ((Role >= ROLE_AutonomousProxy) || (bbP == none)) {
-			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-			return;
-		}
-
-		if (GameReplicationInfo.bTeamGame && bbP.PlayerReplicationInfo.Team == PlayerReplicationInfo.Team) {
-			if (DesiredTeamSkin > 8 && PlayerReplicationInfo.bIsFemale) {
-				PlayAnim('Flip', 1.65 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-				return;
-			} else if (DesiredTeamSkin <= 8 && PlayerReplicationInfo.bIsFemale == false) {
-				PlayAnim('Flip', 0.95 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-				return;
-			}
-		} else {
-			if (DesiredSkin > 8 && PlayerReplicationInfo.bIsFemale) {
-				PlayAnim('Flip', 1.65 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-				return;
-			} else if (DesiredSkin <= 8 && PlayerReplicationInfo.bIsFemale == false) {
-				PlayAnim('Flip', 0.95 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-				return;
-			}
-		}
-
 		PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 	}
 }
@@ -5824,7 +5798,7 @@ event PreRender( canvas zzCanvas )
 	local SpawnNotify zzOldSN;
 	local int zzx;
 	local PlayerReplicationInfo zzPRI;
-	local Pawn zzP;
+	local bbPlayer bbP;
 	local PlayerPawn zzPPOwner;
 	local bbPlayer zzPP;
 	local canvas lmaoCanvas;
@@ -5862,8 +5836,6 @@ event PreRender( canvas zzCanvas )
 			if (zzPRI != PlayerReplicationInfo &&
 			    (!GameReplicationInfo.bTeamGame || zzPRI.Team != PlayerReplicationInfo.Team)
 		    ) {
-				zzP = Pawn(zzPRI.Owner);
-
 				zzPRI.PlayerLocation = PlayerReplicationInfo.PlayerLocation;
 				zzPRI.PlayerZone = None;
 			}
@@ -5884,6 +5856,23 @@ event PreRender( canvas zzCanvas )
 					setForcedSkin(zzPRI.Owner, desiredTeamSkin, GameReplicationInfo.bTeamGame, zzPRI.Team);
 				} else {
 					setForcedSkin(zzPRI.Owner, desiredSkin, GameReplicationInfo.bTeamGame, zzPRI.Team);
+				}
+			}
+
+			if (AnimSequence == 'Flip') {
+				bbP = bbPlayer(GetLocalPlayer());
+				if (bbP != none) {
+					if (GameReplicationInfo.bTeamGame && bbP.PlayerReplicationInfo.Team == PlayerReplicationInfo.Team) {
+						if (bbP.DesiredTeamSkin > 8 && PlayerReplicationInfo.bIsFemale)
+							AnimRate = 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
+						else if (bbP.DesiredTeamSkin <= 8 && PlayerReplicationInfo.bIsFemale == false)
+							AnimRate = 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
+					} else {
+						if (bbP.DesiredSkin > 8 && PlayerReplicationInfo.bIsFemale)
+							AnimRate = 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
+						else if (bbP.DesiredSkin <= 8 && PlayerReplicationInfo.bIsFemale == false)
+							AnimRate = 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
+					}
 				}
 			}
 		}
