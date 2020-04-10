@@ -1569,8 +1569,8 @@ defaultproperties
 	ConsoleName="InstaGib+ Console"
 	VersionStr="InstaGib+ Final"
 	LongVersion="RC "
-	ThisVer="3B"
-	NiceVer="3B"
+	ThisVer="3C"
+	NiceVer="3C"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
