@@ -34,6 +34,7 @@ var globalconfig int selectedHitSound;
 var globalconfig string sHitSound[16];
 var globalconfig int cShockBeam;
 var globalconfig float BeamScale;
+var globalconfig int BeamOriginMode;
 var globalconfig float DesiredNetUpdateRate;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
@@ -317,7 +318,8 @@ replication
 		zzbForceModels, bIsAlive, bMustUpdate, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
-		xxClientKicker, xxClientSetVelocity, TimeBetweenNetUpdates, xxClientSpawnSSRBeam; //, xxClientTrigger, xxClientActivateMover;
+		xxClientKicker, /*xxClientSetVelocity,*/ TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
+		xxClientAddVelocity; //, xxClientTrigger, xxClientActivateMover;
 
 	// Client->Server debug data
 	reliable if ( Role == ROLE_AutonomousProxy )
@@ -353,7 +355,7 @@ replication
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
 		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
-		xxExplodeOther, xxServerSetVelocity, xxSetNetUpdateRate; //, xxServerActivateMover;
+		xxExplodeOther, /*xxServerSetVelocity,*/ xxSetNetUpdateRate; //, xxServerActivateMover;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ProjExplode, /* xxNN_ServerTakeDamage, */ /* xxNN_RadiusDamage, */ xxNN_TeleFrag, xxNN_TransFrag,
@@ -763,6 +765,7 @@ function Timer() {
 
 function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 {
+	local SavedMove M;
 	if (zzbCanCSL ||
 	     (zzNewRotation.Roll == 0 && zzNewRotation == ViewRotation &&
 	      (WarpZoneInfo(Region.Zone) != None || WarpZoneInfo(HeadRegion.Zone) != None || WarpZoneInfo(FootRegion.Zone) != None)))
@@ -779,6 +782,22 @@ function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 		zzNewRotation.Roll  = 0;
 		SetRotation( zzNewRotation );
 		SetLocation( zzNewLocation );
+
+		// Clean up moves
+		if (PendingMove != none) {
+			PendingMove.NextMove = FreeMoves;
+			PendingMove.Clear();
+			FreeMoves = PendingMove;
+			PendingMove = none;
+		}
+
+		while(SavedMoves != none) {
+			M = SavedMoves;
+			SavedMoves = M.NextMove;
+			M.NextMove = FreeMoves;
+			M.Clear();
+			FreeMoves = M;
+		}
 	}
 }
 
@@ -1615,8 +1634,6 @@ function xxServerReceiveStuff( float VelX, float VelY, float VelZ, bool bOnMover
 	if (VelZ < 0)
 		zzLastFallVelZ = VelZ;
 
-	zzbOnMover = bOnMover;
-
 	if ((TeleLoc dot TeleLoc) > 0 && TTarget != None && VSize(TeleLoc - TTarget.Location) < class'UTPure'.default.MaxPosError)
 	{
 		TLoc = Translocator(Weapon);
@@ -1678,6 +1695,7 @@ function EDodgeDir GetDodgeDir(int dir) {
 
 function xxServerMove(
 	float TimeStamp,
+	float FrameTime,
 	float AccelX,
 	float AccelY,
 	float AccelZ,
@@ -1709,6 +1727,8 @@ function xxServerMove(
 	local vector ClientLocAbs;
 	local vector ClientVelCalc;
 	local bool bCanTraceNewLoc, bMovedToNewLoc;
+	local float PosErrFactor;
+	local float PosErr;
 
 	local vector InAccel;
 	local vector ClientLoc;
@@ -1846,6 +1866,9 @@ function xxServerMove(
 	bJumpStatus = NewbJumpStatus;
 
 	DeltaTime = TimeStamp - CurrentTimeStamp;
+	if (DeltaTime > 0.5)
+		DeltaTime = FMin(DeltaTime, FrameTime);
+
 	if ( ServerTimeStamp > 0 )
 	{
 		// allow 1% error
@@ -1914,8 +1937,16 @@ function xxServerMove(
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxPosError = 3.0;
-	if (bNewNet)
-		MaxPosError += FMin(DeltaTime * DeltaTime, MaxPosErrorFactor) * (ClientVelCalc dot ClientVelCalc);
+	if (bNewNet) {
+		PosErrFactor = FMin(DeltaTime, class'UTPure'.default.MaxJitterTime);
+		PosErr =
+			3 // constant part
+			+ PosErrFactor * VSize(ClientVelCalc) // velocity
+			+ FMin(1.0, FMax(0, GroundSpeed - VSize(ClientVelCalc)) / (AccelRate * PosErrFactor)) // bound acceleration by how much we can still speed up
+				* 0.5 * AccelRate * PosErrFactor * PosErrFactor; // acceleration
+
+		MaxPosError = PosErr * PosErr;
+	}
 
 	LocDiff = Location - ClientLocAbs;
 	ClientLocErr = LocDiff Dot LocDiff;
@@ -1960,11 +1991,24 @@ function xxServerMove(
 			SetCollision(bCollideActors, bBlockActors, true);
 	}
 
+	bOnMover = Mover(Base) != None;
+	zzbOnMover = Mover(ClientBase) != none;
+	if (bOnMover && zzbOnMover && ClientLocErr < MaxPosError * 10)
+	{
+		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
+	}
+	else if (zzIgnoreUpdateUntil > 0)
+	{
+		if (zzIgnoreUpdateUntil > ServerTimeStamp && (Base == None || Mover(Base) == None || bOnMover != zzbOnMover) && Physics != PHYS_Falling)
+			zzIgnoreUpdateUntil = 0;
+		zzbForceUpdate = false;
+	}
+
 	zzMyState = GetStateName();
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
 
-	if (zzForceUpdateUntil > 0 || zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError) {
+	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && (ClientLocErr > MaxPosError))) {
 		zzbForceUpdate = true;
 		if (ServerTimeStamp > zzForceUpdateUntil)
 			zzForceUpdateUntil = 0;
@@ -2545,14 +2589,12 @@ function bbSavedMove xxGetFreeMove() {
 	}
 }
 
-function xxReplicateMove
-(
+function xxReplicateMove(
 	float DeltaTime,
 	vector NewAccel,
 	eDodgeDir DodgeMove,
 	rotator DeltaRot
-)
-{
+) {
 	local bbSavedMove NewMove, OldMove, LastMove;
 	local byte ClientRoll;
 	local float OldTimeDelta, TotalTime, NetMoveDelta;
@@ -2562,6 +2604,11 @@ function xxReplicateMove
 	local vector Accel;
 	local int MiscData;
 
+	if (bDrawDebugData) {
+		debugNewAccel = Normal(NewAccel);
+		debugPlayerLocation = Location;
+	}
+
 	// Get a SavedMove actor to store the movement in.
 	if ( PendingMove != None )
 	{
@@ -2569,10 +2616,7 @@ function xxReplicateMove
 		PendingMove.TimeStamp = Level.TimeSeconds;
 		if ( VSize(NewAccel) > 3072)
 			NewAccel = 3072 * Normal(NewAccel);
-		if (bDrawDebugData) {
-			debugNewAccel = Normal(NewAccel);
-			debugPlayerLocation = Location;
-		}
+
 		TotalTime = PendingMove.Delta + DeltaTime;
 		if (TotalTime != 0)
 			PendingMove.Acceleration = (DeltaTime * NewAccel + PendingMove.Delta * PendingMove.Acceleration)/TotalTime;
@@ -2710,6 +2754,7 @@ function xxReplicateMove
 
 	xxServerMove(
 		NewMove.TimeStamp,
+		NewMove.Delta,
 		Accel.X,
 		Accel.Y,
 		Accel.Z,
@@ -3264,31 +3309,11 @@ simulated function AddVelocity( vector NewVelocity )
 	}
 
 	zzAddVelocityCount++;
-	xxClientSetVelocity(zzExpectedVelocity);
+	xxClientAddVelocity(NewVelocity);
 }
 
-simulated function xxClientSetVelocity( vector NewVelocity )
-{
-	if (Level.NetMode != NM_Client)
-		return;
-	if (Physics == PHYS_Walking  || Physics == PHYS_None) // RX Fix
-		SetPhysics(PHYS_Falling);
-
-	Velocity = NewVelocity;
-	xxServerSetVelocity(NewVelocity);
-}
-
-simulated function xxServerSetVelocity( vector NewVelocity )
-{
-	if (Level.NetMode == NM_Client)
-		return;
-	zzAddVelocityCount--;
-	if (VSize(NewVelocity) > 0)
-	{
-		if (Physics == PHYS_Walking)
-			SetPhysics(PHYS_Falling);
-		Velocity = NewVelocity;
-	}
+simulated function xxClientAddVelocity(vector Velocity) {
+	super.AddVelocity(Velocity);
 }
 
 simulated function NN_Momentum( Vector momentum, name DamageType )
@@ -3869,6 +3894,7 @@ state FeigningDeath
 	function xxServerMove
 	(
 		float TimeStamp,
+		float FrameTime,
 		float AccelX,
 		float AccelY,
 		float AccelZ,
@@ -3885,6 +3911,7 @@ state FeigningDeath
 	{
 		Global.xxServerMove(
 			TimeStamp,
+			FrameTime,
 			AccelX,
 			AccelY,
 			AccelZ,
@@ -4516,13 +4543,13 @@ simulated function PlayWalking()
 }
 
 simulated function PlayerPawn GetLocalPlayer() {
-	local Pawn P;
+	local bbPlayer P;
 
 	if (bDeterminedLocalPlayer) return LocalPlayer;
 
-	for (P = Level.PawnList; P != none; P = P.NextPawn) {
-		if ((PlayerPawn(P) != none) && Viewport(PlayerPawn(P).Player) != none) {
-			LocalPlayer = PlayerPawn(P);
+	foreach AllActors(class'bbPlayer', P) {
+		if (Viewport(P.Player) != none) {
+			LocalPlayer = P;
 			break;
 		}
 	}
@@ -4532,8 +4559,6 @@ simulated function PlayerPawn GetLocalPlayer() {
 
 simulated function PlayDodge(eDodgeDir DodgeMove)
 {
-	local bbPlayer bbP;
-
 	Velocity.Z = 210;
 	if ( DodgeMove == DODGE_Left )
 		TweenAnim('DodgeL', 0.1);
@@ -4542,30 +4567,6 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 	else if ( DodgeMove == DODGE_Back )
 		TweenAnim('DodgeB', 0.1);
 	else {
-		bbP = bbPlayer(GetLocalPlayer());
-		if ((Role >= ROLE_AutonomousProxy) || (bbP == none)) {
-			PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-			return;
-		}
-
-		if (GameReplicationInfo.bTeamGame && bbP.PlayerReplicationInfo.Team == PlayerReplicationInfo.Team) {
-			if (DesiredTeamSkin > 8 && PlayerReplicationInfo.bIsFemale) {
-				PlayAnim('Flip', 1.65 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-				return;
-			} else if (DesiredTeamSkin <= 8 && PlayerReplicationInfo.bIsFemale == false) {
-				PlayAnim('Flip', 0.95 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-				return;
-			}
-		} else {
-			if (DesiredSkin > 8 && PlayerReplicationInfo.bIsFemale) {
-				PlayAnim('Flip', 1.65 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-				return;
-			} else if (DesiredSkin <= 8 && PlayerReplicationInfo.bIsFemale == false) {
-				PlayAnim('Flip', 0.95 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-				return;
-			}
-		}
-
 		PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
 	}
 }
@@ -4997,8 +4998,6 @@ state Dying
 					zzViewRotation.Pitch = 49152;
 			}
 			ViewRotation = zzViewRotation;
-			if ( Role < ROLE_Authority ) // then save this move and replicate it
-				xxReplicateMove(DeltaTime, vect(0,0,0), DODGE_None, rot(0,0,0));
 		}
 		ViewShake(DeltaTime);
 		ViewFlash(DeltaTime);
@@ -5008,6 +5007,7 @@ state Dying
 	function xxServerMove
 	(
 		float TimeStamp,
+		float FrameTime,
 		float AccelX,
 		float AccelY,
 		float AccelZ,
@@ -5024,6 +5024,7 @@ state Dying
 	{
 		Global.xxServerMove(
 			TimeStamp,
+			FrameTime,
 			AccelX,
 			AccelY,
 			AccelZ,
@@ -5078,8 +5079,6 @@ state Dying
 
 	function EndState()
 	{
-		zzbForceUpdate = true;
-		zzIgnoreUpdateUntil = 0;
 		Super.EndState();
 		LastKillTime = 0;
 	}
@@ -5151,6 +5150,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	function xxServerMove
 	(
 		float TimeStamp,
+		float FrameTime,
 		float AccelX,
 		float AccelY,
 		float AccelZ,
@@ -5167,6 +5167,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	{
 		Global.xxServerMove(
 			TimeStamp,
+			FrameTime,
 			AccelX,
 			AccelY,
 			AccelZ,
@@ -5443,7 +5444,7 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 	Diff = Level.TimeSeconds - zzSpawnedTime;
 	if (Diff < 1)
 	{
-		if (Diff > 0.2)
+		if (Diff > 0.3)
 			return false;
 		else
 			return true;
@@ -5797,7 +5798,7 @@ event PreRender( canvas zzCanvas )
 	local SpawnNotify zzOldSN;
 	local int zzx;
 	local PlayerReplicationInfo zzPRI;
-	local Pawn zzP;
+	local bbPlayer bbP;
 	local PlayerPawn zzPPOwner;
 	local bbPlayer zzPP;
 	local canvas lmaoCanvas;
@@ -5835,8 +5836,6 @@ event PreRender( canvas zzCanvas )
 			if (zzPRI != PlayerReplicationInfo &&
 			    (!GameReplicationInfo.bTeamGame || zzPRI.Team != PlayerReplicationInfo.Team)
 		    ) {
-				zzP = Pawn(zzPRI.Owner);
-
 				zzPRI.PlayerLocation = PlayerReplicationInfo.PlayerLocation;
 				zzPRI.PlayerZone = None;
 			}
@@ -5857,6 +5856,23 @@ event PreRender( canvas zzCanvas )
 					setForcedSkin(zzPRI.Owner, desiredTeamSkin, GameReplicationInfo.bTeamGame, zzPRI.Team);
 				} else {
 					setForcedSkin(zzPRI.Owner, desiredSkin, GameReplicationInfo.bTeamGame, zzPRI.Team);
+				}
+			}
+
+			if (AnimSequence == 'Flip') {
+				bbP = bbPlayer(GetLocalPlayer());
+				if (bbP != none) {
+					if (GameReplicationInfo.bTeamGame && bbP.PlayerReplicationInfo.Team == PlayerReplicationInfo.Team) {
+						if (bbP.DesiredTeamSkin > 8 && PlayerReplicationInfo.bIsFemale)
+							AnimRate = 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
+						else if (bbP.DesiredTeamSkin <= 8 && PlayerReplicationInfo.bIsFemale == false)
+							AnimRate = 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
+					} else {
+						if (bbP.DesiredSkin > 8 && PlayerReplicationInfo.bIsFemale)
+							AnimRate = 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
+						else if (bbP.DesiredSkin <= 8 && PlayerReplicationInfo.bIsFemale == false)
+							AnimRate = 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
+					}
 				}
 			}
 		}
@@ -6158,6 +6174,13 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"Physics:"@P.Physics@"Anim:"@P.AnimSequence);
 		y += 20;
 	}
+	zzC.SetPos(zzx, zzY + 420);
+	zzC.DrawText("Base:"@Base);
+	zzC.SetPos(zzx+20, zzY + 440);
+	if (Base != none)
+		zzC.DrawText("Velocity:"@Base.Velocity@"State:"@Base.GetStateName());
+	else
+		zzC.DrawText("Velocity:"@vect(0,0,0)@"State:");
 
 	zzC.Style = ERenderStyle.STY_Normal;
 }
@@ -6860,18 +6883,26 @@ exec function NoSwitchWeapon4(bool b)
 	ClientMessage("GetWeapon ShockRifle doesn't trigger SwitchWeapon 4:"@bNoSwitchWeapon4);
 }
 
-simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, actor O) {
+simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
 	local ClientSuperShockBeam Smoke;
 	local Vector DVector;
 	local int NumPoints;
 	local rotator SmokeRotation;
 	local vector MoveAmount;
+	local vector OriginLocation;
 
 	LastSSRBeamCreated = Level.TimeSeconds;
 
 	if (Level.NetMode == NM_DedicatedServer) return;
 
-	DVector = HitLocation - SmokeLocation;
+	if (BeamOriginMode == 1) {
+		// Show beam originating from its Owner
+		OriginLocation = Owner.Location + SmokeOffset;
+	} else {
+		// Show beam originating from where it was shot
+		OriginLocation = SmokeLocation;
+	}
+	DVector = HitLocation - OriginLocation;
 	NumPoints = VSize(DVector) / 135.0;
 	if ( NumPoints < 1 )
 		return;
@@ -6880,7 +6911,7 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 
 	if (cShockBeam == 3) return;
 
-	Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
+	Smoke = Spawn(class'ClientSuperShockBeam',O,, OriginLocation, SmokeRotation);
 	if (Smoke == none) return;
 	MoveAmount = DVector / NumPoints;
 
@@ -6912,8 +6943,8 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 			0);
 
 		for (NumPoints = NumPoints - 1; NumPoints > 0; NumPoints--) {
-			SmokeLocation += MoveAmount;
-			Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
+			OriginLocation += MoveAmount;
+			Smoke = Spawn(class'ClientSuperShockBeam',O,, OriginLocation, SmokeRotation);
 			if (Smoke == None) break;
 			Smoke.SetProperties(
 				PlayerPawn(O).PlayerReplicationInfo.Team,
@@ -6926,17 +6957,17 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 	}
 }
 
-simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, actor O) {
-	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, O);
+simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
+	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
 	LastSSRBeamCreated = -1.0;
 }
 
-simulated function xxDemoSpawnSSRBeam(vector HitLocation, vector SmokeLocation, actor O) {
+simulated function xxDemoSpawnSSRBeam(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
 	if (LastSSRBeamCreated == Level.TimeSeconds) {
 		LastSSRBeamCreated = -1.0;
 		return;
 	}
-	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, O);
+	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
 }
 
 function xxServerSetNetCode(bool bNewCode)

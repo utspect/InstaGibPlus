@@ -25,6 +25,7 @@ var name MyDamageType;
 var int clientDamage;
 var bool bHitTimer;
 var bbPlayer globalbbP;
+var vector zzSmokeOffset;
 
 simulated function RenderOverlays(Canvas Canvas)
 {
@@ -297,6 +298,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	local NN_AlternateSuperShockBeamImpact impact;
 	local float is, f;
 	local actor a;
+	local vector Offset;
 
 	if (Owner.IsA('Bot'))
 		return false;
@@ -307,8 +309,8 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		HitLocation = Owner.Location + X*100000.0;
 	}
 
-
-	NN_SpawnEffect(HitLocation, Owner.Location + CDO + (FireOffset.X + 20) * X + Y * yMod + FireOffset.Z * Z, HitNormal);
+	Offset = CDO + (FireOffset.X + 20) * X + Y * yMod + FireOffset.Z * Z;
+	NN_SpawnEffect(HitLocation, Owner.Location + Offset, Offset, HitNormal);
 
 	is = ImpactSize;
 	f = 60000.0;
@@ -338,13 +340,13 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		bbPlayer(Owner).xxClientDemoFix(None, class'ut_SuperRing2',HitLocation+HitNormal*8,,, rotator(HitNormal));
 }
 
-simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vector HitNormal)
+simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vector SmokeOffset, vector HitNormal)
 {
 	if (Owner.IsA('Bot'))
 		return;
 
-	bbPlayer(Owner).xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, Owner);
-	bbPlayer(Owner).xxDemoSpawnSSRBeam(HitLocation, SmokeLocation, Owner);
+	bbPlayer(Owner).xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, Owner);
+	bbPlayer(Owner).xxDemoSpawnSSRBeam(HitLocation, SmokeLocation, SmokeOffset, Owner);
 }
 
 function TraceFire( float Accuracy )
@@ -448,7 +450,8 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		HitLocation = Owner.Location + X*10000.0;
 	}
 
-	SpawnEffect(HitLocation, Owner.Location + CalcDrawOffset() + (FireOffset.X + 20) * X + FireOffset.Y * Y + FireOffset.Z * Z);
+	zzSmokeOffset = CalcDrawOffset() + (FireOffset.X + 20) * X + FireOffset.Y * Y + FireOffset.Z * Z;
+	SpawnEffect(HitLocation, Owner.Location + zzSmokeOffset);
 
 	if ( NN_ShockProjOwnerHidden(Other)!=None )
 	{
@@ -461,36 +464,14 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		ST_ShockProj(Other).SuperDuperExplosion();
 		return;
 	}
-	else if (bNewNet && !bAltFired)
-	{
-		DoSuperRing2(PlayerPawn(Owner), HitLocation, HitNormal);
-	}
 	else
 	{
-		Spawn(class'ut_SuperRing2',,, HitLocation+HitNormal*8,rotator(HitNormal));
+		Spawn(class'NN_UT_Superring2OwnerHidden',Owner,, HitLocation+HitNormal*8,rotator(HitNormal));
 	}
 
 	if ( (Other != self) && (Other != Owner) && (Other != None) )
 	{
 		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
-	}
-}
-
-simulated function DoSuperRing2(PlayerPawn Pwner, vector HitLocation, vector HitNormal)
-{
-	local PlayerPawn P;
-	local Actor CR;
-
-	if (Owner.IsA('Bot'))
-		return;
-
-	if (RemoteRole < ROLE_Authority) {
-		//for (P = Level.PawnList; P != None; P = P.NextPawn)
-		ForEach AllActors(class'PlayerPawn', P)
-			if (P != Pwner) {
-				CR = P.Spawn(class'ut_SuperRing2',P,, HitLocation+HitNormal*8,rotator(HitNormal));
-				CR.bOnlyOwnerSee = True;
-			}
 	}
 }
 
@@ -518,9 +499,9 @@ function SpawnEffect(vector HitLocation, vector SmokeLocation)
 	for (P = Level.PawnList; P != none; P = P.NextPawn) {
 		if (P == Owner) continue;
 		if (bbPlayer(P) != none)
-			bbPlayer(P).xxClientSpawnSSRBeam(HitLocation, SmokeLocation, Owner);
+			bbPlayer(P).xxClientSpawnSSRBeam(HitLocation, SmokeLocation, zzSmokeOffset, Owner);
 		else if (bbCHSpectator(P) != none)
-			bbCHSpectator(P).xxClientSpawnSSRBeam(HitLocation, SmokeLocation, Owner);
+			bbCHSpectator(P).xxClientSpawnSSRBeam(HitLocation, SmokeLocation, zzSmokeOffset, Owner);
 	}
 }
 
