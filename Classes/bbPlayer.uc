@@ -318,8 +318,7 @@ replication
 		zzbForceModels, bIsAlive, bMustUpdate, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
-		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
-		xxClientAddVelocity;
+		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam, xxClientAddVelocity;
 
 	// Client->Server debug data
 	reliable if ( Role == ROLE_AutonomousProxy )
@@ -341,13 +340,13 @@ replication
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
-		/* xxServerMove, */ bIsFinishedLoading, xxServerCheater,
+		bIsFinishedLoading, xxServerCheater,
 		zzbConsoleInvalid, zzFalse, zzTrue, zzNetspeed, zzbBadConsole, zzbBadCanvas, zzbVRChanged,
 		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD;
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet,
+		xxServerCheckMutator, xxServerMove, xxServerTestMD5, xxSet,
 		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay, Hold, Go,
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
@@ -671,7 +670,6 @@ event Possess()
 		}
 		zzTrue = !zzFalse;
 		zzInfoThing = Spawn(Class'PureInfo');
-		//xxServerSetNetCode(bNewNet);
 		playedHitSound = loadHitSound(selectedHitSound);
 		SetNetUpdateRate(DesiredNetUpdateRate);
 		xxServerSetNoRevert(bNoRevert);
@@ -6753,14 +6751,6 @@ exec function Sens(float F)
 	ClientMessage("Sensitivity :"@F);
 }
 
-exec function NewNetCode(bool bUseIt)
-{
-	//bNewNet = bUseIt;
-	//xxServerSetNetCode(bNewNet);
-	//SaveConfig();
-	//ClientMessage("NewNetCode :"@bNewNet);
-}
-
 exec function NoRevert(bool b)
 {
 	bNoRevert = b;
@@ -6963,11 +6953,6 @@ simulated function xxDemoSpawnSSRBeam(vector HitLocation, vector SmokeLocation, 
 		return;
 	}
 	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
-}
-
-function xxServerSetNetCode(bool bNewCode)
-{
-	//bNewNet = bNewCode;
 }
 
 function xxServerSetNoRevert(bool b)
