@@ -1655,6 +1655,24 @@ function EDodgeDir GetDodgeDir(int dir) {
 	return DODGE_None;
 }
 
+function EPhysics GetPhysics(int phys) {
+	switch(phys) {
+		case 0: return PHYS_None;
+		case 1: return PHYS_Walking;
+		case 2: return PHYS_Falling;
+		case 3: return PHYS_Swimming;
+		case 4: return PHYS_Flying;
+		case 5: return PHYS_Rotating;
+		case 6: return PHYS_Projectile;
+		case 7: return PHYS_Rolling;
+		case 8: return PHYS_Interpolating;
+		case 9: return PHYS_MovingBrush;
+		case 10: return PHYS_Spider;
+		case 11: return PHYS_Trailer;
+	}
+	return PHYS_None;
+}
+
 function xxServerMove(
 	float TimeStamp,
 	float FrameTime,
@@ -1695,6 +1713,7 @@ function xxServerMove(
 	local vector InAccel;
 	local vector ClientLoc;
 
+	local EPhysics ClientPhysics;
 	local bool NewbRun;
 	local bool NewbDuck;
 	local bool NewbJumpStatus;
@@ -1760,6 +1779,7 @@ function xxServerMove(
 	ClientLoc.Y = ClientLocY;
 	ClientLoc.Z = ClientLocZ;
 
+	ClientPhysics = GetPhysics((MiscData >> 24) & 0xFF);
 	NewbRun = (MiscData & 0x40000) != 0;
 	NewbDuck = (MiscData & 0x20000) != 0;
 	NewbJumpStatus = (MiscData & 0x10000) != 0;
@@ -1881,6 +1901,9 @@ function xxServerMove(
 		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: after MoveAutonomous"@Physics@DodgeDir@AnimSequence, 'Debug');
 	}
 
+	if (Physics != ClientPhysics)
+		SetPhysics(ClientPhysics);
+
 	// HACK
 	// This fixes players skating around. I can't explain why they start doing
 	// that. Maybe because we're dodging in a place where we can't dodge?
@@ -1973,7 +1996,7 @@ function xxServerMove(
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
 
-	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && (ClientLocErr > MaxPosError))) {
+	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && (ClientLocErr > MaxPosError/* || Physics != ClientPhysics*/))) {
 		zzbForceUpdate = true;
 		if (ServerTimeStamp > zzForceUpdateUntil)
 			zzForceUpdateUntil = 0;
@@ -2711,6 +2734,7 @@ function xxReplicateMove(
 	else
 		RelLoc = Location - Base.Location;
 
+	MiscData = MiscData | (int(Physics) << 24);
 	if (NewMove.bRun) MiscData = MiscData | 0x40000;
 	if (NewMove.bDuck) MiscData = MiscData | 0x20000;
 	if (bJumpStatus) MiscData = MiscData | 0x10000;
