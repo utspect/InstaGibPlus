@@ -1623,16 +1623,13 @@ function ClientUpdatePosition()
 	//log("Client adjusted "$self$" stamp "$CurrentTimeStamp$" location "$Location$" dodge "$DodgeDir);
 }
 
-function xxServerReceiveStuff( float VelX, float VelY, float VelZ, bool bOnMover, optional vector TeleLoc, optional vector TeleVel )
+function xxServerReceiveStuff( vector TeleLoc, vector TeleVel )
 {
 	local Inventory inv;
 	local Translocator TLoc;
 
 	if (Level.NetMode == NM_Client || IsInState('Dying'))
 		return;
-
-	if (VelZ < 0)
-		zzLastFallVelZ = VelZ;
 
 	if ((TeleLoc dot TeleLoc) > 0 && TTarget != None && VSize(TeleLoc - TTarget.Location) < class'UTPure'.default.MaxPosError)
 	{
@@ -1902,6 +1899,9 @@ function xxServerMove(
 	ViewRotation.Roll = 0;
 	zzViewRotation = ViewRotation;
 	SetRotation(Rot);
+
+	if (ClientVel.Z < 0)
+		zzLastFallVelZ = ClientVel.Z;
 
 	// Maximum of old and new velocity
 	// Ensures we dont force updates when slowing down or speeding up
@@ -5535,10 +5535,8 @@ function xxPlayerTickEvents()
 			xxCheckForPortals();
 			//xxCheckForTriggers();
 
-			if (zzClientTTarget == None)
-				xxServerReceiveStuff( Velocity.X, Velocity.Y, Velocity.Z, Mover(Base) != None );
-			else
-				xxServerReceiveStuff( Velocity.X, Velocity.Y, Velocity.Z, Mover(Base) != None, zzClientTTarget.Location, zzClientTTarget.Velocity );
+			if (zzClientTTarget != None)
+				xxServerReceiveStuff( zzClientTTarget.Location, zzClientTTarget.Velocity );
 			zzLastStuffUpdate = CurrentTime;
 			//xxCheckAce();
 		}
