@@ -185,11 +185,6 @@ var Mutator	zzWaitMutes[50];	// Hud Mutes waiting to be accepted
 var float	zzWMCheck[50];		// Key value
 var int		zzFailedMutes;		// How many denied Mutes have been tried to add
 var int		zzHMCnt;		// Counts of HudMutes and WaitMutes
-var HUD		zzmyHud;		// our own personal hud
-var Class<HUD>	zzHUDType;		// The HUD Type
-var Scoreboard	zzScoring;		// The scoreboard.
-var Class<Scoreboard> zzSBType;		// The Scoreboard Type
-var Class<ServerInfo> zzSIType;		// The ServerInfo Type
 var int		zzHUDWarnings;		// Counts the # of times the HUD has been changed
 var bool	zzbRenderHUD;		// Do not start rendering HUD until logo has been displayed for a while
 
@@ -310,7 +305,7 @@ replication
 
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
-		zzHUDType, zzSBType, zzSIType, xxClientAcceptMutator, zzForceSettingsLevel,
+		xxClientAcceptMutator, zzForceSettingsLevel,
 		zzbForceDemo, zzbGameStarted, zzbUsingTranslocator, HUDInfo;
 
 	// Server->Client
@@ -332,11 +327,11 @@ replication
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( bNetOwner && Role == ROLE_Authority && !bDemoRecording )
 		xxCheatFound,xxClientMD5,xxClientSet,xxClientDoScreenshot,xxClientDoEndShot,xxClientConsole,
-		xxClientKeys,xxClientReadINT;
+		xxClientKeys, xxClientReadINT;
 
 	// Server->Client function.
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
-		xxPureCAP, xxCAP, xxCAPLevelBase, xxCAPWalking, xxCAPWalkingWalkingLevelBase, xxCAPWalkingWalking, xxFakeCAP;
+		xxCAP, xxCAPLevelBase, xxCAPWalking, xxCAPWalkingWalkingLevelBase, xxCAPWalkingWalking, xxFakeCAP;
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
@@ -603,9 +598,6 @@ event PostBeginPlay()
 
 	if ( Level.NetMode != NM_Client )
 	{
-		zzHUDType = HUDType;
-		zzSBType  = ScoringType;
-		zzSIType  = zzUTPure.zzSI;
 		zzbCanCSL = True;
 		zzMinimumNetspeed = Class'UTPure'.Default.MinClientRate;
 		zzWaitTime = 5.0;
@@ -1139,28 +1131,6 @@ event PlayerInput( float DeltaTime )
 {
 	local float Now, SmoothTime, FOVScale, MouseScale, AbsSmoothX, AbsSmoothY, MouseTime;
 	local bool bOldWasForward, bOldWasBack, bOldWasLeft, bOldWasRight;
-
-	if ( bShowMenu && (zzmyHud != None) )
-	{
-		// clear inputs
-		bEdgeForward = false;
-		bEdgeBack = false;
-		bEdgeLeft = false;
-		bEdgeRight = false;
-		bWasForward = false;
-		bWasBack = false;
-		bWasLeft = false;
-		bWasRight = false;
-		zzLastTimeForward = 0;
-		zzLastTimeBack = 0;
-		zzLastTimeLeft = 0;
-		zzLastTimeRight = 0;
-		aStrafe = 0;
-		aTurn = 0;
-		aForward = 0;
-		aLookUp = 0;
-		return;
-	}
 
 	Now = Level.TimeSeconds;
 
@@ -2772,8 +2742,7 @@ function xxReplicateMove(
 				AnimEnd();
 			else
 				Weapon.GotoState('ClientActive');
-			if ( (Weapon != ClientPending) && (zzmyHud != None) && zzmyHud.IsA('ChallengeHUD') )
-				ChallengeHUD(zzmyHud).WeaponNameFade = 1.3;
+
 			if ( (Weapon != OldClientWeapon) && (OldClientWeapon != None) )
 				OldClientWeapon.GotoState('');
 
