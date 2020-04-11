@@ -310,22 +310,23 @@ replication
 
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
-		zzHUDType, zzSBType, zzSIType, xxClientAcceptMutator, /* zzbWeaponTracer, */ zzForceSettingsLevel,
+		zzHUDType, zzSBType, zzSIType, xxClientAcceptMutator, zzForceSettingsLevel,
 		zzbForceDemo, zzbGameStarted, zzbUsingTranslocator, HUDInfo;
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
 		zzbForceModels, bIsAlive, bMustUpdate, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
-		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
-		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
-		xxClientKicker, /*xxClientSetVelocity,*/ TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
-		xxClientAddVelocity; //, xxClientTrigger, xxClientActivateMover;
+		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
+		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
+		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
+		xxClientAddVelocity;
 
 	// Client->Server debug data
 	reliable if ( Role == ROLE_AutonomousProxy )
 		bDrawDebugData;
+
 	// Server->Client debug data
-	reliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
+	unreliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
 		clientLastUpdateTime, clientForcedPosition, debugClientPing, debugNumOfForcedUpdates,
 		debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError;
 
@@ -336,11 +337,7 @@ replication
 
 	// Server->Client function.
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
-		xxPureCAP,
-		xxCAP,xxCAPLevelBase,						// ClientAdjustPosition (float based)
-		xxCAPWalking,
-		xxCAPWalkingWalkingLevelBase,xxCAPWalkingWalking,
-		xxFakeCAP;
+		xxPureCAP, xxCAP, xxCAPLevelBase, xxCAPWalking, xxCAPWalkingWalkingLevelBase, xxCAPWalkingWalking, xxFakeCAP;
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
@@ -350,15 +347,15 @@ replication
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
-		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay,Hold,Go,
+		xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet,
+		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay, Hold, Go,
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
 		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
-		xxExplodeOther, /*xxServerSetVelocity,*/ xxSetNetUpdateRate; //, xxServerActivateMover;
+		xxExplodeOther, xxSetNetUpdateRate;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
-		xxNN_ProjExplode, /* xxNN_ServerTakeDamage, */ /* xxNN_RadiusDamage, */ xxNN_TeleFrag, xxNN_TransFrag,
+		xxNN_ProjExplode, xxNN_TeleFrag, xxNN_TransFrag,
 		xxNN_Fire, xxNN_AltFire, xxNN_ReleaseFire, xxNN_ReleaseAltFire, xxNN_MoveTTarget, ServerPreTeleport;
 
 	// Server->Client
