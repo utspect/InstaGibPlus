@@ -1013,6 +1013,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 	else if (MutateString ~= "PlayerHelp")
 	{
 		Sender.ClientMessage("InstaGib Plus Client Commands: (Type directly into console)");
+		Sender.ClientMessage("- PureLogo (Shows Logo and Version Information in lower left corner)");
 		if (ForceModels > 0)
 			Sender.ClientMessage("- ForceModels x (0 = Off, 1 = On. Default = 0) - The models will be forced to the model you select.");
 		if (ImprovedHUD == 2)
@@ -1027,7 +1028,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		Sender.ClientMessage("- ListSkins (Lists the available skins that can be forced)");
 		Sender.ClientMessage("- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam, 4 = instant beam) - Sets your Shock Rifle beam type.");
 		Sender.ClientMessage("- SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
-		Sender.ClientMessage("- SetNetUpdateRate x (Changes how often you update the server on your position, Default: 90)");
+		Sender.ClientMessage("- SetNetUpdateRate x (Changes how often you update the server on your position, Default: 100)");
 		if (Sender.PlayerReplicationInfo.bAdmin)
 		{
 			Sender.ClientMessage("InstaGib Plus Admin Commands:");

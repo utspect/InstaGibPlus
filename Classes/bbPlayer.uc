@@ -185,11 +185,6 @@ var Mutator	zzWaitMutes[50];	// Hud Mutes waiting to be accepted
 var float	zzWMCheck[50];		// Key value
 var int		zzFailedMutes;		// How many denied Mutes have been tried to add
 var int		zzHMCnt;		// Counts of HudMutes and WaitMutes
-var HUD		zzmyHud;		// our own personal hud
-var Class<HUD>	zzHUDType;		// The HUD Type
-var Scoreboard	zzScoring;		// The scoreboard.
-var Class<Scoreboard> zzSBType;		// The Scoreboard Type
-var Class<ServerInfo> zzSIType;		// The ServerInfo Type
 var int		zzHUDWarnings;		// Counts the # of times the HUD has been changed
 var bool	zzbRenderHUD;		// Do not start rendering HUD until logo has been displayed for a while
 
@@ -310,55 +305,51 @@ replication
 
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
-		zzHUDType, zzSBType, zzSIType, xxClientAcceptMutator, /* zzbWeaponTracer, */ zzForceSettingsLevel,
+		xxClientAcceptMutator, zzForceSettingsLevel,
 		zzbForceDemo, zzbGameStarted, zzbUsingTranslocator, HUDInfo;
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
 		zzbForceModels, bIsAlive, bMustUpdate, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
-		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon, //xxReceiveNextStartSpot,
-		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,	// xxReceivePosition,
-		xxClientKicker, /*xxClientSetVelocity,*/ TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
-		xxClientAddVelocity; //, xxClientTrigger, xxClientActivateMover;
+		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
+		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
+		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam, xxClientAddVelocity;
 
 	// Client->Server debug data
 	reliable if ( Role == ROLE_AutonomousProxy )
 		bDrawDebugData;
+
 	// Server->Client debug data
-	reliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
+	unreliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
 		clientLastUpdateTime, clientForcedPosition, debugClientPing, debugNumOfForcedUpdates,
 		debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError;
 
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( bNetOwner && Role == ROLE_Authority && !bDemoRecording )
 		xxCheatFound,xxClientMD5,xxClientSet,xxClientDoScreenshot,xxClientDoEndShot,xxClientConsole,
-		xxClientKeys,xxClientReadINT;
+		xxClientKeys, xxClientReadINT;
 
 	// Server->Client function.
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
-		xxPureCAP,
-		xxCAP,xxCAPLevelBase,						// ClientAdjustPosition (float based)
-		xxCAPWalking,
-		xxCAPWalkingWalkingLevelBase,xxCAPWalkingWalking,
-		xxFakeCAP;
+		xxCAP, xxCAPLevelBase, xxCAPWalking, xxCAPWalkingWalkingLevelBase, xxCAPWalkingWalking, xxFakeCAP;
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
-		/* xxServerMove, */ bIsFinishedLoading, xxServerCheater,
+		bIsFinishedLoading, xxServerCheater,
 		zzbConsoleInvalid, zzFalse, zzTrue, zzNetspeed, zzbBadConsole, zzbBadCanvas, zzbVRChanged,
 		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD;
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		xxServerCheckMutator, xxServerMove, xxServerTestMD5,xxServerSetNetCode,xxSet, //,xxCmd;
-		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay,Hold,Go,
+		xxServerCheckMutator, xxServerMove, xxServerTestMD5, xxSet,
+		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay, Hold, Go,
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
 		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
-		xxExplodeOther, /*xxServerSetVelocity,*/ xxSetNetUpdateRate; //, xxServerActivateMover;
+		xxExplodeOther, xxSetNetUpdateRate;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
-		xxNN_ProjExplode, /* xxNN_ServerTakeDamage, */ /* xxNN_RadiusDamage, */ xxNN_TeleFrag, xxNN_TransFrag,
+		xxNN_ProjExplode, xxNN_TeleFrag, xxNN_TransFrag,
 		xxNN_Fire, xxNN_AltFire, xxNN_ReleaseFire, xxNN_ReleaseAltFire, xxNN_MoveTTarget, ServerPreTeleport;
 
 	// Server->Client
@@ -607,9 +598,6 @@ event PostBeginPlay()
 
 	if ( Level.NetMode != NM_Client )
 	{
-		zzHUDType = HUDType;
-		zzSBType  = ScoringType;
-		zzSIType  = zzUTPure.zzSI;
 		zzbCanCSL = True;
 		zzMinimumNetspeed = Class'UTPure'.Default.MinClientRate;
 		zzWaitTime = 5.0;
@@ -674,7 +662,6 @@ event Possess()
 		}
 		zzTrue = !zzFalse;
 		zzInfoThing = Spawn(Class'PureInfo');
-		//xxServerSetNetCode(bNewNet);
 		playedHitSound = loadHitSound(selectedHitSound);
 		SetNetUpdateRate(DesiredNetUpdateRate);
 		xxServerSetNoRevert(bNoRevert);
@@ -1145,28 +1132,6 @@ event PlayerInput( float DeltaTime )
 	local float Now, SmoothTime, FOVScale, MouseScale, AbsSmoothX, AbsSmoothY, MouseTime;
 	local bool bOldWasForward, bOldWasBack, bOldWasLeft, bOldWasRight;
 
-	if ( bShowMenu && (zzmyHud != None) )
-	{
-		// clear inputs
-		bEdgeForward = false;
-		bEdgeBack = false;
-		bEdgeLeft = false;
-		bEdgeRight = false;
-		bWasForward = false;
-		bWasBack = false;
-		bWasLeft = false;
-		bWasRight = false;
-		zzLastTimeForward = 0;
-		zzLastTimeBack = 0;
-		zzLastTimeLeft = 0;
-		zzLastTimeRight = 0;
-		aStrafe = 0;
-		aTurn = 0;
-		aForward = 0;
-		aLookUp = 0;
-		return;
-	}
-
 	Now = Level.TimeSeconds;
 
 	// Check for Dodge move
@@ -1623,16 +1588,13 @@ function ClientUpdatePosition()
 	//log("Client adjusted "$self$" stamp "$CurrentTimeStamp$" location "$Location$" dodge "$DodgeDir);
 }
 
-function xxServerReceiveStuff( float VelX, float VelY, float VelZ, bool bOnMover, optional vector TeleLoc, optional vector TeleVel )
+function xxServerReceiveStuff( vector TeleLoc, vector TeleVel )
 {
 	local Inventory inv;
 	local Translocator TLoc;
 
 	if (Level.NetMode == NM_Client || IsInState('Dying'))
 		return;
-
-	if (VelZ < 0)
-		zzLastFallVelZ = VelZ;
 
 	if ((TeleLoc dot TeleLoc) > 0 && TTarget != None && VSize(TeleLoc - TTarget.Location) < class'UTPure'.default.MaxPosError)
 	{
@@ -1902,6 +1864,9 @@ function xxServerMove(
 	ViewRotation.Roll = 0;
 	zzViewRotation = ViewRotation;
 	SetRotation(Rot);
+
+	if (ClientVel.Z < 0)
+		zzLastFallVelZ = ClientVel.Z;
 
 	// Maximum of old and new velocity
 	// Ensures we dont force updates when slowing down or speeding up
@@ -2777,8 +2742,7 @@ function xxReplicateMove(
 				AnimEnd();
 			else
 				Weapon.GotoState('ClientActive');
-			if ( (Weapon != ClientPending) && (zzmyHud != None) && zzmyHud.IsA('ChallengeHUD') )
-				ChallengeHUD(zzmyHud).WeaponNameFade = 1.3;
+
 			if ( (Weapon != OldClientWeapon) && (OldClientWeapon != None) )
 				OldClientWeapon.GotoState('');
 
@@ -5535,10 +5499,8 @@ function xxPlayerTickEvents()
 			xxCheckForPortals();
 			//xxCheckForTriggers();
 
-			if (zzClientTTarget == None)
-				xxServerReceiveStuff( Velocity.X, Velocity.Y, Velocity.Z, Mover(Base) != None );
-			else
-				xxServerReceiveStuff( Velocity.X, Velocity.Y, Velocity.Z, Mover(Base) != None, zzClientTTarget.Location, zzClientTTarget.Velocity );
+			if (zzClientTTarget != None)
+				xxServerReceiveStuff( zzClientTTarget.Location, zzClientTTarget.Velocity );
 			zzLastStuffUpdate = CurrentTime;
 			//xxCheckAce();
 		}
@@ -6758,14 +6720,6 @@ exec function Sens(float F)
 	ClientMessage("Sensitivity :"@F);
 }
 
-exec function NewNetCode(bool bUseIt)
-{
-	//bNewNet = bUseIt;
-	//xxServerSetNetCode(bNewNet);
-	//SaveConfig();
-	//ClientMessage("NewNetCode :"@bNewNet);
-}
-
 exec function NoRevert(bool b)
 {
 	bNoRevert = b;
@@ -6968,11 +6922,6 @@ simulated function xxDemoSpawnSSRBeam(vector HitLocation, vector SmokeLocation, 
 		return;
 	}
 	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
-}
-
-function xxServerSetNetCode(bool bNewCode)
-{
-	//bNewNet = bNewCode;
 }
 
 function xxServerSetNoRevert(bool b)
