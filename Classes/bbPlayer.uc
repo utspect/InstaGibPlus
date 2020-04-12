@@ -59,7 +59,6 @@ var bool	zzCVDeny;		// Deny CenterView ?
 var float	zzCVDelay;		// Delay for CenterView usage
 var int		zzMinimumNetspeed;	// Default 1000, it's the minimum netspeed a client may have.
 var float	zzWaitTime;		// Used for diverse waiting.
-//var bool	zzbWeaponTracer;	// True if current weapon is a tracer!
 var int		zzForceSettingsLevel;	// The Anti-Default/Ini check force.
 var bool	zzbForceModels;		// Allow/Enable/Force Models for clients.
 var bool	zzbForceDemo;		// Set true by server to force client to do demo.
@@ -90,9 +89,7 @@ var float clientLastUpdateTime;
 var byte	zzbFire;		// Retain last fire value
 var byte	zzbAltFire;		// Retain last Alt Fire Value
 var bool	zzbValidFire;		// Tells when Fire() is valid
-var bool	zzShowClick;		// Show Click Status
-var bool	zzbDonePreRender;	// True between PreRender & PostRender
-var PureInfo	zzInfoThing;	// Registers diverse stuff.
+var PureInfo zzInfoThing;	// Registers diverse stuff.
 var float	zzTick;			// The Length of Last Tick
 var bool	zzbNoMultiWeapon;	// Server-Side only! tells if multiweapon bug can be used.
 var int     zzThrowVelocity;
@@ -100,9 +97,7 @@ var bool	zzbDemoPlayback;	// Is currently a demo playback (via xxServerMove dete
 var bool	zzbGotDemoPlaybackSpec;
 var CHSpectator zzDemoPlaybackSpec;
 var bbClientDemoSN zzDemoPlaybackSN;
-var bool zzbRestartedPlayer;
 var bool bIsAlive;
-var bool zzbJustConnected;
 
 // Stuff
 var rotator	zzViewRotation;		// Our special View Rotation
@@ -113,7 +108,6 @@ var string	FakeClass;		// Class that the model replaces
 var string	zzMyPacks;		// Defined only for defaults
 var bool	zzbBadGuy;		// BadGuy! (Avoid kick spamming)
 var int		zzOldForceSettingsLevel;	// Kept to see if things change.
-var bool	zzbNN_ForceFire, zzbNN_ForceAltFire;	// Enable FWS for all weapons.
 var float  	zzThrownTime, zzSwitchedTime;
 var Weapon  zzThrownWeapon;
 var int     zzRecentDmgGiven, zzRecentTeamDmgGiven, TeleRadius, PortalRadius, TriggerRadius;
@@ -153,7 +147,6 @@ var string zzKeys[1024], zzAliases[1024], zzActorNames[2048];
 var int zzNumActorNames;
 var byte zzPressing[1024];
 var bool bIsAlpha;
-var bool bNewNetIsDisabled;
 var bool bIsPatch469;
 var bool bClientIsWalking;
 var bool bMustUpdate;
@@ -299,7 +292,7 @@ replication
 
 	// Server->Client
 	unreliable if ( bNetOwner && Role == ROLE_Authority )
-		zzTrackFOV, zzCVDeny, zzCVDelay, zzShowClick, zzMinimumNetspeed,
+		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed,
 		zzWaitTime,zzAntiTimerList,zzAntiTimerListCount,zzAntiTimerListState,
 		zzbDidMD5, zzStat;
 
@@ -346,7 +339,7 @@ replication
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
 		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
-		xxExplodeOther, xxSetNetUpdateRate;
+		xxExplodeOther, xxSetNetUpdateRate, xxServerAddVelocity;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ProjExplode, xxNN_TeleFrag, xxNN_TransFrag,
@@ -590,9 +583,6 @@ event PostBeginPlay()
 	for (i = 0; i < VRVI_length; i++)
 		zzVRandVals[i] = VRand()*10000;
 
-	if (DeathMatchPlus(Level.Game) != None)
-		zzShowClick =  DeathMatchPlus(Level.Game).bTournament;
-
 
 	Super.PostBeginPlay();
 
@@ -649,7 +639,6 @@ event Possess()
 
 	if ( Level.Netmode == NM_Client )
 	{	// Only do this for clients.
-		zzbJustConnected = true;
 		SetTimer(3, false);
 		Log("Possessed PlayerPawn (bbPlayer) by InstaGib Plus");
 		if (!bIsPatch469) {
@@ -1655,6 +1644,24 @@ function EDodgeDir GetDodgeDir(int dir) {
 	return DODGE_None;
 }
 
+function EPhysics GetPhysics(int phys) {
+	switch(phys) {
+		case 0: return PHYS_None;
+		case 1: return PHYS_Walking;
+		case 2: return PHYS_Falling;
+		case 3: return PHYS_Swimming;
+		case 4: return PHYS_Flying;
+		case 5: return PHYS_Rotating;
+		case 6: return PHYS_Projectile;
+		case 7: return PHYS_Rolling;
+		case 8: return PHYS_Interpolating;
+		case 9: return PHYS_MovingBrush;
+		case 10: return PHYS_Spider;
+		case 11: return PHYS_Trailer;
+	}
+	return PHYS_None;
+}
+
 function xxServerMove(
 	float TimeStamp,
 	float FrameTime,
@@ -1695,6 +1702,7 @@ function xxServerMove(
 	local vector InAccel;
 	local vector ClientLoc;
 
+	local EPhysics ClientPhysics;
 	local bool NewbRun;
 	local bool NewbDuck;
 	local bool NewbJumpStatus;
@@ -1760,6 +1768,7 @@ function xxServerMove(
 	ClientLoc.Y = ClientLocY;
 	ClientLoc.Z = ClientLocZ;
 
+	ClientPhysics = GetPhysics((MiscData >> 24) & 0xFF);
 	NewbRun = (MiscData & 0x40000) != 0;
 	NewbDuck = (MiscData & 0x20000) != 0;
 	NewbJumpStatus = (MiscData & 0x10000) != 0;
@@ -1973,7 +1982,7 @@ function xxServerMove(
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
 
-	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && (ClientLocErr > MaxPosError))) {
+	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError)) {
 		zzbForceUpdate = true;
 		if (ServerTimeStamp > zzForceUpdateUntil)
 			zzForceUpdateUntil = 0;
@@ -2711,6 +2720,7 @@ function xxReplicateMove(
 	else
 		RelLoc = Location - Base.Location;
 
+	MiscData = MiscData | (int(Physics) << 24);
 	if (NewMove.bRun) MiscData = MiscData | 0x40000;
 	if (NewMove.bDuck) MiscData = MiscData | 0x20000;
 	if (bJumpStatus) MiscData = MiscData | 0x10000;
@@ -3258,26 +3268,17 @@ simulated function AddVelocity( vector NewVelocity )
 		return;
 	}
 
-	if (zzAddVelocityCount > 0)
-	{
-		if ( (zzExpectedVelocity.Z > 380) && (NewVelocity.Z > 0) )
-			NewVelocity.Z *= 0.5;
-		zzExpectedVelocity += NewVelocity;
-	}
-	else
-	{
-		if ( (Velocity.Z > 380) && (NewVelocity.Z > 0) )
-			NewVelocity.Z *= 0.5;
-		zzExpectedVelocity = Velocity + NewVelocity;
-		zzAddVelocityCount = 0;
-	}
-
-	zzAddVelocityCount++;
 	xxClientAddVelocity(NewVelocity);
 }
 
-simulated function xxClientAddVelocity(vector Velocity) {
-	super.AddVelocity(Velocity);
+simulated function xxClientAddVelocity(vector NewVelocity) {
+	super.AddVelocity(NewVelocity);
+	xxServerAddVelocity(NewVelocity);
+}
+
+simulated function xxServerAddVelocity(vector NewVelocity) {
+	if (Physics == PHYS_Walking)
+		SetPhysics(PHYS_Falling);
 }
 
 simulated function NN_Momentum( Vector momentum, name DamageType )
@@ -5841,15 +5842,12 @@ event PreRender( canvas zzCanvas )
 	}
 
 	xxShowItems();
-
-	zzbDonePreRender = zzTrue;
 }
 
 event PostRender( canvas zzCanvas )
 {
 	local SpawnNotify zzOldSN;
 //	Log("PlayerPawn.PostRender");
-	zzbDonePreRender = zzFalse;
 
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas.Class != Class'Canvas');
 	if (zzbRenderHUD)
@@ -7427,8 +7425,6 @@ exec function bool SwitchToBestWeapon()
 
 simulated function ChangedWeapon()
 {
-	zzbNN_ForceFire = false;
-	zzbNN_ForceAltFire = false;
 	Super.ChangedWeapon();
 }
 
@@ -8107,7 +8103,6 @@ defaultproperties
 	VRVI_length=17
 	NN_ProjLength=256
 	bIsAlpha=False
-	bNewNetIsDisabled=False
 	desiredSkin=1
 	desiredTeamSkin=1
 	bEnableHitSounds=True

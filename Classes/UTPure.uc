@@ -868,7 +868,6 @@ function ModifyPlayer(Pawn Other)
 			zzP.zzCVDelay = CenterViewDelay;
 			zzP.zzCVDeny = !bAllowCenterView;
        		zzP.zzbNoMultiWeapon = !bAllowMultiWeapon;
-			zzP.zzShowClick = false;
 			zzP.zzForceSettingsLevel = ForceSettingsLevel;
 			zzP.zzbForceDemo = bForceDemo;
 			zzP.zzbGameStarted = True;
