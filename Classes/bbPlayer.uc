@@ -108,7 +108,6 @@ var string	FakeClass;		// Class that the model replaces
 var string	zzMyPacks;		// Defined only for defaults
 var bool	zzbBadGuy;		// BadGuy! (Avoid kick spamming)
 var int		zzOldForceSettingsLevel;	// Kept to see if things change.
-var bool	zzbNN_ForceFire, zzbNN_ForceAltFire;	// Enable FWS for all weapons.
 var float  	zzThrownTime, zzSwitchedTime;
 var Weapon  zzThrownWeapon;
 var int     zzRecentDmgGiven, zzRecentTeamDmgGiven, TeleRadius, PortalRadius, TriggerRadius;
@@ -7426,8 +7425,6 @@ exec function bool SwitchToBestWeapon()
 
 simulated function ChangedWeapon()
 {
-	zzbNN_ForceFire = false;
-	zzbNN_ForceAltFire = false;
 	Super.ChangedWeapon();
 }
 
