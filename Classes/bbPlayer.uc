@@ -153,7 +153,6 @@ var string zzKeys[1024], zzAliases[1024], zzActorNames[2048];
 var int zzNumActorNames;
 var byte zzPressing[1024];
 var bool bIsAlpha;
-var bool bNewNetIsDisabled;
 var bool bIsPatch469;
 var bool bClientIsWalking;
 var bool bMustUpdate;
@@ -8119,7 +8118,6 @@ defaultproperties
 	VRVI_length=17
 	NN_ProjLength=256
 	bIsAlpha=False
-	bNewNetIsDisabled=False
 	desiredSkin=1
 	desiredTeamSkin=1
 	bEnableHitSounds=True
