@@ -346,7 +346,7 @@ replication
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
 		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
-		xxExplodeOther, xxSetNetUpdateRate;
+		xxExplodeOther, xxSetNetUpdateRate, xxServerAddVelocity;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ProjExplode, xxNN_TeleFrag, xxNN_TransFrag,
@@ -3279,26 +3279,17 @@ simulated function AddVelocity( vector NewVelocity )
 		return;
 	}
 
-	if (zzAddVelocityCount > 0)
-	{
-		if ( (zzExpectedVelocity.Z > 380) && (NewVelocity.Z > 0) )
-			NewVelocity.Z *= 0.5;
-		zzExpectedVelocity += NewVelocity;
-	}
-	else
-	{
-		if ( (Velocity.Z > 380) && (NewVelocity.Z > 0) )
-			NewVelocity.Z *= 0.5;
-		zzExpectedVelocity = Velocity + NewVelocity;
-		zzAddVelocityCount = 0;
-	}
-
-	zzAddVelocityCount++;
 	xxClientAddVelocity(NewVelocity);
 }
 
-simulated function xxClientAddVelocity(vector Velocity) {
-	super.AddVelocity(Velocity);
+simulated function xxClientAddVelocity(vector NewVelocity) {
+	super.AddVelocity(NewVelocity);
+	xxServerAddVelocity(NewVelocity);
+}
+
+simulated function xxServerAddVelocity(vector NewVelocity) {
+	if (Physics == PHYS_Walking)
+		SetPhysics(PHYS_Falling);
 }
 
 simulated function NN_Momentum( Vector momentum, name DamageType )
