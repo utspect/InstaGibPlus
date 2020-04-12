@@ -59,7 +59,6 @@ var bool	zzCVDeny;		// Deny CenterView ?
 var float	zzCVDelay;		// Delay for CenterView usage
 var int		zzMinimumNetspeed;	// Default 1000, it's the minimum netspeed a client may have.
 var float	zzWaitTime;		// Used for diverse waiting.
-//var bool	zzbWeaponTracer;	// True if current weapon is a tracer!
 var int		zzForceSettingsLevel;	// The Anti-Default/Ini check force.
 var bool	zzbForceModels;		// Allow/Enable/Force Models for clients.
 var bool	zzbForceDemo;		// Set true by server to force client to do demo.
@@ -90,9 +89,7 @@ var float clientLastUpdateTime;
 var byte	zzbFire;		// Retain last fire value
 var byte	zzbAltFire;		// Retain last Alt Fire Value
 var bool	zzbValidFire;		// Tells when Fire() is valid
-var bool	zzShowClick;		// Show Click Status
-var bool	zzbDonePreRender;	// True between PreRender & PostRender
-var PureInfo	zzInfoThing;	// Registers diverse stuff.
+var PureInfo zzInfoThing;	// Registers diverse stuff.
 var float	zzTick;			// The Length of Last Tick
 var bool	zzbNoMultiWeapon;	// Server-Side only! tells if multiweapon bug can be used.
 var int     zzThrowVelocity;
@@ -100,9 +97,7 @@ var bool	zzbDemoPlayback;	// Is currently a demo playback (via xxServerMove dete
 var bool	zzbGotDemoPlaybackSpec;
 var CHSpectator zzDemoPlaybackSpec;
 var bbClientDemoSN zzDemoPlaybackSN;
-var bool zzbRestartedPlayer;
 var bool bIsAlive;
-var bool zzbJustConnected;
 
 // Stuff
 var rotator	zzViewRotation;		// Our special View Rotation
@@ -298,7 +293,7 @@ replication
 
 	// Server->Client
 	unreliable if ( bNetOwner && Role == ROLE_Authority )
-		zzTrackFOV, zzCVDeny, zzCVDelay, zzShowClick, zzMinimumNetspeed,
+		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed,
 		zzWaitTime,zzAntiTimerList,zzAntiTimerListCount,zzAntiTimerListState,
 		zzbDidMD5, zzStat;
 
@@ -589,9 +584,6 @@ event PostBeginPlay()
 	for (i = 0; i < VRVI_length; i++)
 		zzVRandVals[i] = VRand()*10000;
 
-	if (DeathMatchPlus(Level.Game) != None)
-		zzShowClick =  DeathMatchPlus(Level.Game).bTournament;
-
 
 	Super.PostBeginPlay();
 
@@ -648,7 +640,6 @@ event Possess()
 
 	if ( Level.Netmode == NM_Client )
 	{	// Only do this for clients.
-		zzbJustConnected = true;
 		SetTimer(3, false);
 		Log("Possessed PlayerPawn (bbPlayer) by InstaGib Plus");
 		if (!bIsPatch469) {
@@ -5852,15 +5843,12 @@ event PreRender( canvas zzCanvas )
 	}
 
 	xxShowItems();
-
-	zzbDonePreRender = zzTrue;
 }
 
 event PostRender( canvas zzCanvas )
 {
 	local SpawnNotify zzOldSN;
 //	Log("PlayerPawn.PostRender");
-	zzbDonePreRender = zzFalse;
 
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas.Class != Class'Canvas');
 	if (zzbRenderHUD)
