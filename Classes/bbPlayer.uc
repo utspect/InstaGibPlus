@@ -1901,9 +1901,6 @@ function xxServerMove(
 		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: after MoveAutonomous"@Physics@DodgeDir@AnimSequence, 'Debug');
 	}
 
-	if (Physics != ClientPhysics)
-		SetPhysics(ClientPhysics);
-
 	// HACK
 	// This fixes players skating around. I can't explain why they start doing
 	// that. Maybe because we're dodging in a place where we can't dodge?
