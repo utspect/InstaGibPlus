@@ -734,6 +734,7 @@ function xxResetPlayer(bbPlayer zzP)
 	zzPRI.Deaths = 0;
 	zzP.zzAddVelocityCount = 0;
 	//zzP.GoToState('Dying');
+	zzP.zzbForceUpdate = true;
 }
 
 function xxResetGame()			// Resets the current game to make sure nothing bad happens after warmup.
