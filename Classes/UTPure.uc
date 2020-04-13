@@ -723,7 +723,7 @@ function xxResetPlayer(bbPlayer zzP)
 	local PlayerReplicationInfo zzPRI;
 
 	zzP.zzbIsWarmingUp = false;
-	zzP.PlayerRestartState = 'PlayerWalking';
+	zzP.PlayerRestartState = 'PlayerWaiting';
 	zzP.Died(None, 'Suicided', Location);	// Nuke teh sukar!
 	zzP.GoToState('CountdownDying');
 	zzP.xxClientResetPlayer();
@@ -734,6 +734,7 @@ function xxResetPlayer(bbPlayer zzP)
 		zzPRI.Score = 0;
 	zzPRI.Deaths = 0;
 	//zzP.GoToState('Dying');
+	zzP.zzbForceUpdate = true;
 }
 
 function xxResetGame()			// Resets the current game to make sure nothing bad happens after warmup.
