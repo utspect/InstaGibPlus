@@ -454,11 +454,7 @@ simulated function bool xxNewSetLocation(vector NewLoc, vector NewVel, optional 
 
 simulated function bool xxNewMoveSmooth(vector NewLoc)
 {
-	local bool bSuccess;
-	bSuccess = MoveSmooth(NewLoc - Location);
-	if (bSuccess == false)
-		bSuccess = Move(NewLoc - Location);
-	return bSuccess;
+	return MoveSmooth(NewLoc - Location);
 }
 
 function ServerPreTeleport(Teleporter Other, Teleporter Dest, vector ClientLoc, rotator ClientRot, vector ClientVel)
