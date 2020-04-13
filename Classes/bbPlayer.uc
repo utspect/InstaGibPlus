@@ -137,7 +137,6 @@ var bool zzbInitialized;
 var int DefaultHitSound, DefaultTeamHitSound;
 var float zzAceCheckedTime;
 var bool bForceDefaultHitSounds, zzbAceFinish, zzbAceChecked, zzbNN_Tracing;
-var int zzAddVelocityCount;
 var vector zzExpectedVelocity;
 var PlayerStart zzDisabledPS[64];
 var int zzNumDisabledPS, zzDisabledPlayerCollision;
@@ -324,7 +323,8 @@ replication
 
 	// Server->Client function.
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
-		xxCAP, xxCAPLevelBase, xxCAPWalking, xxCAPWalkingWalkingLevelBase, xxCAPWalkingWalking, xxFakeCAP;
+		xxCAP, xxCAPLevelBase, xxCAPWalking, xxCAPWalkingWalkingLevelBase, xxCAPWalkingWalking, xxFakeCAP,
+		xxClientResetPlayer;
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
@@ -454,11 +454,7 @@ simulated function bool xxNewSetLocation(vector NewLoc, vector NewVel, optional 
 
 simulated function bool xxNewMoveSmooth(vector NewLoc)
 {
-	local bool bSuccess;
-	bSuccess = MoveSmooth(NewLoc - Location);
-	if (bSuccess == false)
-		bSuccess = Move(NewLoc - Location);
-	return bSuccess;
+	return MoveSmooth(NewLoc - Location);
 }
 
 function ServerPreTeleport(Teleporter Other, Teleporter Dest, vector ClientLoc, rotator ClientRot, vector ClientVel)
@@ -1427,6 +1423,13 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 
 	SetPhysics(newPhysics);
 
+	SetBase(NewBase);
+	if ( Mover(NewBase) != None )
+		NewLoc += NewBase.Location;
+
+	if ( !IsInState(newState) )
+		GotoState(newState);
+
 	// stijn: Backported hugely influential fix from UE2 here
 	// Remove acknowledged moves from the savedmoves list
 	CurrentMove = bbSavedMove(SavedMoves);
@@ -1474,10 +1477,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 	}
 	// stijn: End of fix
 
-	SetBase(NewBase);
-	if ( Mover(NewBase) != None )
-		NewLoc += NewBase.Location;
-
 	//log("Client "$Role$" adjust "$self$" stamp "$TimeStamp$" location "$Location);
 	Carried = CarriedDecoration;
 	OldLoc = Location;
@@ -1494,9 +1493,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 		CarriedDecoration.SetPhysics(PHYS_None);
 		CarriedDecoration.SetBase(self);
 	}
-
-	if ( !IsInState(newState) )
-		GotoState(newState);
 
 	zzbFakeUpdate = false;
 	bUpdatePosition = true;
@@ -1992,7 +1988,6 @@ function xxServerMove(
 	{
 		debugClientForceUpdate = zzbForceUpdate;
 		debugNumOfForcedUpdates++;
-		zzAddVelocityCount = 0;
 		zzbForceUpdate = false;
 
 		if ( Mover(Base) != None )
@@ -7175,6 +7170,10 @@ simulated function xxSendKeys(string zzIdent, string zzValue, bool zzbBind, bool
 simulated function xxClientLogToDemo(string zzS)
 {
 	Log(zzS, 'DevGarbage');
+}
+
+function xxClientResetPlayer() {
+	GoToState('CountdownDying');
 }
 
 function ClientReStart()

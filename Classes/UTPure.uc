@@ -726,13 +726,13 @@ function xxResetPlayer(bbPlayer zzP)
 	zzP.PlayerRestartState = 'PlayerWaiting';
 	zzP.Died(None, 'Suicided', Location);	// Nuke teh sukar!
 	zzP.GoToState('CountdownDying');
+	zzP.xxClientResetPlayer();
 
 	zzP.DieCount = 0; zzP.ItemCount = 0; zzP.KillCount = 0; zzP.SecretCount = 0; zzP.Spree = 0;
 	zzPRI = zzP.PlayerReplicationInfo;
 	if (!(Left(zzDMP.BeaconName,3) ~= "LMS"))
 		zzPRI.Score = 0;
 	zzPRI.Deaths = 0;
-	zzP.zzAddVelocityCount = 0;
 	//zzP.GoToState('Dying');
 	zzP.zzbForceUpdate = true;
 }
