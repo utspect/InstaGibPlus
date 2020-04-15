@@ -1764,11 +1764,11 @@ function xxServerMove(
 	ClientLoc.Y = ClientLocY;
 	ClientLoc.Z = ClientLocZ;
 
-	ClientPhysics = GetPhysics((MiscData >> 24) & 0xFF);
 	NewbRun = (MiscData & 0x40000) != 0;
 	NewbDuck = (MiscData & 0x20000) != 0;
 	NewbJumpStatus = (MiscData & 0x10000) != 0;
-	DodgeMove = GetDodgeDir((MiscData >> 8) & 0xFF);
+	ClientPhysics = GetPhysics((MiscData >> 12) & 0xF);
+	DodgeMove = GetDodgeDir((MiscData >> 8) & 0xF);
 	ClientRoll = (MiscData & 0xFF);
 
 	if (ClientBase == none)
@@ -2715,10 +2715,10 @@ function xxReplicateMove(
 	else
 		RelLoc = Location - Base.Location;
 
-	MiscData = MiscData | (int(Physics) << 24);
 	if (NewMove.bRun) MiscData = MiscData | 0x40000;
 	if (NewMove.bDuck) MiscData = MiscData | 0x20000;
 	if (bJumpStatus) MiscData = MiscData | 0x10000;
+	MiscData = MiscData | (int(Physics) << 12);
 	MiscData = MiscData | (int(NewMove.DodgeMove) << 8);
 	MiscData = MiscData | ((Rotation.Roll >> 8) & 0xFF);
 
