@@ -277,6 +277,10 @@ var int CompressedViewRotation; // Compressed Pitch/Yaw
 
 var bool bWasDodging;
 
+const NumLastAddVelocityTimeStamps=4;
+var float LastAddVelocityTimeStamp[4];
+var int LastAddVelocityIndex;
+
 replication
 {
 	//	Client->Demo
@@ -3212,17 +3216,42 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	return true;
 }
 
+simulated function bool HaveAppliedVelocity(float TimeStamp) {
+	local int i;
+	local bool equal;
+	local int greaterCount;
+	for(i = 0; i < NumLastAddVelocityTimeStamps; i += 1) {
+		if (LastAddVelocityTimeStamp[i] == TimeStamp)
+			return true;
+		if (LastAddVelocityTimeStamp[i] > TimeStamp)
+			greaterCount += 1;
+	}
+
+	if (greaterCount == NumLastAddVelocityTimeStamps) return true;
+
+	return false;
+}
+
+simulated function AddAppliedVelocity(float TimeStamp) {
+	LastAddVelocityTimeStamp[LastAddVelocityIndex] = TimeStamp;
+	LastAddVelocityIndex = (LastAddVelocityIndex + 1) % NumLastAddVelocityTimeStamps;
+}
+
 simulated function AddVelocity( vector NewVelocity )
 {
 	if (!bNewNet || Level.NetMode == NM_Client)
 		Super.AddVelocity(NewVelocity);
 	else
-		xxClientAddVelocity(NewVelocity);
+		xxClientAddVelocity(NewVelocity, Level.TimeSeconds);
 }
 
-simulated function xxClientAddVelocity(vector NewVelocity) {
+simulated function xxClientAddVelocity(vector NewVelocity, float TimeStamp) {
+	if (HaveAppliedVelocity(TimeStamp))
+		return;
+
 	super.AddVelocity(NewVelocity);
 	xxServerAddVelocity(NewVelocity);
+	AddAppliedVelocity(TimeStamp);
 }
 
 simulated function xxServerAddVelocity(vector NewVelocity) {
