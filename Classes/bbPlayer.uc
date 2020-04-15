@@ -7133,7 +7133,13 @@ function xxClientResetPlayer() {
 function ClientReStart()
 {
 	zzSpawnedTime = Level.TimeSeconds;
+
 	Super.ClientReStart();
+
+	if (PendingTouch != none) {
+		PendingTouch.PendingTouch = none;
+		PendingTouch = none;
+	}
 }
 
 exec function GetWeapon(class<Weapon> NewWeaponClass )
