@@ -277,6 +277,10 @@ var int CompressedViewRotation; // Compressed Pitch/Yaw
 
 var bool bWasDodging;
 
+const NumLastAddVelocityTimeStamps=4;
+var float LastAddVelocityTimeStamp[4];
+var int LastAddVelocityIndex;
+
 replication
 {
 	//	Client->Demo
@@ -1764,11 +1768,11 @@ function xxServerMove(
 	ClientLoc.Y = ClientLocY;
 	ClientLoc.Z = ClientLocZ;
 
-	ClientPhysics = GetPhysics((MiscData >> 24) & 0xFF);
 	NewbRun = (MiscData & 0x40000) != 0;
 	NewbDuck = (MiscData & 0x20000) != 0;
 	NewbJumpStatus = (MiscData & 0x10000) != 0;
-	DodgeMove = GetDodgeDir((MiscData >> 8) & 0xFF);
+	ClientPhysics = GetPhysics((MiscData >> 12) & 0xF);
+	DodgeMove = GetDodgeDir((MiscData >> 8) & 0xF);
 	ClientRoll = (MiscData & 0xFF);
 
 	if (ClientBase == none)
@@ -2715,10 +2719,10 @@ function xxReplicateMove(
 	else
 		RelLoc = Location - Base.Location;
 
-	MiscData = MiscData | (int(Physics) << 24);
 	if (NewMove.bRun) MiscData = MiscData | 0x40000;
 	if (NewMove.bDuck) MiscData = MiscData | 0x20000;
 	if (bJumpStatus) MiscData = MiscData | 0x10000;
+	MiscData = MiscData | (int(Physics) << 12);
 	MiscData = MiscData | (int(NewMove.DodgeMove) << 8);
 	MiscData = MiscData | ((Rotation.Roll >> 8) & 0xFF);
 
@@ -2812,47 +2816,6 @@ simulated function Sound loadHitSound(int c) {
 }
 
 function string forcedModelToString(int fm) {
-	switch(fm) {
-		case 0:
-			return "Class: Female Commando, Skin: Aphex, Face: Idina";
-		case 1:
-			return "Class: Female Commando, Skin: Commando, Face: Anna";
-		case 2:
-			return "Class: Female Commando, Skin: Mercenary, Face: Jayce";
-		case 3:
-			return "Class: Female Commando, Skin: Necris, Face: Cryss";
-		case 4:
-			return "Class: Female Soldier, Skin: Marine, Face: Annaka";
-		case 5:
-			return "Class: Female Soldier, Skin: Metal Guard, Face: Isis";
-		case 6:
-			return "Class: Female Soldier, Skin: Soldier, Face: Lauren";
-		case 7:
-			return "Class: Female Soldier, Skin: Venom, Face: Athena";
-		case 8:
-			return "Class: Female Soldier, Skin: War Machine, Face: Cathode";
-		case 9:
-			return "Class: Male Commando, Skin: Commando, Face: Blake";
-		case 10:
-			return "Class: Male Commando, Skin: Mercenary, Face: Boris";
-		case 11:
-			return "Class: Male Commando, Skin: Necris, Face: Grail";
-		case 12:
-			return "Class: Male Soldier, Skin: Marine, Face: Malcolm";
-		case 13:
-			return "Class: Male Soldier, Skin: Metal Guard, Face: Drake";
-		case 14:
-			return "Class: Male Soldier, Skin: RawSteel, Face: Arkon";
-		case 15:
-			return "Class: Male Soldier, Skin: Soldier, Face: Brock";
-		case 16:
-			return "Class: Male Soldier, Skin: War Machine, Face: Matrix";
-		case 17:
-			return "Class: Boss, Skin: Boss, Face: Xan";
-	}
-}
-
-function string forcedTeamModelToString(int fm) {
 	switch(fm) {
 		case 0:
 			return "Class: Female Commando, Skin: Aphex, Face: Idina";
@@ -3002,7 +2965,7 @@ exec function myIgSettings() {
 	ClientMessage("Hitsounds:"@bEnableHitSounds);
 	ClientMessage("Forced Models:"@zzbForceModels);
 	ClientMessage("Current Enemy Forced Model:"@forcedModelToString(desiredSkin));
-	ClientMessage("Current Team Forced Model:"@forcedTeamModelToString(desiredTeamSkin));
+	ClientMessage("Current Team Forced Model:"@forcedModelToString(desiredTeamSkin));
 	ClientMessage("Current selected hit sound:"@playedHitSound);
 	ClientMessage("Current Shock Beam:"@cShockBeam);
 	ClientMessage("Current Beam Scale:"@BeamScale);
@@ -3245,8 +3208,6 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 			HitLocation.Z = maxZ;
 			HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
 			HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
-			/* if ( VSize(HitLocation - Location) > CollisionRadius )
-				return false; */
 			delta = (HitLocation - Location) * vect(1,1,0);
 			if (delta dot delta > CollisionRadius * CollisionRadius)
 				return false;
@@ -3255,20 +3216,42 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	return true;
 }
 
+simulated function bool HaveAppliedVelocity(float TimeStamp) {
+	local int i;
+	local bool equal;
+	local int greaterCount;
+	for(i = 0; i < NumLastAddVelocityTimeStamps; i += 1) {
+		if (LastAddVelocityTimeStamp[i] == TimeStamp)
+			return true;
+		if (LastAddVelocityTimeStamp[i] > TimeStamp)
+			greaterCount += 1;
+	}
+
+	if (greaterCount == NumLastAddVelocityTimeStamps) return true;
+
+	return false;
+}
+
+simulated function AddAppliedVelocity(float TimeStamp) {
+	LastAddVelocityTimeStamp[LastAddVelocityIndex] = TimeStamp;
+	LastAddVelocityIndex = (LastAddVelocityIndex + 1) % NumLastAddVelocityTimeStamps;
+}
+
 simulated function AddVelocity( vector NewVelocity )
 {
 	if (!bNewNet || Level.NetMode == NM_Client)
-	{
 		Super.AddVelocity(NewVelocity);
-		return;
-	}
-
-	xxClientAddVelocity(NewVelocity);
+	else
+		xxClientAddVelocity(NewVelocity, Level.TimeSeconds);
 }
 
-simulated function xxClientAddVelocity(vector NewVelocity) {
+simulated function xxClientAddVelocity(vector NewVelocity, float TimeStamp) {
+	if (HaveAppliedVelocity(TimeStamp))
+		return;
+
 	super.AddVelocity(NewVelocity);
 	xxServerAddVelocity(NewVelocity);
+	AddAppliedVelocity(TimeStamp);
 }
 
 simulated function xxServerAddVelocity(vector NewVelocity) {
@@ -7179,7 +7162,13 @@ function xxClientResetPlayer() {
 function ClientReStart()
 {
 	zzSpawnedTime = Level.TimeSeconds;
+
 	Super.ClientReStart();
+
+	if (PendingTouch != none) {
+		PendingTouch.PendingTouch = none;
+		PendingTouch = none;
+	}
 }
 
 exec function GetWeapon(class<Weapon> NewWeaponClass )
