@@ -1577,9 +1577,6 @@ defaultproperties
 	NNAnnouncer=True
 	MinPosError=100
 	MaxPosError=3000
-	MaxJitterTime=0.050
-	MinNetUpdateRate=60.0
-	MaxNetUpdateRate=200.0
 	MaxHitError=10000
 	MaxJitterTime=0.050
 	MinNetUpdateRate=60.0
