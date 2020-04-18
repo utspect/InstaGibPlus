@@ -4342,14 +4342,15 @@ ignores SeePlayer, HearNoise, Bump;
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 
-		if (Role < ROLE_Authority) return;
+		if (Role < ROLE_Authority || Level.NetMode != NM_DedicatedServer)
+			return;
 
 		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
-		if (TimeSinceLastUpdate >= class'UTPure'.default.MaxJitterTime) {
-			MoveAutonomous(TimeSinceLastUpdate, false, false, false, DodgeDir, Acceleration, rot(0,0,0));
-			CurrentTimeStamp += TimeSinceLastUpdate;
-			ServerTimeStamp += TimeSinceLastUpdate;
-		}
+		if (TimeSinceLastUpdate ~= 0) return;
+
+		MoveAutonomous(TimeSinceLastUpdate, false, false, false, DodgeDir, Acceleration, rot(0,0,0));
+		CurrentTimeStamp += TimeSinceLastUpdate;
+		ServerTimeStamp += TimeSinceLastUpdate;
 	}
 
 	function BeginState()
