@@ -641,14 +641,6 @@ event Possess()
 	{	// Only do this for clients.
 		SetTimer(3, false);
 		Log("Possessed PlayerPawn (bbPlayer) by InstaGib Plus");
-		if (!bIsPatch469) {
-			clientFPS = int(ConsoleCommand("get ini:engine.engine.gamerenderdevice frameratelimit"));
-			//setClientNetspeed();
-		}
-		if (clientFPS > 200) {
-			ConsoleCommand("set ini:engine.engine.gamerenderdevice frameratelimit 200");
-			reconnectClient();
-		}
 		zzTrue = !zzFalse;
 		zzInfoThing = Spawn(Class'PureInfo');
 		playedHitSound = loadHitSound(selectedHitSound);
