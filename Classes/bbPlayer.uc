@@ -4335,10 +4335,21 @@ ignores SeePlayer, HearNoise, Bump;
 
 	event PlayerTick( float DeltaTime )
 	{
+		local float TimeSinceLastUpdate;
+
 		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
+
+		if (Role < ROLE_Authority) return;
+
+		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
+		if (TimeSinceLastUpdate >= class'UTPure'.default.MaxJitterTime) {
+			MoveAutonomous(TimeSinceLastUpdate, false, false, false, DodgeDir, Acceleration, rot(0,0,0));
+			CurrentTimeStamp += TimeSinceLastUpdate;
+			ServerTimeStamp += TimeSinceLastUpdate;
+		}
 	}
 
 	function BeginState()
