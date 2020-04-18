@@ -57,7 +57,8 @@ var bool bIsFinishedLoading;
 var int		zzTrackFOV;		// Track FOV ?
 var bool	zzCVDeny;		// Deny CenterView ?
 var float	zzCVDelay;		// Delay for CenterView usage
-var int		zzMinimumNetspeed;	// Default 1000, it's the minimum netspeed a client may have.
+var int		zzMinimumNetspeed;	// Default 10000, it's the minimum netspeed a client may have.
+var int		zzMaximumNetspeed;	// Default 25000, it's the maximum netspeed a client may have.
 var float	zzWaitTime;		// Used for diverse waiting.
 var int		zzForceSettingsLevel;	// The Anti-Default/Ini check force.
 var bool	zzbForceModels;		// Allow/Enable/Force Models for clients.
@@ -295,7 +296,7 @@ replication
 
 	// Server->Client
 	unreliable if ( bNetOwner && Role == ROLE_Authority )
-		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed,
+		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed, zzMaximumNetspeed,
 		zzWaitTime,zzAntiTimerList,zzAntiTimerListCount,zzAntiTimerListState,
 		zzbDidMD5, zzStat;
 
@@ -590,6 +591,7 @@ event PostBeginPlay()
 	{
 		zzbCanCSL = True;
 		zzMinimumNetspeed = Class'UTPure'.Default.MinClientRate;
+		zzMaximumNetspeed = Class'UTPure'.Default.MaxClientRate;
 		zzWaitTime = 5.0;
 	}
 	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
@@ -5859,9 +5861,10 @@ event PostRender( canvas zzCanvas )
 	xxCleanAvars();
 
 	zzNetspeed = Player.CurrentNetspeed;
-	if (zzMinimumNetspeed != 0 && zzNetspeed < zzMinimumNetspeed) {
+	if (zzMinimumNetspeed != 0 && zzNetspeed < zzMinimumNetspeed)
 		ConsoleCommand("Netspeed"@zzMinimumNetspeed);
-	}
+	if (zzMaximumNetspeed != 0 && zzNetspeed > zzMaximumNetspeed)
+		ConsoleCommand("Netspeed"@zzMaximumNetspeed);
 
 	if (zzDelayedStartTime != 0.0)
 	{

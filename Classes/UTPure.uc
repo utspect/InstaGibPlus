@@ -35,6 +35,7 @@ var localized config bool bAllowMultiWeapon;	// if true allows the multiweapon b
 var localized config bool bFastTeams;		// Allow quick teams changes
 var localized config bool bUseClickboard;	// Use clickboard in Tournament Mode or not
 var localized config int MinClientRate;		// Minimum allowed client rate.
+var localized config int MaxClientRate;     // Maximum allowed client rate.
 var localized config bool bAdvancedTeamSay;	// Enable or disable Advanced TeamSay.
 var localized config byte ForceSettingsLevel;	// 0 = off, 1 = PostNetBeginPlay, 2 = SpawnNotify, 3 = Intervalled
 var localized config bool bNoLockdown;		// Enable or disable to have Lockdown when players get hit by mini/pulse
@@ -986,6 +987,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 			Sender.ClientMessage("- FOV Tracking:"@TrackFOV@"(0 = off, 1 = strict, 2 = loose)");
 			Sender.ClientMessage("- Forced Settings:"@ForceSettingsLevel@"(0 = off, 1 = simple, 2 = passive, 3 = active)");
 			Sender.ClientMessage("- Minimum Clientrate:"@MinClientRate);
+			Sender.ClientMessage("- Maximum Clientrate:"@MaxClientRate);
 			Sender.ClientMessage("- Advanced TeamSay:"@bAdvancedTeamSay);
 			Sender.ClientMessage("- Allow CenterView:"@bAllowCenterView);
 			if (bAllowCenterView)
@@ -1555,7 +1557,8 @@ defaultproperties
 	bAutoPause=True
 	bFastTeams=True
 	bUseClickboard=True
-	MinClientRate=20000
+	MinClientRate=10000
+	MaxClientRate=25000
 	bAdvancedTeamSay=True
 	ForceSettingsLevel=2
 	bNoLockdown=True
