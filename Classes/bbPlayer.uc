@@ -8017,7 +8017,9 @@ simulated function xxClientDemoRec()
 }
 
 function xxSetNetUpdateRate(float NewVal) {
-	TimeBetweenNetUpdates = 1.0 / FClamp(NewVal, class'UTPure'.default.MinNetUpdateRate, class'UTPure'.default.MaxNetUpdateRate);
+	local float max;
+	max = FMin(class'UTPure'.default.MaxNetUpdateRate, Player.CurrentNetSpeed/100.0);
+	TimeBetweenNetUpdates = 1.0 / FClamp(NewVal, class'UTPure'.default.MinNetUpdateRate, max);
 }
 
 exec function SetNetUpdateRate(float NewVal) {
