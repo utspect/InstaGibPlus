@@ -795,24 +795,18 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 		else if (HitSound == 0)
 			return;
 	}
-	else if (Message == class'DecapitationMessage')
+	else if (ClassIsChildOf(Message, class'DecapitationMessage'))
 	{
 		xxSendHeadshotToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 	}
 	else if (RelatedPRI_1 == PlayerReplicationInfo || RelatedPRI_2 == PlayerReplicationInfo)
 	{
-		if (Message == class'DeathMessagePlus' || Message == class'DDeathMessagePlus')
-		{
+		if (ClassIsChildOf(Message, class'DeathMessagePlus') || ClassIsChildOf(Message, class'DDeathMessagePlus'))
 			xxSendDeathMessageToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-		}
-		else if (Message == class'MultiKillMessage' || Message == class'MMultiKillMessage')
-		{
+		else if (ClassIsChildOf(Message, class'MultiKillMessage') || ClassIsChildOf(Message, class'MMultiKillMessage'))
 			xxSendMultiKillToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-		}
-		else if (Message == class'KillingSpreeMessage')
-		{
+		else if (ClassIsChildOf(Message, class'KillingSpreeMessage'))
 			xxSendSpreeToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-		}
 	}
 
 	Super.ReceiveLocalizedMessage(Message, Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
