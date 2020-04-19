@@ -801,9 +801,9 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 	}
 	else if (RelatedPRI_1 == PlayerReplicationInfo || RelatedPRI_2 == PlayerReplicationInfo)
 	{
-		if (ClassIsChildOf(Message, class'DeathMessagePlus') || ClassIsChildOf(Message, class'DDeathMessagePlus'))
+		if (ClassIsChildOf(Message, class'DeathMessagePlus') || Message.Name == 'DDeathMessagePlus')
 			xxSendDeathMessageToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-		else if (ClassIsChildOf(Message, class'MultiKillMessage') || ClassIsChildOf(Message, class'MMultiKillMessage'))
+		else if (ClassIsChildOf(Message, class'MultiKillMessage') || Message.Name == 'MMultiKillMessage')
 			xxSendMultiKillToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 		else if (ClassIsChildOf(Message, class'KillingSpreeMessage'))
 			xxSendSpreeToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
