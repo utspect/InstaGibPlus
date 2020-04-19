@@ -8016,15 +8016,15 @@ simulated function xxClientDemoRec()
 		xxServerDemoReply(zzS);
 }
 
-function xxSetNetUpdateRate(float NewVal) {
+function xxSetNetUpdateRate(float NewVal, int netspeed) {
 	local float max;
-	max = FMin(class'UTPure'.default.MaxNetUpdateRate, Player.CurrentNetSpeed/100.0);
+	max = FMin(class'UTPure'.default.MaxNetUpdateRate, netspeed/100.0);
 	TimeBetweenNetUpdates = 1.0 / FClamp(NewVal, class'UTPure'.default.MinNetUpdateRate, max);
 }
 
 exec function SetNetUpdateRate(float NewVal) {
 	DesiredNetUpdateRate = NewVal;
-	xxSetNetUpdateRate(NewVal);
+	xxSetNetUpdateRate(NewVal, Player.CurrentNetSpeed);
 	SaveConfig();
 }
 

@@ -624,6 +624,7 @@ event Tick(float zzdelta)
 			zzbP.zzAntiTimerListState = zzAntiTimerListState;	// Copy the visible/hidden list for pickups.
 			if (zzbP.zzOldNetspeed != zzbP.zzNetspeed)
 			{
+				zzbP.xxSetNetUpdateRate(1.0/zzbP.TimeBetweenNetUpdates, zzbP.zzNetspeed);
 				zzbP.zzNetspeedChanges++;			// Detect changed netspeed
 				zzbP.zzOldNetspeed = zzbP.zzNetspeed;
 				if (zzbP.zzNetspeedChanges > 5)			// Netspeed change protection
