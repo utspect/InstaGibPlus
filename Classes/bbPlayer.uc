@@ -422,27 +422,13 @@ function string ParseDelimited(string Text, string Delimiter, int Count, optiona
 simulated function Touch( actor Other )
 {
 	local string Package;
-	local Kicker K;
 
 	if(Level.NetMode != NM_Client)
 	{
-		Package = ParseDelimited(string(Other.Class), ".", 1);
 		if (Class'UTPure'.Default.ShowTouchedPackage)
 		{
+			Package = ParseDelimited(string(Other.Class), ".", 1);
 			ClientMessage(Package);
-		}
-		if
-			(
-				(
-						Other.IsA('Kicker') && zzUTPure.bExludeKickers
-				)	||	Other.IsA('Teleporter') ||
-						Package != "Botpack" &&
-						Package != "Engine" &&
-						Package != "UnrealShare" &&
-						Package != "Unreali"
-			)
-		{
-			//zzForceUpdateUntil = Level.TimeSeconds + 0.15;
 		}
     }
     Super.Touch(Other);
@@ -4120,14 +4106,6 @@ state CheatFlying
 state PlayerWalking
 {
 ignores SeePlayer, HearNoise, Bump;
-
-	/*
-	simulated function Bump( actor Other )
-	{
-		if (Other.IsA('Mover'))
-			xxMover_DoBump(Mover(Other));
-	}
-	*/
 
 	function Landed(vector HitNormal)
 	{
