@@ -430,8 +430,11 @@ simulated function Touch( actor Other )
 			Package = ParseDelimited(string(Other.Class), ".", 1);
 			ClientMessage(Package);
 		}
-    }
-    Super.Touch(Other);
+	}
+	if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0) {
+		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
+	}
+	Super.Touch(Other);
 }
 
 
