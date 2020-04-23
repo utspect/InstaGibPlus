@@ -1492,7 +1492,6 @@ function xxFakeCAP(float TimeStamp)
 		return;
 	CurrentTimeStamp = TimeStamp;
 
-	zzbFakeUpdate = true;
 	bUpdatePosition = true;
 }
 
@@ -1557,7 +1556,7 @@ function ClientUpdatePosition()
 	bPressedJump = bRealJump;
 	SetRotation( RealRotation);
 	ViewRotation = RealViewRotation;
-	zzbFakeUpdate = false;
+	zzbFakeUpdate = true;
 	//log("Client adjusted "$self$" stamp "$CurrentTimeStamp$" location "$Location$" dodge "$DodgeDir);
 }
 
