@@ -1951,9 +1951,9 @@ function xxServerMove(
 
 	bOnMover = Mover(Base) != None;
 	zzbOnMover = Mover(ClientBase) != none;
-	if (bOnMover && zzbOnMover && ClientLocErr < MaxPosError * 10)
+	if ((bOnMover && zzbOnMover && ClientLocErr < MaxPosError * 10) || OtherPawnAtLocation(ClientLocAbs))
 	{
-		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
+		zzIgnoreUpdateUntil = ServerTimeStamp + (PlayerReplicationInfo.Ping * 0.0011);
 	}
 	else if (zzIgnoreUpdateUntil > 0)
 	{
