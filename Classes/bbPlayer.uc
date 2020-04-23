@@ -430,6 +430,13 @@ simulated function Touch( actor Other )
 			Package = ParseDelimited(string(Other.Class), ".", 1);
 			ClientMessage(Package);
 		}
+
+		if (Other.IsA('Teleporter') && Other.Class.Name != 'NN_Teleporter' ||
+			Other.IsA('Kicker') && Other.Class.Name != 'Kicker'
+		) {
+			zzForceUpdateUntil = Level.TimeSeconds + 0.15 + float(Other.GetPropertyText("ToggleTime"));
+			zzbForceUpdate = true;
+		}
 	}
 	if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0) {
 		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
