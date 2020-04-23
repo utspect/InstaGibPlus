@@ -149,8 +149,8 @@ var byte zzPressing[1024];
 var bool bIsAlpha;
 var bool bIsPatch469;
 var bool bClientIsWalking;
-var bool bMustUpdate;
-var bool justRespawned;
+var bool bJustRespawned;
+var float LastCAPTime; // ServerTime when last CAP was sent
 var vector oldClientLoc;
 
 var globalconfig float MinDodgeClickTime;
@@ -307,7 +307,7 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		zzbForceModels, bIsAlive, bMustUpdate, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
+		zzbForceModels, bIsAlive, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
 		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam, xxClientAddVelocity;
@@ -1738,6 +1738,7 @@ function xxServerMove(
 		xxServerCheater("VR");
 
 	zzKickReady = Max(zzKickReady - 1,0);
+	bJustRespawned = false;
 
 	if (TimeStamp > Level.TimeSeconds)
 		TimeStamp = Level.TimeSeconds;
@@ -4890,7 +4891,6 @@ state Dying
     	local float LKT;
 
     	/* xxSendNextStartSpot(); */
-		bMustUpdate = true;
 		bClientIsWalking = false;
     	bJumpStatus = false;
 		bIsAlive = false;
@@ -5010,8 +5010,10 @@ state Dying
 
 	function EndState()
 	{
+		SetPhysics(PHYS_None);
 		Super.EndState();
 		LastKillTime = 0;
+		bJustRespawned = true;
 	}
 
 }
