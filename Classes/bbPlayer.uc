@@ -4313,6 +4313,7 @@ ignores SeePlayer, HearNoise, Bump;
 	event PlayerTick( float DeltaTime )
 	{
 		local float TimeSinceLastUpdate;
+		local float ProcessTime;
 
 		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
@@ -4325,9 +4326,15 @@ ignores SeePlayer, HearNoise, Bump;
 		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
 		if (TimeSinceLastUpdate ~= 0) return;
 
-		MoveAutonomous(TimeSinceLastUpdate, false, false, false, DodgeDir, Acceleration, rot(0,0,0));
-		CurrentTimeStamp += TimeSinceLastUpdate;
-		ServerTimeStamp += TimeSinceLastUpdate;
+		ProcessTime = FMin(DeltaTime, TimeSinceLastUpdate*0.5);
+
+		MoveAutonomous(ProcessTime, false, false, false, DodgeDir, Acceleration, rot(0,0,0));
+		CurrentTimeStamp += ProcessTime;
+		ServerTimeStamp += ProcessTime;
+
+		if (Level.TimeSeconds - LastUpdateTime > class'UTPure'.default.MaxJitterTime && bJustRespawned == false) {
+			zzbForceUpdate = true;
+		}
 	}
 
 	function BeginState()
