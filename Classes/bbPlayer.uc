@@ -1966,83 +1966,87 @@ function xxServerMove(
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
 
-	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError)) {
-		zzbForceUpdate = true;
-		if (ServerTimeStamp > zzForceUpdateUntil)
-			zzForceUpdateUntil = 0;
-	}
-
-	if (zzbForceUpdate)
-	{
-		debugClientForceUpdate = zzbForceUpdate;
-		debugNumOfForcedUpdates++;
-		zzbForceUpdate = false;
-
-		if ( Mover(Base) != None )
-			ClientLoc = Location - Base.Location;
-		else
-			ClientLoc = Location;
-
-		if (zzMyState == 'PlayerWalking') {
-			if (Physics == PHYS_Walking) {
-				if (Base == Level) {
-					xxCAPWalkingWalkingLevelBase(TimeStamp, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
-				} else {
-					xxCAPWalkingWalking(TimeStamp, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
-				}
-			} else {
-				xxCAPWalking(TimeStamp, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
-			}
-		} else if (Base == Level)
-			xxCAPLevelBase(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
-		else
-			xxCAP(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
-
-
-		zzLastClientErr = 0;
-		xxRememberPosition();
-		return;
-	}
-
-	if (zzLastClientErr == 0 || ClientLocErr < zzLastClientErr)
-		zzLastClientErr = ClientLocErr;
-
-	bCanTraceNewLoc = FastTrace(ClientLocAbs);
-	if (bCanTraceNewLoc) {
-		clientForcedPosition = ClientLocAbs;
-		zzLastClientErr = 0;
-		bMovedToNewLoc = xxNewMoveSmooth(ClientLocAbs);
-		if (bMovedToNewLoc)
-			Velocity = ClientVel;
-	}
-	if (bCanTraceNewLoc == false) {
-		Carried = CarriedDecoration;
-		OldLoc = Location;
-
-		bCanTeleport = false;
-		xxNewSetLocation(ClientLocAbs, ClientVel);
-		bCanTeleport = true;
-
-		if (Carried != None) {
-			CarriedDecoration = Carried;
-			CarriedDecoration.SetLocation(ClientLocAbs + CarriedDecoration.Location - OldLoc);
-			CarriedDecoration.SetPhysics(PHYS_None);
-			CarriedDecoration.SetBase(self);
+	// Only look at client position if they have since applied the last CAP we sent.
+	if (CurrentTimeStamp >= LastCAPTime) {
+		if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError)) {
+			zzbForceUpdate = true;
+			if (ServerTimeStamp > zzForceUpdateUntil)
+				zzForceUpdateUntil = 0;
 		}
 
-		zzLastClientErr = 0;
+		if (zzbForceUpdate)
+		{
+			debugClientForceUpdate = zzbForceUpdate;
+			debugNumOfForcedUpdates++;
+			zzbForceUpdate = false;
+
+			if ( Mover(Base) != None )
+				ClientLoc = Location - Base.Location;
+			else
+				ClientLoc = Location;
+
+			if (zzMyState == 'PlayerWalking') {
+				if (Physics == PHYS_Walking) {
+					if (Base == Level) {
+						xxCAPWalkingWalkingLevelBase(TimeStamp, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
+					} else {
+						xxCAPWalkingWalking(TimeStamp, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+					}
+				} else {
+					xxCAPWalking(TimeStamp, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+				}
+			} else if (Base == Level)
+				xxCAPLevelBase(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
+			else
+				xxCAP(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+
+			LastCAPTime = CurrentTimeStamp + FClamp(PlayerReplicationInfo.Ping*0.001, 0, 0.5);
+			zzLastClientErr = 0;
+			xxRememberPosition();
+			return;
+		}
+
+		if (zzLastClientErr == 0 || ClientLocErr < zzLastClientErr)
+			zzLastClientErr = ClientLocErr;
+
+		bCanTraceNewLoc = FastTrace(ClientLocAbs);
+		if (bCanTraceNewLoc) {
+			clientForcedPosition = ClientLocAbs;
+			zzLastClientErr = 0;
+			bMovedToNewLoc = xxNewMoveSmooth(ClientLocAbs);
+			if (bMovedToNewLoc)
+				Velocity = ClientVel;
+		}
+		if (bCanTraceNewLoc == false) {
+			Carried = CarriedDecoration;
+			OldLoc = Location;
+
+			bCanTeleport = false;
+			xxNewSetLocation(ClientLocAbs, ClientVel);
+			bCanTeleport = true;
+
+			if (Carried != None) {
+				CarriedDecoration = Carried;
+				CarriedDecoration.SetLocation(ClientLocAbs + CarriedDecoration.Location - OldLoc);
+				CarriedDecoration.SetPhysics(PHYS_None);
+				CarriedDecoration.SetBase(self);
+			}
+
+			zzLastClientErr = 0;
+		}
 	}
 	xxFakeCAP(TimeStamp);
 	xxRememberPosition();
 }
 
 function bool OtherPawnAtLocation(vector Loc) {
-	local Pawn P;
+	local bbPlayer P;
 	local vector RadiusDelta;
 	local float HeightDelta;
 
-	for (P = Level.PawnList; P != none; P = P.NextPawn) {
+	foreach RadiusActors(class'bbPlayer', P, 2*(CollisionRadius+CollisionHeight)) {
 		if (P == self) continue;
+		if (P.Health <= 0) continue;
 
 		RadiusDelta = vect(1,1,0) * (P.Location - Loc);
 		if ((RadiusDelta dot RadiusDelta) > CollisionRadius * CollisionRadius) continue;
