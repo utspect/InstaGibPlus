@@ -4173,7 +4173,7 @@ ignores SeePlayer, HearNoise, Bump;
 
 		if (Mesh == None)
 		{
-//			Log("PlayerMove->Mesh"@Mesh);
+			// Log("PlayerMove->Mesh"@Mesh);
 			SetMesh();
 			return;		// WHY???
 		}
@@ -4353,7 +4353,7 @@ ignores SeePlayer, HearNoise, Bump;
 		if (Physics != PHYS_Falling) SetPhysics(PHYS_Walking);
 		if ( !IsAnimating() )
 			PlayWaiting();
-//		Log("BeginState: PlayerWalking");
+		// Log("BeginState: PlayerWalking");
 	}
 
 	function EndState()
