@@ -57,7 +57,8 @@ var bool bIsFinishedLoading;
 var int		zzTrackFOV;		// Track FOV ?
 var bool	zzCVDeny;		// Deny CenterView ?
 var float	zzCVDelay;		// Delay for CenterView usage
-var int		zzMinimumNetspeed;	// Default 1000, it's the minimum netspeed a client may have.
+var int		zzMinimumNetspeed;	// Default 10000, it's the minimum netspeed a client may have.
+var int		zzMaximumNetspeed;	// Default 25000, it's the maximum netspeed a client may have.
 var float	zzWaitTime;		// Used for diverse waiting.
 var int		zzForceSettingsLevel;	// The Anti-Default/Ini check force.
 var bool	zzbForceModels;		// Allow/Enable/Force Models for clients.
@@ -148,8 +149,8 @@ var byte zzPressing[1024];
 var bool bIsAlpha;
 var bool bIsPatch469;
 var bool bClientIsWalking;
-var bool bMustUpdate;
-var bool justRespawned;
+var bool bJustRespawned;
+var float LastCAPTime; // ServerTime when last CAP was sent
 var vector oldClientLoc;
 
 var globalconfig float MinDodgeClickTime;
@@ -295,7 +296,7 @@ replication
 
 	// Server->Client
 	unreliable if ( bNetOwner && Role == ROLE_Authority )
-		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed,
+		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed, zzMaximumNetspeed,
 		zzWaitTime,zzAntiTimerList,zzAntiTimerListCount,zzAntiTimerListState,
 		zzbDidMD5, zzStat;
 
@@ -306,7 +307,7 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		zzbForceModels, bIsAlive, bMustUpdate, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
+		zzbForceModels, bIsAlive, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
 		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam, xxClientAddVelocity;
@@ -421,30 +422,26 @@ function string ParseDelimited(string Text, string Delimiter, int Count, optiona
 simulated function Touch( actor Other )
 {
 	local string Package;
-	local Kicker K;
 
 	if(Level.NetMode != NM_Client)
 	{
-		Package = ParseDelimited(string(Other.Class), ".", 1);
 		if (Class'UTPure'.Default.ShowTouchedPackage)
 		{
+			Package = ParseDelimited(string(Other.Class), ".", 1);
 			ClientMessage(Package);
 		}
-		if
-			(
-				(
-						Other.IsA('Kicker') && zzUTPure.bExludeKickers
-				)	||	Other.IsA('Teleporter') ||
-						Package != "Botpack" &&
-						Package != "Engine" &&
-						Package != "UnrealShare" &&
-						Package != "Unreali"
-			)
-		{
-			//zzForceUpdateUntil = Level.TimeSeconds + 0.15;
+
+		if (Other.IsA('Teleporter') && Other.Class.Name != 'NN_Teleporter' ||
+			Other.IsA('Kicker') && Other.Class.Name != 'Kicker'
+		) {
+			zzForceUpdateUntil = Level.TimeSeconds + 0.15 + float(Other.GetPropertyText("ToggleTime"));
+			zzbForceUpdate = true;
 		}
-    }
-    Super.Touch(Other);
+	}
+	if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0) {
+		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
+	}
+	Super.Touch(Other);
 }
 
 
@@ -590,6 +587,7 @@ event PostBeginPlay()
 	{
 		zzbCanCSL = True;
 		zzMinimumNetspeed = Class'UTPure'.Default.MinClientRate;
+		zzMaximumNetspeed = Class'UTPure'.Default.MaxClientRate;
 		zzWaitTime = 5.0;
 	}
 	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
@@ -641,14 +639,6 @@ event Possess()
 	{	// Only do this for clients.
 		SetTimer(3, false);
 		Log("Possessed PlayerPawn (bbPlayer) by InstaGib Plus");
-		if (!bIsPatch469) {
-			clientFPS = int(ConsoleCommand("get ini:engine.engine.gamerenderdevice frameratelimit"));
-			//setClientNetspeed();
-		}
-		if (clientFPS > 200) {
-			ConsoleCommand("set ini:engine.engine.gamerenderdevice frameratelimit 200");
-			reconnectClient();
-		}
 		zzTrue = !zzFalse;
 		zzInfoThing = Spawn(Class'PureInfo');
 		playedHitSound = loadHitSound(selectedHitSound);
@@ -801,24 +791,18 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 		else if (HitSound == 0)
 			return;
 	}
-	else if (Message == class'DecapitationMessage')
+	else if (ClassIsChildOf(Message, class'DecapitationMessage'))
 	{
 		xxSendHeadshotToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 	}
 	else if (RelatedPRI_1 == PlayerReplicationInfo || RelatedPRI_2 == PlayerReplicationInfo)
 	{
-		if (Message == class'DeathMessagePlus' || Message == class'DDeathMessagePlus')
-		{
+		if (ClassIsChildOf(Message, class'DeathMessagePlus') || Message.Name == 'DDeathMessagePlus')
 			xxSendDeathMessageToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-		}
-		else if (Message == class'MultiKillMessage' || Message == class'MMultiKillMessage')
-		{
+		else if (ClassIsChildOf(Message, class'MultiKillMessage') || Message.Name == 'MMultiKillMessage')
 			xxSendMultiKillToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-		}
-		else if (Message == class'KillingSpreeMessage')
-		{
+		else if (ClassIsChildOf(Message, class'KillingSpreeMessage'))
 			xxSendSpreeToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-		}
 	}
 
 	Super.ReceiveLocalizedMessage(Message, Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
@@ -1508,7 +1492,6 @@ function xxFakeCAP(float TimeStamp)
 		return;
 	CurrentTimeStamp = TimeStamp;
 
-	zzbFakeUpdate = true;
 	bUpdatePosition = true;
 }
 
@@ -1573,7 +1556,7 @@ function ClientUpdatePosition()
 	bPressedJump = bRealJump;
 	SetRotation( RealRotation);
 	ViewRotation = RealViewRotation;
-	zzbFakeUpdate = false;
+	zzbFakeUpdate = true;
 	//log("Client adjusted "$self$" stamp "$CurrentTimeStamp$" location "$Location$" dodge "$DodgeDir);
 }
 
@@ -1754,6 +1737,7 @@ function xxServerMove(
 		xxServerCheater("VR");
 
 	zzKickReady = Max(zzKickReady - 1,0);
+	bJustRespawned = false;
 
 	if (TimeStamp > Level.TimeSeconds)
 		TimeStamp = Level.TimeSeconds;
@@ -1967,9 +1951,9 @@ function xxServerMove(
 
 	bOnMover = Mover(Base) != None;
 	zzbOnMover = Mover(ClientBase) != none;
-	if (bOnMover && zzbOnMover && ClientLocErr < MaxPosError * 10)
+	if ((bOnMover && zzbOnMover && ClientLocErr < MaxPosError * 10) || OtherPawnAtLocation(ClientLocAbs))
 	{
-		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
+		zzIgnoreUpdateUntil = ServerTimeStamp + (PlayerReplicationInfo.Ping * 0.0011);
 	}
 	else if (zzIgnoreUpdateUntil > 0)
 	{
@@ -1982,83 +1966,87 @@ function xxServerMove(
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
 
-	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError)) {
-		zzbForceUpdate = true;
-		if (ServerTimeStamp > zzForceUpdateUntil)
-			zzForceUpdateUntil = 0;
-	}
-
-	if (zzbForceUpdate)
-	{
-		debugClientForceUpdate = zzbForceUpdate;
-		debugNumOfForcedUpdates++;
-		zzbForceUpdate = false;
-
-		if ( Mover(Base) != None )
-			ClientLoc = Location - Base.Location;
-		else
-			ClientLoc = Location;
-
-		if (zzMyState == 'PlayerWalking') {
-			if (Physics == PHYS_Walking) {
-				if (Base == Level) {
-					xxCAPWalkingWalkingLevelBase(TimeStamp, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
-				} else {
-					xxCAPWalkingWalking(TimeStamp, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
-				}
-			} else {
-				xxCAPWalking(TimeStamp, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
-			}
-		} else if (Base == Level)
-			xxCAPLevelBase(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
-		else
-			xxCAP(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
-
-
-		zzLastClientErr = 0;
-		xxRememberPosition();
-		return;
-	}
-
-	if (zzLastClientErr == 0 || ClientLocErr < zzLastClientErr)
-		zzLastClientErr = ClientLocErr;
-
-	bCanTraceNewLoc = FastTrace(ClientLocAbs);
-	if (bCanTraceNewLoc) {
-		clientForcedPosition = ClientLocAbs;
-		zzLastClientErr = 0;
-		bMovedToNewLoc = xxNewMoveSmooth(ClientLocAbs);
-		if (bMovedToNewLoc)
-			Velocity = ClientVel;
-	}
-	if (bCanTraceNewLoc == false) {
-		Carried = CarriedDecoration;
-		OldLoc = Location;
-
-		bCanTeleport = false;
-		xxNewSetLocation(ClientLocAbs, ClientVel);
-		bCanTeleport = true;
-
-		if (Carried != None) {
-			CarriedDecoration = Carried;
-			CarriedDecoration.SetLocation(ClientLocAbs + CarriedDecoration.Location - OldLoc);
-			CarriedDecoration.SetPhysics(PHYS_None);
-			CarriedDecoration.SetBase(self);
+	// Only look at client position if they have since applied the last CAP we sent.
+	if (CurrentTimeStamp >= LastCAPTime) {
+		if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError)) {
+			zzbForceUpdate = true;
+			if (ServerTimeStamp > zzForceUpdateUntil)
+				zzForceUpdateUntil = 0;
 		}
 
-		zzLastClientErr = 0;
+		if (zzbForceUpdate)
+		{
+			debugClientForceUpdate = zzbForceUpdate;
+			debugNumOfForcedUpdates++;
+			zzbForceUpdate = false;
+
+			if ( Mover(Base) != None )
+				ClientLoc = Location - Base.Location;
+			else
+				ClientLoc = Location;
+
+			if (zzMyState == 'PlayerWalking') {
+				if (Physics == PHYS_Walking) {
+					if (Base == Level) {
+						xxCAPWalkingWalkingLevelBase(TimeStamp, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
+					} else {
+						xxCAPWalkingWalking(TimeStamp, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+					}
+				} else {
+					xxCAPWalking(TimeStamp, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+				}
+			} else if (Base == Level)
+				xxCAPLevelBase(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
+			else
+				xxCAP(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+
+			LastCAPTime = CurrentTimeStamp + FClamp(PlayerReplicationInfo.Ping*0.001, 0, 0.5);
+			zzLastClientErr = 0;
+			xxRememberPosition();
+			return;
+		}
+
+		if (zzLastClientErr == 0 || ClientLocErr < zzLastClientErr)
+			zzLastClientErr = ClientLocErr;
+
+		bCanTraceNewLoc = FastTrace(ClientLocAbs);
+		if (bCanTraceNewLoc) {
+			clientForcedPosition = ClientLocAbs;
+			zzLastClientErr = 0;
+			bMovedToNewLoc = xxNewMoveSmooth(ClientLocAbs);
+			if (bMovedToNewLoc)
+				Velocity = ClientVel;
+		}
+		if (bCanTraceNewLoc == false) {
+			Carried = CarriedDecoration;
+			OldLoc = Location;
+
+			bCanTeleport = false;
+			xxNewSetLocation(ClientLocAbs, ClientVel);
+			bCanTeleport = true;
+
+			if (Carried != None) {
+				CarriedDecoration = Carried;
+				CarriedDecoration.SetLocation(ClientLocAbs + CarriedDecoration.Location - OldLoc);
+				CarriedDecoration.SetPhysics(PHYS_None);
+				CarriedDecoration.SetBase(self);
+			}
+
+			zzLastClientErr = 0;
+		}
 	}
 	xxFakeCAP(TimeStamp);
 	xxRememberPosition();
 }
 
 function bool OtherPawnAtLocation(vector Loc) {
-	local Pawn P;
+	local bbPlayer P;
 	local vector RadiusDelta;
 	local float HeightDelta;
 
-	for (P = Level.PawnList; P != none; P = P.NextPawn) {
+	foreach RadiusActors(class'bbPlayer', P, 2*(CollisionRadius+CollisionHeight)) {
 		if (P == self) continue;
+		if (P.Health <= 0) continue;
 
 		RadiusDelta = vect(1,1,0) * (P.Location - Loc);
 		if ((RadiusDelta dot RadiusDelta) > CollisionRadius * CollisionRadius) continue;
@@ -4133,14 +4121,6 @@ state PlayerWalking
 {
 ignores SeePlayer, HearNoise, Bump;
 
-	/*
-	simulated function Bump( actor Other )
-	{
-		if (Other.IsA('Mover'))
-			xxMover_DoBump(Mover(Other));
-	}
-	*/
-
 	function Landed(vector HitNormal)
 	{
 		if (DodgeDir == DODGE_Active)
@@ -4193,7 +4173,7 @@ ignores SeePlayer, HearNoise, Bump;
 
 		if (Mesh == None)
 		{
-//			Log("PlayerMove->Mesh"@Mesh);
+			// Log("PlayerMove->Mesh"@Mesh);
 			SetMesh();
 			return;		// WHY???
 		}
@@ -4335,10 +4315,29 @@ ignores SeePlayer, HearNoise, Bump;
 
 	event PlayerTick( float DeltaTime )
 	{
+		local float TimeSinceLastUpdate;
+		local float ProcessTime;
+
 		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
+
+		if (Role < ROLE_Authority || Level.NetMode != NM_DedicatedServer)
+			return;
+
+		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
+		if (TimeSinceLastUpdate ~= 0) return;
+
+		ProcessTime = FMin(DeltaTime, TimeSinceLastUpdate*0.5);
+
+		MoveAutonomous(ProcessTime, false, false, false, DodgeDir, Acceleration, rot(0,0,0));
+		CurrentTimeStamp += ProcessTime;
+		ServerTimeStamp += ProcessTime;
+
+		if (Level.TimeSeconds - LastUpdateTime > class'UTPure'.default.MaxJitterTime && bJustRespawned == false) {
+			zzbForceUpdate = true;
+		}
 	}
 
 	function BeginState()
@@ -4354,7 +4353,7 @@ ignores SeePlayer, HearNoise, Bump;
 		if (Physics != PHYS_Falling) SetPhysics(PHYS_Walking);
 		if ( !IsAnimating() )
 			PlayWaiting();
-//		Log("BeginState: PlayerWalking");
+		// Log("BeginState: PlayerWalking");
 	}
 
 	function EndState()
@@ -4902,7 +4901,6 @@ state Dying
     	local float LKT;
 
     	/* xxSendNextStartSpot(); */
-		bMustUpdate = true;
 		bClientIsWalking = false;
     	bJumpStatus = false;
 		bIsAlive = false;
@@ -5022,8 +5020,10 @@ state Dying
 
 	function EndState()
 	{
+		SetPhysics(PHYS_None);
 		Super.EndState();
 		LastKillTime = 0;
+		bJustRespawned = true;
 	}
 
 }
@@ -5855,9 +5855,10 @@ event PostRender( canvas zzCanvas )
 	xxCleanAvars();
 
 	zzNetspeed = Player.CurrentNetspeed;
-	if (zzMinimumNetspeed != 0 && zzNetspeed < zzMinimumNetspeed) {
+	if (zzMinimumNetspeed != 0 && zzNetspeed < zzMinimumNetspeed)
 		ConsoleCommand("Netspeed"@zzMinimumNetspeed);
-	}
+	if (zzMaximumNetspeed != 0 && zzNetspeed > zzMaximumNetspeed)
+		ConsoleCommand("Netspeed"@zzMaximumNetspeed);
 
 	if (zzDelayedStartTime != 0.0)
 	{
@@ -8015,13 +8016,15 @@ simulated function xxClientDemoRec()
 		xxServerDemoReply(zzS);
 }
 
-function xxSetNetUpdateRate(float NewVal) {
-	TimeBetweenNetUpdates = 1.0 / FClamp(NewVal, class'UTPure'.default.MinNetUpdateRate, class'UTPure'.default.MaxNetUpdateRate);
+function xxSetNetUpdateRate(float NewVal, int netspeed) {
+	local float max;
+	max = FMin(class'UTPure'.default.MaxNetUpdateRate, netspeed/100.0);
+	TimeBetweenNetUpdates = 1.0 / FClamp(NewVal, class'UTPure'.default.MinNetUpdateRate, max);
 }
 
 exec function SetNetUpdateRate(float NewVal) {
 	DesiredNetUpdateRate = NewVal;
-	xxSetNetUpdateRate(NewVal);
+	xxSetNetUpdateRate(NewVal, Player.CurrentNetSpeed);
 	SaveConfig();
 }
 
