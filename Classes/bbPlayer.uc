@@ -282,6 +282,9 @@ const NumLastAddVelocityTimeStamps=4;
 var float LastAddVelocityTimeStamp[4];
 var int LastAddVelocityIndex;
 
+var float OldBaseEyeHeight;
+var float EyeHeightOffset;
+
 replication
 {
 	//	Client->Demo
@@ -1064,7 +1067,42 @@ function rotator GR()
 
 event UpdateEyeHeight(float DeltaTime)
 {
-	Super.UpdateEyeHeight(DeltaTime);
+	local float smooth, bound;
+	local vector Delta;
+
+	// smooth up/down stairs
+	If((Physics == PHYS_Walking) && !bJustLanded) {
+		Delta = Location - OldLocation;
+		if (Abs(Delta.Z) >= 4.0) // stair detection heuristic
+			EyeHeightOffset += FClamp(Delta.Z, -MaxStepHeight, MaxStepHeight);
+	} else {
+		bJustLanded = false;
+	}
+
+	EyeHeightOffset += BaseEyeHeight - OldBaseEyeHeight;
+	OldBaseEyeHeight = BaseEyeHeight;
+
+	EyeHeightOffset = EyeHeightOffset * (1.0 - FMin(DeltaTime, 0.1)) / Level.TimeDilation;
+	EyeHeight = ShakeVert + BaseEyeHeight - EyeHeightOffset;
+
+	// teleporters affect your FOV, so adjust it back down
+	if (FOVAngle != DesiredFOV) {
+		if (FOVAngle > DesiredFOV)
+			FOVAngle = FOVAngle - FMax(7, 0.9 * DeltaTime * (FOVAngle - DesiredFOV));
+		else
+			FOVAngle = FOVAngle - FMin(-7, 0.9 * DeltaTime * (FOVAngle - DesiredFOV));
+		if (Abs(FOVAngle - DesiredFOV) <= 10)
+			FOVAngle = DesiredFOV;
+	}
+
+	// adjust FOV for weapon zooming
+	if (bZooming) {
+		ZoomLevel += DeltaTime * 1.0;
+		if (ZoomLevel > 0.9)
+			ZoomLevel = 0.9;
+		DesiredFOV = FClamp(90.0 - (ZoomLevel * 88.0), 1, 170);
+	}
+
 	xxCheckFOV();
 }
 
