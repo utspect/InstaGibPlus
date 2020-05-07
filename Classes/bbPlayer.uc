@@ -282,6 +282,7 @@ const NumLastAddVelocityTimeStamps=4;
 var float LastAddVelocityTimeStamp[4];
 var int LastAddVelocityIndex;
 
+var float OldShakeVert;
 var float OldBaseEyeHeight;
 var float EyeHeightOffset;
 
@@ -1078,6 +1079,9 @@ event UpdateEyeHeight(float DeltaTime)
 	} else {
 		bJustLanded = false;
 	}
+
+	EyeHeightOffset += ShakeVert - OldShakeVert;
+	OldShakeVert = ShakeVert;
 
 	EyeHeightOffset += BaseEyeHeight - OldBaseEyeHeight;
 	OldBaseEyeHeight = BaseEyeHeight;
