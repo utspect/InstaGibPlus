@@ -314,7 +314,7 @@ replication
 		zzbForceModels, bIsAlive, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
-		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam, xxClientAddVelocity;
+		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam;
 
 	// Client->Server debug data
 	reliable if ( Role == ROLE_AutonomousProxy )
@@ -333,7 +333,7 @@ replication
 	// Server->Client function.
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
 		xxCAP, xxCAPLevelBase, xxCAPWalking, xxCAPWalkingWalkingLevelBase, xxCAPWalkingWalking, xxFakeCAP,
-		xxClientResetPlayer;
+		xxClientResetPlayer, xxClientAddVelocity;
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
