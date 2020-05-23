@@ -2246,7 +2246,7 @@ exec function Fire( optional float F )
 {
 	local bbPlayer bbP;
 
-	if (TournamentWeapon(Weapon) && TournamentWeapon(Weapon).FireAdjust != 1.0) {
+	if (TournamentWeapon(Weapon) != none && TournamentWeapon(Weapon).FireAdjust != 1.0) {
 		xxServerCheater("FA");
 		TournamentWeapon(Weapon).FireAdjust = 1.0;
 	}
