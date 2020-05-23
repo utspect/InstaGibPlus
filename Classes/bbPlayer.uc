@@ -2000,6 +2000,8 @@ function xxServerMove(
 	zzbOnMover = Mover(ClientBase) != none;
 	if ((bOnMover && zzbOnMover && ClientLocErr < MaxPosError * 10) || OtherPawnAtLocation(ClientLocAbs))
 	{
+		// Ping is in milliseconds, convert to seconds
+		// 10% slack to account for jitter
 		zzIgnoreUpdateUntil = ServerTimeStamp + (PlayerReplicationInfo.Ping * 0.0011);
 	}
 	else if (zzIgnoreUpdateUntil > 0)
