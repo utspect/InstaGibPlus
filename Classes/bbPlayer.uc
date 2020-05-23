@@ -2246,6 +2246,11 @@ exec function Fire( optional float F )
 {
 	local bbPlayer bbP;
 
+	if (TournamentWeapon(Weapon) && TournamentWeapon(Weapon).FireAdjust != 1.0) {
+		xxServerCheater("FA");
+		TournamentWeapon(Weapon).FireAdjust = 1.0;
+	}
+
 	xxEnableCarcasses();
 	if (!bNewNet || !xxWeaponIsNewNet())
 	{
@@ -6266,6 +6271,8 @@ function xxServerCheater(string zzCode)
 			zzS = "Bad Lighting!"; */
 		else if (zzCode == "TD")
 			zzS = "Bad TimeDilation!";
+		else if (zzCode == "FA")
+			zzS = "Bad FireAdjust!";
 		else
 			zzS = "UNKNOWN!";
 		zzCode = zzCode@"-"@zzS;
