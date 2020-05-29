@@ -5950,7 +5950,7 @@ event PostRender( canvas zzCanvas )
 	zzbVRChanged = zzbVRChanged || (zzViewRotation != zzLastVR);
 
 	if (bDrawDebugData) {
-		xxDrawDebugData(zzCanvas, 10, zzCanvas.ClipY - 512);
+		xxDrawDebugData(zzCanvas, 10, 120);
 	}
 }
 
@@ -6129,46 +6129,48 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.DrawColor = ChallengeHud(MyHud).WhiteColor;
 	zzC.SetPos(zzx,zzY);
 	zzC.Font = ChallengeHud(MyHud).MyFonts.GetSmallFont(zzC.ClipX);
-	zzC.DrawText("NewAccel:"@debugNewAccel);
+	zzC.DrawText("ViewRot:"@zzViewRotation);
 	zzC.SetPos(zzx, zzY + 20);
-	zzC.DrawText("ClientLoc:"@debugPlayerLocation);
+	zzC.DrawText("NewAccel:"@debugNewAccel);
 	zzC.SetPos(zzx, zzY + 40);
-	zzC.DrawText("ServerLoc:"@debugPlayerServerLocation);
+	zzC.DrawText("ClientLoc:"@debugPlayerLocation);
 	zzC.SetPos(zzx, zzY + 60);
-	zzC.DrawText("HitLocation:"@debugClientHitLocation);
+	zzC.DrawText("ServerLoc:"@debugPlayerServerLocation);
 	zzC.SetPos(zzx, zzY + 80);
-	zzC.DrawText("HitNormal:"@debugClientHitNormal);
+	zzC.DrawText("HitLocation:"@debugClientHitLocation);
 	zzC.SetPos(zzx, zzY + 100);
+	zzC.DrawText("HitNormal:"@debugClientHitNormal);
+	zzC.SetPos(zzx, zzY + 120);
 	zzC.DrawText("Pawn?"@bClientPawnHit);
-	zzC.SetPos(zzx + 20, zzY + 120);
-	zzC.DrawText("HitDiff:"@debugClientHitDiff);
 	zzC.SetPos(zzx + 20, zzY + 140);
+	zzC.DrawText("HitDiff:"@debugClientHitDiff);
+	zzC.SetPos(zzx + 20, zzY + 160);
 	zzC.DrawText("Other.Location:"@debugClientEnemyHitLocation);
-	zzC.SetPos(zzx, zzY + 160);
-	zzC.DrawText("ClientLocErr:"@debugClientLocError);
 	zzC.SetPos(zzx, zzY + 180);
-	zzC.DrawText("zzbForceUpdate:"@debugClientForceUpdate);
+	zzC.DrawText("ClientLocErr:"@debugClientLocError);
 	zzC.SetPos(zzx, zzY + 200);
-	zzC.DrawText("ForcedUpdates:"@debugNumOfForcedUpdates@"-"@debugNumOfIgnoredForceUpdates@"="@(debugNumOfForcedUpdates - debugNumOfIgnoredForceUpdates));
+	zzC.DrawText("zzbForceUpdate:"@debugClientForceUpdate);
 	zzC.SetPos(zzx, zzY + 220);
-	zzC.DrawText("bMoveSmooth:"@debugClientbMoveSmooth);
+	zzC.DrawText("ForcedUpdates:"@debugNumOfForcedUpdates@"-"@debugNumOfIgnoredForceUpdates@"="@(debugNumOfForcedUpdates - debugNumOfIgnoredForceUpdates));
 	zzC.SetPos(zzx, zzY + 240);
-	zzC.DrawText("ClientPing:"@debugClientPing);
+	zzC.DrawText("bMoveSmooth:"@debugClientbMoveSmooth);
 	zzC.SetPos(zzx, zzY + 260);
-	zzC.DrawText("Is Alive?"@bIsAlive);
+	zzC.DrawText("ClientPing:"@debugClientPing);
 	zzC.SetPos(zzx, zzY + 280);
-	zzC.DrawText("LastUpdateTime:"@clientLastUpdateTime);
+	zzC.DrawText("Is Alive?"@bIsAlive);
 	zzC.SetPos(zzx, zzY + 300);
-	zzC.DrawText("MaxTimeMargin:"@MaxTimeMargin);
+	zzC.DrawText("LastUpdateTime:"@clientLastUpdateTime);
 	zzC.SetPos(zzx, zzY + 320);
-	zzC.DrawText("finishedLoading?:"@bIsFinishedLoading);
+	zzC.DrawText("MaxTimeMargin:"@MaxTimeMargin);
 	zzC.SetPos(zzx, zzY + 340);
-	zzC.DrawText("NetUpdateRate:"@DesiredNetUpdateRate);
+	zzC.DrawText("finishedLoading?:"@bIsFinishedLoading);
 	zzC.SetPos(zzx, zzY + 360);
-	zzC.DrawText("UpdatedPosition:"@clientForcedPosition);
+	zzC.DrawText("NetUpdateRate:"@DesiredNetUpdateRate);
 	zzC.SetPos(zzx, zzY + 380);
+	zzC.DrawText("UpdatedPosition:"@clientForcedPosition);
+	zzC.SetPos(zzx, zzY + 400);
 	zzC.DrawText("Physics:"@Physics@"Anim:"@AnimSequence);
-	zzC.SetPos(zzx+20, zzY + 400);
+	zzC.SetPos(zzx+20, zzY + 420);
 	zzC.DrawText("AnimRate:"@AnimRate@"TweenRate:"@TweenRate);
 	zzC.SetPos(zzx+500, zzY);
 	zzC.DrawText("Players:");
@@ -6178,9 +6180,9 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"Physics:"@P.Physics@"Anim:"@P.AnimSequence);
 		y += 20;
 	}
-	zzC.SetPos(zzx, zzY + 420);
+	zzC.SetPos(zzx, zzY + 440);
 	zzC.DrawText("Base:"@Base);
-	zzC.SetPos(zzx+20, zzY + 440);
+	zzC.SetPos(zzx+20, zzY + 460);
 	if (Base != none)
 		zzC.DrawText("Velocity:"@Base.Velocity@"State:"@Base.GetStateName());
 	else
