@@ -286,6 +286,8 @@ var float OldShakeVert;
 var float OldBaseEyeHeight;
 var float EyeHeightOffset;
 
+var transient float TurnFractionalPart, LookUpFractionalPart;
+
 replication
 {
 	//	Client->Demo
@@ -3163,18 +3165,19 @@ function UpdateRotation(float DeltaTime, float maxPitch);
 function xxUpdateRotation(float DeltaTime, float maxPitch)
 {
 	local rotator newRotation;
+	local float PitchDelta, YawDelta;
 
 	DesiredRotation = zzViewRotation; //save old rotation
-	zzViewRotation.Pitch += 32.0 * DeltaTime * aLookUp;
-	zzViewRotation.Pitch = zzViewRotation.Pitch & 65535;
-	If ((zzViewRotation.Pitch > 18000) && (zzViewRotation.Pitch < 49152))
-	{
-		If (aLookUp > 0)
-			zzViewRotation.Pitch = 18000;
-		else
-			zzViewRotation.Pitch = 49152;
-	}
-	zzViewRotation.Yaw += 32.0 * DeltaTime * aTurn;
+
+	PitchDelta = 32.0 * DeltaTime * aLookUp + LookUpFractionalPart;
+	zzViewRotation.Pitch += int(PitchDelta);
+	LookUpFractionalPart = PitchDelta - int(PitchDelta);
+
+	zzViewRotation.Pitch = Clamp((zzViewRotation.Pitch << 16 >> 16), -16384, 16384) & 0xFFFF;
+
+	YawDelta = 32.0 * DeltaTime * aTurn + TurnFractionalPart;
+	zzViewRotation.Yaw += int(YawDelta);
+	TurnFractionalPart = YawDelta - int(YawDelta);
 
 	ViewShake(deltaTime);		// ViewRotation is fuked in here.
 	ViewFlash(deltaTime);
