@@ -1032,6 +1032,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		Sender.ClientMessage("- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam, 4 = instant beam) - Sets your Shock Rifle beam type.");
 		Sender.ClientMessage("- SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
 		Sender.ClientMessage("- SetNetUpdateRate x (Changes how often you update the server on your position, Default: 100)");
+		Sender.ClientMessage("- SetMouseSmoothing x (0/False disables smoothing, 1/True enables smoothing, Default: True)");
 		if (Sender.PlayerReplicationInfo.bAdmin)
 		{
 			Sender.ClientMessage("InstaGib Plus Admin Commands:");

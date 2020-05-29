@@ -36,6 +36,7 @@ var globalconfig int cShockBeam;
 var globalconfig float BeamScale;
 var globalconfig int BeamOriginMode;
 var globalconfig float DesiredNetUpdateRate;
+var globalconfig bool bNoSmoothing;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
@@ -1193,60 +1194,67 @@ event PlayerInput( float DeltaTime )
 	//log("X "$aMouseX$" Smooth "$SmoothMouseX$" Borrowed "$BorrowedMouseX$" zero time "$(Level.TimeSeconds - MouseZeroTime)$" vs "$MouseSmoothThreshold);
 	AbsSmoothX = SmoothMouseX;
 	AbsSmoothY = SmoothMouseY;
-	MouseTime = (Level.TimeSeconds - MouseZeroTime)/Level.TimeDilation;
-	if ( bMaxMouseSmoothing && (aMouseX == 0) && (MouseTime < MouseSmoothThreshold) )
-	{
-		SmoothMouseX = 0.5 * (MouseSmoothThreshold - MouseTime) * AbsSmoothX/MouseSmoothThreshold;
-		BorrowedMouseX += SmoothMouseX;
-	}
-	else
-	{
-		if ( (SmoothMouseX == 0) || (aMouseX == 0)
-				|| ((SmoothMouseX > 0) != (aMouseX > 0)) )
+	if (bNoSmoothing) {
+		SmoothMouseX = aMouseX;
+		SmoothMouseY = aMouseY;
+		BorrowedMouseX = 0;
+		BorrowedMouseY = 0;
+	} else {
+		MouseTime = (Level.TimeSeconds - MouseZeroTime)/Level.TimeDilation;
+		if ( bMaxMouseSmoothing && (aMouseX == 0) && (MouseTime < MouseSmoothThreshold) )
 		{
-			SmoothMouseX = aMouseX;
-			BorrowedMouseX = 0;
+			SmoothMouseX = 0.5 * (MouseSmoothThreshold - MouseTime) * AbsSmoothX/MouseSmoothThreshold;
+			BorrowedMouseX += SmoothMouseX;
 		}
 		else
 		{
-			SmoothMouseX = 0.5 * (SmoothMouseX + aMouseX - BorrowedMouseX);
-			if ( (SmoothMouseX > 0) != (aMouseX > 0) )
+			if ( (SmoothMouseX == 0) || (aMouseX == 0)
+					|| ((SmoothMouseX > 0) != (aMouseX > 0)) )
 			{
-				if ( AMouseX > 0 )
-					SmoothMouseX = 1;
-				else
-					SmoothMouseX = -1;
+				SmoothMouseX = aMouseX;
+				BorrowedMouseX = 0;
 			}
-			BorrowedMouseX = SmoothMouseX - aMouseX;
+			else
+			{
+				SmoothMouseX = 0.5 * (SmoothMouseX + aMouseX - BorrowedMouseX);
+				if ( (SmoothMouseX > 0) != (aMouseX > 0) )
+				{
+					if ( AMouseX > 0 )
+						SmoothMouseX = 1;
+					else
+						SmoothMouseX = -1;
+				}
+				BorrowedMouseX = SmoothMouseX - aMouseX;
+			}
+			AbsSmoothX = SmoothMouseX;
 		}
-		AbsSmoothX = SmoothMouseX;
-	}
-	if ( bMaxMouseSmoothing && (aMouseY == 0) && (MouseTime < MouseSmoothThreshold) )
-	{
-		SmoothMouseY = 0.5 * (MouseSmoothThreshold - MouseTime) * AbsSmoothY/MouseSmoothThreshold;
-		BorrowedMouseY += SmoothMouseY;
-	}
-	else
-	{
-		if ( (SmoothMouseY == 0) || (aMouseY == 0)
-				|| ((SmoothMouseY > 0) != (aMouseY > 0)) )
+		if ( bMaxMouseSmoothing && (aMouseY == 0) && (MouseTime < MouseSmoothThreshold) )
 		{
-			SmoothMouseY = aMouseY;
-			BorrowedMouseY = 0;
+			SmoothMouseY = 0.5 * (MouseSmoothThreshold - MouseTime) * AbsSmoothY/MouseSmoothThreshold;
+			BorrowedMouseY += SmoothMouseY;
 		}
 		else
 		{
-			SmoothMouseY = 0.5 * (SmoothMouseY + aMouseY - BorrowedMouseY);
-			if ( (SmoothMouseY > 0) != (aMouseY > 0) )
+			if ( (SmoothMouseY == 0) || (aMouseY == 0)
+					|| ((SmoothMouseY > 0) != (aMouseY > 0)) )
 			{
-				if ( AMouseY > 0 )
-					SmoothMouseY = 1;
-				else
-					SmoothMouseY = -1;
+				SmoothMouseY = aMouseY;
+				BorrowedMouseY = 0;
 			}
-			BorrowedMouseY = SmoothMouseY - aMouseY;
+			else
+			{
+				SmoothMouseY = 0.5 * (SmoothMouseY + aMouseY - BorrowedMouseY);
+				if ( (SmoothMouseY > 0) != (aMouseY > 0) )
+				{
+					if ( AMouseY > 0 )
+						SmoothMouseY = 1;
+					else
+						SmoothMouseY = -1;
+				}
+				BorrowedMouseY = SmoothMouseY - aMouseY;
+			}
+			AbsSmoothY = SmoothMouseY;
 		}
-		AbsSmoothY = SmoothMouseY;
 	}
 	if ( (aMouseX != 0) || (aMouseY != 0) )
 		MouseZeroTime = Level.TimeSeconds;
@@ -3173,7 +3181,7 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 	zzViewRotation.Pitch += int(PitchDelta);
 	LookUpFractionalPart = PitchDelta - int(PitchDelta);
 
-	zzViewRotation.Pitch = Clamp((zzViewRotation.Pitch << 16 >> 16), -16384, 16384) & 0xFFFF;
+	zzViewRotation.Pitch = Clamp((zzViewRotation.Pitch << 16 >> 16), -16384, 16383) & 0xFFFF;
 
 	YawDelta = 32.0 * DeltaTime * aTurn + TurnFractionalPart;
 	zzViewRotation.Yaw += int(YawDelta);
@@ -6871,6 +6879,14 @@ exec function NoSwitchWeapon4(bool b)
 	bNoSwitchWeapon4 = b;
 	SaveConfig();
 	ClientMessage("GetWeapon ShockRifle doesn't trigger SwitchWeapon 4:"@bNoSwitchWeapon4);
+}
+
+exec function SetMouseSmoothing(bool b)
+{
+	bNoSmoothing = !b;
+	SaveConfig();
+	if (b) ClientMessage("Mouse Smoothing enabled!");
+	else   ClientMessage("Mouse Smoothing disabled!");
 }
 
 simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
