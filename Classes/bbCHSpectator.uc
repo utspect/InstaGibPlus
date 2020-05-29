@@ -627,6 +627,8 @@ auto state CheatFlying
 		CurrentTimeStamp = TimeStamp;
 		ServerTimeStamp = Level.TimeSeconds;
 
+		SetLocation(ClientLoc);
+
 		NewCAP(TimeStamp, GetStateName(), Physics);
 	}
 }
