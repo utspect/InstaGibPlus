@@ -4550,11 +4550,11 @@ simulated function PlayWalking()
 }
 
 simulated function PlayerPawn GetLocalPlayer() {
-	local bbPlayer P;
+	local PlayerPawn P;
 
 	if (bDeterminedLocalPlayer) return LocalPlayer;
 
-	foreach AllActors(class'bbPlayer', P) {
+	foreach AllActors(class'PlayerPawn', P) {
 		if (Viewport(P.Player) != none) {
 			LocalPlayer = P;
 			break;
