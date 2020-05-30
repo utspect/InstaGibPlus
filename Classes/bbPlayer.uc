@@ -37,6 +37,7 @@ var globalconfig float BeamScale;
 var globalconfig int BeamOriginMode;
 var globalconfig float DesiredNetUpdateRate;
 var globalconfig bool bNoSmoothing;
+var globalconfig bool bNoOwnFootsteps;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
@@ -5380,6 +5381,15 @@ function PlayHit(float Damage, vector HitLocation, name damageType, vector Momen
 		bAnimTransition = true;
 		PlayTakeHit(0.1, HitLocation, Damage);
 	}
+}
+
+simulated function FootStepping()
+{
+	if (Level.NetMode != NM_DedicatedServer && bNoOwnFootsteps)
+		if (Role >= ROLE_AutonomousProxy || GetLocalPlayer().ViewTarget == self)
+			return;
+
+	super.FootStepping();
 }
 
 ////////////////////////////
