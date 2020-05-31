@@ -224,10 +224,6 @@ var int zzKickReady;
 var int zzAdminLoginTries;
 var int zzOldNetspeed,zzNetspeedChanges;
 
-// MD5 Things
-var bool zzbDidMD5;			// True when MD5 checks are completed.
-var bool zzbMD5RequestSent;		// Server side, to decide if requests for MD5 has been sent.
-
 // Fixing demo visual stuff
 var int zzRepVRYaw, zzRepVRPitch;
 var float zzRepVREye;
@@ -306,7 +302,7 @@ replication
 	unreliable if ( bNetOwner && Role == ROLE_Authority )
 		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed, zzMaximumNetspeed,
 		zzWaitTime,zzAntiTimerList,zzAntiTimerListCount,zzAntiTimerListState,
-		zzbDidMD5, zzStat;
+		zzStat;
 
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
@@ -331,7 +327,7 @@ replication
 
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( bNetOwner && Role == ROLE_Authority && !bDemoRecording )
-		xxCheatFound,xxClientMD5,xxClientSet,xxClientDoScreenshot,xxClientDoEndShot,xxClientConsole,
+		xxCheatFound,xxClientSet,xxClientDoScreenshot,xxClientDoEndShot,xxClientConsole,
 		xxClientKeys, xxClientReadINT;
 
 	// Server->Client function.
@@ -347,7 +343,7 @@ replication
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		xxServerCheckMutator, xxServerMove, xxServerTestMD5, xxSet,
+		xxServerCheckMutator, xxServerMove, xxSet,
 		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay, Hold, Go,
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
@@ -1755,23 +1751,9 @@ function xxServerMove(
 
 	if (Role < ROLE_Authority)
 	{
-		zzbDidMD5 = True;
 		zzbLogoDone = True;
 		zzTrackFOV = 0;
 		zzbDemoPlayback = True;
-		return;
-	}
-
-	if (!zzbMD5RequestSent)
-	{
-		xxClientMD5(zzUTPure.zzPurePackageName, zzUTPure.zzMD5KeyInit);
-		zzbMD5RequestSent = True;
-	}
-	if (!zzbDidMD5)
-	{
-		CurrentTimeStamp = TimeStamp;
-		ServerTimeStamp = Level.TimeSeconds;
-		Acceleration = vect(0,0,0);
 		return;
 	}
 
@@ -5392,25 +5374,6 @@ simulated function FootStepping()
 	super.FootStepping();
 }
 
-////////////////////////////
-// CRC Checks on UTPure Itself
-////////////////////////////
-
-//Server asks Client for a CRC check (unreliable... called each servermove) <-- usaar = funney, reliable, called once
-simulated function xxClientMD5(string zzPackage, string zzInit)
-{
-//	Log("Init"@zzInit);
-	xxServerTestMD5(""); //PackageMD5(zzPackage, zzInit));
-}
-
-function xxServerTestMD5(string zzClientMD5)
-{
-//	Log("Client"@zzClientMD5);
-//	if (zzClientMD5 != zzUTPure.zzPureMD5)
-//		xxServerCheater("MD5");
-	zzbDidMD5 = True;
-}
-
 function xxShowItems()
 {
 	local int zzx;
@@ -6048,16 +6011,13 @@ simulated function xxDrawLogo(canvas zzC, float zzx, float zzY, float zzFadeValu
 	zzC.Font = ChallengeHud(MyHud).MyFonts.GetBigFont(zzC.ClipX);
 	zzC.DrawText("InstaGib+");
 	zzC.SetPos(zzx+70,zzY+35);
-	//zzC.Font = ChallengeHud(MyHud).MyFonts.GetSmallestFont(zzC.ClipX);
 	zzC.Font = ChallengeHud(MyHud).MyFonts.GetBigFont(zzC.ClipX);
 	zzC.DrawText(class'UTPure'.default.LongVersion$class'UTPure'.default.NiceVer);
 	zzC.SetPos(zzx+70,zzY+62);
 	if (zzbDoScreenshot)
 		zzC.DrawText(PlayerReplicationInfo.PlayerName@zzMagicCode);
-	//else if (!zzbDidMD5)
-	//	zzC.DrawText("Validating...");
-	//else
-	//	zzC.DrawText("Type 'PureHelp' into console for extra Pure commands!");
+	else
+		zzC.DrawText("Type 'PlayerHelp' into console for commands!");
 	zzC.Style = ERenderStyle.STY_Normal;
 }
 
@@ -6079,9 +6039,6 @@ simulated function xxRenderLogo(canvas zzC)
 		}
 		return;
 	}
-
-	if (!zzbDidMD5)
-		zzLogoStart = Level.TimeSeconds;
 
 	zzTimeUsed = Level.TimeSeconds - zzLogoStart;
 	if (zzTimeUsed > 5.0)
