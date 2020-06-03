@@ -1079,7 +1079,8 @@ event UpdateEyeHeight(float DeltaTime)
 	// smooth up/down stairs
 	If((Physics == PHYS_Walking) && !bJustLanded) {
 		Delta = Location - OldLocation;
-		if (Abs(Delta.Z) >= 4.0) // stair detection heuristic
+		// stair detection heuristic
+		if (Abs(Delta.Z) > DeltaTime * GroundSpeed)
 			EyeHeightOffset += FClamp(Delta.Z, -MaxStepHeight, MaxStepHeight);
 	} else {
 		bJustLanded = false;
