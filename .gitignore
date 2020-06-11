@@ -7,3 +7,5 @@ make.ini
 
 *.sublime-project
 *.sublime-workspace
+
+/System/**/*
