@@ -53,6 +53,7 @@ var localized config bool bForceDefaultHitSounds;
 var localized config int TeleRadius;
 var localized config int ThrowVelocity;	// How far a player can throw weapons
 var localized config bool bForceDemo;		// Forces clients to do demos.
+var localized config float MaxTradeTimeMargin;
 var string MapName;
 
 
@@ -1587,4 +1588,5 @@ defaultproperties
 	MinNetUpdateRate=60.0
 	MaxNetUpdateRate=200.0
 	ShowTouchedPackage=False
+	MaxTradeTimeMargin=0.1;
 }

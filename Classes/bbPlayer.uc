@@ -286,6 +286,8 @@ var float EyeHeightOffset;
 
 var transient float TurnFractionalPart, LookUpFractionalPart;
 
+var float TimeDead;
+
 replication
 {
 	//	Client->Demo
@@ -4895,7 +4897,7 @@ state Dying
                     SetPause(False);
                 return;
             }
-            if( Weapon != None )
+            if( Weapon != None && TimeDead < class'UTPure'.default.MaxTradeTimeMargin)
             {
                 Weapon.bPointing = true;
                 //PlayFiring();
@@ -4938,6 +4940,9 @@ state Dying
 
 	event PlayerTick( float DeltaTime )
 	{
+		if (Level.Pauser != "") {
+			TimeDead += (DeltaTime / Level.TimeDilation); // counting real time, undo dilation
+		}
 		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
@@ -4960,6 +4965,7 @@ state Dying
     	LKT = LastKillTime;
     	Super.BeginState();
     	LastKillTime = LKT;
+    	TimeDead = 0.0;
 	}
 
 	function PlayerMove(float DeltaTime)
