@@ -11,33 +11,32 @@ class bbPlayer extends TournamentPlayer
 
 var int bReason;
 // Client Config
-//var globalconfig bool bNewNet;	// if Client wants new or old netcode. (default true)
 var bool bNewNet;	// if Client wants new or old netcode. (default true)
-var globalconfig bool bNoRevert;	// if Client does not want the Revert to Previous Weapon option on Translocator. (default true)
-var globalconfig bool bForceModels;	// if Client wishes models forced to his own. (default false)
-var globalconfig int HitSound;	// if Client wishes hitsounds (default 2, must be enabled on server)
-var globalconfig int TeamHitSound;	// if Client wishes team hitsounds (default 3, must be enabled on server)
-var globalconfig bool bDisableForceHitSounds;
-var globalconfig bool bTeamInfo;	// if Client wants extra team info.
-var globalconfig bool bDoEndShot;	// if Client wants Screenshot at end of match.
-var globalconfig bool bAutoDemo;		// if Client wants demo or not.
-var globalconfig bool bShootDead;		// if Client wants demo or not.
-var globalconfig bool bNoDeemerToIG;
-var globalconfig bool bNoSwitchWeapon4;
-var globalconfig string DemoMask;	// The options for creating demo filename.
-var globalconfig string DemoPath;	// The path for creating the demo.
-var globalconfig string DemoChar;	// Character to use instead of illegal ones.
-var globalconfig int desiredSkin;
-var globalConfig int desiredTeamSkin;
-var globalconfig bool bEnableHitSounds;
-var globalconfig int selectedHitSound;
+var globalconfig bool   bNoRevert;    // if Client does not want the Revert to Previous Weapon option on Translocator. (default true)
+var globalconfig bool   bForceModels; // if Client wishes models forced to his own. (default false)
+var globalconfig int    HitSound;     // if Client wishes hitsounds (default 2, must be enabled on server)
+var globalconfig int    TeamHitSound; // if Client wishes team hitsounds (default 3, must be enabled on server)
+var globalconfig bool   bDisableForceHitSounds;
+var globalconfig bool   bTeamInfo;    // if Client wants extra team info.
+var globalconfig bool   bDoEndShot;   // if Client wants Screenshot at end of match.
+var globalconfig bool   bAutoDemo;    // if Client wants demo or not.
+var globalconfig bool   bShootDead;
+var globalconfig bool   bNoDeemerToIG;
+var globalconfig bool   bNoSwitchWeapon4;
+var globalconfig string DemoMask; // The options for creating demo filename.
+var globalconfig string DemoPath; // The path for creating the demo.
+var globalconfig string DemoChar; // Character to use instead of illegal ones.
+var globalconfig int    desiredSkin;
+var globalConfig int    desiredTeamSkin;
+var globalconfig bool   bEnableHitSounds;
+var globalconfig int    selectedHitSound;
 var globalconfig string sHitSound[16];
-var globalconfig int cShockBeam;
-var globalconfig float BeamScale;
-var globalconfig int BeamOriginMode;
-var globalconfig float DesiredNetUpdateRate;
-var globalconfig bool bNoSmoothing;
-var globalconfig bool bNoOwnFootsteps;
+var globalconfig int    cShockBeam;
+var globalconfig float  BeamScale;
+var globalconfig int    BeamOriginMode;
+var globalconfig float  DesiredNetUpdateRate;
+var globalconfig bool   bNoSmoothing;
+var globalconfig bool   bNoOwnFootsteps;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
@@ -6048,7 +6047,7 @@ simulated function xxAttachConsole()
 			}
 			else
 			{
-            			zzbBadConsole = zzTrue;
+    			zzbBadConsole = zzTrue;
 			}
 		}
 	}
