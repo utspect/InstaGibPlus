@@ -421,7 +421,7 @@ static final function string xxGetPackage(string str)
 }
 
 // TICK!!! And it's not the bug kind. Sorta :/
-event Tick(float zzdelta)
+event Tick(float zzDelta)
 {
 	local int zzx;
 	local bool zzb, zzbDoShot;
@@ -446,7 +446,7 @@ event Tick(float zzdelta)
 	else
 	{
 		if (zzPauseCountdown > 0.0)
-			zzPauseCountdown -= zzdelta;
+			zzPauseCountdown -= zzDelta;
 		else
 			zzbPaused = False;
 	}
@@ -476,7 +476,7 @@ event Tick(float zzdelta)
 	}
 
 	if (Level.Game.bGameEnded) {
-		EndWarnDelay -= DeltaTime;
+		EndWarnDelay -= zzDelta;
 		if (EndWarnDelay <= 0.0)
 			zzbDoShot = true;
 	}
