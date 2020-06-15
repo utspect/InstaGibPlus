@@ -328,7 +328,7 @@ replication
 		debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError;
 
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
-	reliable if ( bNetOwner && Role == ROLE_Authority && !bDemoRecording )
+	reliable if ( RemoteRole == ROLE_AutonomousProxy && !bDemoRecording )
 		xxCheatFound,xxClientSet,xxClientDoScreenshot,xxClientDoEndShot,xxClientConsole,
 		xxClientKeys, xxClientReadINT;
 

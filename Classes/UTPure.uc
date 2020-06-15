@@ -468,7 +468,7 @@ event Tick(float zzdelta)
 	if (ForceSettingsLevel > 2 && rand(5000) == 0)
 		zzb = True;
 
-	if (!bDidEndWarn && zzDMP.bGameEnded)
+	if (!bDidEndWarn && Level.Game.bGameEnded)
 	{
 		bDidEndWarn = True;
 		zzbDoShot = True;
