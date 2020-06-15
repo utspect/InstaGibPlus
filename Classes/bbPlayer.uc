@@ -644,7 +644,6 @@ event Possess()
 	local Trigger T;
 	local int TimeLimitSeconds, clientFPS;
 	local bbPlayer zzPP;
-//	local int zzx;
 
 	if ( Level.Netmode == NM_Client )
 	{	// Only do this for clients.
@@ -840,7 +839,6 @@ function xxSendMultiKillToSpecs(optional int Sw, optional PlayerReplicationInfo 
 	local Pawn P;
 	for ( P=Level.PawnList; P!=None; P=P.NextPawn )
 		if (P.IsA('bbCHSpectator') && bbCHSpectator(P).ViewTarget == Self)
-			//P.ReceiveLocalizedMessage( class'MMultiKillMessage', Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject );
 			P.ReceiveLocalizedMessage( class'MultiKillMessage', Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject );
 }
 
@@ -884,8 +882,6 @@ event ClientMessage( coerce string zzS, optional Name zzType, optional bool zzbB
 	xxClientDemoMessage(zzS);
 	Super.ClientMessage(zzS, zzType, zzbBeep);
 	zzPrevClientMessage = "";
-
-	//xxFinishAce(zzS);
 }
 
 simulated function xxCheckAce()
@@ -1191,7 +1187,6 @@ event PlayerInput( float DeltaTime )
 
 //************************************************************************
 
-	//log("X "$aMouseX$" Smooth "$SmoothMouseX$" Borrowed "$BorrowedMouseX$" zero time "$(Level.TimeSeconds - MouseZeroTime)$" vs "$MouseSmoothThreshold);
 	AbsSmoothX = SmoothMouseX;
 	AbsSmoothY = SmoothMouseY;
 	if (bNoSmoothing) {
@@ -1366,46 +1361,6 @@ function ClientAdjustPosition
 	Actor NewBase
 )
 {
-/*
-	local Decoration Carried;
-	local vector OldLoc, NewLocation;
-
-	if ( CurrentTimeStamp > TimeStamp )
-		return;
-	CurrentTimeStamp = TimeStamp;
-
-	NewLocation.X = NewLocX;
-	NewLocation.Y = NewLocY;
-	NewLocation.Z = NewLocZ;
-	Velocity.X = NewVelX;
-	Velocity.Y = NewVelY;
-	Velocity.Z = NewVelZ;
-
-	SetBase(NewBase);
-	if ( Mover(NewBase) != None )
-		NewLocation += NewBase.Location;
-
-	//log("Client "$Role$" adjust "$self$" stamp "$TimeStamp$" location "$Location);
-	Carried = CarriedDecoration;
-	OldLoc = Location;
-	bCanTeleport = false;
-	SetLocation(NewLocation);
-	bCanTeleport = true;
-	if ( Carried != None )
-	{
-		CarriedDecoration = Carried;
-		CarriedDecoration.SetLocation(NewLocation + CarriedDecoration.Location - OldLoc);
-		CarriedDecoration.SetPhysics(PHYS_None);
-		CarriedDecoration.SetBase(self);
-	}
-	SetPhysics(newPhysics);
-
-	if ( !IsInState(newState) )
-		GotoState(newState);
-
-	bUpdatePosition = true;
-*/
-//	Log("Hmm, shouldn't be here should we...");
 }
 
 // OLD STYLE (3xfloat) CAP
@@ -1487,9 +1442,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 			FreeMoves = CurrentMove;
 			if (CurrentMove.TimeStamp == CurrentTimeStamp)
 			{
-				// log("> Server NACK "@CurrentMove.ToString());
-				// log("> Position Error"@VSize(CurrentMove.SavedLocation - NewLocation));
-				// log("> Velocity Error"@VSize(CurrentMove.SavedVelocity - NewVelocity));
 
 				// if this is a small adjustment that does not
 				// change our state, then reject it. This way
@@ -1500,17 +1452,14 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 				    // VSize(CurrentMove.SavedVelocity - NewVelocity) < 3 &&  // stijn: UE2 also checked velocity but honestly there isn't really any point in doing that...
 				    IsInState(newState))
 				{
-					// log("> ClientAdjustPosition REJECT");
 					debugNumOfIgnoredForceUpdates += 1;
 					FreeMoves.Clear();
 					return;
-				}
-				// log("> ClientAdjustPosition ACCEPT");
+				};
 				// ok, this is a serious adjustment. Proceed
 				FreeMoves.Clear();
 				break;
 		    }
-			// log("> Server ACK "@CurrentMove.ToString());
 			FreeMoves.Clear();
 			CurrentMove = bbSavedMove(SavedMoves);
 		}
@@ -1522,7 +1471,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 	}
 	// stijn: End of fix
 
-	//log("Client "$Role$" adjust "$self$" stamp "$TimeStamp$" location "$Location);
 	Carried = CarriedDecoration;
 	OldLoc = Location;
 
@@ -1912,9 +1860,7 @@ function xxServerMove(
 
 	// Predict new position
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
-		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: before MoveAutonomous"@Physics@DodgeMove@AnimSequence, 'Debug');
 		MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
-		//Log("["$Level.TimeSeconds$"]"@self$": xxServerMove: after MoveAutonomous"@Physics@DodgeDir@AnimSequence, 'Debug');
 	}
 
 	// HACK
@@ -2154,13 +2100,11 @@ function bool xxWeaponIsNewNet( optional bool bAlt )
 
 	return ( Weapon.IsA('ST_ImpactHammer') // UT weapons
 		|| Weapon.IsA('ST_Translocator')
-		//|| Weapon.IsA('ST_enforcer')
 		|| Weapon.IsA('ST_ut_biorifle')
 		|| Weapon.IsA('ST_ShockRifle')
 		|| Weapon.IsA('ST_SuperShockRifle')
 		|| Weapon.IsA('ST_PulseGun') && !bAlt
 		|| Weapon.IsA('ST_ripper')
-		//|| Weapon.IsA('ST_minigun2')
 		|| Weapon.IsA('ST_UT_FlakCannon')
 		|| Weapon.IsA('ST_UT_Eightball')
 		|| Weapon.IsA('ST_SniperRifle')
@@ -2172,7 +2116,6 @@ function bool xxWeaponIsNewNet( optional bool bAlt )
 		|| Weapon.IsA('ST_ASMD')
 		|| Weapon.IsA('ST_Stinger')
 		|| Weapon.IsA('ST_RazorJack')
-		//|| Weapon.IsA('ST_Minigun')
 		|| Weapon.IsA('ST_FlakCannon')
 		|| Weapon.IsA('ST_Eightball')
 		|| Weapon.IsA('ST_Rifle')
@@ -2183,7 +2126,7 @@ function bool xxWeaponIsNewNet( optional bool bAlt )
 		|| Weapon.IsA('TOWeapons')
 		|| Weapon.IsA('AXWeapons')
 		|| Weapon.IsA('ST_WildcardsWeapons')
-		);
+	);
 }
 
 simulated function actor NN_TraceShot(out vector HitLocation, out vector HitNormal, vector EndTrace, vector StartTrace, Pawn TheOwner)
@@ -2684,7 +2627,6 @@ function xxReplicateMove(
 		zzbFire = bFire;
 		zzbAltFire = bAltFire;
 	}
-	//log("Role "$Role$" repmove at "$Level.TimeSeconds$" Move time "$100 * DeltaTime$" ("$Level.TimeDilation$")");
 
 	// Decide whether to hold off on move
 	// send if dodge, jump, or fire unless really too soon, or if newmove.delta big enough
@@ -2728,7 +2670,6 @@ function xxReplicateMove(
 	// check if need to redundantly send previous move
 	if ( OldMove != None )
 	{
-		// log("Redundant send timestamp "$OldMove.TimeStamp$" accel "$OldMove.Acceleration$" at "$Level.Timeseconds$" New accel "$NewAccel);
 		// old move important to replicate redundantly
 		OldTimeDelta = FMin(255, (Level.TimeSeconds - OldMove.TimeStamp) * 500);
 		BuildAccel = 0.05 * OldMove.Acceleration + vect(0.5, 0.5, 0.5);
@@ -2743,8 +2684,6 @@ function xxReplicateMove(
 			OldAccel += 16; // 16
 		OldAccel += OldMove.DodgeMove;
 	}
-	//else
-	//	log("No redundant timestamp at "$Level.TimeSeconds$" with accel "$NewAccel);
 
 	// Send to the server
 	if ( NewMove.bPressedJump )
@@ -2780,7 +2719,6 @@ function xxReplicateMove(
 		OldTimeDelta,
 		OldAccel
 	);
-	//log("Replicated "$self$" stamp "$NewMove.TimeStamp$" location "$Location$" dodge "$NewMove.DodgeMove$" to "$DodgeDir);
 	if ( (Weapon != None) && !Weapon.IsAnimating() )
 	{
 		if ( (Weapon == ClientPending) || (Weapon != OldClientWeapon) )
@@ -2896,11 +2834,11 @@ function string forcedModelToString(int fm) {
 
 simulated function setClientNetspeed() {
 
-/**
- * @Author: spect
- * @Date: 2020-02-23 15:05:21
- * @Desc: Force client netspeed, gets set on every connect request, for now it remains at 20000
- */
+	/**
+	 * @Author: spect
+	 * @Date: 2020-02-23 15:05:21
+	 * @Desc: Force client netspeed, gets set on every connect request, for now it remains at 20000
+	 */
 
 	ConsoleCommand("netspeed 20000");
 }
@@ -3028,8 +2966,6 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 	local Pawn PTarget;
 	local bbPlayer bbTarg;
 
-//	Log("PlayerCalcView");
-
 	if (zzInfoThing != None)
 			zzInfoThing.zzPlayerCalcViewCalls--;
 
@@ -3149,8 +3085,6 @@ function ViewShake(float DeltaTime)
 		}
 	}
 	ViewRotation = RotRand(False);
-//	ViewRotation.Yaw = -32768;
-//	ViewRotation.Pitch = Rand(65536)-32768;
 	ViewRotation.Roll = zzViewRotation.Roll;
 }
 
@@ -3302,21 +3236,15 @@ simulated function NN_Momentum( Vector momentum, name DamageType )
 {
 	local bool bPreventLockdown;		// Avoid the lockdown effect.
 
-//	Log("DamageType"@DamageType);
-
 	if (DamageType == 'shot' || DamageType == 'zapped')
-		bPreventLockdown = true; //zzUTPure.bNoLockdown;
-
-	//log(self@"take damage in state"@GetStateName());
+		bPreventLockdown = true;
 
 	if (Base != None)
 		momentum.Z = FMax(momentum.Z, 0.4 * VSize(momentum));
-	//if ( InstigatedBy == self )
-	//	momentum *= 0.6;
+
 	if (Mass != 0)
 		momentum = momentum/Mass;
 
-//	Log("PL"@!bPreventLockdown);
 	if (!bPreventLockdown)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
 		AddVelocity( momentum );
 }
@@ -3337,9 +3265,7 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 		Log(Self@"client damage type"@damageType@"by"@InstigatedBy);
 		return;
 	}
-//	Log("DamageType"@DamageType);
 
-	//log(self@"take damage in state"@GetStateName());
 	bAlreadyDead = (Health <= 0);
 
 	if (Physics == PHYS_None)
@@ -3424,7 +3350,6 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 	}
 	else if ( !bAlreadyDead )
 	{
-		//log(self$" died");
 		NextState = '';
 		PlayDeathHit(actualDamage, HitLocation, damageType, Momentum);
 		if ( actualDamage > mass )
@@ -3435,8 +3360,6 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 	}
 	else
 	{
-		//Warn(self$" took regular damage "$damagetype$" from "$instigator$" while already dead");
-		// SpawnGibbedCarcass();
 		if ( bIsPlayer )
 		{
 			HidePlayer();
@@ -3463,15 +3386,13 @@ function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 		Log(Self@"client damage type (GiveHealth)"@damageType@"by"@InstigatedBy);
 		return;
 	}
-//	Log("DamageType"@DamageType);
 
 	if (InstigatedBy == Self || InstigatedBy.Health <= 0 || Health >= 199)
 		return;
 
 	if (DamageType == 'shot' || DamageType == 'zapped')
-		bPreventLockdown = true; //zzUTPure.bNoLockdown;
+		bPreventLockdown = true;
 
-	//log(self@"take damage in state"@GetStateName());
 	bAlreadyDead = (Health <= 0);
 
 	if (Physics == PHYS_None)
@@ -3528,7 +3449,6 @@ function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 		}
 	}
 
-//	Log("PL"@!bPreventLockdown);
 	if (!bPreventLockdown && InstigatedBy != self && (momentum dot momentum) > 0)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
 	{
 		if (bNewNet)
@@ -3542,31 +3462,20 @@ function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 		actualDamage = 199 - Health;
 	Health += actualDamage;
 	InstigatedBy.Health -= actualDamage;
-	//if (CarriedDecoration != None)
-	//	DropDecoration();
 	if ( HitLocation == vect(0,0,0) )
 		HitLocation = Location;
 	if (InstigatedBy.Health > 0)
 	{
-		//if ( (InstigatedBy != None) && (InstigatedBy != Self) )
-		//	damageAttitudeTo(InstigatedBy);
-		//PlayHit(actualDamage, HitLocation, damageType, Momentum);
 	}
 	else if ( !bAlreadyDead )
 	{
-		//log(self$" died");
 		InstigatedBy.NextState = '';
-		//PlayDeathHit(actualDamage, HitLocation, damageType, Momentum);
 		if ( actualDamage > InstigatedBy.mass )
 			InstigatedBy.Health = -1 * actualDamage;
-		//if ( (InstigatedBy != None) && (InstigatedBy != Self) )
-		//	damageAttitudeTo(InstigatedBy);
 		InstigatedBy.Died(InstigatedBy, damageType, HitLocation);
 	}
 	else
 	{
-		//Warn(self$" took regular damage "$damagetype$" from "$instigator$" while already dead");
-		// SpawnGibbedCarcass();
 		if ( InstigatedBy.bIsPlayer )
 		{
 			InstigatedBy.HidePlayer();
@@ -3593,15 +3502,13 @@ function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 		Log(Self@"client damage type (StealHealth)"@damageType@"by"@InstigatedBy);
 		return;
 	}
-//	Log("DamageType"@DamageType);
 
 	if (InstigatedBy == Self)
 		return;
 
 	if (DamageType == 'shot' || DamageType == 'zapped')
-		bPreventLockdown = true; //zzUTPure.bNoLockdown;
+		bPreventLockdown = true;
 
-	//log(self@"take damage in state"@GetStateName());
 	bAlreadyDead = (Health <= 0);
 
 	if (Physics == PHYS_None)
@@ -3665,7 +3572,6 @@ function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 		}
 	}
 
-//	Log("PL"@!bPreventLockdown);
 	if (!bPreventLockdown && InstigatedBy != self && (momentum dot momentum) > 0)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
 	{
 		if (bNewNet)
@@ -3691,7 +3597,6 @@ function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 	}
 	else if ( !bAlreadyDead )
 	{
-		//log(self$" died");
 		NextState = '';
 		PlayDeathHit(actualDamage, HitLocation, damageType, Momentum);
 		if ( actualDamage > mass )
@@ -3702,8 +3607,6 @@ function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 	}
 	else
 	{
-		//Warn(self$" took regular damage "$damagetype$" from "$instigator$" while already dead");
-		// SpawnGibbedCarcass();
 		if ( bIsPlayer )
 		{
 			HidePlayer();
@@ -3751,12 +3654,9 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 	level.game.Killed(Killer, self, damageType);
 	if (zzStatMut != None)
 		zzStatMut.PlayerKill(Killer, Self);
-	//log(class$" dying");
 	if( Event != '' )
 		foreach AllActors( class 'Actor', A, Event )
 			A.Trigger( Self, Killer );
-
-	//Level.Game.DiscardInventory(self);
 
 	Velocity.Z *= 1.3;
 	if ( Gibbed(damageType) )
@@ -3927,8 +3827,7 @@ state FeigningDeath
 		xxUpdateRotation(DeltaTime, 1);
 		SetRotation(currentRot);
 
-		//if (!zzbWeaponTracer)
-			ViewRotation = zzViewRotation;
+		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, NewAccel, DODGE_None, Rot(0,0,0));
@@ -3981,13 +3880,6 @@ state FeigningDeath
 
 state PlayerSwimming
 {
-	/*
-	simulated function Bump( actor Other )
-	{
-		if (Other.IsA('Mover'))
-			xxMover_DoBump(Mover(Other));
-	}
-	*/
 	function ProcessMove(float DeltaTime, vector NewAccel, eDodgeDir DodgeMove, rotator DeltaRot)
 	{
 		local vector X,Y,Z, Temp;
@@ -4043,8 +3935,7 @@ state PlayerSwimming
 		oldRotation = Rotation;
 		xxUpdateRotation(DeltaTime, 2);
 
-		//if (!zzbWeaponTracer)
-			ViewRotation = zzViewRotation;
+		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, NewAccel, DODGE_None, OldRotation - Rotation);
@@ -4064,7 +3955,6 @@ state PlayerSwimming
 	{
 		if ( !Region.Zone.bWaterZone && (Role == ROLE_Authority) )
 		{
-			//log("timer out of water");
 			GotoState('PlayerWalking');
 			AnimEnd();
 		}
@@ -4077,19 +3967,11 @@ state PlayerSwimming
 		Disable('Timer');
 		if ( !IsAnimating() )
 			TweenToWaiting(0.3);
-//		log("BeginState: PlayerSwimming");
 	}
 }
 
 state PlayerFlying
 {
-	/*
-	simulated function Bump( actor Other )
-	{
-		if (Other.IsA('Mover'))
-			xxMover_DoBump(Mover(Other));
-	}
-	*/
 	event PlayerTick( float DeltaTime )
 	{
 		zzbCanCSL = zzFalse;
@@ -4113,8 +3995,7 @@ state PlayerFlying
 		// Update rotation.
 		xxUpdateRotation(DeltaTime, 2);
 
-		//if (!zzbWeaponTracer)
-			ViewRotation = zzViewRotation;
+		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, Acceleration, DODGE_None, rot(0,0,0));
@@ -4127,13 +4008,6 @@ state PlayerFlying
 
 state CheatFlying
 {
-	/*
-	simulated function Bump( actor Other )
-	{
-		if (Other.IsA('Mover'))
-			xxMover_DoBump(Mover(Other));
-	}
-	*/
 	event PlayerTick( float DeltaTime )
 	{
 		zzbCanCSL = zzFalse;
@@ -4158,8 +4032,7 @@ state CheatFlying
 
 		xxUpdateRotation(DeltaTime, 1);
 
-		//if (!zzbWeaponTracer)
-			ViewRotation = zzViewRotation;
+		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, Acceleration, DODGE_None, rot(0,0,0));
@@ -4224,7 +4097,6 @@ ignores SeePlayer, HearNoise, Bump;
 
 		if (Mesh == None)
 		{
-			// Log("PlayerMove->Mesh"@Mesh);
 			SetMesh();
 			return;		// WHY???
 		}
@@ -4354,8 +4226,7 @@ ignores SeePlayer, HearNoise, Bump;
 		else
 			bSaveJump = false;
 
-		//if (!zzbWeaponTracer)
-			ViewRotation = zzViewRotation;
+		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, NewAccel, DodgeMove, OldRotation - Rotation);
@@ -4448,8 +4319,7 @@ state PlayerWaiting
 
 		xxUpdateRotation(DeltaTime, 1);
 
-		//if (!zzbWeaponTracer)
-			ViewRotation = zzViewRotation;
+		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, Acceleration, DODGE_None, rot(0,0,0));
@@ -4646,7 +4516,7 @@ function xxServerSetReadyToPlay()
 {
 	if (zzUTPure.zzDMP == None)
 		return;
-//	Log("moo:"@DMP.bRequireReady@DMP.CountDown);
+
 	if (zzUTPure.zzDMP.bTournament && zzUTPure.bWarmup && zzUTPure.zzDMP.bRequireReady && (zzUTPure.zzDMP.CountDown >= 10))
 	{
 		zzbForceUpdate = true;
@@ -4787,11 +4657,6 @@ state PlayerWarmup extends PlayerWalking
 	function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 							Vector momentum, name damageType)
 	{
-		//if (Self == InstigatedBy)
-		//{
-		//	Damage = 0;		// No self damage in warmup.
-		//	momentum *= 2;		// And 2x momentum.
-		//}
 		Global.TakeDamage(Damage, InstigatedBy, HitLocation, Momentum, DamageType);
 	}
 
@@ -4826,8 +4691,7 @@ state PlayerSpectating
 
 		xxUpdateRotation(DeltaTime, 1);
 
-		//if (!zzbWeaponTracer)
-			ViewRotation = zzViewRotation;
+		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, Acceleration, DODGE_None, rot(0,0,0));
@@ -4900,7 +4764,6 @@ state Dying
             if( Weapon != None && TimeDead < class'UTPure'.default.MaxTradeTimeMargin)
             {
                 Weapon.bPointing = true;
-                //PlayFiring();
                 Weapon.Fire(F);
             }
         } else {
@@ -4910,15 +4773,13 @@ state Dying
 
 	function ServerReStartPlayer()
 	{
-		//log("calling restartplayer in dying with netmode "$Level.NetMode);
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
 			return;
 
 		Level.Game.DiscardInventory(self);
 
-		if ( /* xxRestartPlayer() || */ Level.Game.RestartPlayer(self) )
+		if ( Level.Game.RestartPlayer(self) )
 		{
-			//Log("Calling ServerReStartPlayer()");
 			ServerTimeStamp = 0;
 			TimeMargin = 0;
 			Enemy = None;
@@ -4954,7 +4815,6 @@ state Dying
 		local bbPlayer bbP;
     	local float LKT;
 
-    	/* xxSendNextStartSpot(); */
 		bClientIsWalking = false;
     	bJumpStatus = false;
 		bIsAlive = false;
@@ -5046,7 +4906,6 @@ state Dying
 
 		//fixme - try to pick view with killer visible
 		//fixme - also try varying starting pitch
-		////log("Find good death scene view");
 
 		zzViewRotation.Pitch = 56000;
 		tries = 0;
@@ -5320,7 +5179,6 @@ function PlayHit(float Damage, vector HitLocation, name damageType, vector Momen
 	if ( (Damage <= 0) && (ReducedDamageType != 'All') )
 		return;
 
-	//DamageClass = class(damageType);
 	if ( ReducedDamageType != 'All' ) //spawn some blood
 	{
 		if (damageType == 'Drowned')
@@ -5508,7 +5366,6 @@ function xxPlayerTickEvents()
 	{
 		if (!zzbInitialized)
 		{
-			//xxInitMovers();
 			zzbInitialized = true;
 		}
 
@@ -5521,15 +5378,12 @@ function xxPlayerTickEvents()
 
 			xxCheckForKickers();
 			xxCheckForPortals();
-			//xxCheckForTriggers();
 
 			if (zzClientTTarget != None)
 				xxServerReceiveStuff( zzClientTTarget.Location, zzClientTTarget.Velocity );
 			zzLastStuffUpdate = CurrentTime;
-			//xxCheckAce();
 		}
 
-		//xxMover_CheckTimeouts();
 	}
 
 	if (zzbIsWarmingUp)
@@ -5790,7 +5644,6 @@ event PreRender( canvas zzCanvas )
 	local canvas lmaoCanvas;
 	local string stringTest;
 
-//	Log("PlayerPawn.PreRender");
 	zzbDemoRecording = PureLevel != None && PureLevel.zzDemoRecDriver != None;
 
 	zzbConsoleInvalid = zzTrue;
@@ -5870,7 +5723,6 @@ event PreRender( canvas zzCanvas )
 event PostRender( canvas zzCanvas )
 {
 	local SpawnNotify zzOldSN;
-//	Log("PlayerPawn.PostRender");
 
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas.Class != Class'Canvas');
 	if (zzbRenderHUD)
@@ -5949,7 +5801,6 @@ function xxServerCheckMutator(string zzClass, float zzv)
 {
 	local class<Mutator> zzAc;
 
-//	Log("Received request for"@zzClass);
 	zzAc = class<Mutator>(DynamicLoadObject(zzClass, class'Class'));
 	if (zzAc == None)
 	{
@@ -5965,8 +5816,6 @@ simulated function xxClientAcceptMutator(string zzClass, float zzv)
 {
 	local int zzi,zzi2;
 
-//	Log("Got acceptance for"@zzClass);
-
 	if (zzHMCnt == 50)
 		return;
 
@@ -5981,12 +5830,10 @@ simulated function xxClientAcceptMutator(string zzClass, float zzv)
 					if (zzHudMutes[zzi2] != None &&
 					    string(zzHudMutes[zzi2].Class) == zzClass)
 					{
-//						Log(zzClass@"already present, replacing!");
 						zzHudMutes[zzi2].Destroy();
 						break;
 					}
 				}
-//				Log("Hudmut accepted!"@zzWaitMutes[zzi]);
 				zzHudMutes[zzi2] = zzWaitMutes[zzi];
 				zzHMCnt++;
 				zzWaitMutes[zzi] = None;
@@ -5994,7 +5841,6 @@ simulated function xxClientAcceptMutator(string zzClass, float zzv)
 			}
 			else if (zzv < 0 && -zzv == zzWMCheck[zzi])
 			{
-//				Log("hudmut destroyed");
 				zzWaitMutes[zzi].Destroy();
 				zzWaitMutes[zzi] = None;
 				zzWMCheck[zzi] = 0.0;
@@ -6189,7 +6035,6 @@ simulated function xxAttachConsole()
 		{
 			// Initialize Logo Display
 			zzbLogoDone = False;
-//			zzLogoStart = Level.TimeSeconds;
 			//
 			Player.Console.Disable('Tick');
 			c = New(None) class'PureSuperDuperUberConsole';
@@ -6254,8 +6099,6 @@ function xxServerCheater(string zzCode)
 			zzS = "Bloody not good (Pure messed up??)";
 		else if (zzCode == "MT")
 			zzS = "Mutator Kick!";
-/* 		else if (zzCode == "BL")
-			zzS = "Bad Lighting!"; */
 		else if (zzCode == "TD")
 			zzS = "Bad TimeDilation!";
 		else if (zzCode == "FA")
@@ -6300,18 +6143,9 @@ simulated function xxCheatFound(string zzCode)
 	zzcon.AddString( "  UTPure has detected an impurity hiding in your client!" );
 	zzcon.AddString( "  ID:"@zzCode );
 	zzcon.AddString( "=====================================================================" );
-
-/*	if (zzSecurityLevel==1)
-	{*/
-			zzcon.AddString( "Because of this you have been removed from the" );
-			zzcon.AddString( "server.  Fair play is important, remove the impurity" );
-			zzcon.AddString( "and you can return!");
-/*	}
-	else if (zzSecurityLevel==2)
-	{
-			zzcon.AddString( "Because of this you have been banned on this server!" );
-	}
-*/
+	zzcon.AddString( "Because of this you have been removed from the" );
+	zzcon.AddString( "server.  Fair play is important, remove the impurity" );
+	zzcon.AddString( "and you can return!");
 	zzcon.AddString( " ");
 	zzcon.AddString( "If you feel this was in error, please contact the admin" );
 	zzcon.AddString( "at: "$GameReplicationInfo.AdminEmail);
@@ -6326,25 +6160,7 @@ simulated function xxCheatFound(string zzCode)
 		zzcon.AddString("In order to play on this server, you must have version 436 or greater!");
 		zzcon.AddString("To download newest patch, go to: http://unreal.epicgames.com/Downloads.htm");
 	}
-/*
-	if (zzCode == 70945)
-	{
-		zzcon.AddString(" ");
-		zzcon.AddString("UTPure has been unable to validate your client.");
-		zzcon.AddString("Download the UTPureRC"$Class'UTPure'.Default.ThisVer@" file,");
-		zzcon.AddString("from http://www.clanvikings.org/download/cshp/");
-		zzcon.AddString("and try manually installing it. (Check readme inside)");
-		zzcon.AddString("You may also try going to the UTPure forums, http://forums.utpure.com");
-		zzcon.AddString("There you can often find a thread with a solution to your problem!");
-	}
-	else if (zzCode == 89287)
-	{
-		zzcon.AddString(" ");
-		zzcon.AddString("Your system files are either missing or incorrect version!");
-		zzcon.AddString("This could be because the server is not allowing your versions");
-		zzcon.AddString("of the system files, or your system files are modified.");
-	}
-*/
+
 	zzcon.bQuickKeyEnable = True;
 	zzcon.LaunchUWindow();
 	zzcon.ShowConsole();
@@ -6370,11 +6186,6 @@ local Texture NewSkin;
 local bool bProscribed;
 local string pkg, SkinItem, MeshName;
 
-//	Log("SSE: Begin :"@SkinNo@SkinName@DefaultSkinName);
-
-/* 	if (Default.zzMyPacks == "")
-		Default.zzMyPacks = Caps(SkinActor.ConsoleCommand("get engine.gameengine serverpackages"));
- */
 	if ( (SkinActor.Level.NetMode != NM_Standalone)	&& (SkinActor.Level.NetMode != NM_Client) && (DefaultSkinName != "") )
 	{
 		// make sure that an illegal skin package is not used
@@ -6680,8 +6491,6 @@ exec function ToggleInstantRocket()
 
 exec function ShowStats(optional byte zzType)
 {
-	//if (zzStat != None)
-	//	zzStat.SetState(zzType);
 }
 
 function AttachStats(PureStats zzS, PureStatMutator zzM)
@@ -6700,7 +6509,6 @@ exec function NeverSwitchOnPickup( bool B )
 	bNeverAutoSwitch = B;
 	bNeverSwitchOnPickup = B;
 	ServerNeverSwitchOnPickup(B);
-//	SaveConfig();
 }
 
 // Administrator functions
@@ -7079,10 +6887,8 @@ simulated function xxClientReadINT(string zzClass)
 
 function xxServerReceiveConsole(string zzS, bool zzbLast)
 {
-	//Log("Received"@zzS@zzbLast);
 	if (zzbLast)
 	{
-		//Log("xSRC"@ConCmd@ConResult);
 		bRemValid = True;
 		Mutate("pcr"@zzRemCmd@zzRemResult);
 		bRemValid = False;
@@ -7099,31 +6905,23 @@ simulated function xxClientConsole(string zzcon, int zzC)
 	local string zzS;
 	local string zzRes;
 
-	//Log("xxCC");
-
 	if (Level.NetMode == NM_DedicatedServer)
 	{
 		zzRemCmd = "";	// Oooops, no client to receive
 		return;		// Dont run on server (in case of disconnect)
 	}
 
-	//Log("xxCC:"@zzcon);
-
 	zzRes = zzInfoThing.ConsoleCommand(zzcon);
-
-	//Log("xCC"@ConCmd@ConResult);
 
 	zzl = Len(zzRes);
 	while (zzl > zzx)
 	{
 		zzS = Mid(zzRes, zzx, zzC);
-		//Log("Sending"@zzS);
 		xxServerReceiveConsole(zzS, False);
 		xxClientLogToDemo(zzS);
 		zzx += zzC;
 	}
 	xxServerReceiveConsole("", True);
-	//Log("xCC done");
 }
 
 function xxServerReceiveKeys(string zzIdent, string zzValue, bool zzbBind, bool zzbLast)
@@ -7140,12 +6938,10 @@ function xxServerReceiveKeys(string zzIdent, string zzValue, bool zzbBind, bool 
 	{
 		if (zzbBind)
 		{
-//			if (zzIdent != "None" && zzValue != "")
 			zzRemResult = zzRemResult$"A("$zzIdent$"="$zzValue$")";
 		}
 		else
 		{
-//			if (zzValue != "")
 			zzRemResult = zzRemResult$"B("$zzIdent$"="$zzValue$")";
 		}
 	}
@@ -7491,20 +7287,7 @@ function ClientPutDown(Weapon Current, Weapon Next)
 		}
 	}
 }
-/*
-// Drop flag if got flag.
-simulated event Destroyed()
-{
-	Log("Destroyed");
-	if (Role == ROLE_Authority)
-	{
-		Log("Auth!"@Level.Game.IsA('CTFGame')@CarriedDecoration);
-		if (Level.Game.IsA('CTFGame') && CTFFlag(CarriedDecoration) != None)
-			DropDecoration();
-	}
-	Super.Destroyed();
-}
-*/
+
 //enhanced teamsay:
 exec function TeamSay( string Msg )
 {
@@ -7595,7 +7378,6 @@ exec function TeamSay( string Msg )
 			{
 			        // Figure out Posture.
 
-				//ForEach AllActors(class'CTFFlag', F)
 				for (zzi=0; zzi < 4; zzi++)
 				{
 					f = CTFReplicationInfo(GameReplicationInfo).FlagList[zzi];
@@ -7691,19 +7473,8 @@ function Typing( bool bTyping )
 	bIsTyping = bTyping;
 	if (bTyping)
 	{
-//		if (Level.Game.WorldLog != None)
-//			Level.Game.WorldLog.LogTypingEvent(True, Self);
-//		if (Level.Game.LocalLog != None)
-//			Level.Game.LocalLog.LogTypingEvent(True, Self);
 		PlayChatting();
 	}
-//	else
-//	{
-//		if (Level.Game.WorldLog != None)
-//			Level.Game.WorldLog.LogTypingEvent(False, Self);
-//		if (Level.Game.LocalLog != None)
-//			Level.Game.LocalLog.LogTypingEvent(False, Self);
-//	}
 }
 
 ////////////////////////////
@@ -7815,10 +7586,7 @@ function string xxExtractTag(string zzNicks[32], int zzCount)
 			zzShortNickSize = Len(zzNicks[zzx]);
 			zzShortNick = zzNicks[zzx];
 		}
-//		log(Nicks[x]);
 	}
-
-//	Log("ShortNick"@ShortNick@ShortNickSize);
 
 	for (zzY = 0; zzY < zzCount; zzY++)		// Go through all nicks to find a potential tag.
 	{
@@ -7829,7 +7597,6 @@ function string xxExtractTag(string zzNicks[32], int zzCount)
 			for (zzLoc = 0; zzLoc < (Len(zzNicks[zzY]) - zzPartSize + 1); zzLoc++)	// Go through all the parts of a nick..
 			{
 				zzPart = Mid(zzNicks[zzY],zzLoc,zzPartSize);
-//				Log("Searching for"@Part);
 				zzFound = 0;
 				for (zzx = 0; zzx < zzCount ; zzx++)	// Go through all nicks
 				{
@@ -7840,7 +7607,6 @@ function string xxExtractTag(string zzNicks[32], int zzCount)
 					return xxFixFileName(zzPart,"");
 				if (zzFound > (zzCount / 2) && zzPartCount < 256)	// if more than half of the nicks had it, store it to the list
 				{
-//					Log("Storing"@Part@Found);
 					zzbAlready = False;
 					for (zzx = 0; zzx < zzPartCount; zzx++)
 					{
@@ -7864,7 +7630,6 @@ function string xxExtractTag(string zzNicks[32], int zzCount)
 
 	for (zzx = 0; zzx < zzPartCount; zzx++)	// Check through parts, see if we found one that all agrees on!
 	{
-//		Log(x@PartFound[x]@Parts[x]);
 		if (zzPartFound[zzx] > zzBestFindNumber)	// One that matches better
 		{
 			zzBestFindNumber = zzPartFound[zzx];
@@ -7935,7 +7700,6 @@ function string xxFixFileName(string zzS, string zzReplaceChar)
 				Case "(":	//
 				Case ")":	//
 				Case "`":	//
-				//Case "\"":	//
 				Case "'":	//
 				Case "�":	//
 				Case "&":	// Weak Linux, Weak
