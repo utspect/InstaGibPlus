@@ -68,6 +68,7 @@ var string NiceVer;					// Holds the version letters (no underscore)
 var string ConsoleName;				// Set console system name
 var string BADminText;				// Text to give players that want admin commands without being admin.
 var bool bDidEndWarn;				// True if screenshot warning has been sent to players.
+var float EndWarnDelay;
 
 // Anti-Timer
 var Inventory zzAntiTimerList[32];		// This holds the inventory on the map that should be protected
@@ -471,7 +472,13 @@ event Tick(float zzdelta)
 	if (!bDidEndWarn && Level.Game.bGameEnded)
 	{
 		bDidEndWarn = True;
-		zzbDoShot = True;
+		EndWarnDelay = 1.0;
+	}
+
+	if (Level.Game.bGameEnded) {
+		EndWarnDelay -= DeltaTime;
+		if (EndWarnDelay <= 0.0)
+			zzbDoShot = true;
 	}
 
 	for (zzP = Level.PawnList; zzP != None; zzP = zzP.NextPawn)
