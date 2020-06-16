@@ -1887,7 +1887,7 @@ function xxServerMove(
 		PosErrFactor = FMin(DeltaTime, class'UTPure'.default.MaxJitterTime);
 		PosErr =
 			3 // constant part
-			+ PosErrFactor * VSize(ClientVelCalc) // velocity
+			+ PosErrFactor * VSize(ClientVel - Velocity) // velocity
 			+ FMin(1.0, FMax(0, GroundSpeed - VSize(ClientVelCalc)) / (AccelRate * PosErrFactor)) // bound acceleration by how much we can still speed up
 				* 0.5 * AccelRate * PosErrFactor * PosErrFactor; // acceleration
 
