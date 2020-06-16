@@ -469,16 +469,15 @@ event Tick(float zzDelta)
 	if (ForceSettingsLevel > 2 && rand(5000) == 0)
 		zzb = True;
 
-	if (!bDidEndWarn && Level.Game.bGameEnded)
-	{
-		bDidEndWarn = True;
-		EndWarnDelay = 1.0;
-	}
-
 	if (Level.Game.bGameEnded) {
-		EndWarnDelay -= zzDelta;
-		if (EndWarnDelay <= 0.0)
-			zzbDoShot = true;
+		if (bDidEndWarn) {
+			EndWarnDelay -= zzDelta;
+			if (EndWarnDelay <= 0.0)
+				zzbDoShot = true;
+		} else {
+			bDidEndWarn = true;
+			EndWarnDelay = 1.0;
+		}
 	}
 
 	for (zzP = Level.PawnList; zzP != None; zzP = zzP.NextPawn)
