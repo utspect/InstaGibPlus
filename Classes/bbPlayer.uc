@@ -1888,7 +1888,7 @@ function xxServerMove(
 		PosErr =
 			3 // constant part
 			+ PosErrFactor * VSize(ClientVel - Velocity) // velocity
-			+ FMin(1.0, FMax(0, GroundSpeed - VSize(ClientVelCalc)) / (AccelRate * PosErrFactor)) // bound acceleration by how much we can still speed up
+			+ FMin(1.0, FMax(0, GroundSpeed - VSize(ClientVelCalc*vect(1,1,0))) / (AccelRate * PosErrFactor)) // bound acceleration by how much we can still speed up
 				* 0.5 * AccelRate * PosErrFactor * PosErrFactor; // acceleration
 
 		MaxPosError = PosErr * PosErr;
