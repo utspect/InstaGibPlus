@@ -1883,7 +1883,7 @@ function xxServerMove(
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxPosError = 3.0;
-	if (bNewNet) {
+	if (bNewNet && DeltaTime > 0) {
 		PosErrFactor = FMin(DeltaTime, class'UTPure'.default.MaxJitterTime);
 		PosErr =
 			3 // constant part
