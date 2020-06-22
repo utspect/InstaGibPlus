@@ -3231,6 +3231,14 @@ simulated function xxServerAddVelocity(vector NewVelocity) {
 		SetPhysics(PHYS_Falling);
 }
 
+simulated function ClientAddMomentum(vector Momentum) {
+	if (Physics == PHYS_Walking)
+		Momentum.Z = FMax(Momentum.Z, 0.4 * VSize(Momentum));
+
+	if (Momentum dot Momentum > 0)
+		xxClientAddVelocity(Momentum);
+}
+
 simulated function NN_Momentum( Vector momentum, name DamageType )
 {
 	local bool bPreventLockdown;		// Avoid the lockdown effect.
@@ -3269,8 +3277,6 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 
 	if (Physics == PHYS_None)
 		SetMovementPhysics();
-	if (Physics == PHYS_Walking)
-		momentum.Z = FMax(momentum.Z, 0.4 * VSize(momentum));
 	if ( InstigatedBy == self )
 		momentum *= 0.6;
 	if (Mass != 0)
@@ -3332,7 +3338,7 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 
 	if (InstigatedBy != self && (momentum dot momentum) > 0)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
 	{
-		AddVelocity( momentum );
+		ClientAddMomentum( momentum );
 	}
 
 	Health -= actualDamage;
