@@ -3231,12 +3231,12 @@ simulated function xxServerAddVelocity(vector NewVelocity) {
 		SetPhysics(PHYS_Falling);
 }
 
-simulated function ClientAddMomentum(vector Momentum) {
+simulated function ClientAddMomentum(vector Momentum, float TimeStamp) {
 	if (Physics == PHYS_Walking)
 		Momentum.Z = FMax(Momentum.Z, 0.4 * VSize(Momentum));
 
 	if (Momentum dot Momentum > 0)
-		xxClientAddVelocity(Momentum);
+		xxClientAddVelocity(Momentum, TimeStamp);
 }
 
 simulated function NN_Momentum( Vector momentum, name DamageType )
@@ -3338,7 +3338,7 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 
 	if (InstigatedBy != self && (momentum dot momentum) > 0)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
 	{
-		ClientAddMomentum( momentum );
+		ClientAddMomentum( momentum, Level.TimeSeconds );
 	}
 
 	Health -= actualDamage;
