@@ -283,6 +283,7 @@ var float OldShakeVert;
 var float OldBaseEyeHeight;
 var float EyeHeightOffset;
 
+var globalconfig bool bUseOldMouseInput;
 var transient float TurnFractionalPart, LookUpFractionalPart;
 
 var float TimeDead;
@@ -3098,13 +3099,15 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 
 	PitchDelta = 32.0 * DeltaTime * aLookUp + LookUpFractionalPart;
 	zzViewRotation.Pitch += int(PitchDelta);
-	LookUpFractionalPart = PitchDelta - int(PitchDelta);
+	if (!bUseOldMouseInput)
+		LookUpFractionalPart = PitchDelta - int(PitchDelta);
 
 	zzViewRotation.Pitch = Clamp((zzViewRotation.Pitch << 16 >> 16), -16384, 16383) & 0xFFFF;
 
 	YawDelta = 32.0 * DeltaTime * aTurn + TurnFractionalPart;
 	zzViewRotation.Yaw += int(YawDelta);
-	TurnFractionalPart = YawDelta - int(YawDelta);
+	if (!bUseOldMouseInput)
+		TurnFractionalPart = YawDelta - int(YawDelta);
 
 	ViewShake(deltaTime);		// ViewRotation is fuked in here.
 	ViewFlash(deltaTime);
