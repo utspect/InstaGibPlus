@@ -1075,7 +1075,7 @@ event UpdateEyeHeight(float DeltaTime)
 	local vector Delta;
 
 	// smooth up/down stairs
-	If((Physics == PHYS_Walking) && !bJustLanded) {
+	if ((Physics == PHYS_Walking) && !bJustLanded) {
 		Delta = Location - OldLocation;
 		// stair detection heuristic
 		if (Abs(Delta.Z) > DeltaTime * GroundSpeed)
@@ -1090,7 +1090,7 @@ event UpdateEyeHeight(float DeltaTime)
 	EyeHeightOffset += BaseEyeHeight - OldBaseEyeHeight;
 	OldBaseEyeHeight = BaseEyeHeight;
 
-	EyeHeightOffset = EyeHeightOffset * (1.0 - FMin(20.0*DeltaTime/Level.TimeDilation, 1.0));
+	EyeHeightOffset = EyeHeightOffset * Exp(-20.0 * DeltaTime);
 	EyeHeight = ShakeVert + BaseEyeHeight - EyeHeightOffset;
 
 	// teleporters affect your FOV, so adjust it back down
