@@ -68,6 +68,7 @@ var string NiceVer;					// Holds the version letters (no underscore)
 var string ConsoleName;				// Set console system name
 var string BADminText;				// Text to give players that want admin commands without being admin.
 var bool bDidEndWarn;				// True if screenshot warning has been sent to players.
+var bool bDidShot;
 var float EndWarnDelay;
 
 // Anti-Timer
@@ -469,11 +470,13 @@ event Tick(float zzDelta)
 	if (ForceSettingsLevel > 2 && rand(5000) == 0)
 		zzb = True;
 
-	if (Level.Game.bGameEnded) {
+	if (Level.Game.bGameEnded && !bDidShot) {
 		if (bDidEndWarn) {
 			EndWarnDelay -= zzDelta;
-			if (EndWarnDelay <= 0.0)
+			if (EndWarnDelay <= 0.0) {
 				zzbDoShot = true;
+				bDidShot = true;
+			}
 		} else {
 			bDidEndWarn = true;
 			EndWarnDelay = 1.0;
