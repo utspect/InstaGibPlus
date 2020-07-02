@@ -4180,7 +4180,7 @@ ignores SeePlayer, HearNoise, Bump;
 		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
 		if (TimeSinceLastUpdate ~= 0) return;
 
-		ProcessTime = FMin(DeltaTime, TimeSinceLastUpdate*0.5);
+		ProcessTime = FMin(DeltaTime, TimeSinceLastUpdate*0.25);
 
 		MoveAutonomous(ProcessTime, false, false, false, DodgeDir, Acceleration, rot(0,0,0));
 		CurrentTimeStamp += ProcessTime;
