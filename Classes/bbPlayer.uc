@@ -1090,7 +1090,7 @@ event UpdateEyeHeight(float DeltaTime)
 	EyeHeightOffset += BaseEyeHeight - OldBaseEyeHeight;
 	OldBaseEyeHeight = BaseEyeHeight;
 
-	EyeHeightOffset = EyeHeightOffset * Exp(-20.0 * DeltaTime);
+	EyeHeightOffset = EyeHeightOffset * Exp(-10.0 * DeltaTime);
 	EyeHeight = ShakeVert + BaseEyeHeight - EyeHeightOffset;
 
 	// teleporters affect your FOV, so adjust it back down
