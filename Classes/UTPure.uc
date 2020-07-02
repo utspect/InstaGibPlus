@@ -323,7 +323,7 @@ function bool IsMapExcluded (string MapName)
     MapNameUNR = MapName$".unr";
 
 	while (index < arrayCount(ExcludeMapsForKickers))
-        {
+    {
         if ((trim(ExcludeMapsForKickers[index]) ~= MapName) || (trim(ExcludeMapsForKickers[index]) ~= MapNameUNR))
             return true;
         ++index;
