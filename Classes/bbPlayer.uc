@@ -549,7 +549,7 @@ simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeigh
 	KRotation.Pitch = KRotationPitch;
 	KRotation.Roll = KRotationRoll;
 
-	K = Spawn(class'Kicker', Self, , KLocation, KRotation);
+	K = Spawn(class'NN_Kicker', Self, , KLocation, KRotation);
 	K.SetCollisionSize(KCollisionRadius, KCollisionHeight);
 	K.Tag = KTag;
 	K.Event = KEvent;

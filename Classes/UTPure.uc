@@ -146,14 +146,6 @@ function PreBeginPlay()
 
 	Spawn(class'VTFix');
 
-	ForEach AllActors (class'Kicker', K)
-	{
-		if ( K.GetPropertyText("NoLC") != "" )
-			continue;
-		if ( (K.KickedClasses == 'Actor') || (K.KickedClasses == 'Pawn') || (K.KickedClasses == 'PlayerPawn') || (K.KickedClasses == 'Projectile') )
-			Spawn(class'NN_Kicker').ServerSetup( K);
-	}
-
 	class'bbPlayer'.Default.HitSound = DefaultHitSound;
 	class'bbPlayer'.Default.TeamHitSound = DefaultTeamHitSound;
 	class'bbCHSpectator'.Default.HitSound = DefaultHitSound;
