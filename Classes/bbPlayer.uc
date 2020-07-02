@@ -2605,25 +2605,6 @@ function xxReplicateMove(
 	PendingMove = None;
 
 	SendSavedMove(NewMove);
-
-	if ( (Weapon != None) && !Weapon.IsAnimating() ) {
-		if ( (Weapon == ClientPending) || (Weapon != OldClientWeapon) ) {
-			if ( Weapon.IsInState('ClientActive') )
-				AnimEnd();
-			else
-				Weapon.GotoState('ClientActive');
-
-			if ( (Weapon != OldClientWeapon) && (OldClientWeapon != None) )
-				OldClientWeapon.GotoState('');
-
-			ClientPending = None;
-			bNeedActivate = false;
-		} else {
-			Weapon.GotoState('');
-			Weapon.TweenToStill();
-		}
-	}
-	OldClientWeapon = Weapon;
 }
 
 function SendSavedMove(bbSavedMove Move) {
