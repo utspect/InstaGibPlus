@@ -2492,6 +2492,10 @@ function xxReplicateMove(
 	local Pawn P;
 	local vector Accel;
 	local int MiscData;
+	local EPhysics OldPhys;
+
+	if ( VSize(NewAccel) > 3072)
+		NewAccel = 3072 * Normal(NewAccel);
 
 	if (bDrawDebugData) {
 		debugNewAccel = Normal(NewAccel);
@@ -2504,13 +2508,11 @@ function xxReplicateMove(
 	// Get a SavedMove actor to store the movement in.
 	if ( PendingMove != None )
 	{
-		if (VSize(NewAccel - PendingMove.Acceleration) < 0.05 * AccelRate &&
+		if (VSize(NewAccel - PendingMove.Acceleration) < 0.125 * AccelRate &&
 			bbSavedMove(PendingMove).MergeCount < 31
 		) {
 			//add this move to the pending move
 			PendingMove.TimeStamp = Level.TimeSeconds;
-			if ( VSize(NewAccel) > 3072)
-				NewAccel = 3072 * Normal(NewAccel);
 
 			TotalTime = PendingMove.Delta + DeltaTime;
 			if (TotalTime != 0)
@@ -2550,8 +2552,6 @@ function xxReplicateMove(
 	LastMove = NewMove;
 	NewMove = xxGetFreeMove();
 	NewMove.Delta = DeltaTime;
-	if ( VSize(NewAccel) > 3072 )
-		NewAccel = 3072 * Normal(NewAccel);
 	NewMove.Acceleration = NewAccel;
 
 	// Set this move's data.
@@ -2564,6 +2564,7 @@ function xxReplicateMove(
 		Weapon.bPointing = ((bFire != 0) || (bAltFire != 0));
 	bJustFired = false;
 	bJustAltFired = false;
+	OldPhys = Physics;
 
 	// Simulate the movement locally.
 	ProcessMove(NewMove.Delta, NewMove.Acceleration, NewMove.DodgeMove, DeltaRot);
@@ -2593,7 +2594,7 @@ function xxReplicateMove(
 
 	if ((PendingMove.Delta < NetMoveDelta - ClientUpdateTime) &&
 		(PendingMove.bPressedJump == false) &&
-		(PendingMove.DodgeMove == DODGE_None || PendingMove.DodgeMove == DODGE_Active))
+		(OldPhys == Physics))
 		return;
 
 	ClientUpdateTime = PendingMove.Delta - NetMoveDelta;
