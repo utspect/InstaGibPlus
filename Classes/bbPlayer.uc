@@ -2474,6 +2474,7 @@ function bbSavedMove xxGetFreeMove() {
 		s = bbSavedMove(FreeMoves);
 		FreeMoves = FreeMoves.NextMove;
 		s.NextMove = None;
+		s.Clear2();
 		return s;
 	}
 }
