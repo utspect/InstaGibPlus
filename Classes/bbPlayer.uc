@@ -4205,16 +4205,11 @@ ignores SeePlayer, HearNoise, Bump;
 			return;
 
 		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
-		if (TimeSinceLastUpdate ~= 0) return;
 
-		ProcessTime = FMin(DeltaTime, TimeSinceLastUpdate*0.25);
-
-		MoveAutonomous(ProcessTime, false, false, false, DodgeDir, Acceleration, rot(0,0,0));
-		CurrentTimeStamp += ProcessTime;
-		ServerTimeStamp += ProcessTime;
-
-		if (Level.TimeSeconds - LastUpdateTime > class'UTPure'.default.MaxJitterTime && bJustRespawned == false) {
-			zzbForceUpdate = true;
+		if (TimeSinceLastUpdate > class'UTPure'.default.MaxJitterTime && bJustRespawned == false) {
+			MoveAutonomous(TimeSinceLastUpdate, false, false, false, DODGE_None, Acceleration, rot(0,0,0));
+			CurrentTimeStamp += TimeSinceLastUpdate;
+			ServerTimeStamp += TimeSinceLastUpdate;
 		}
 	}
 
@@ -4231,7 +4226,6 @@ ignores SeePlayer, HearNoise, Bump;
 		if (Physics != PHYS_Falling) SetPhysics(PHYS_Walking);
 		if ( !IsAnimating() )
 			PlayWaiting();
-		// Log("BeginState: PlayerWalking");
 	}
 
 	function EndState()

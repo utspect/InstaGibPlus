@@ -1394,7 +1394,7 @@ defaultproperties
 	MinPosError=100
 	MaxPosError=3000
 	MaxHitError=10000
-	MaxJitterTime=0.050
+	MaxJitterTime=0.040
 	MinNetUpdateRate=60.0
 	MaxNetUpdateRate=250.0
 	ShowTouchedPackage=False
