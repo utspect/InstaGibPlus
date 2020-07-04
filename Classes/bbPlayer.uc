@@ -27,7 +27,9 @@ var globalconfig string DemoMask; // The options for creating demo filename.
 var globalconfig string DemoPath; // The path for creating the demo.
 var globalconfig string DemoChar; // Character to use instead of illegal ones.
 var globalconfig int    desiredSkin;
+var globalconfig int    desiredSkinFemale;
 var globalConfig int    desiredTeamSkin;
+var globalconfig int    desiredTeamSkinFemale;
 var globalconfig bool   bEnableHitSounds;
 var globalconfig int    selectedHitSound;
 var globalconfig string sHitSound[16];
@@ -2787,22 +2789,48 @@ exec function enableHitSounds(bool b) {
 	}
 }
 
-exec function setForcedSkins(int fs) {
-	if (fs >= 0 && fs <= 17) {
-		desiredSkin = fs;
-		SaveConfig();
-		ClientMessage("Forced enemy skin set!");
-	} else
-		ClientMessage("Please input a value between 0 and 17, e.g. setforcedskins 4");
+exec function setForcedSkins(int maleSkin, int femaleSkin) {
+	local bool error;
+	if (maleSkin <= 0 || maleSkin > 18) {
+		ClientMessage("Invalid maleSkin, please input a value between 1 and 18");
+		error = true;
+	}
+	if (femaleSkin <= 0 || femaleSkin > 18) {
+		ClientMessage("Invalid femaleSkin, please input a value between 1 and 18");
+		error = true;
+	}
+
+	if (error) {
+		ClientMessage("Usage: setForcedSkins <maleSkin> <femaleSkin>");
+		return;
+	}
+
+	desiredSkin = maleSkin - 1;
+	desiredSkinFemale = femaleSkin - 1;
+	SaveConfig();
+	ClientMessage("Forced enemy skin set!");
 }
 
-exec function setForcedTeamSkins(int fs) {
-	if (fs >= 0 && fs <= 17) {
-		desiredTeamSkin = fs;
-		SaveConfig();
-		ClientMessage("Forced team skin set!");
-	} else
-		ClientMessage("Please input a value between 0 and 17, e.g. setforcedteamskins 4");
+exec function setForcedTeamSkins(int maleSkin, int femaleSkin) {
+	local bool error;
+	if (maleSkin < 0 || maleSkin > 17) {
+		ClientMessage("Invalid maleSkin, please input a value between 1 and 18");
+		error = true;
+	}
+	if (femaleSkin < 0 || femaleSkin > 17) {
+		ClientMessage("Invalid femaleSkin, please input a value between 1 and 18");
+		error = true;
+	}
+
+	if (error) {
+		ClientMessage("Usage: setForcedTeamSkins <maleSkin> <femaleSkin>");
+		return;
+	}
+
+	desiredTeamSkin = maleSkin;
+	desiredTeamSkinFemale = femaleSkin;
+	SaveConfig();
+	ClientMessage("Forced team skin set!");
 }
 
 exec function setHitSound(int hs) {
@@ -2838,24 +2866,24 @@ exec function setBeamScale(float bs) {
 exec function listSkins() {
 	ClientMessage("Skin List:");
 	ClientMessage("Input the desired number with the SetForcedSkins command");
-	ClientMessage("0 - Class: Female Commando, Skin: Aphex, Face: Idina");
-	ClientMessage("1 - Class: Female Commando, Skin: Commando, Face: Anna");
-	ClientMessage("2 - Class: Female Commando, Skin: Mercenary, Face: Jayce");
-	ClientMessage("3 - Class: Female Commando, Skin: Necris, Face: Cryss");
-	ClientMessage("4 - Class: Female Soldier, Skin: Marine, Face: Annaka");
-	ClientMessage("5 - Class: Female Soldier, Skin: Metal Guard, Face: Isis");
-	ClientMessage("6 - Class: Female Soldier, Skin: Soldier, Face: Lauren");
-	ClientMessage("7 - Class: Female Soldier, Skin: Venom, Face: Athena");
-	ClientMessage("8 - Class: Female Soldier, Skin: War Machine, Face: Cathode");
-	ClientMessage("9 - Class: Male Commando, Skin: Commando, Face: Blake");
-	ClientMessage("10 - Class: Male Commando, Skin: Mercenary, Face: Boris");
-	ClientMessage("11 - Class: Male Commando, Skin: Necris, Face: Grail");
-	ClientMessage("12 - Class: Male Soldier, Skin: Marine, Face: Malcolm");
-	ClientMessage("13 - Class: Male Soldier, Skin: Metal Guard, Face: Drake");
-	ClientMessage("14 - Class: Male Soldier, Skin: RawSteel, Face: Arkon");
-	ClientMessage("15 - Class: Male Soldier, Skin: Soldier, Face: Brock");
-	ClientMessage("16 - Class: Male Soldier, Skin: War Machine, Face: Matrix");
-	ClientMessage("17 - Class: Boss, Skin: Boss, Face: Xan");
+	ClientMessage("1 - Class: Female Commando, Skin: Aphex, Face: Idina");
+	ClientMessage("2 - Class: Female Commando, Skin: Commando, Face: Anna");
+	ClientMessage("3 - Class: Female Commando, Skin: Mercenary, Face: Jayce");
+	ClientMessage("4 - Class: Female Commando, Skin: Necris, Face: Cryss");
+	ClientMessage("5 - Class: Female Soldier, Skin: Marine, Face: Annaka");
+	ClientMessage("6 - Class: Female Soldier, Skin: Metal Guard, Face: Isis");
+	ClientMessage("7 - Class: Female Soldier, Skin: Soldier, Face: Lauren");
+	ClientMessage("8 - Class: Female Soldier, Skin: Venom, Face: Athena");
+	ClientMessage("9 - Class: Female Soldier, Skin: War Machine, Face: Cathode");
+	ClientMessage("10 - Class: Male Commando, Skin: Commando, Face: Blake");
+	ClientMessage("11 - Class: Male Commando, Skin: Mercenary, Face: Boris");
+	ClientMessage("12 - Class: Male Commando, Skin: Necris, Face: Grail");
+	ClientMessage("13 - Class: Male Soldier, Skin: Marine, Face: Malcolm");
+	ClientMessage("14 - Class: Male Soldier, Skin: Metal Guard, Face: Drake");
+	ClientMessage("15 - Class: Male Soldier, Skin: RawSteel, Face: Arkon");
+	ClientMessage("16 - Class: Male Soldier, Skin: Soldier, Face: Brock");
+	ClientMessage("17 - Class: Male Soldier, Skin: War Machine, Face: Matrix");
+	ClientMessage("18 - Class: Boss, Skin: Boss, Face: Xan");
 }
 
 exec function myIgSettings() {
@@ -2863,7 +2891,9 @@ exec function myIgSettings() {
 	ClientMessage("Hitsounds:"@bEnableHitSounds);
 	ClientMessage("Forced Models:"@zzbForceModels);
 	ClientMessage("Current Enemy Forced Model:"@forcedModelToString(desiredSkin));
+	ClientMessage("Current Enemy Female Forced Model:"@forcedModelToString(desiredSkinFemale));
 	ClientMessage("Current Team Forced Model:"@forcedModelToString(desiredTeamSkin));
+	ClientMessage("Current Team Female Forced Model:"@forcedModelToString(desiredTeamSkinFemale));
 	ClientMessage("Current selected hit sound:"@playedHitSound);
 	ClientMessage("Current Shock Beam:"@cShockBeam);
 	ClientMessage("Current Beam Scale:"@BeamScale);
@@ -5388,7 +5418,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
  	* @Author: spect
  	* @Date: 2020-02-21 01:17:00
  	* @Desc: Sets the selected forced skin client side
-	* @TODO: Set green and yellow colors. Shit is gonna hit the fan when this is used in xtdm.
  	*/
 
 	if (selectedSkin > 17)
@@ -5406,7 +5435,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.aphe4Indina", "FCommandoSkins.aphe");
 			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
+			SkinActor.Mesh = class'bbTFemale1'.Default.Mesh;
 			break;
 		case 1: // Female Commando Anna
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.cmdo1"$suffix, "FCommandoSkins.cmdo");
@@ -5415,7 +5444,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.cmdo4Anna", "FCommandoSkins.anna");
 			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
+			SkinActor.Mesh = class'bbTFemale1'.Default.Mesh;
 			break;
 		case 2: // Female Commando Mercenary
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.daco1"$suffix, "FCommandoSkins.daco");
@@ -5424,7 +5453,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.daco4Jayce", "FCommandoSkins.daco");
 			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
+			SkinActor.Mesh = class'bbTFemale1'.Default.Mesh;
 			break;
 		case 3: // Female Commando Necris
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.goth1"$suffix, "FCommandoSkins.goth");
@@ -5433,7 +5462,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.goth4Cryss", "FCommandoSkins.goth");
 			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale1'.Default.Mesh;
+			SkinActor.Mesh = class'bbTFemale1'.Default.Mesh;
 			break;
 		case 4: // Female Soldier Marine
 			SetSkinElement(SkinActor, 0, "SGirlSkins.fbth1"$suffix, "SGirlSkins.fbth");
@@ -5442,7 +5471,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.fbth4Annaka", "SGirlSkins.fbth");
 			// Set the Mesh
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
+			SkinActor.Mesh = class'bbTFemale2'.Default.Mesh;
 			break;
 		case 5: // Female Soldier Metal Guard
 			SetSkinElement(SkinActor, 0, "SGirlSkins.Garf1"$suffix, "SGirlSkins.Garf");
@@ -5450,7 +5479,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SGirlSkins.Garf2"$suffix, "SGirlSkins.Garf");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.Garf4Isis", "SGirlSkins.Garf");
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
+			SkinActor.Mesh = class'bbTFemale2'.Default.Mesh;
 			break;
 		case 6: // Female Soldier Soldier
 			SetSkinElement(SkinActor, 0, "SGirlSkins.army1"$suffix, "SGirlSkins.army");
@@ -5458,7 +5487,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SGirlSkins.army2"$suffix, "SGirlSkins.army");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.army4Lauren", "SGirlSkins.army");
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
+			SkinActor.Mesh = class'bbTFemale2'.Default.Mesh;
 			break;
 		case 7: // Female Soldier Venom
 			SetSkinElement(SkinActor, 0, "SGirlSkins.Venm1"$suffix, "SGirlSkins.Venm");
@@ -5466,7 +5495,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SGirlSkins.Venm2"$suffix, "SGirlSkins.Venm");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.Venm4Athena", "SGirlSkins.Venm");
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
+			SkinActor.Mesh = class'bbTFemale2'.Default.Mesh;
 			break;
 		case 8: // Female Soldier War Machine
 			SetSkinElement(SkinActor, 0, "SGirlSkins.fwar1"$suffix, "SGirlSkins.fwar");
@@ -5474,7 +5503,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SGirlSkins.fwar2"$suffix, "SGirlSkins.fwar");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.fwar4Cathode", "SGirlSkins.fwar");
-			bbPlayer(SkinActor).Mesh = class'bbTFemale2'.Default.Mesh;
+			SkinActor.Mesh = class'bbTFemale2'.Default.Mesh;
 			break;
 		case 9: // Male Commando Commando
 			SetSkinElement(SkinActor, 3, "CommandoSkins.cmdo4"$suffix, "CommandoSkins.cmdo");
@@ -5482,7 +5511,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 0, "CommandoSkins.cmdo1", "CommandoSkins.cmdo");
 			// Set the face
 			SetSkinElement(SkinActor, 1, "CommandoSkins.cmdo2Blake", "CommandoSkins.cmdo");
-			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
+			SkinActor.Mesh = class'bbTMale1'.Default.Mesh;
 			break;
 		case 10: // Male Commando Mercenary
 			SetSkinElement(SkinActor, 3, "CommandoSkins.daco4"$suffix, "CommandoSkins.daco");
@@ -5490,7 +5519,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 0, "CommandoSkins.daco1", "CommandoSkins.daco");
 			// Set the face
 			SetSkinElement(SkinActor, 1, "CommandoSkins.daco2Boris", "CommandoSkins.daco");
-			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
+			SkinActor.Mesh = class'bbTMale1'.Default.Mesh;
 			break;
 		case 11: // Male Commando Necris
 			SetSkinElement(SkinActor, 3, "CommandoSkins.goth4"$suffix, "CommandoSkins.goth");
@@ -5498,7 +5527,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 0, "CommandoSkins.goth1", "CommandoSkins.goth");
 			// Set the face
 			SetSkinElement(SkinActor, 1, "CommandoSkins.goth2Grail", "CommandoSkins.goth");
-			bbPlayer(SkinActor).Mesh = class'bbTMale1'.Default.Mesh;
+			SkinActor.Mesh = class'bbTMale1'.Default.Mesh;
 			break;
 		case 12: // Male Soldier Marine
 			SetSkinElement(SkinActor, 0, "SoldierSkins.blkt1"$suffix, "SoldierSkins.blkt");
@@ -5506,7 +5535,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SoldierSkins.blkt2"$suffix, "SoldierSkins.blkt");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.blkt4Malcom", "SoldierSkins.blkt");
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
+			SkinActor.Mesh = class'bbTMale2'.Default.Mesh;
 			break;
 		case 13: // Male Soldier Metal Guard
 			SetSkinElement(SkinActor, 0, "SoldierSkins.Gard1"$suffix, "SoldierSkins.Gard");
@@ -5514,7 +5543,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SoldierSkins.Gard2"$suffix, "SoldierSkins.Gard");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.Gard4Drake", "SoldierSkins.Gard");
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
+			SkinActor.Mesh = class'bbTMale2'.Default.Mesh;
 			break;
 		case 14: // Male Soldier Raw Steel
 			SetSkinElement(SkinActor, 0, "SoldierSkins.RawS1"$suffix, "SoldierSkins.RawS");
@@ -5522,7 +5551,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SoldierSkins.RawS2"$suffix, "SoldierSkins.RawS");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.RawS4Arkon", "SoldierSkins.RawS");
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
+			SkinActor.Mesh = class'bbTMale2'.Default.Mesh;
 			break;
 		case 15: // Male Soldier Soldier
 			SetSkinElement(SkinActor, 0, "SoldierSkins.sldr1"$suffix, "SoldierSkins.sldr");
@@ -5530,7 +5559,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SoldierSkins.sldr2"$suffix, "SoldierSkins.sldr");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.sldr4Brock", "SoldierSkins.sldr");
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
+			SkinActor.Mesh = class'bbTMale2'.Default.Mesh;
 			break;
 		case 16: // Male Soldier War Machine
 			SetSkinElement(SkinActor, 0, "SoldierSkins.hkil1"$suffix, "SoldierSkins.hkil");
@@ -5538,7 +5567,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SoldierSkins.hkil2"$suffix, "SoldierSkins.hkil");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.hkil4Matrix", "SoldierSkins.hkil");
-			bbPlayer(SkinActor).Mesh = class'bbTMale2'.Default.Mesh;
+			SkinActor.Mesh = class'bbTMale2'.Default.Mesh;
 			break;
 		case 17: // Boss
 			SetSkinElement(SkinActor, 0, "BossSkins.Boss1"$suffix, "BossSkins.Boss");
@@ -5546,7 +5575,7 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "BossSkins.Boss2"$suffix, "BossSkins.Boss");
 			// Set the face (Xan has different head colours? Makes sense, he's a robot.)
 			SetSkinElement(SkinActor, 3, "BossSkins.Boss4"$suffix, "BossSkins.Boss");
-			bbPlayer(SkinActor).Mesh = class'bbTBoss'.Default.Mesh;
+			SkinActor.Mesh = class'bbTBoss'.Default.Mesh;
 			break;
 	}
 }
@@ -5554,13 +5583,12 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 event PreRender( canvas zzCanvas )
 {
 	local SpawnNotify zzOldSN;
-	local int zzx;
+	local int i;
 	local PlayerReplicationInfo zzPRI;
-	local bbPlayer bbP;
 	local PlayerPawn zzPPOwner;
-	local bbPlayer zzPP;
 	local canvas lmaoCanvas;
 	local string stringTest;
+	local int skin;
 
 	zzbDemoRecording = PureLevel != None && PureLevel.zzDemoRecDriver != None;
 
@@ -5583,11 +5611,15 @@ event PreRender( canvas zzCanvas )
 		Super.PreRender(zzCanvas);
 	}
 
+	zzPPOwner = GetLocalPlayer();
+	if (zzPPOwner == none) return;
+	if (zzPPOwner != self) return;
+
 	// Set all other players' health to 0 (unless it's a teamgame and he's on your team)
 	// also set location to something dumb ;)
 	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
-		for (zzx = 0; zzx < 32; zzx++) {
-			zzPRI = GameReplicationInfo.PRIArray[zzx];
+		for (i = 0; i < 32; i++) {
+			zzPRI = GameReplicationInfo.PRIArray[i];
 			if (zzPRI == None) continue;
 
 			if (zzPRI != PlayerReplicationInfo &&
@@ -5608,28 +5640,33 @@ event PreRender( canvas zzCanvas )
 				&& zzPRI.Owner != None
 				&& zzPRI.Owner != Self
 			) {
-				// Set the skin
 				if (zzPRI.Team == Self.PlayerReplicationInfo.Team) {
-					setForcedSkin(zzPRI.Owner, desiredTeamSkin, GameReplicationInfo.bTeamGame, zzPRI.Team);
+					if (zzPRI.bIsFemale) {
+						skin = desiredTeamSkinFemale;
+					} else {
+						skin = desiredTeamSkin;
+					}
 				} else {
-					setForcedSkin(zzPRI.Owner, desiredSkin, GameReplicationInfo.bTeamGame, zzPRI.Team);
+					if (zzPRI.bIsFemale) {
+						skin = desiredSkinFemale;
+					} else {
+						skin = desiredSkin;
+					}
 				}
+				setForcedSkin(zzPRI.Owner, skin, GameReplicationInfo.bTeamGame, zzPRI.Team);
 			}
 
-			if (AnimSequence == 'Flip') {
-				bbP = bbPlayer(GetLocalPlayer());
-				if (bbP != none) {
-					if (GameReplicationInfo.bTeamGame && bbP.PlayerReplicationInfo.Team == PlayerReplicationInfo.Team) {
-						if (bbP.DesiredTeamSkin > 8 && PlayerReplicationInfo.bIsFemale)
-							AnimRate = 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
-						else if (bbP.DesiredTeamSkin <= 8 && PlayerReplicationInfo.bIsFemale == false)
-							AnimRate = 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
-					} else {
-						if (bbP.DesiredSkin > 8 && PlayerReplicationInfo.bIsFemale)
-							AnimRate = 1.35*1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
-						else if (bbP.DesiredSkin <= 8 && PlayerReplicationInfo.bIsFemale == false)
-							AnimRate = 1.35/1.55 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z);
-					}
+			if (zzPRI.Owner.AnimSequence == 'Flip') {
+				if (GameReplicationInfo.bTeamGame && PlayerReplicationInfo.Team == zzPRI.Team) {
+					if (class'bbPlayer'.default.DesiredTeamSkinFemale > 8 && zzPRI.bIsFemale)
+						zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+					else if (class'bbPlayer'.default.DesiredTeamSkin <= 8 && zzPRI.bIsFemale == false)
+						zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+				} else {
+					if (class'bbPlayer'.default.DesiredSkinFemale > 8 && zzPRI.bIsFemale)
+						zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+					else if (class'bbPlayer'.default.DesiredSkin <= 8 && zzPRI.bIsFemale == false)
+						zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
 				}
 			}
 		}
@@ -7829,8 +7866,10 @@ defaultproperties
 	VRVI_length=17
 	NN_ProjLength=256
 	bIsAlpha=False
-	desiredSkin=1
-	desiredTeamSkin=1
+	desiredSkin=9
+	desiredSkinFemale=0
+	desiredTeamSkin=9
+	desiredTeamSkinFemale=0
 	bEnableHitSounds=True
 	selectedHitSound=0
 	bIsPatch469=False
