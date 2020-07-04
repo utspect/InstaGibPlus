@@ -817,16 +817,6 @@ exec function AdminLogout()
 	Log("Admin was"@PlayerReplicationInfo.PlayerName);
 }
 
-/* Causes client crashes on mapswitch?
-simulated event Destroyed()
-{
-	Super.Destroyed();
-
-	if( Level.NetMode==NM_DedicatedServer || Level.NetMode==NM_ListenServer )
-		BroadcastMessage( PlayerReplicationInfo.PlayerName$Class'GameInfo'.Default.LeftMessage, false );
-}
-*/
-
 simulated function PlayHitSound(int Dmg)
 {
 	local Actor SoundPlayer;
@@ -996,8 +986,6 @@ exec function FindFlag()
 
 exec function ShowStats()
 {
-	//if (Stat != None)
-	//	Stat.SetState(0);
 }
 
 defaultproperties
