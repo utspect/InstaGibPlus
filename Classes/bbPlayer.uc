@@ -2827,8 +2827,8 @@ exec function setForcedTeamSkins(int maleSkin, int femaleSkin) {
 		return;
 	}
 
-	desiredTeamSkin = maleSkin;
-	desiredTeamSkinFemale = femaleSkin;
+	desiredTeamSkin = maleSkin - 1;
+	desiredTeamSkinFemale = femaleSkin - 1;
 	SaveConfig();
 	ClientMessage("Forced team skin set!");
 }
