@@ -7814,6 +7814,52 @@ function DoJump( optional float F )
 	}
 }
 
+function PlayInAir() {
+	local vector X,Y,Z, Dir;
+	local float f, TweenTime;
+
+	if ( (GetAnimGroup(AnimSequence) == 'Landing') && !bLastJumpAlt )
+	{
+		GetAxes(Rotation, X,Y,Z);
+		Dir = Normal(Acceleration);
+		f = Dir dot Y;
+		if ( f > 0.7 )
+			TweenAnim('DodgeL', 0.35);
+		else if ( f < -0.7 )
+			TweenAnim('DodgeR', 0.35);
+		else if ( Dir dot X > 0 )
+			TweenAnim('DodgeF', 0.35);
+		else
+			TweenAnim('DodgeB', 0.35);
+		bLastJumpAlt = true;
+		return;
+	}
+	bLastJumpAlt = false;
+	if ( GetAnimGroup(AnimSequence) == 'Jumping' )
+	{
+		if ( (Weapon == None) || (Weapon.Mass < 20) )
+			TweenAnim('DuckWlkS', 2);
+		else
+			TweenAnim('DuckWlkL', 2);
+		return;
+	}
+	else if ( GetAnimGroup(AnimSequence) == 'Ducking' )
+		TweenTime = 2;
+	else
+		TweenTime = 0.7;
+
+	if ( AnimSequence == 'StrafeL' )
+		TweenAnim('DodgeR', TweenTime);
+	else if ( AnimSequence == 'StrafeR' )
+		TweenAnim('DodgeL', TweenTime);
+	else if ( AnimSequence == 'BackRun' )
+		TweenAnim('DodgeB', TweenTime);
+	else if ( (Weapon == None) || (Weapon.Mass < 20) )
+		TweenAnim('JumpSMFR', TweenTime);
+	else
+		TweenAnim('JumpLGFR', TweenTime);
+}
+
 defaultproperties
 {
 	bAlwaysRelevant=True
