@@ -1170,15 +1170,6 @@ event PlayerInput( float DeltaTime )
 	bEdgeLeft = bOldWasLeft != bWasLeft;
 	bEdgeRight = bOldWasRight != bWasRight;
 
-	if (bOldWasForward && !bWasForward)
-		zzLastTimeForward = Now;
-	if (bOldWasBack && !bWasBack)
-		zzLastTimeBack = Now;
-	if (bOldWasLeft && !bWasLeft)
-		zzLastTimeLeft = Now;
-	if (bOldWasRight && !bWasRight)
-		zzLastTimeRight = Now;
-
 	// Smooth and amplify mouse movement
 	SmoothTime = FMin(0.2, 3 * DeltaTime * Level.TimeDilation);
 	FOVScale = DesiredFOV * 0.01111;
@@ -4049,7 +4040,6 @@ ignores SeePlayer, HearNoise, Bump;
 		local bool	bSaveJump;
 		local name AnimGroupName;
 		local float Now;
-		local bool bIgnoreDodge;
 
 		if (Mesh == None)
 		{
@@ -4082,31 +4072,31 @@ ignores SeePlayer, HearNoise, Bump;
 
 				if (bEdgeForward && bWasForward)
 				{
-					if (MinDodgeClickTime == 0 || Now - zzLastTimeForward > MinDodgeClickTime)
+					if (MinDodgeClickTime == 0 || Now - zzLastTimeForward > MinDodgeClickTime) {
 						DodgeDir = DODGE_Forward;
-					else
-						bIgnoreDodge = true;
+						zzLastTimeForward = Now;
+					}
 				}
 				else if (bEdgeBack && bWasBack)
 				{
-					if (MinDodgeClickTime == 0 || Now - zzLastTimeBack > MinDodgeClickTime)
+					if (MinDodgeClickTime == 0 || Now - zzLastTimeBack > MinDodgeClickTime) {
 						DodgeDir = DODGE_Back;
-					else
-						bIgnoreDodge = true;
+						zzLastTimeBack = Now;
+					}
 				}
 				else if (bEdgeLeft && bWasLeft)
 				{
-					if (MinDodgeClickTime == 0 || Now - zzLastTimeLeft > MinDodgeClickTime)
+					if (MinDodgeClickTime == 0 || Now - zzLastTimeLeft > MinDodgeClickTime) {
 						DodgeDir = DODGE_Left;
-					else
-						bIgnoreDodge = true;
+						zzLastTimeLeft = Now;
+					}
 				}
 				else if (bEdgeRight && bWasRight)
 				{
-					if (MinDodgeClickTime == 0 || Now - zzLastTimeRight > MinDodgeClickTime)
+					if (MinDodgeClickTime == 0 || Now - zzLastTimeRight > MinDodgeClickTime) {
 						DodgeDir = DODGE_Right;
-					else
-						bIgnoreDodge = true;
+						zzLastTimeRight = Now;
+					}
 				}
 
 				if ( DodgeDir == DODGE_None)
@@ -4120,7 +4110,7 @@ ignores SeePlayer, HearNoise, Bump;
 			if (DodgeDir == DODGE_Done || DodgeDir == DODGE_Active && Base != None)
 			{
 				DodgeClickTimer -= DeltaTime;
-				if (DodgeClickTimer < -0.35 || bIgnoreDodge)
+				if (DodgeClickTimer < -0.35)
 				{
 					DodgeDir = DODGE_None;
 					DodgeClickTimer = DodgeClickTime;
@@ -4129,7 +4119,7 @@ ignores SeePlayer, HearNoise, Bump;
 			else if ((DodgeDir != DODGE_None) && (DodgeDir != DODGE_Active))
 			{
 				DodgeClickTimer -= DeltaTime;
-				if (DodgeClickTimer < 0 || bIgnoreDodge)
+				if (DodgeClickTimer < 0)
 				{
 					DodgeDir = DODGE_None;
 					DodgeClickTimer = DodgeClickTime;
