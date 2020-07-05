@@ -3992,20 +3992,6 @@ state PlayerWalking
 {
 ignores SeePlayer, HearNoise, Bump;
 
-	function Landed(vector HitNormal)
-	{
-		if (DodgeDir == DODGE_Active)
-		{
-			DodgeDir = DODGE_Done;
-			DodgeClickTimer = 0.0;
-			Velocity.X *= 0.1; // 0.1
-			Velocity.Y *= 0.1;
-		}
-		else
-			DodgeDir = DODGE_None;
-		Global.Landed(HitNormal);
-	}
-
 	simulated function Dodge(eDodgeDir DodgeMove)
     {
         local vector X,Y,Z;
@@ -7826,11 +7812,6 @@ function DoJump( optional float F )
 			Velocity.Z += Base.Velocity.Z;
 		SetPhysics(PHYS_Falling);
 	}
-}
-
-function Landed(vector HitNormal)
-{
-	Super.Landed(HitNormal);
 }
 
 defaultproperties
