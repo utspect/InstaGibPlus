@@ -319,7 +319,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 
 	if (Other.isA('Pawn')) {
 		if (bbP.bEnableHitSounds) {
-			if (bbPlayer(Other).PlayerReplicationInfo.Team != bbP.PlayerReplicationInfo.Team) {
+			if (!bbP.GameReplicationInfo.bTeamGame || bbPlayer(Other).PlayerReplicationInfo.Team != bbP.PlayerReplicationInfo.Team) {
 				//Log("Hitsound:"@bbP.playedHitSound);
 				bbP.ClientPlaySound(bbP.playedHitSound);
 			}

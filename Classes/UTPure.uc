@@ -53,6 +53,7 @@ var localized config bool bForceDefaultHitSounds;
 var localized config int TeleRadius;
 var localized config int ThrowVelocity;	// How far a player can throw weapons
 var localized config bool bForceDemo;		// Forces clients to do demos.
+var localized config float MaxTradeTimeMargin;
 var string MapName;
 
 
@@ -67,6 +68,8 @@ var string NiceVer;					// Holds the version letters (no underscore)
 var string ConsoleName;				// Set console system name
 var string BADminText;				// Text to give players that want admin commands without being admin.
 var bool bDidEndWarn;				// True if screenshot warning has been sent to players.
+var bool bDidShot;
+var float EndWarnDelay;
 
 // Anti-Timer
 var Inventory zzAntiTimerList[32];		// This holds the inventory on the map that should be protected
@@ -96,14 +99,7 @@ var Class<ServerInfo> zzSI;
 var string zzPurePackageName;
 var string zzMD5KeyInit;
 var string zzPureMD5;
-/*
-struct MoverInfo {
-	var Mover M;
-	var float DelayTime;
-};
-var MoverInfo zzMoverDelayTimes[256];
-var int zzMoverDelayTimesCount;
-*/
+
 var bbPlayer PlayerOwner;
 
 //Add the maplist where kickers will work using normal network
@@ -149,38 +145,6 @@ function PreBeginPlay()
 		Spawn(class'NNAnnouncerSA');
 
 	Spawn(class'VTFix');
-	//DisableMovers();
-
-	ForEach AllActors (class'Kicker', K)
-	{
-		if ( K.GetPropertyText("NoLC") != "" )
-			continue;
-		if ( (K.KickedClasses == 'Actor') || (K.KickedClasses == 'Pawn') || (K.KickedClasses == 'PlayerPawn') || (K.KickedClasses == 'Projectile') )
-			Spawn(class'NN_Kicker').ServerSetup( K);
-	}
-
-	//Custom game types
-  	/* if(Level.Game.IsA('MMGame') || Level.Game.IsA('MonsterMatch'))
-	{
-		MM = Spawn(MMData);
-		MM.NextMutator = Level.Game.BaseMutator;
-		Level.Game.BaseMutator = MM;
-		Log("NewNet compatibility enabled for Monster Match.", 'StartMutator');
-	}
-	if(Level.Game.IsA('SiegeGI') || Level.Game.IsA('SiegeUltimate'))
-	{
-		AM = Spawn(SGData);
-		AM.NextMutator = Level.Game.BaseMutator;
-		Level.Game.BaseMutator = AM;
-		Log("NewNet compatibility enabled for Siege.", 'StartMutator');
-	}
-  	if(Level.Game.IsA('LeagueAssault'))
-	{
-		AS = Spawn(ASData);
-		AS.NextMutator = Level.Game.BaseMutator;
-		Level.Game.BaseMutator = AS;
-		Log("NewNet compatibility enabled for League Assault.", 'StartMutator');
-	} */
 
 	class'bbPlayer'.Default.HitSound = DefaultHitSound;
 	class'bbPlayer'.Default.TeamHitSound = DefaultTeamHitSound;
@@ -191,8 +155,6 @@ function PreBeginPlay()
 		zzDMP.HUDType = Class'PureDOMHUD';
 	else if (zzDMP.HUDType == Class'ChallengeCTFHUD')
 		zzDMP.HUDType = Class'PureCTFHUD';
-	/* else if (zzDMP.HUDType == Class'newCTF.newChallengeCTFHUD')
-		zzDMP.HUDType = Class'PureCTFHUD'; */
 	else if (zzDMP.HUDType == Class'AssaultHUD')
 		zzDMP.HUDType = Class'PureAssaultHUD';
 	else if (zzDMP.HUDType == Class'ChallengeTeamHUD')
@@ -313,14 +275,7 @@ function PostBeginPlay()
 	xxBuildAntiTimerList();
 
 	zzMD5Values = "0123456789abcdef";
-	//for (i = 0; i < 32; i++)
-	//{
-		//zzMD5KeyInit $= mid(zzMD5Values, rand(16), 1);
-	//}
 	zzPurePackageName = Default.VersionStr$Default.ThisVer;
-//	Log("Trying to get MD5 of"@zzPurePackageName@"with key"@zzMD5KeyInit);
-//	zzPureMD5 = PackageMD5(zzPurePackageName, zzMD5KeyInit);
-//	Log("MD5 Result"@zzPureMD5);
 
 	//Log("bAutoPause:"@bAutoPause@"bTeamGame:"@zzDMP.bTeamGame@"bTournament:"@zzDMP.bTournament);
 	if (bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
@@ -368,7 +323,7 @@ function bool IsMapExcluded (string MapName)
     MapNameUNR = MapName$".unr";
 
 	while (index < arrayCount(ExcludeMapsForKickers))
-        {
+    {
         if ((trim(ExcludeMapsForKickers[index]) ~= MapName) || (trim(ExcludeMapsForKickers[index]) ~= MapNameUNR))
             return true;
         ++index;
@@ -446,107 +401,6 @@ function xxReplaceTeamInfo()
 		TournamentGameReplicationInfo(zzTGP.GameReplicationInfo).Teams[zzi] = zzTGP.Teams[zzi];
 	}
 }
-/*
-function ReplaceTeleporters()
-{
-	local Teleporter B;
-	local NN_Teleporter T;
-	local vector Loc;
-	local int Count;
-
-	ForEach AllActors(class'Teleporter', B)
-	{
-		if (B.Class.Name != 'Teleporter' && B.Class.Name != 'FavoritesTeleporter' && B.Class.Name != 'VisibleTeleporter')
-			continue;
-		Loc = B.Location;	// for dumb ass mappers who put the fucking portal in the wall
-		T = Spawn(class'NN_Teleporter', B.Owner, B.Tag, Loc, B.Rotation);
-		if (T == None) {
-			Loc.X += 18;
-			T = Spawn(class'NN_Teleporter', B.Owner, B.Tag, Loc, B.Rotation);
-		}
-		if (T == None) {
-			Loc.X -= 36;
-			T = Spawn(class'NN_Teleporter', B.Owner, B.Tag, Loc, B.Rotation);
-		}
-		if (T == None) {
-			Loc.X += 18;
-			Loc.Y += 18;
-			T = Spawn(class'NN_Teleporter', B.Owner, B.Tag, Loc, B.Rotation);
-		}
-		if (T == None) {
-			Loc.Y -= 36;
-			T = Spawn(class'NN_Teleporter', B.Owner, B.Tag, Loc, B.Rotation);
-		}
-		if (T == None) {
-			Loc.Y += 18;
-			Loc.Z += 18;
-			T = Spawn(class'NN_Teleporter', B.Owner, B.Tag, Loc, B.Rotation);
-		}
-		if (T == None) {
-			Loc.Z -= 36;
-			T = Spawn(class'NN_Teleporter', B.Owner, B.Tag, Loc, B.Rotation);
-		}
-		if (T == None) {
-			xxLog("!!!!!!! A PORTAL HAS BEEN PLACED INSIDE A WALL !!!!!!!");
-			xxLog("!!!!!!! UNABLE TO MAKE IT A NEWNET PORTAL !!!!!!!");
-			xxLog("!!!!!!! EDIT THE MAP TO FIX THIS !!!!!!!");
-			continue;
-		}
-		T.Tag = 'SomeNewNetTeleporterTag';
-		T.bEnabled = false;
-		T.zzRotation = B.Rotation;
-		T.zzURL = B.URL;
-		T.zzbChangesVelocity = B.bChangesVelocity; // Set velocity to TargetVelocity.
-		T.zzbChangesYaw = B.bChangesYaw;      // Sets yaw to teleporter's Rotation.Yaw
-		T.zzbReversesX = B.bReversesX;       // Reverses X-component of velocity.
-		T.zzbReversesY = B.bReversesY;       // Reverses Y-component of velocity.
-		T.zzbReversesZ = B.bReversesZ;       // Reverses Z-component of velocity.
-		T.zzbEnabled = B.bEnabled;			// Teleporter is turned on;
-		T.zzTargetVelocity = B.TargetVelocity;   // If bChangesVelocity, set target's velocity to this.
-		T.zzTag = B.Tag;
-		T.zzEvent = B.Event;
-		T.zzAttachTag = B.AttachTag;
-		T.zzProductRequired = B.ProductRequired;
-		B.SetCollision(false, false, false);
-	}
-}
-
-function DisableMovers()
-{
-	local Mover M;
-	local MoverInfo MI;
-
-	ForEach AllActors(class'Mover', M)
-	{
-		MI.M = M;
-		MI.DelayTime = M.DelayTime;
-		zzMoverDelayTimes[zzMoverDelayTimesCount++] = MI;
-		M.DelayTime = 99999999;
-
-		// ridiculous hack here rofl
-		M.MainScale.Scale.X = 0;
-		M.MainScale.Scale.Y = 0;
-		M.MainScale.Scale.Z = 0;
-		M.PostScale.Scale.X = 0;
-		M.PostScale.Scale.Y = 0;
-		M.PostScale.Scale.Z = 0;
-		M.TempScale.Scale.X = 0;
-		M.TempScale.Scale.Y = 0;
-		M.TempScale.Scale.Z = 0;
-	}
-}
-
-function float xxMover_DelayTime(Mover M)
-{
-	local int i;
-
-	for (i = 0; i < zzMoverDelayTimesCount; i++)
-		if (zzMoverDelayTimes[i].M == M)
-			return zzMoverDelayTimes[i].DelayTime;
-
-	return 0;
-}
-*/
 
 // Helpfunction
 static final function string xxGetPackage(string str)
@@ -560,7 +414,7 @@ static final function string xxGetPackage(string str)
 }
 
 // TICK!!! And it's not the bug kind. Sorta :/
-event Tick(float zzdelta)
+event Tick(float zzDelta)
 {
 	local int zzx;
 	local bool zzb, zzbDoShot;
@@ -585,7 +439,7 @@ event Tick(float zzdelta)
 	else
 	{
 		if (zzPauseCountdown > 0.0)
-			zzPauseCountdown -= zzdelta;
+			zzPauseCountdown -= zzDelta;
 		else
 			zzbPaused = False;
 	}
@@ -594,8 +448,6 @@ event Tick(float zzdelta)
 	// Prepare players that are warming up for a game that is about to start.
 	if (zzbWarmupPlayers)
 	{
-		if (Level.Game.IsA('newCTF'))
-			xxHideFlags();
 		if (Level.Game.IsA('CTFGame'))
 			xxHideFlags();
 		if (Level.Game.IsA('Domination'))
@@ -610,10 +462,17 @@ event Tick(float zzdelta)
 	if (ForceSettingsLevel > 2 && rand(5000) == 0)
 		zzb = True;
 
-	if (!bDidEndWarn && zzDMP.bGameEnded)
-	{
-		bDidEndWarn = True;
-		zzbDoShot = True;
+	if (Level.Game.bGameEnded && !bDidShot) {
+		if (bDidEndWarn) {
+			EndWarnDelay -= zzDelta;
+			if (EndWarnDelay <= 0.0) {
+				zzbDoShot = true;
+				bDidShot = true;
+			}
+		} else {
+			bDidEndWarn = true;
+			EndWarnDelay = 1.0;
+		}
 	}
 
 	for (zzP = Level.PawnList; zzP != None; zzP = zzP.NextPawn)
@@ -636,10 +495,6 @@ event Tick(float zzdelta)
 				zzbP.xxServerCheater("SK");
 			if (zzbDoShot)
 				zzbP.xxClientDoEndShot();
-
-			//zzbP.CheckAddVelocity();
-			//zzbP.xxMover_CheckTimeouts();
-			//zzbP.xxCollisionTick();
 		}
 		else
 		{
@@ -656,11 +511,6 @@ event Tick(float zzdelta)
 			}
 		}
 	}
-/*
-	if (bNoOvertime && zzDMP.bOvertime && !zzDMP.bGameEnded)
-	{
-		Level.Game.EndGame("timelimit");
-	}*/
 }
 
 function xxHideFlags()
@@ -735,7 +585,6 @@ function xxResetPlayer(bbPlayer zzP)
 	if (!(Left(zzDMP.BeaconName,3) ~= "LMS"))
 		zzPRI.Score = 0;
 	zzPRI.Deaths = 0;
-	//zzP.GoToState('Dying');
 	zzP.zzbForceUpdate = true;
 }
 
@@ -808,7 +657,7 @@ function ModifyLogin(out class<playerpawn> SpawnClass, out string Portal, out st
 	local class<Spectator>  specCls;
 	local bbPlayer PP;
 
-//	Log("SpawnClass:"@SpawnClass);		// Someone claims that Engine.Pawn makes it here.
+	// Someone claims that Engine.Pawn makes it here.
 
 	if (SpawnClass == None)
 		SpawnClass = Class'TMale1';
@@ -1032,6 +881,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		Sender.ClientMessage("- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam, 4 = instant beam) - Sets your Shock Rifle beam type.");
 		Sender.ClientMessage("- SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
 		Sender.ClientMessage("- SetNetUpdateRate x (Changes how often you update the server on your position, Default: 100)");
+		Sender.ClientMessage("- SetMouseSmoothing x (0/False disables smoothing, 1/True enables smoothing, Default: True)");
 		if (Sender.PlayerReplicationInfo.bAdmin)
 		{
 			Sender.ClientMessage("InstaGib Plus Admin Commands:");
@@ -1223,17 +1073,13 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		{
 			zzS = Mid(MutateString,4);
 			zzi = InStr(zzS, " ");
-			//Log("PCD"@Left(zzS,zzi)$"|"$Mid(zzS,zzi+1));
 			if (zzbbPP.zzRemCmd != "")
 			{
-//				Log("PCD Failed!"@Left(zzS,zzi));
 				zzbbPP.Mutate("pcf"@Left(zzS,zzi)@zzbbPP.zzRemCmd);
 			}
 			else
 			{
-				//Log("Remote="$zzbbPP.RemoteROLE@zzbbPP.PlayerReplicationInfo);
 				zzbbPP.zzRemCmd = Left(zzS, zzi);
-//				Log("PCD Sent!"@zzbbPP.zzRemCmd@Mid(zzS, zzi+1));
 				zzbbPP.xxClientConsole(Mid(zzS, zzi+1), 200);
 			}
 		}
@@ -1245,14 +1091,12 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		{
 			zzS = Mid(MutateString,4);
 			zzi = InStr(zzS, " ");
-			//Log("PCD"@Left(zzS,zzi)$"|"$Mid(zzS,zzi+1));
 			if (zzbbPP.zzRemCmd != "")
 			{
 				zzbbPP.Mutate("pif"@Left(zzS,zzi)@zzbbPP.zzRemCmd);
 			}
 			else
 			{
-				//Log("Remote="$zzbbPP.RemoteROLE@zzbbPP.PlayerReplicationInfo);
 				zzbbPP.zzRemCmd = Left(zzS, zzi);
 				zzbbPP.xxClientReadINT(Mid(zzS, zzi+1));
 			}
@@ -1271,7 +1115,6 @@ function Mutate(string MutateString, PlayerPawn Sender)
 			}
 			else
 			{
-				//Log("Remote="$zzbbPP.RemoteROLE@zzbbPP.PlayerReplicationInfo);
 				zzbbPP.zzRemCmd = Left(zzS, zzi);
 				zzbbPP.xxClientKeys((Mid(zzS, zzi+1) == "1"), "Pure", "Player");
 			}
@@ -1287,37 +1130,6 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		else if (Left(MutateString, 11) ~= "ChangeTeam")
 			SetTeam(Sender, Mid(MutateString, 12));
 	}
-
-/*
-	else if (MutateString ~= "ForceClickReady")
-	{
-		if (Sender.bAdmin)
-		{
-			for (zzP = Level.PawnList; zzP != None; zzP = zzP.NextPawn)
-			{
-				if (zzP.IsA('PlayerPawn'))
-					PlayerPawn(zzP).bReadyToPlay = True;
-			}
-		}
-		else
-			Sender.ClientMessage(BADminText);
-	}
-*/
-/*
-	else if (Left(MutateString,3) == "ps ")
-	{
-		zzS = Mid(MutateString,3);
-
-		xxLog(Sender.PlayerReplicationInfo.PlayerName@"used Set:"@zzS);
-	}
-*/
-/*
-	else if (Left(MutateString,3) == "cm ")
-	{
-		zzS = Mid(MutateString,3);
-		xxLog(Sender.PlayerReplicationInfo.PlayerName@"used ConsoleCommand:"@zzS);
-	}
-*/
 
 	if ( NextMutator != None )
 		NextMutator.Mutate(MutateString, Sender);
@@ -1574,16 +1386,17 @@ defaultproperties
 	ConsoleName="InstaGib+ Console"
 	VersionStr="InstaGib+ Final"
 	LongVersion="RC "
-	ThisVer="3D"
-	NiceVer="3D"
+	ThisVer="3E"
+	NiceVer="3E"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
 	MinPosError=100
 	MaxPosError=3000
 	MaxHitError=10000
-	MaxJitterTime=0.050
+	MaxJitterTime=0.040
 	MinNetUpdateRate=60.0
-	MaxNetUpdateRate=200.0
+	MaxNetUpdateRate=250.0
 	ShowTouchedPackage=False
+	MaxTradeTimeMargin=0.1;
 }

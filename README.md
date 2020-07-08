@@ -37,7 +37,9 @@ When connected to the server type <b>'mutate playerhelp'</b> in the console to v
 - SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0 )
 - ListSkins (Lists the available skins that can be forced)
 - SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam, 4 = instant beam) - Sets your Shock Rifle beam type.
-- SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)
+- SetBeamScale x (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)
+- SetNetUpdateRate x (Changes how often you update the server on your position, Default: 100)
+- SetMouseSmoothing x (0/False disables smoothing, 1/True enables smoothing, Default: True)
 
 
 # InstaGib Plus Admin Commands:
