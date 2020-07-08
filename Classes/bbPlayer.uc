@@ -5610,7 +5610,7 @@ event PreRender( canvas zzCanvas )
 				&& zzPRI.Owner != None
 				&& zzPRI.Owner != Self
 			) {
-				if (zzPRI.Team == Self.PlayerReplicationInfo.Team) {
+				if (GameReplicationInfo.bTeamGame && zzPRI.Team == Self.PlayerReplicationInfo.Team) {
 					if (zzPRI.bIsFemale) {
 						skin = desiredTeamSkinFemale;
 					} else {
