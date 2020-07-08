@@ -40,7 +40,7 @@ local class<scoreboard>		  ScoreBoardType;
 			ScoreBoardType = Class'PureDOMScoreBoard';
 		else {
 			ScoreBoardType = Class'PureCTFScoreBoard';
-			Log("Unknown Scoreboard type?", 'UTPure');
+			Log("Unknown Scoreboard type "@Level.Game.ScoreBoardType.Name, 'UTPure');
 		}
 
 		Log("Level is a "@String(ScoreBoardType));
@@ -79,7 +79,7 @@ local Actor zzA;
 			Log("We have a fake flag!", 'UTPure');
 			return;
 		}
-			
+
 	}
 
 	// Still havent found one ? .. Try AllActors
@@ -90,7 +90,7 @@ local Actor zzA;
 			Log("We have a fake flag!", 'UTPure');
 			return;
 		}
-			
+
 	}
 	// Oh Well, forget it, we wont make it.
 	Log("CreateFakeFlag() failed :(", 'UTPure');
