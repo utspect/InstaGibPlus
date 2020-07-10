@@ -139,6 +139,8 @@ function PreBeginPlay()
 	if (zzDMP == None)
 		return;
 
+	zzDMP.bFirstBlood = True;
+
 	Spawn(class'NN_SpawnNotify');
 
 	if (NNAnnouncer)
@@ -456,6 +458,8 @@ event Tick(float zzDelta)
 			xxHideFortStandards();
 		if (zzDMP.CountDown < 10)
 			xxResetGame();
+
+		// Make sure first blood doesn't get triggered during warmup
 	}
 
 	// Cause clients to force an actor check.
@@ -648,6 +652,9 @@ function xxResetGame()			// Resets the current game to make sure nothing bad hap
 	}
 
 	zzbWarmupPlayers = False;
+
+	// Reset first blood so it gets triggered when the game starts
+	zzDMP.bFirstBlood = False;
 }
 
 // Modify the login classes to our classes.
