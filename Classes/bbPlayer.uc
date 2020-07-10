@@ -5610,6 +5610,7 @@ event PreRender( canvas zzCanvas )
 				&& zzPRI.Owner != None
 				&& zzPRI.Owner != Self
 			) {
+				// force skins
 				if (GameReplicationInfo.bTeamGame && zzPRI.Team == Self.PlayerReplicationInfo.Team) {
 					if (zzPRI.bIsFemale) {
 						skin = desiredTeamSkinFemale;
@@ -5624,21 +5625,23 @@ event PreRender( canvas zzCanvas )
 					}
 				}
 				setForcedSkin(zzPRI.Owner, skin, GameReplicationInfo.bTeamGame, zzPRI.Team);
-			}
 
-			if (zzPRI.Owner.AnimSequence == 'Flip') {
-				if (GameReplicationInfo.bTeamGame && PlayerReplicationInfo.Team == zzPRI.Team) {
-					if (class'bbPlayer'.default.DesiredTeamSkinFemale > 8 && zzPRI.bIsFemale)
-						zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-					else if (class'bbPlayer'.default.DesiredTeamSkin <= 8 && zzPRI.bIsFemale == false)
-						zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-				} else {
-					if (class'bbPlayer'.default.DesiredSkinFemale > 8 && zzPRI.bIsFemale)
-						zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-					else if (class'bbPlayer'.default.DesiredSkin <= 8 && zzPRI.bIsFemale == false)
-						zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+				// fix up Flip animation
+				if (zzPRI.Owner.AnimSequence == 'Flip') {
+					if (GameReplicationInfo.bTeamGame && PlayerReplicationInfo.Team == zzPRI.Team) {
+						if (class'bbPlayer'.default.DesiredTeamSkinFemale > 8 && zzPRI.bIsFemale)
+							zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+						else if (class'bbPlayer'.default.DesiredTeamSkin <= 8 && zzPRI.bIsFemale == false)
+							zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+					} else {
+						if (class'bbPlayer'.default.DesiredSkinFemale > 8 && zzPRI.bIsFemale)
+							zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+						else if (class'bbPlayer'.default.DesiredSkin <= 8 && zzPRI.bIsFemale == false)
+							zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+					}
 				}
 			}
+
 		}
 	}
 
