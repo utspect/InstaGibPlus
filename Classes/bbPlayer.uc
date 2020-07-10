@@ -1161,10 +1161,10 @@ event PlayerInput( float DeltaTime )
 	bOldWasBack = bWasBack;
 	bOldWasLeft = bWasLeft;
 	bOldWasRight = bWasRight;
-	bWasForward = (aBaseY > 0);
-	bWasBack = (aBaseY < 0);
-	bWasLeft = (aStrafe > 0);
-	bWasRight = (aStrafe < 0);
+	bWasForward = (aBaseY >= 1);
+	bWasBack = (aBaseY <= -1);
+	bWasLeft = (aStrafe >= 1);
+	bWasRight = (aStrafe <= -1);
 	bEdgeForward = bOldWasForward != bWasForward;
 	bEdgeBack = bOldWasBack != bWasBack;
 	bEdgeLeft = bOldWasLeft != bWasLeft;
@@ -4058,28 +4058,28 @@ ignores SeePlayer, HearNoise, Bump;
 
 				if (bEdgeForward && bWasForward)
 				{
-					if (MinDodgeClickTime == 0 || Now - zzLastTimeForward > MinDodgeClickTime) {
+					if (Now - zzLastTimeForward > MinDodgeClickTime) {
 						DodgeDir = DODGE_Forward;
 						zzLastTimeForward = Now;
 					}
 				}
 				else if (bEdgeBack && bWasBack)
 				{
-					if (MinDodgeClickTime == 0 || Now - zzLastTimeBack > MinDodgeClickTime) {
+					if (Now - zzLastTimeBack > MinDodgeClickTime) {
 						DodgeDir = DODGE_Back;
 						zzLastTimeBack = Now;
 					}
 				}
 				else if (bEdgeLeft && bWasLeft)
 				{
-					if (MinDodgeClickTime == 0 || Now - zzLastTimeLeft > MinDodgeClickTime) {
+					if (Now - zzLastTimeLeft > MinDodgeClickTime) {
 						DodgeDir = DODGE_Left;
 						zzLastTimeLeft = Now;
 					}
 				}
 				else if (bEdgeRight && bWasRight)
 				{
-					if (MinDodgeClickTime == 0 || Now - zzLastTimeRight > MinDodgeClickTime) {
+					if (Now - zzLastTimeRight > MinDodgeClickTime) {
 						DodgeDir = DODGE_Right;
 						zzLastTimeRight = Now;
 					}
