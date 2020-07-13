@@ -5641,7 +5641,6 @@ event PreRender( canvas zzCanvas )
 					}
 				}
 			}
-
 		}
 	}
 
