@@ -111,7 +111,7 @@ function string GetReplacementWeapon(Weapon W, bool bDamnEpic)
 function FixBitMap(name WeaponName, bool bDamnEpic)
 {
 	local int BitMap;
-	
+
 	if (WeaponName == 'ST_ImpactHammer' && !bDamnEPIC)
 		BitMap = (1 << 1);							// IH = 01
 	else if (WeaponName == 'ST_Translocator' || WeaponName == 'Grappling')
@@ -155,7 +155,7 @@ function ReplaceWeapons()
 
 	W = Spawn(Level.Game.BaseMutator.MutatedDefaultWeapon());
 	GetReplacementWeapon(W, False);
-	W.Destroy();				
+	W.Destroy();
 	ForEach AllActors(Class'Arena', ArenaMutator)
 	{
 		PA = NewNetArena(ArenaMutator);
@@ -167,7 +167,7 @@ function ReplaceWeapons()
 
 	if (bTranslocatorGame)
 		WeaponDisplay = WeaponDisplay | (1 << 2);
-	
+
 	if (PA == None)
 	{
 		WeaponDisplay = WeaponDisplay | (1 << 3);
@@ -270,10 +270,10 @@ function SwitchWeaponsInventory(Pawn Other)
 		//GiveGoodWeapon(Other, PreFix$"ST_Translocator", None);
 		DMP.bUseTranslocator = False;
 	}
-	
+
 	ForEach AllActors(class'UTPure', UTP)
 		break;
-	
+
 	for (x = 0; x < 8; x++)
 		if (UTP.zzDefaultWeapons[x] != '')
 		{
@@ -302,7 +302,7 @@ function SwitchWeaponsInventory(Pawn Other)
 			Highest = Current;
 		}
 	}
-	
+
 	if (Best == None)
 		Other.SwitchToBestWeapon();
 	else
@@ -324,7 +324,7 @@ function bool AlwaysKeep(Actor Other)
 									 || Level.Game.IsA('NewNetSDOM')) && Other.IsA('NN_Armor2')
 									 || Other.IsA('NN_ThighPads')))
         return true;
-	
+
     return Super.AlwaysKeep(Other);
 }
 
@@ -373,6 +373,7 @@ function Tick(float deltaTime)
 
 function PreBeginPlay()
 {
+	local string SelfName;
 	DMP = DeathMatchPlus(Level.Game);
 	DMP.BotConfigType = Class'ST_ChallengeBotInfo';		// Make sure game uses our �bersuperior bots.
 	if (DMP.BotConfig != None)
@@ -381,7 +382,8 @@ function PreBeginPlay()
 		DMP.BotConfig = Spawn(DMP.BotConfigType);
 	}
 	bTranslocatorGame = DMP.bUseTranslocator;
-	PreFix = Default.PreFix$Class'UTPure'.Default.ThisVer$".";
+	SelfName = string(self);
+	PreFix = Left(SelfName, InStr(SelfName, ".") + 1);
 /* 	Level.Game.RegisterMessageMutator(Self);
 	Class'bbCHSpectator'.Default.cStat = Class'ST_PureStatsSpec'; */
 	Super.PreBeginPlay();
