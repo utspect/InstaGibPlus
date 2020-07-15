@@ -1666,7 +1666,7 @@ function OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData2) {
 	DodgeMove = GetDodgeDir((OldMoveData1 >>> 13) & 7);
 	Accel.X = (OldMoveData1 >> 16) * 0.1;
 	Accel.Y = (OldMoveData2 << 16 >> 16) * 0.1;
-	Accel.Z = (OldMoveData1 >> 16) * 0.1;
+	Accel.Z = (OldMoveData2 >> 16) * 0.1;
 
 	MoveAutonomous(OldTimeStamp - CurrentTimeStamp, OldRun, OldDuck, OldJump, DodgeMove, Accel, rot(0,0,0));
 	CurrentTimeStamp = OldTimeStamp - 0.001;
