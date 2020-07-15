@@ -2656,7 +2656,7 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	MiscData = MiscData | ((Rotation.Roll >> 8) & 0xFF);
 
 	if (OldMove != none) {
-		OldMoveData1 = Min(1024, (Level.TimeSeconds - OldMove.TimeStamp) * 1000);
+		OldMoveData1 = Min(0x3FF, (Level.TimeSeconds - OldMove.TimeStamp) * 1000);
 		if (OldMove.bPressedJump) OldMoveData1 = OldMoveData1 | 0x0400;
 		if (OldMove.bRun) OldMoveData1 = OldMoveData1 | 0x0800;
 		if (OldMove.bDuck) OldMoveData1 = OldMoveData1 | 0x1000;
