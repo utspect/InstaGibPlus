@@ -1649,6 +1649,29 @@ function EPhysics GetPhysics(int phys) {
 	return PHYS_None;
 }
 
+function OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData2) {
+	local vector Accel;
+	local float OldTimeStamp;
+	local bool OldRun;
+	local bool OldDuck;
+	local bool OldJump;
+	local EDodgeDir DodgeMove;
+
+	OldTimeStamp = TimeStamp - ((OldMoveData1 & 0x3FF) * 0.001);
+	if (CurrentTimeStamp >= OldTimeStamp) return;
+
+	OldJump = (OldMoveData1 & 0x0400) != 0;
+	OldRun = (OldMoveData1 & 0x0800) != 0;
+	OldDuck = (OldMoveData1 & 0x1000) != 0;
+	DodgeMove = GetDodgeDir((OldMoveData1 >>> 13) & 7);
+	Accel.X = (OldMoveData1 >> 16) * 0.1;
+	Accel.Y = (OldMoveData2 << 16 >> 16) * 0.1;
+	Accel.Z = (OldMoveData1 >> 16) * 0.1;
+
+	MoveAutonomous(OldTimeStamp - CurrentTimeStamp, OldRun, OldDuck, OldJump, DodgeMove, Accel, rot(0,0,0));
+	CurrentTimeStamp = OldTimeStamp - 0.001;
+}
+
 function xxServerMove(
 	float TimeStamp,
 	float FrameTime,
@@ -1661,7 +1684,9 @@ function xxServerMove(
 	vector ClientVel,
 	int MiscData,
 	int View,
-	Actor ClientBase
+	Actor ClientBase,
+	optional int OldMoveData1,
+	optional int OldMoveData2
 ) {
 	local int i;
 
@@ -1733,6 +1758,9 @@ function xxServerMove(
 		ClientLocAbs = ClientLoc;
 	else
 		ClientLocAbs = ClientLoc + ClientBase.Location;
+
+	if ((OldMoveData1 & 0x3FF) != 0)
+		OldServerMove(TimeStamp, OldMoveData1, OldMoveData2);
 
 	// View components
 	CompressedViewRotation = View;
@@ -2523,24 +2551,30 @@ function xxReplicateMove(
 			if (SavedMoves == none) {
 				SavedMoves = PendingMove;
 			} else {
-				NewMove = bbSavedMove(SavedMoves);
-				while(NewMove.NextMove != none)
-					NewMove = bbSavedMove(NewMove.NextMove);
+				LastMove = bbSavedMove(SavedMoves);
+				while(LastMove.NextMove != none)
+					LastMove = bbSavedMove(LastMove.NextMove);
 
-				NewMove.NextMove = PendingMove;
-				NewMove = none;
+				LastMove.NextMove = PendingMove;
 			}
 			PendingMove = none;
 		}
 	}
 	if ( SavedMoves != None )
 	{
-		NewMove = bbSavedMove(SavedMoves);
-		while (NewMove.NextMove != none)
-			NewMove = bbSavedMove(NewMove.NextMove);
+		LastMove = bbSavedMove(SavedMoves);
+		while (LastMove.NextMove != none) {
+			if (LastMove.bPressedJump || (LastMove.DodgeMove >= DODGE_Left && LastMove.DodgeMove <= DODGE_Back)) {
+				OldMove = LastMove;
+			}
+			if (VSize(NewAccel - LastMove.Acceleration) > 0.125 * AccelRate) {
+				if (OldMove == none || (OldMove.bPressedJump == false && (OldMove.DodgeMove < DODGE_Left || OldMove.DodgeMove > DODGE_Back)))
+					OldMove = LastMove;
+			}
+			LastMove = bbSavedMove(LastMove.NextMove);
+		}
 	}
 
-	LastMove = NewMove;
 	NewMove = xxGetFreeMove();
 	NewMove.Delta = DeltaTime;
 	NewMove.Acceleration = NewAccel;
@@ -2595,13 +2629,14 @@ function xxReplicateMove(
 		LastMove.NextMove = PendingMove;
 	PendingMove = None;
 
-	SendSavedMove(NewMove);
+	SendSavedMove(NewMove, OldMove);
 }
 
-function SendSavedMove(bbSavedMove Move) {
+function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	local int MiscData;
 	local vector RelLoc;
 	local vector Accel;
+	local int OldMoveData1, OldMoveData2;
 
 	if (Move.bPressedJump) bJumpStatus = !bJumpStatus;
 
@@ -2620,6 +2655,17 @@ function SendSavedMove(bbSavedMove Move) {
 	MiscData = MiscData | (int(Move.DodgeMove) << 8);
 	MiscData = MiscData | ((Rotation.Roll >> 8) & 0xFF);
 
+	if (OldMove != none) {
+		OldMoveData1 = Min(1024, (Level.TimeSeconds - OldMove.TimeStamp) * 1000);
+		if (OldMove.bPressedJump) OldMoveData1 = OldMoveData1 | 0x0400;
+		if (OldMove.bRun) OldMoveData1 = OldMoveData1 | 0x0800;
+		if (OldMove.bDuck) OldMoveData1 = OldMoveData1 | 0x1000;
+		OldMoveData1 = OldMoveData1 | (int(OldMove.DodgeMove) << 13);
+		OldMoveData1 = OldMoveData1 | (int(OldMove.Acceleration.X * 10.0) << 16);
+		OldMoveData2 = OldMoveData2 | (int(OldMove.Acceleration.Y * 10.0) & 0xFFFF);
+		OldMoveData2 = OldMoveData2 | (int(OldMove.Acceleration.Z * 10.0) << 16);
+	}
+
 	xxServerMove(
 		Move.TimeStamp,
 		Move.Delta,
@@ -2632,7 +2678,9 @@ function SendSavedMove(bbSavedMove Move) {
 		Velocity,
 		MiscData,
 		((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF),
-		Base
+		Base,
+		OldMoveData1,
+		OldMoveData2
 	);
 	if ( (Weapon != None) && !Weapon.IsAnimating() )
 	{
@@ -3737,7 +3785,9 @@ state FeigningDeath
 		vector ClientVel,
 		int MiscData,
 		int View,
-		Actor ClientBase
+		Actor ClientBase,
+		optional int OldMoveData1,
+		optional int OldMoveData2
 	)
 	{
 		Global.xxServerMove(
@@ -3752,7 +3802,9 @@ state FeigningDeath
 			ClientVel,
 			MiscData,
 			((Rotation.Pitch & 0xFFFF) << 16) | (Rotation.Yaw & 0xFFFF),
-			ClientBase);
+			ClientBase,
+			OldMoveData1,
+			OldMoveData2);
 	}
 
 	function PlayerMove( float DeltaTime)
@@ -4799,7 +4851,9 @@ state Dying
 		vector ClientVel,
 		int MiscData,
 		int View,
-		Actor ClientBase
+		Actor ClientBase,
+		optional int OldMoveData1,
+		optional int OldMoveData2
 	)
 	{
 		Global.xxServerMove(
@@ -4814,7 +4868,9 @@ state Dying
 			ClientVel,
 			MiscData & 0xFFFF,
 			View,
-			ClientBase);
+			ClientBase,
+			OldMoveData1,
+			OldMoveData2);
 	}
 
 	function FindGoodView()
@@ -4939,7 +4995,9 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 		vector ClientVel,
 		int MiscData,
 		int View,
-		Actor ClientBase
+		Actor ClientBase,
+		optional int OldMoveData1,
+		optional int OldMoveData2
 	)
 	{
 		Global.xxServerMove(
@@ -4954,7 +5012,9 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 			ClientVel,
 			MiscData,
 			((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF),
-			ClientBase);
+			ClientBase,
+			OldMoveData1,
+			OldMoveData2);
 	}
 
 	function FindGoodView()
