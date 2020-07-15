@@ -1865,12 +1865,6 @@ function xxServerMove(
 	ClientLocErr = LocDiff Dot LocDiff;
 	debugClientLocError = ClientLocErr;
 
-	// if (ClientLocErr > MaxPosError) {
-	// 	// fix for stairs
-	// 	LocDiff.Z = FMax(Abs(LocDiff.Z) - MaxStepHeight, 0);
-	// 	ClientLocErr = LocDiff Dot LocDiff;
-	// }
-
 	debugClientForceUpdate = false;
 
 	PlayerReplicationInfo.Ping = int(ConsoleCommand("GETPING"));
