@@ -2528,6 +2528,8 @@ function xxReplicateMove(
 	if ( PendingMove != None )
 	{
 		if (VSize(NewAccel - PendingMove.Acceleration) < 0.125 * AccelRate &&
+			PendingMove.bRun == (bRun > 0) &&
+			PendingMove.bDuck == (bDuck > 0) &&
 			bbSavedMove(PendingMove).MergeCount < 31
 		) {
 			//add this move to the pending move
@@ -2540,8 +2542,6 @@ function xxReplicateMove(
 			// Set this move's data.
 			if ( PendingMove.DodgeMove == DODGE_None )
 				PendingMove.DodgeMove = DodgeMove;
-			PendingMove.bRun = (bRun > 0);
-			PendingMove.bDuck = (bDuck > 0);
 			PendingMove.bPressedJump = bPressedJump || PendingMove.bPressedJump;
 			PendingMove.Delta = TotalTime;
 			bbSavedMove(PendingMove).MergeCount += 1;
