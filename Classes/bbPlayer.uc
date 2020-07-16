@@ -2558,7 +2558,7 @@ function xxReplicateMove(
 	{
 		LastMove = bbSavedMove(SavedMoves);
 		while (LastMove.NextMove != none) {
-			if (LastMove.bPressedJump || (LastMove.DodgeMove >= DODGE_Left && LastMove.DodgeMove <= DODGE_Back)) {
+			if (LastMove.bPressedJump || (DodgeMove > DODGE_None && LastMove.DodgeMove >= DODGE_Left && LastMove.DodgeMove <= DODGE_Back)) {
 				OldMove = LastMove;
 			}
 			if (VSize(NewAccel - LastMove.Acceleration) > 0.125 * AccelRate) {
