@@ -7712,7 +7712,7 @@ function string xxCreateDemoName(string zzDemoName)
 		zzDemoName = "%l_[%y_%m_%d_%t]_[%c]_%e";	// Incase admin messes up :/
 
 	while(true) {
-		zzx = InStr(zzDemoName);
+		zzx = InStr(zzDemoName, "%");
 		if (zzx < 0) break;
 
 		zzS = Mid(zzDemoName,zzx+1,1);
