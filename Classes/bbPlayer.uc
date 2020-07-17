@@ -7695,72 +7695,70 @@ function string xxFixFileName(string zzS, string zzReplaceChar)
 	return zzs3;
 }
 
+function string PadNumberToTwoDigits(int Val) {
+	if (Val < 10)
+		return "0"$string(Val);
+	else
+		return string(Val);
+}
+
 function string xxCreateDemoName(string zzDemoName)
 {
 	local int zzx;
 	local string zzS;
+	local string result;
 
 	if (zzDemoName == "")
 		zzDemoName = "%l_[%y_%m_%d_%t]_[%c]_%e";	// Incase admin messes up :/
 
-	while (True)
-	{
-		zzx = InStr(zzDemoName,"%");
-		if (zzx < 0)
-			break;
+	while(true) {
+		zzx = InStr(zzDemoName);
+		if (zzx < 0) break;
+
 		zzS = Mid(zzDemoName,zzx+1,1);
-		Switch(Caps(zzS))
-		{
-			Case "E":	zzS = string(Level);
-					zzS = Left(zzS,InStr(zzS,"."));
-					break;
-			Case "F":	zzS = Level.Title;		// Level.Title
-					break;
-			Case "D":	if (Level.Day < 10)		// Day
-						zzS = "0"$string(Level.Day);
-					else
-						zzS = string(Level.Day);
-					break;
-			Case "M":	if (Level.Month < 10)		// Month
-						zzS = "0"$string(Level.Month);
-					else
-						zzS = string(Level.Month);
-					break;
-			Case "Y":	zzS = string(Level.Year);	// Year
-					break;
-			Case "H":	if (Level.Hour < 10)		// Hour
-						zzS = "0"$string(Level.Hour);
-					else
-						zzS = string(Level.Hour);
-					break;
-			Case "N":	if (Level.Minute < 10)		// Minute
-						zzS = zzS$"0"$string(Level.Minute);
-					else
-						zzS = string(Level.Minute);
-					break;
-			Case "T":	if (Level.Hour < 10)		// Time (HourMinute)
-						zzS = "0"$string(Level.Hour);
-					else
-						zzS = string(Level.Hour);
-					if (Level.Minute < 10)		// Minute
-						zzS = zzS$"0"$string(Level.Minute);
-					else
-						zzS = zzS$string(Level.Minute);
-					break;
-			Case "C":	// Try to find 2 unique tags within the 2 teams. If only 2 players exists, add their names.
-					zzS = xxFindClanTags();
-					break;
-			Case "L":	// Find the name of the local player
-					zzS = PlayerReplicationInfo.PlayerName;
-					break;
-			Case "%":	break;
-			Default:	zzS = "%"$zzS;
-					break;
+		switch(Caps(zzS)) {
+			case "E":
+				zzS = string(Level);
+				zzS = Left(zzS,InStr(zzS,"."));
+				break;
+			case "F":
+				zzS = Level.Title;
+				break;
+			case "D":
+				zzS = PadNumberToTwoDigits(Level.Day);
+				break;
+			case "M":
+				zzS = PadNumberToTwoDigits(Level.Month);
+				break;
+			case "Y":
+				zzS = string(Level.Year);
+				break;
+			case "H":
+				zzS = PadNumberToTwoDigits(Level.Hour);
+				break;
+			case "N":
+				zzS = PadNumberToTwoDigits(Level.Minute);
+				break;
+			case "T":
+				zzS = PadNumberToTwoDigits(Level.Hour) $ PadNumberToTwoDigits(Level.Minute);
+				break;
+			case "C":	// Try to find 2 unique tags within the 2 teams. If only 2 players exists, add their names.
+				zzS = xxFindClanTags();
+				break;
+			case "L":
+				zzS = PlayerReplicationInfo.PlayerName;
+				break;
+			case "%":
+				break;
+			default:
+				zzS = "%"$zzS;
+				break;
 		}
-		zzDemoName = Left(zzDemoName,zzx)$zzS$Mid(zzDemoName,zzx+2);
+		result = result $ Left(zzDemoName, zzx) $ zzS;
+		zzDemoName = Mid(zzDemoName, zzx + 2);
 	}
-	zzDemoName = DemoPath$xxFixFileName(zzDemoName,DemoChar);
-	return zzDemoName;
+
+	return result $ zzDemoName;
 }
 
 exec function AutoDemo(bool zzb)
