@@ -1820,6 +1820,12 @@ function xxServerMove(
 	// Predict new position
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
 		SimStep = DeltaTime / float(MergeCount + 1);
+
+		if (SimStep < 0.005) {
+			MergeCount = int(DeltaTime * 200);
+			SimStep = DeltaTime / float(MergeCount + 1);
+		}
+
 		while ( MergeCount > 0 )
 		{
 			MoveAutonomous( SimStep, NewbRun, NewbDuck, false, DODGE_None, Accel, rot(0,0,0) );
