@@ -262,6 +262,12 @@ var bool SetPendingWeapon;
 // Net Updates
 var float MaxPosErrorFactor;
 var float TimeBetweenNetUpdates;
+var float OldServerTimeStamp;
+var float OldClientTimeStamp;
+var bool bExtrapolatedLastUpdate;
+var vector SavedLocation;
+var vector SavedVelocity;
+var vector SavedAcceleration;
 
 // SSR Beam
 var byte BeamFadeCurve;
@@ -1690,6 +1696,7 @@ function xxServerMove(
 ) {
 	local int i;
 
+	local float ServerDeltaTime;
 	local float DeltaTime;
 	local float SimStep;
 	local float ClientLocErr;
@@ -1772,13 +1779,16 @@ function xxServerMove(
 	NewbPressedJump = (bJumpStatus != NewbJumpStatus);
 	bJumpStatus = NewbJumpStatus;
 
+	ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
+	if (ServerDeltaTime > 0.5)
+		ServerDeltaTime = FMin(ServerDeltaTime, FrameTime);
 	DeltaTime = TimeStamp - CurrentTimeStamp;
 	if (DeltaTime > 0.5)
 		DeltaTime = FMin(DeltaTime, FrameTime);
 
 	if ( ServerTimeStamp > 0 ) {
 		// allow 1% error
-		TimeMargin += DeltaTime - 1.01 * (Level.TimeSeconds - ServerTimeStamp);
+		TimeMargin += DeltaTime - 1.01 * ServerDeltaTime;
 		if ( TimeMargin > MaxTimeMargin ) {
 			// player is too far ahead
 			TimeMargin -= DeltaTime;
@@ -1819,7 +1829,20 @@ function xxServerMove(
 
 	// Predict new position
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
+		if (bExtrapolatedLastUpdate) {
+			bExtrapolatedLastUpdate = false;
+			xxNewMoveSmooth(SavedLocation);
+			Velocity = SavedVelocity;
+			Acceleration = SavedAcceleration;
+		}
+
 		SimStep = DeltaTime / float(MergeCount + 1);
+
+		if (SimStep < 0.005) {
+			MergeCount = int(DeltaTime * 200);
+			SimStep = DeltaTime / float(MergeCount + 1);
+		}
+
 		while ( MergeCount > 0 )
 		{
 			MoveAutonomous( SimStep, NewbRun, NewbDuck, false, DODGE_None, Accel, rot(0,0,0) );
@@ -2612,8 +2635,7 @@ function xxReplicateMove(
 	NewMove.SavedVelocity = Velocity;
 
 	if ((PendingMove.Delta < NetMoveDelta - ClientUpdateTime) &&
-		(PendingMove.bPressedJump == false) &&
-		(OldPhys == Physics))
+		(PendingMove.bPressedJump == false))
 		return;
 
 	ClientUpdateTime = PendingMove.Delta - NetMoveDelta;
@@ -4217,6 +4239,8 @@ ignores SeePlayer, HearNoise, Bump;
 	{
 		local float TimeSinceLastUpdate;
 		local float ProcessTime;
+		local float ClientDelta;
+		local float ServerDelta;
 
 		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
@@ -4229,10 +4253,24 @@ ignores SeePlayer, HearNoise, Bump;
 		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
 
 		if (TimeSinceLastUpdate > class'UTPure'.default.MaxJitterTime && bJustRespawned == false) {
-			MoveAutonomous(TimeSinceLastUpdate, false, false, false, DODGE_None, Acceleration, rot(0,0,0));
+			MoveAutonomous(TimeSinceLastUpdate, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
 			CurrentTimeStamp += TimeSinceLastUpdate;
 			ServerTimeStamp += TimeSinceLastUpdate;
 		}
+
+		ServerDelta = ServerTimeStamp - OldServerTimeStamp;
+		ClientDelta = CurrentTimeStamp - OldClientTimeStamp;
+
+		if (ServerDelta > 1.5*ClientDelta) {
+			bExtrapolatedLastUpdate = true;
+			SavedLocation = Location;
+			SavedVelocity = Velocity;
+			SavedAcceleration = Acceleration;
+			MoveAutonomous(ServerDelta - ClientDelta, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+		}
+
+		OldServerTimeStamp = ServerTimeStamp;
+		OldClientTimeStamp = CurrentTimeStamp;
 	}
 
 	function BeginState()
@@ -7695,72 +7733,70 @@ function string xxFixFileName(string zzS, string zzReplaceChar)
 	return zzs3;
 }
 
+function string PadNumberToTwoDigits(int Val) {
+	if (Val < 10)
+		return "0"$string(Val);
+	else
+		return string(Val);
+}
+
 function string xxCreateDemoName(string zzDemoName)
 {
 	local int zzx;
 	local string zzS;
+	local string result;
 
 	if (zzDemoName == "")
 		zzDemoName = "%l_[%y_%m_%d_%t]_[%c]_%e";	// Incase admin messes up :/
 
-	while (True)
-	{
-		zzx = InStr(zzDemoName,"%");
-		if (zzx < 0)
-			break;
+	while(true) {
+		zzx = InStr(zzDemoName, "%");
+		if (zzx < 0) break;
+
 		zzS = Mid(zzDemoName,zzx+1,1);
-		Switch(Caps(zzS))
-		{
-			Case "E":	zzS = string(Level);
-					zzS = Left(zzS,InStr(zzS,"."));
-					break;
-			Case "F":	zzS = Level.Title;		// Level.Title
-					break;
-			Case "D":	if (Level.Day < 10)		// Day
-						zzS = "0"$string(Level.Day);
-					else
-						zzS = string(Level.Day);
-					break;
-			Case "M":	if (Level.Month < 10)		// Month
-						zzS = "0"$string(Level.Month);
-					else
-						zzS = string(Level.Month);
-					break;
-			Case "Y":	zzS = string(Level.Year);	// Year
-					break;
-			Case "H":	if (Level.Hour < 10)		// Hour
-						zzS = "0"$string(Level.Hour);
-					else
-						zzS = string(Level.Hour);
-					break;
-			Case "N":	if (Level.Minute < 10)		// Minute
-						zzS = zzS$"0"$string(Level.Minute);
-					else
-						zzS = string(Level.Minute);
-					break;
-			Case "T":	if (Level.Hour < 10)		// Time (HourMinute)
-						zzS = "0"$string(Level.Hour);
-					else
-						zzS = string(Level.Hour);
-					if (Level.Minute < 10)		// Minute
-						zzS = zzS$"0"$string(Level.Minute);
-					else
-						zzS = zzS$string(Level.Minute);
-					break;
-			Case "C":	// Try to find 2 unique tags within the 2 teams. If only 2 players exists, add their names.
-					zzS = xxFindClanTags();
-					break;
-			Case "L":	// Find the name of the local player
-					zzS = PlayerReplicationInfo.PlayerName;
-					break;
-			Case "%":	break;
-			Default:	zzS = "%"$zzS;
-					break;
+		switch(Caps(zzS)) {
+			case "E":
+				zzS = string(Level);
+				zzS = Left(zzS,InStr(zzS,"."));
+				break;
+			case "F":
+				zzS = Level.Title;
+				break;
+			case "D":
+				zzS = PadNumberToTwoDigits(Level.Day);
+				break;
+			case "M":
+				zzS = PadNumberToTwoDigits(Level.Month);
+				break;
+			case "Y":
+				zzS = string(Level.Year);
+				break;
+			case "H":
+				zzS = PadNumberToTwoDigits(Level.Hour);
+				break;
+			case "N":
+				zzS = PadNumberToTwoDigits(Level.Minute);
+				break;
+			case "T":
+				zzS = PadNumberToTwoDigits(Level.Hour) $ PadNumberToTwoDigits(Level.Minute);
+				break;
+			case "C":	// Try to find 2 unique tags within the 2 teams. If only 2 players exists, add their names.
+				zzS = xxFindClanTags();
+				break;
+			case "L":
+				zzS = PlayerReplicationInfo.PlayerName;
+				break;
+			case "%":
+				break;
+			default:
+				zzS = "%"$zzS;
+				break;
 		}
-		zzDemoName = Left(zzDemoName,zzx)$zzS$Mid(zzDemoName,zzx+2);
+		result = result $ Left(zzDemoName, zzx) $ zzS;
+		zzDemoName = Mid(zzDemoName, zzx + 2);
 	}
-	zzDemoName = DemoPath$xxFixFileName(zzDemoName,DemoChar);
-	return zzDemoName;
+
+	return DemoPath $ xxFixFileName(result $ zzDemoName, DemoChar);
 }
 
 exec function AutoDemo(bool zzb)
