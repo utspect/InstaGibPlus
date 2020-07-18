@@ -1690,6 +1690,7 @@ function xxServerMove(
 ) {
 	local int i;
 
+	local float ServerDeltaTime;
 	local float DeltaTime;
 	local float SimStep;
 	local float ClientLocErr;
@@ -1772,13 +1773,16 @@ function xxServerMove(
 	NewbPressedJump = (bJumpStatus != NewbJumpStatus);
 	bJumpStatus = NewbJumpStatus;
 
+	ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
+	if (ServerDeltaTime > 0.5)
+		ServerDeltaTime = FMin(ServerDeltaTime, FrameTime);
 	DeltaTime = TimeStamp - CurrentTimeStamp;
 	if (DeltaTime > 0.5)
 		DeltaTime = FMin(DeltaTime, FrameTime);
 
 	if ( ServerTimeStamp > 0 ) {
 		// allow 1% error
-		TimeMargin += DeltaTime - 1.01 * (Level.TimeSeconds - ServerTimeStamp);
+		TimeMargin += DeltaTime - 1.01 * ServerDeltaTime;
 		if ( TimeMargin > MaxTimeMargin ) {
 			// player is too far ahead
 			TimeMargin -= DeltaTime;
