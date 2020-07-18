@@ -2612,8 +2612,7 @@ function xxReplicateMove(
 	NewMove.SavedVelocity = Velocity;
 
 	if ((PendingMove.Delta < NetMoveDelta - ClientUpdateTime) &&
-		(PendingMove.bPressedJump == false) &&
-		(OldPhys == Physics))
+		(PendingMove.bPressedJump == false))
 		return;
 
 	ClientUpdateTime = PendingMove.Delta - NetMoveDelta;
