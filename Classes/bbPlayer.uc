@@ -262,6 +262,12 @@ var bool SetPendingWeapon;
 // Net Updates
 var float MaxPosErrorFactor;
 var float TimeBetweenNetUpdates;
+var float OldServerTimeStamp;
+var float OldClientTimeStamp;
+var bool bExtrapolatedLastUpdate;
+var vector SavedLocation;
+var vector SavedVelocity;
+var vector SavedAcceleration;
 
 // SSR Beam
 var byte BeamFadeCurve;
@@ -1823,6 +1829,13 @@ function xxServerMove(
 
 	// Predict new position
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
+		if (bExtrapolatedLastUpdate) {
+			bExtrapolatedLastUpdate = false;
+			xxNewMoveSmooth(SavedLocation);
+			Velocity = SavedVelocity;
+			Acceleration = SavedAcceleration;
+		}
+
 		SimStep = DeltaTime / float(MergeCount + 1);
 
 		if (SimStep < 0.005) {
@@ -4226,6 +4239,8 @@ ignores SeePlayer, HearNoise, Bump;
 	{
 		local float TimeSinceLastUpdate;
 		local float ProcessTime;
+		local float ClientDelta;
+		local float ServerDelta;
 
 		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
@@ -4238,10 +4253,24 @@ ignores SeePlayer, HearNoise, Bump;
 		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
 
 		if (TimeSinceLastUpdate > class'UTPure'.default.MaxJitterTime && bJustRespawned == false) {
-			MoveAutonomous(TimeSinceLastUpdate, false, false, false, DODGE_None, Acceleration, rot(0,0,0));
+			MoveAutonomous(TimeSinceLastUpdate, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
 			CurrentTimeStamp += TimeSinceLastUpdate;
 			ServerTimeStamp += TimeSinceLastUpdate;
 		}
+
+		ServerDelta = ServerTimeStamp - OldServerTimeStamp;
+		ClientDelta = CurrentTimeStamp - OldClientTimeStamp;
+
+		if (ServerDelta > 1.5*ClientDelta) {
+			bExtrapolatedLastUpdate = true;
+			SavedLocation = Location;
+			SavedVelocity = Velocity;
+			SavedAcceleration = Acceleration;
+			MoveAutonomous(ServerDelta - ClientDelta, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+		}
+
+		OldServerTimeStamp = ServerTimeStamp;
+		OldClientTimeStamp = CurrentTimeStamp;
 	}
 
 	function BeginState()
