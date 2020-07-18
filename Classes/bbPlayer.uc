@@ -7758,7 +7758,7 @@ function string xxCreateDemoName(string zzDemoName)
 		zzDemoName = Mid(zzDemoName, zzx + 2);
 	}
 
-	return result $ zzDemoName;
+	return xxFixFileName(result $ zzDemoName);
 }
 
 exec function AutoDemo(bool zzb)
