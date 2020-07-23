@@ -47,7 +47,7 @@ simulated function RenderOverlays(Canvas Canvas)
 simulated function yModInit()
 {
 	if (bbPlayer(Owner) != None && Owner.ROLE == ROLE_AutonomousProxy)
-		GV = bbPlayer(Owner).zzViewRotation;
+		GV = bbPlayer(Owner).ViewRotation;
 
 	if (PlayerPawn(Owner) == None)
 		return;
@@ -286,7 +286,7 @@ simulated function NN_TraceFire()
 	}
 
 	NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(GV),Y,Z);
-	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.zzViewRotation, Other, HitLocation, HitDiff, false);
+	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, false);
 	if (Other == bbP.zzClientTTarget)
 		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(GV), MyDamageType);
 }

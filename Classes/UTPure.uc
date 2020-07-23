@@ -722,7 +722,7 @@ function ModifyPlayer(Pawn Other)
 		}
 		else if (zzP != None)
 		{
-			zzP.zzViewRotation = Other.ViewRotation;
+			zzP.ViewRotation = Other.ViewRotation;
 			zzP.zzTrackFOV = TrackFOV;
 			zzP.zzCVDelay = CenterViewDelay;
 			zzP.zzCVDeny = !bAllowCenterView;

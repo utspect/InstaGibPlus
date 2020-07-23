@@ -104,7 +104,6 @@ var bbClientDemoSN zzDemoPlaybackSN;
 var bool bIsAlive;
 
 // Stuff
-var rotator	zzViewRotation;		// Our special View Rotation
 var rotator	zzLastVR;		// The rotation after previous input.
 var float	zzDesiredFOV;		// Needed ?
 var float	zzOrigFOV;		// Original FOV for TrackFOV = 1
@@ -501,7 +500,6 @@ function ServerPreTeleport(Teleporter Other, Teleporter Dest, vector ClientLoc, 
 	PlayTeleportEffect(false, true, Other);
 	SetRotation(ClientRot);
 	ViewRotation = ClientRot;
-	zzViewRotation = ClientRot;
 	PlayTeleportEffect(true, true, Dest);
 }
 
@@ -754,11 +752,10 @@ function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 	     (zzNewRotation.Roll == 0 && zzNewRotation == ViewRotation &&
 	      (WarpZoneInfo(Region.Zone) != None || WarpZoneInfo(HeadRegion.Zone) != None || WarpZoneInfo(FootRegion.Zone) != None)))
 	{
-		zzViewRotation      = zzNewRotation; // mm..
-		ViewRotation		= zzNewRotation; // mm.. even more !
-		If ( (zzViewRotation.Pitch > RotationRate.Pitch) && (zzViewRotation.Pitch < 65536 - RotationRate.Pitch) )
+		ViewRotation = zzNewRotation;
+		If ( (ViewRotation.Pitch > RotationRate.Pitch) && (ViewRotation.Pitch < 65536 - RotationRate.Pitch) )
 		{
-			If (zzViewRotation.Pitch < 32768)
+			If (ViewRotation.Pitch < 32768)
 				zzNewRotation.Pitch = RotationRate.Pitch;
 			else
 				zzNewRotation.Pitch = 65536 - RotationRate.Pitch;
@@ -870,7 +867,6 @@ function ClientSetRotation( rotator zzNewRotation )
 	if (zzbCanCSL)
 	{
 		ViewRotation		= zzNewRotation;
-		zzViewRotation  	= zzNewRotation;
 		zzNewRotation.Pitch = 0;
 		zzNewRotation.Roll  = 0;
 		SetRotation( zzNewRotation );
@@ -1039,7 +1035,6 @@ simulated function bool TeleporterAccept( Teleporter T, Actor Source )
 	SetLocation(T.Location);
 	SetRotation(newRot);
 	ViewRotation = newRot;
-	zzViewRotation = newRot;
 
 	T.LastFired = Level.TimeSeconds;
 	MoveTimer = -1.0;
@@ -1074,7 +1069,7 @@ simulated function bool TeleporterAccept( Teleporter T, Actor Source )
 
 function rotator GR()
 {
-	return zzViewRotation;
+	return ViewRotation;
 }
 
 event UpdateEyeHeight(float DeltaTime)
@@ -1815,7 +1810,6 @@ function xxServerMove(
 	ViewRotation.Pitch = ViewPitch;
 	ViewRotation.Yaw = ViewYaw;
 	ViewRotation.Roll = 0;
-	zzViewRotation = ViewRotation;
 	SetRotation(Rot);
 
 	if (ClientVel.Z < 0)
@@ -2693,7 +2687,7 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 		RelLoc.Z,
 		Velocity,
 		MiscData,
-		((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF),
+		((ViewRotation.Pitch & 0xFFFF) << 16) | (ViewRotation.Yaw & 0xFFFF),
 		Base,
 		OldMoveData1,
 		OldMoveData2
@@ -2959,7 +2953,7 @@ function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation,
 	local vector View,HitLocation,HitNormal;
 	local float ViewDist;
 
-	CameraRotation = zzViewRotation;
+	CameraRotation = ViewRotation;
 	View = vect(1,0,0) >> CameraRotation;
 	if( Trace( HitLocation, HitNormal, CameraLocation - (Dist + 30) * vector(CameraRotation), CameraLocation ) != None )
 		ViewDist = FMin( (CameraLocation - HitLocation) Dot View, Dist );
@@ -2990,7 +2984,7 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 				if ( PTarget.bIsPlayer )
 				{
 					if (bbTarg != None)
-						bbTarg.zzViewRotation = TargetViewRotation;
+						bbTarg.ViewRotation = TargetViewRotation;
 					PTarget.ViewRotation = TargetViewRotation;
 				}
 				PTarget.EyeHeight = TargetEyeHeight;
@@ -3022,7 +3016,7 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 			EyeHeight = zzRepVREye;
 		}
 		else if (zzInfoThing != None && zzInfoThing.zzPlayerCalcViewCalls == zzNull)
-			CameraRotation = zzViewRotation;
+			CameraRotation = ViewRotation;
 		else
 			CameraRotation = ViewRotation;
 		CameraLocation.Z += EyeHeight;
@@ -3049,14 +3043,14 @@ function ViewShake(float DeltaTime)
 				shakeVert = (2 * FRand() - 1) * maxshake;
 			}
 		}
-		zzViewRotation.Roll = zzViewRotation.Roll & 65535;
+		ViewRotation.Roll = ViewRotation.Roll & 65535;
 		if (bShakeDir)
 		{
-			zzViewRotation.Roll += Int( 10 * shakemag * FMin(0.1, DeltaTime));
-			bShakeDir = (zzViewRotation.Roll > 32768) || (zzViewRotation.Roll < (0.5 + FRand()) * shakemag);
-			if ( (zzViewRotation.Roll < 32768) && (zzViewRotation.Roll > 1.3 * shakemag) )
+			ViewRotation.Roll += Int( 10 * shakemag * FMin(0.1, DeltaTime));
+			bShakeDir = (ViewRotation.Roll > 32768) || (ViewRotation.Roll < (0.5 + FRand()) * shakemag);
+			if ( (ViewRotation.Roll < 32768) && (ViewRotation.Roll > 1.3 * shakemag) )
 			{
-				zzViewRotation.Roll = 1.3 * shakemag;
+				ViewRotation.Roll = 1.3 * shakemag;
 				bShakeDir = false;
 			}
 			else if (FRand() < 3 * DeltaTime)
@@ -3064,11 +3058,11 @@ function ViewShake(float DeltaTime)
 		}
 		else
 		{
-			zzViewRotation.Roll -= Int( 10 * shakemag * FMin(0.1, DeltaTime));
-			bShakeDir = (zzViewRotation.Roll > 32768) && (zzViewRotation.Roll < 65535 - (0.5 + FRand()) * shakemag);
-			if ( (zzViewRotation.Roll > 32768) && (zzViewRotation.Roll < 65535 - 1.3 * shakemag) )
+			ViewRotation.Roll -= Int( 10 * shakemag * FMin(0.1, DeltaTime));
+			bShakeDir = (ViewRotation.Roll > 32768) && (ViewRotation.Roll < 65535 - (0.5 + FRand()) * shakemag);
+			if ( (ViewRotation.Roll > 32768) && (ViewRotation.Roll < 65535 - 1.3 * shakemag) )
 			{
-				zzViewRotation.Roll = 65535 - 1.3 * shakemag;
+				ViewRotation.Roll = 65535 - 1.3 * shakemag;
 				bShakeDir = true;
 			}
 			else if (FRand() < 3 * DeltaTime)
@@ -3078,21 +3072,19 @@ function ViewShake(float DeltaTime)
 	else
 	{
 		ShakeVert = 0;
-		zzViewRotation.Roll = zzViewRotation.Roll & 65535;
-		if (zzViewRotation.Roll < 32768)
+		ViewRotation.Roll = ViewRotation.Roll & 65535;
+		if (ViewRotation.Roll < 32768)
 		{
-			if ( zzViewRotation.Roll > 0 )
-				zzViewRotation.Roll = Max(0, zzViewRotation.Roll - (Max(zzViewRotation.Roll,500) * 10 * FMin(0.1,DeltaTime)));
+			if ( ViewRotation.Roll > 0 )
+				ViewRotation.Roll = Max(0, ViewRotation.Roll - (Max(ViewRotation.Roll,500) * 10 * FMin(0.1,DeltaTime)));
 		}
 		else
 		{
-			zzViewRotation.Roll += ((65536 - Max(500,zzViewRotation.Roll)) * 10 * FMin(0.1,DeltaTime));
-			if ( zzViewRotation.Roll > 65534 )
-				zzViewRotation.Roll = 0;
+			ViewRotation.Roll += ((65536 - Max(500,ViewRotation.Roll)) * 10 * FMin(0.1,DeltaTime));
+			if ( ViewRotation.Roll > 65534 )
+				ViewRotation.Roll = 0;
 		}
 	}
-	ViewRotation = RotRand(False);
-	ViewRotation.Roll = zzViewRotation.Roll;
 }
 
 function UpdateRotation(float DeltaTime, float maxPitch);
@@ -3102,17 +3094,17 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 	local rotator newRotation;
 	local float PitchDelta, YawDelta;
 
-	DesiredRotation = zzViewRotation; //save old rotation
+	DesiredRotation = ViewRotation; //save old rotation
 
 	PitchDelta = 32.0 * DeltaTime * aLookUp + LookUpFractionalPart;
-	zzViewRotation.Pitch += int(PitchDelta);
+	ViewRotation.Pitch += int(PitchDelta);
 	if (!bUseOldMouseInput)
 		LookUpFractionalPart = PitchDelta - int(PitchDelta);
 
-	zzViewRotation.Pitch = Clamp((zzViewRotation.Pitch << 16 >> 16), -16384, 16383) & 0xFFFF;
+	ViewRotation.Pitch = Clamp((ViewRotation.Pitch << 16 >> 16), -16384, 16383) & 0xFFFF;
 
 	YawDelta = 32.0 * DeltaTime * aTurn + TurnFractionalPart;
-	zzViewRotation.Yaw += int(YawDelta);
+	ViewRotation.Yaw += int(YawDelta);
 	if (!bUseOldMouseInput)
 		TurnFractionalPart = YawDelta - int(YawDelta);
 
@@ -3120,11 +3112,11 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 	ViewFlash(deltaTime);
 
 	newRotation = Rotation;
-	newRotation.Yaw = zzViewRotation.Yaw;
-	newRotation.Pitch = zzViewRotation.Pitch;
+	newRotation.Yaw = ViewRotation.Yaw;
+	newRotation.Pitch = ViewRotation.Pitch;
 	If ( (newRotation.Pitch > maxPitch * RotationRate.Pitch) && (newRotation.Pitch < 65536 - maxPitch * RotationRate.Pitch) )
 	{
-		If (zzViewRotation.Pitch < 32768)
+		If (ViewRotation.Pitch < 32768)
 			newRotation.Pitch = maxPitch * RotationRate.Pitch;
 		else
 			newRotation.Pitch = 65536 - maxPitch * RotationRate.Pitch;
@@ -3133,7 +3125,7 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 
 	if (!zzbRepVRData)
 	{
-		xxReplicateVRToDemo(zzViewRotation.Yaw, zzViewRotation.Pitch, EyeHeight);
+		xxReplicateVRToDemo(ViewRotation.Yaw, ViewRotation.Pitch, EyeHeight);
 		zzbRepVRData = False;		// When xxReplicateVRToDemo is executed, this var is set to true
 	}
 }
@@ -3842,8 +3834,6 @@ state FeigningDeath
 		xxUpdateRotation(DeltaTime, 1);
 		SetRotation(currentRot);
 
-		ViewRotation = zzViewRotation;
-
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, NewAccel, DODGE_None, Rot(0,0,0));
 		else
@@ -3928,7 +3918,7 @@ state PlayerSwimming
 		local vector X,Y,Z, NewAccel;
 		local float Speed2D;
 
-		GetAxes(zzViewRotation,X,Y,Z);
+		GetAxes(ViewRotation,X,Y,Z);
 
 		aForward *= 0.2;
 		aStrafe  *= 0.1;
@@ -3949,8 +3939,6 @@ state PlayerSwimming
 		// Update rotation.
 		oldRotation = Rotation;
 		xxUpdateRotation(DeltaTime, 2);
-
-		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, NewAccel, DODGE_None, OldRotation - Rotation);
@@ -4010,8 +3998,6 @@ state PlayerFlying
 		// Update rotation.
 		xxUpdateRotation(DeltaTime, 2);
 
-		ViewRotation = zzViewRotation;
-
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, Acceleration, DODGE_None, rot(0,0,0));
 		else
@@ -4035,7 +4021,7 @@ state CheatFlying
 	{
 		local vector X,Y,Z;
 
-		GetAxes(zzViewRotation,X,Y,Z);
+		GetAxes(ViewRotation,X,Y,Z);
 
 		aForward *= 0.1;
 		aStrafe  *= 0.1;
@@ -4046,8 +4032,6 @@ state CheatFlying
 		Acceleration = aForward*X + aStrafe*Y + aUp*vect(0,0,1);
 
 		xxUpdateRotation(DeltaTime, 1);
-
-		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, Acceleration, DODGE_None, rot(0,0,0));
@@ -4191,15 +4175,15 @@ ignores SeePlayer, HearNoise, Bump;
 			if ( !bKeyboardLook && (bLook == 0) )
 			{
 				if ( bLookUpStairs )
-					zzViewRotation.Pitch = FindStairRotation(deltaTime);
+					ViewRotation.Pitch = FindStairRotation(deltaTime);
 				else if ( bCenterView )
 				{
-					zzViewRotation.Pitch = zzViewRotation.Pitch & 65535;
-					if (zzViewRotation.Pitch > 32768)
-						zzViewRotation.Pitch -= 65536;
-					zzViewRotation.Pitch = zzViewRotation.Pitch * (1 - 12 * FMin(0.0833, deltaTime));
-					if ( Abs(zzViewRotation.Pitch) < 1000 )
-						zzViewRotation.Pitch = 0;
+					ViewRotation.Pitch = ViewRotation.Pitch & 65535;
+					if (ViewRotation.Pitch > 32768)
+						ViewRotation.Pitch -= 65536;
+					ViewRotation.Pitch = ViewRotation.Pitch * (1 - 12 * FMin(0.0833, deltaTime));
+					if ( Abs(ViewRotation.Pitch) < 1000 )
+						ViewRotation.Pitch = 0;
 				}
 			}
 
@@ -4225,8 +4209,6 @@ ignores SeePlayer, HearNoise, Bump;
 		}
 		else
 			bSaveJump = false;
-
-		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, NewAccel, DodgeMove, OldRotation - Rotation);
@@ -4317,7 +4299,7 @@ state PlayerWaiting
 	{
 		local vector X,Y,Z;
 
-		GetAxes(zzViewRotation,X,Y,Z);
+		GetAxes(ViewRotation,X,Y,Z);
 
 		aForward *= 0.12; // 0.1
 		aStrafe  *= 0.12;
@@ -4328,8 +4310,6 @@ state PlayerWaiting
 		Acceleration = aForward*X + aStrafe*Y + aUp*vect(0,0,1);
 
 		xxUpdateRotation(DeltaTime, 1);
-
-		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, Acceleration, DODGE_None, rot(0,0,0));
@@ -4689,7 +4669,7 @@ state PlayerSpectating
 	{
 		local vector X,Y,Z;
 
-		GetAxes(zzViewRotation,X,Y,Z);
+		GetAxes(ViewRotation,X,Y,Z);
 
 		aForward *= 0.1;
 		aStrafe  *= 0.1;
@@ -4700,8 +4680,6 @@ state PlayerSpectating
 		Acceleration = aForward*X + aStrafe*Y + aUp*vect(0,0,1);
 
 		xxUpdateRotation(DeltaTime, 1);
-
-		ViewRotation = zzViewRotation;
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
 			xxReplicateMove(DeltaTime, Acceleration, DODGE_None, rot(0,0,0));
@@ -4727,13 +4705,12 @@ state PlayerWaking
 		ViewFlash(deltaTime * 0.5);
 		if ( TimerRate == 0 )
 		{
-			zzViewRotation.Pitch -= DeltaTime * 12000;
-			if ( zzViewRotation.Pitch < 0 )
+			ViewRotation.Pitch -= DeltaTime * 12000;
+			if ( ViewRotation.Pitch < 0 )
 			{
-				zzViewRotation.Pitch = 0;
+				ViewRotation.Pitch = 0;
 				GotoState('PlayerWalking');
 			}
-			ViewRotation.Pitch = zzViewRotation.Pitch;
 		}
 
 		if ( Role < ROLE_Authority ) // then save this move and replicate it
@@ -4747,7 +4724,6 @@ state PlayerWaking
 		zzbForceUpdate = false;
 		if ( bWokeUp )
 		{
-			zzViewRotation.Pitch = 0;
 			ViewRotation.Pitch = 0;
 			SetTimer(0, false);
 			return;
@@ -4849,25 +4825,23 @@ state Dying
 				Fire(0);
 				bPressedJump = false;
 			}
-			GetAxes(zzViewRotation,X,Y,Z);
+			GetAxes(ViewRotation,X,Y,Z);
 			// Update view rotation.
 			aLookup  *= 0.24;
 			aTurn    *= 0.24;
-			zzViewRotation.Yaw += 32.0 * DeltaTime * aTurn;
-			zzViewRotation.Pitch += 32.0 * DeltaTime * aLookUp;
-			zzViewRotation.Pitch = zzViewRotation.Pitch & 65535;
-			If ((zzViewRotation.Pitch > 18000) && (zzViewRotation.Pitch < 49152))
+			ViewRotation.Yaw += 32.0 * DeltaTime * aTurn;
+			ViewRotation.Pitch += 32.0 * DeltaTime * aLookUp;
+			ViewRotation.Pitch = ViewRotation.Pitch & 65535;
+			If ((ViewRotation.Pitch > 18000) && (ViewRotation.Pitch < 49152))
 			{
 				If (aLookUp > 0)
-					zzViewRotation.Pitch = 18000;
+					ViewRotation.Pitch = 18000;
 				else
-					zzViewRotation.Pitch = 49152;
+					ViewRotation.Pitch = 49152;
 			}
-			ViewRotation = zzViewRotation;
 		}
 		ViewShake(DeltaTime);
 		ViewFlash(DeltaTime);
-		ViewRotation = zzViewRotation;
 	}
 
 	function xxServerMove
@@ -4917,11 +4891,11 @@ state Dying
 		//fixme - try to pick view with killer visible
 		//fixme - also try varying starting pitch
 
-		zzViewRotation.Pitch = 56000;
+		ViewRotation.Pitch = 56000;
 		tries = 0;
 		besttry = 0;
 		bestdist = 0.0;
-		startYaw = zzViewRotation.Yaw;
+		startYaw = ViewRotation.Yaw;
 
 		for (tries=0; tries<16; tries++)
 		{
@@ -4933,13 +4907,12 @@ state Dying
 				bestdist = newdist;
 				besttry = tries;
 			}
-			zzViewRotation.Yaw += 4096;
+			ViewRotation.Yaw += 4096;
 		}
 		if (zzInfoThing != None)
 			zzInfoThing.zzPlayerCalcViewCalls = 1;
 
-		zzViewRotation.Yaw = startYaw + besttry * 4096;
-		ViewRotation.Yaw = zzViewRotation.Yaw;
+		ViewRotation.Yaw = startYaw + besttry * 4096;
 	}
 
 	function EndState()
@@ -4982,28 +4955,27 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	{
 		local vector X,Y,Z;
 
-		GetAxes(zzViewRotation,X,Y,Z);
+		GetAxes(ViewRotation,X,Y,Z);
 		// Update view rotation.
 
 		if ( !bFixedCamera )
 		{
 			aLookup  *= 0.24;
 			aTurn    *= 0.24;
-			zzViewRotation.Yaw += 32.0 * DeltaTime * aTurn;
-			zzViewRotation.Pitch += 32.0 * DeltaTime * aLookUp;
-			zzViewRotation.Pitch = zzViewRotation.Pitch & 65535;
-			If ((zzViewRotation.Pitch > 18000) && (zzViewRotation.Pitch < 49152))
+			ViewRotation.Yaw += 32.0 * DeltaTime * aTurn;
+			ViewRotation.Pitch += 32.0 * DeltaTime * aLookUp;
+			ViewRotation.Pitch = ViewRotation.Pitch & 65535;
+			If ((ViewRotation.Pitch > 18000) && (ViewRotation.Pitch < 49152))
 			{
 				If (aLookUp > 0)
-					zzViewRotation.Pitch = 18000;
+					ViewRotation.Pitch = 18000;
 				else
-					zzViewRotation.Pitch = 49152;
+					ViewRotation.Pitch = 49152;
 			}
 		}
 		else if ( ViewTarget != None )
-			zzViewRotation = ViewTarget.Rotation;
+			ViewRotation = ViewTarget.Rotation;
 
-		ViewRotation = zzViewRotation;
 		ViewShake(DeltaTime);
 		ViewFlash(DeltaTime);
 
@@ -5043,7 +5015,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 			ClientLocZ,
 			ClientVel,
 			MiscData,
-			((zzViewRotation.Pitch & 0xFFFF) << 16) | (zzViewRotation.Yaw & 0xFFFF),
+			((ViewRotation.Pitch & 0xFFFF) << 16) | (ViewRotation.Yaw & 0xFFFF),
 			ClientBase,
 			OldMoveData1,
 			OldMoveData2);
@@ -5058,11 +5030,11 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 		local int startYaw;
 		local actor ViewActor;
 
-		zzViewRotation.Pitch = 56000;
+		ViewRotation.Pitch = 56000;
 		tries = 0;
 		besttry = 0;
 		bestdist = 0.0;
-		startYaw = zzViewRotation.Yaw;
+		startYaw = ViewRotation.Yaw;
 
 		for (tries=0; tries<16; tries++)
 		{
@@ -5077,12 +5049,12 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 				bestdist = newdist;
 				besttry = tries;
 			}
-			zzViewRotation.Yaw += 4096;
+			ViewRotation.Yaw += 4096;
 		}
 		if (zzInfoThing != None)
 			zzInfoThing.zzPlayerCalcViewCalls = 1;
 
-		zzViewRotation.Yaw = startYaw + besttry * 4096;
+		ViewRotation.Yaw = startYaw + besttry * 4096;
 	}
 }
 
@@ -5110,11 +5082,11 @@ function PlayWaiting()
 	else
 	{
 		BaseEyeHeight = Default.BaseEyeHeight;
-		zzViewRotation.Pitch = zzViewRotation.Pitch & 65535;
-		If ( (zzViewRotation.Pitch > RotationRate.Pitch)
-			&& (zzViewRotation.Pitch < 65536 - RotationRate.Pitch) )
+		ViewRotation.Pitch = ViewRotation.Pitch & 65535;
+		If ( (ViewRotation.Pitch > RotationRate.Pitch)
+			&& (ViewRotation.Pitch < 65536 - RotationRate.Pitch) )
 		{
-			If (zzViewRotation.Pitch < 32768)
+			If (ViewRotation.Pitch < 32768)
 			{
 				if ( (Weapon == None) || (Weapon.Mass < 20) ) {
 					TweenAnim('AimUpSm', 0.3);
@@ -5194,7 +5166,7 @@ function PlayHit(float Damage, vector HitLocation, name damageType, vector Momen
 		if (damageType == 'Drowned')
 		{
 			bub = spawn(class 'Bubble1',,, Location
-				+ 0.7 * CollisionRadius * vector(zzViewRotation) + 0.3 * EyeHeight * vect(0,0,1));
+				+ 0.7 * CollisionRadius * vector(ViewRotation) + 0.3 * EyeHeight * vect(0,0,1));
 			if (bub != None)
 				bub.DrawScale = FRand()*0.06+0.04;
 		}
@@ -5658,7 +5630,7 @@ event PreRender( canvas zzCanvas )
 
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas != None && zzCanvas.Class != Class'Canvas');
 
-	zzLastVR = zzViewRotation;
+	zzLastVR = ViewRotation;
 
 	if (Role < ROLE_Authority)
 		xxAttachConsole();
@@ -5753,8 +5725,6 @@ event PostRender( canvas zzCanvas )
 			ViewRotation.Roll = 0;
 			EyeHeight = zzRepVREye;
 		}
-		else
-			ViewRotation = zzViewRotation;
 
 		xxHideItems();
 
@@ -5798,7 +5768,7 @@ event PostRender( canvas zzCanvas )
 		}
 	}
 
-	zzbVRChanged = zzbVRChanged || (zzViewRotation != zzLastVR);
+	zzbVRChanged = zzbVRChanged || (ViewRotation != zzLastVR);
 
 	if (bDrawDebugData) {
 		xxDrawDebugData(zzCanvas, 10, 120);
@@ -5968,7 +5938,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.DrawColor = ChallengeHud(MyHud).WhiteColor;
 	zzC.SetPos(zzx,zzY);
 	zzC.Font = ChallengeHud(MyHud).MyFonts.GetSmallFont(zzC.ClipX);
-	zzC.DrawText("ViewRot:"@zzViewRotation);
+	zzC.DrawText("ViewRot:"@ViewRotation);
 	zzC.SetPos(zzx, zzY + 20);
 	zzC.DrawText("NewAccel:"@debugNewAccel);
 	zzC.SetPos(zzx, zzY + 40);
