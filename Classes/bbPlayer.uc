@@ -113,7 +113,7 @@ var bool	zzbBadGuy;		// BadGuy! (Avoid kick spamming)
 var int		zzOldForceSettingsLevel;	// Kept to see if things change.
 var float  	zzThrownTime, zzSwitchedTime;
 var Weapon  zzThrownWeapon;
-var int     zzRecentDmgGiven, zzRecentTeamDmgGiven, TeleRadius, PortalRadius, TriggerRadius;
+var int     zzRecentDmgGiven, zzRecentTeamDmgGiven, TeleRadius;
 var name    zzDefaultWeapon;
 var float   zzLastHitSound, zzLastTeamHitSound;
 var float   zzFRandVals[47]; // Let's use a prime number ;)
@@ -126,9 +126,6 @@ var actor   zzNN_HitActor, zzOldBase;
 var Vector  zzNN_HitLoc, zzClientHitNormal, zzClientHitLocation, zzNN_HitDiff, zzNN_HitLocLast, zzNN_HitNormalLast, zzNN_ClientLoc, zzNN_ClientVel;
 var bool    zzbIsWarmingUp, zzbFakeUpdate, zzbForceUpdate, zzbOnMover, zzbNN_Special, zzbNN_ReleasedFire, zzbNN_ReleasedAltFire;
 var float   zzNN_Accuracy, zzLastStuffUpdate, zzNextTimeTime, zzLastFallVelZ, zzLastClientErr, zzForceUpdateUntil, zzIgnoreUpdateUntil, zzLastLocDiff, zzSpawnedTime;
-var Teleporter LastPortal, LastPortalDest;
-var Trigger zzLastTrigger;
-var float LastPortalTime, zzLastTriggerTime;
 var TournamentWeapon zzGrappling;
 var float zzGrappleTime;
 var Weapon zzKilledWithWeapon;
@@ -255,7 +252,6 @@ var TranslocatorTarget zzClientTTarget, TTarget;
 var float LastTick, AvgTickDiff;
 
 var bool MMSupport;
-var bool DisablePortals;
 var bool SetPendingWeapon;
 
 // Net Updates
@@ -360,8 +356,8 @@ replication
 		xxExplodeOther, xxSetNetUpdateRate, xxServerAddVelocity, xxNN_Fire, xxNN_AltFire;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
-		xxNN_ProjExplode, xxNN_TeleFrag, xxNN_TransFrag,
-		xxNN_ReleaseFire, xxNN_ReleaseAltFire, xxNN_MoveTTarget, ServerPreTeleport;
+		xxNN_ProjExplode, xxNN_TransFrag,
+		xxNN_ReleaseFire, xxNN_ReleaseAltFire, xxNN_MoveTTarget;
 
 	// Server->Client
 	unreliable if (Role == ROLE_Authority && bViewTarget)
@@ -391,11 +387,6 @@ exec function Ghost()
 	zzForceUpdateUntil = Level.TimeSeconds + 0.5;
 	zzbForceUpdate = true;
 	Super.Ghost();
-}
-
-simulated function xxSetPortals(bool DP)
-{
-	DisablePortals = DP;
 }
 
 function string ParseDelimited(string Text, string Delimiter, int Count, optional bool bToEndOfLine)
@@ -444,9 +435,7 @@ simulated function Touch( actor Other )
 			ClientMessage(Package);
 		}
 
-		if (Other.IsA('Teleporter') && Other.Class.Name != 'NN_Teleporter' ||
-			Other.IsA('Kicker') && Other.Class.Name != 'Kicker'
-		) {
+		if (Other.IsA('Kicker') && Other.Class.Name != 'Kicker') {
 			zzForceUpdateUntil = Level.TimeSeconds + 0.15 + float(Other.GetPropertyText("ToggleTime"));
 			zzbForceUpdate = true;
 		}
@@ -474,67 +463,6 @@ simulated function bool xxNewMoveSmooth(vector NewLoc)
 	if (MoveSmooth(Delta))
 		return true;
 	return Move(Delta);
-}
-
-function ServerPreTeleport(Teleporter Other, Teleporter Dest, vector ClientLoc, rotator ClientRot, vector ClientVel)
-{
-	local bool bUnblocked;
-
-	if (Other == None || Dest == None || VSize(Dest.Location - ClientLoc) > TeleRadius || Level.NetMode == NM_Client || IsInState('Dying') || Mesh == None)
-		return;
-
-	if (bBlockPlayers)
-	{
-		SetCollision(bCollideActors, bBlockActors, false);
-		zzDisabledPlayerCollision++;
-		bUnblocked = true;
-	}
-
-	if (!xxNewSetLocation(ClientLoc, ClientVel))
-	{
-		if (bUnblocked)
-			zzDisabledPlayerCollision--;
-		return;
-	}
-
-	PlayTeleportEffect(false, true, Other);
-	SetRotation(ClientRot);
-	ViewRotation = ClientRot;
-	PlayTeleportEffect(true, true, Dest);
-}
-
-function PlayTeleportEffect( optional bool bOut, optional bool bSound, optional Teleporter Portal )
-{
- 	local UTTeleportEffect PTE;
-	local DeathMatchPlus DMP;
-	local vector nLoc;
-	local rotator nRot;
-
-	if (Mesh == None)
-		return;
-
-	DMP = DeathMatchPlus(Level.Game);
-	if (DMP == None || !bNewNet) {
-		Level.Game.PlayTeleportEffect(Self, bOut, bSound);
-		return;
-	}
-
-	if (Portal == None)
-	{
-		nLoc = Location;
-		nRot = Rotation;
-	}
-	else
-	{
-		nLoc = Portal.Location;
-		nRot = Portal.Rotation;
-	}
-	if ( bSound )
-	{
-		PTE = Spawn(class'UTTeleportEffect',Self,, nLoc, nRot);
-		PTE.Initialize(Self, bOut);
-		PTE.PlaySound(sound'Resp2A',, 10.0);
-	}
 }
 
 simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeight, float KLocationX, float KLocationY, float KLocationZ, int KRotationYaw, int KRotationPitch, int KRotationRoll, name KTag, name KEvent, name KAttachTag, vector KKickVelocity, name KKickedClasses, bool KbKillVelocity, bool KbRandomize )
@@ -702,9 +630,6 @@ event Possess()
 	{
 		TeleRadius = zzUTPure.Default.TeleRadius;
 		xxSetTeleRadius(TeleRadius);
-
-		xxSetPortals(DisablePortals);
-		DisablePortals = zzUTPure.Default.DisablePortals;
 
 		DefaultHitSound = zzUTPure.Default.DefaultHitSound;
 		DefaultTeamHitSound = zzUTPure.Default.DefaultTeamHitSound;
@@ -933,138 +858,6 @@ simulated function xxFinishAce( string zzS )
 		ConsoleCommand("mutate ace highperftoggle");
 		zzbAceChecked = true;
 	}
-}
-
-simulated event bool PreTeleport( Teleporter zzInTeleporter )
-{
-	local Teleporter Dest;
-
-	if (Level.NetMode == NM_Client && zzInTeleporter != LastPortal)
-	{
-		LastPortal = zzInTeleporter;
-		LastPortalTime = Level.TimeSeconds + 0.2;
-		Dest = TeleporterTouch(zzInTeleporter);
-		if (Dest != None)
-			ServerPreTeleport(zzInTeleporter, Dest, Location, Rotation, Velocity);
-		return true;
-	}
-	zzTP = zzInTeleporter;
-	zzTPE = zzTP.Event;
-	zzTP.Event = 'UTPure';
-	Tag = 'UTPure';
-	return True;
-}
-
-event Trigger( Actor zzOther, Pawn zzEventInstigator )
-{
-	local Actor zzA;
-
-	// Only way we get triggered is from Teleport
-	if (zzTP != None)
-	{
-		zzTP.Event = zzTPE;
-		zzTP = None;
-		Tag = '';
-		// Be nice and call std event
-		zzViewRotation = Rotation;
-		ViewRotation = Rotation;
-		if (zzTPE != '')
-			foreach AllActors( class 'Actor', zzA, zzTPE )
-				zzA.Trigger( zzOther, zzEventInstigator );
-	}
-}
-
-// Teleporter was touched by an actor.
-simulated function Teleporter TeleporterTouch( Teleporter T )
-{
-	local Teleporter Dest;
-	local int i;
-	local Actor A;
-
-	if ( !T.bEnabled )
-		return Dest;
-
-	if( (InStr( T.URL, "/" ) >= 0) || (InStr( T.URL, "#" ) >= 0) )
-	{
-		// Teleport to a level on the net.
-		Level.Game.SendPlayer(Self, T.URL);
-	}
-	else
-	{
-		// Teleport to a random teleporter in this local level, if more than one pick random.
-
-		foreach AllActors( class 'Teleporter', Dest )
-			if( string(Dest.tag)~=T.URL && Dest!=T )
-				i++;
-		i = rand(i);
-		foreach AllActors( class 'Teleporter', Dest )
-			if( string(Dest.tag)~=T.URL && Dest!=T && i-- == 0 )
-				break;
-		if( Dest != None )
-		{
-			// Teleport the actor into the other teleporter.
-			T.PlayTeleportEffect( Self, false);
-			TeleporterAccept( Dest, T );
-			if (T.Event != '')
-				foreach AllActors( class 'Actor', A, T.Event )
-					A.Trigger( Self, Self.Instigator );
-		}
-	}
-	return Dest;
-}
-
-// Accept an actor that has teleported in.
-simulated function bool TeleporterAccept( Teleporter T, Actor Source )
-{
-	local rotator newRot, oldRot;
-	local int oldYaw;
-	local float mag;
-	local vector oldDir;
-	local pawn P;
-	local VisibleTeleporter VT;
-
-	T.Disable('Touch');
-	newRot = Rotation;
-	if (T.bChangesYaw)
-	{
-		oldRot = Rotation;
-		newRot.Yaw = T.Rotation.Yaw;
-		if ( Source != None )
-			newRot.Yaw += (32768 + Rotation.Yaw - Source.Rotation.Yaw);
-	}
-	SetLocation(T.Location);
-	SetRotation(newRot);
-	ViewRotation = newRot;
-
-	T.LastFired = Level.TimeSeconds;
-	MoveTimer = -1.0;
-	MoveTarget = T;
-	T.PlayTeleportEffect( Self, false);
-	T.Enable('Touch');
-
-	if (T.bChangesVelocity)
-		Velocity = T.TargetVelocity;
-	else
-	{
-		if ( T.bChangesYaw )
-		{
-			if ( Physics == PHYS_Walking )
-				OldRot.Pitch = 0;
-			oldDir = vector(OldRot);
-			mag = Velocity Dot oldDir;
-			Velocity = Velocity - mag * oldDir + mag * vector(Rotation);
-		}
-		if ( T.bReversesX )
-			Velocity.X *= -1.0;
-		if ( T.bReversesY )
-			Velocity.Y *= -1.0;
-		if ( T.bReversesZ )
-			Velocity.Z *= -1.0;
-	}
-	foreach VisibleCollidingActors( class 'Pawn', P, CollisionRadius * TeleRadius / 100, Location )
-		if ( P != Self && (!GameReplicationInfo.bTeamGame || PlayerReplicationInfo.Team != P.PlayerReplicationInfo.Team) && ((VSize(P.Location - Location)) < ((P.CollisionRadius + CollisionRadius) * CollisionHeight)) )
-			xxNN_TeleFrag(T, P);
-	return true;
 }
 
 function rotator GR()
@@ -2412,12 +2205,6 @@ simulated function vector GetVector( BetterVector SomeVector )
 // Seriously.  Do something good with your time.  Build something that improves lives.
 // I understand that you are bitter, but you'll feel better if you listen to me.
 // Doing good things will make you feel good.
-
-function xxNN_TeleFrag( Teleporter Tele, Pawn Other )
-{
-	if (!IsInState('Dying') && !Other.IsInState('Dying') && !xxGarbageLocation(Other) && (!Other.IsA('bbPlayer') || VSize(Other.Location - Tele.Location) < TeleRadius))
-		Other.GibbedBy(Self);
-}
 
 function xxNN_TransFrag( Pawn Other )
 {
@@ -5359,7 +5146,6 @@ function xxPlayerTickEvents()
 			xxGetDemoPlaybackSpec();
 
 			xxCheckForKickers();
-			xxCheckForPortals();
 
 			if (zzClientTTarget != None)
 				xxServerReceiveStuff( zzClientTTarget.Location, zzClientTTarget.Velocity );
@@ -5402,36 +5188,6 @@ function xxPlayerTickEvents()
 		zzbDemoRecording = PureLevel.zzDemoRecDriver != None;
 		if (!zzbDemoRecording && zzbGameStarted && (zzbForceDemo || bAutoDemo && zzUTPure.zzDMP.CountDown < 1))
 			xxClientDemoRec();
-	}
-}
-
-simulated function xxCheckForPortals()
-{
-	local Teleporter T, Closest;
-	local float CurrentTime, ClosestDist, Dist;
-
-	if (IsInState('Dying') || Mesh == None)
-		return;
-
-	CurrentTime = Level.TimeSeconds;
-	ClosestDist = 2048;
-	ForEach RadiusActors(class'Teleporter', T, PortalRadius)
-	{
-		Dist = VSize(T.Location - Location);
-		if (Dist > 0 && Dist < ClosestDist)
-		{
-			ClosestDist = Dist;
-			Closest = T;
-		}
-	}
-	if (Closest == None)
-	{
-		LastPortal = None;
-		LastPortalDest = None;
-	}
-	else if (LastPortal == None && LastPortalDest == None && CurrentTime - LastPortalTime > 0.2)
-	{
-		PreTeleport(Closest);
 	}
 }
 
@@ -7933,8 +7689,6 @@ defaultproperties
 	DemoMask="%l_[%y_%m_%d_%t]_[%c]_%e"
 	HUDInfo=1
 	TeleRadius=210
-	PortalRadius=50
-	TriggerRadius=50
 	FRVI_length=47
 	VRVI_length=17
 	NN_ProjLength=256

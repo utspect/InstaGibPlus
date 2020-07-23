@@ -146,8 +146,6 @@ function PreBeginPlay()
 	if (NNAnnouncer)
 		Spawn(class'NNAnnouncerSA');
 
-	Spawn(class'VTFix');
-
 	class'bbPlayer'.Default.HitSound = DefaultHitSound;
 	class'bbPlayer'.Default.TeamHitSound = DefaultTeamHitSound;
 	class'bbCHSpectator'.Default.HitSound = DefaultHitSound;
