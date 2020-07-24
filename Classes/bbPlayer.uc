@@ -184,8 +184,6 @@ var bool	zzbRenderHUD;		// Do not start rendering HUD until logo has been displa
 var bool	zzbLogoDone;		// Are we done with the logo ?
 var float	zzLogoStart;		// Start of logo display
 
-var Teleporter	zzTP;			// Temp Teleporter holder
-var name	zzTPE;			// Teleporter previous Event
 var int		zzSMCnt;		// ServerMove Count
 var bool	bMenuFixed;		// Fixed Menu item
 var float	zzCVTO;			// CenterView Time out.

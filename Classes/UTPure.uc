@@ -127,7 +127,6 @@ function PreBeginPlay()
 	local GameInfo GI;
 	local string n;
 	local int XC_Version;
-	local Kicker K;
 
 	XC_Version = int(ConsoleCommand("get ini:engine.engine.gameengine XC_Version"));
 	if ( XC_Version >= 11 )
