@@ -1623,8 +1623,8 @@ function xxServerMove(
 
 		SimStep = DeltaTime / float(MergeCount + 1);
 
-		if (SimStep < 0.004) {
-			MergeCount = int(DeltaTime * 125);
+		if (SimStep < (1.0 / zzUTPure.MaxNetUpdateRate)) {
+			MergeCount = int(DeltaTime * zzUTPure.MaxNetUpdateRate * 0.5);
 			SimStep = DeltaTime / float(MergeCount + 1);
 		}
 
