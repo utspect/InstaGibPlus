@@ -1625,8 +1625,8 @@ function xxServerMove(
 
 		SimStep = DeltaTime / float(MergeCount + 1);
 
-		if (SimStep < 0.005) {
-			MergeCount = int(DeltaTime * 200);
+		if (SimStep < 0.004) {
+			MergeCount = int(DeltaTime * 125);
 			SimStep = DeltaTime / float(MergeCount + 1);
 		}
 
