@@ -2968,7 +2968,8 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	local vector delta;
 
 	TraceDir = Normal(TraceDir);
-	HitLocation = HitLocation + 0.33 * CollisionRadius * TraceDir; // default value is 0.4
+	// The following line leads to a rounded edge of the top of the crouching hitbox
+	//HitLocation = HitLocation + 0.33 * CollisionRadius * TraceDir; // newnet value is 0.4 // default is 0.5
 
 	if ( (GetAnimGroup(AnimSequence) == 'Ducking') && (AnimFrame > -0.03) )
 	{
