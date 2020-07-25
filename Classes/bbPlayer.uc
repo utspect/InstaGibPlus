@@ -4029,14 +4029,13 @@ ignores SeePlayer, HearNoise, Bump;
 
 		if (ProcessTime >= DeltaTime && bJustRespawned == false) {
 			UndoExtrapolation();
-			//ClientMessage("["$Level.TimeSeconds$"]"@self@"JitterFix"@TimeSinceLastUpdate@ProcessTime@Role@RemoteRole, 'IGPlus', true);
 			MoveAutonomous(ProcessTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
 			CurrentTimeStamp += ProcessTime;
 			ServerTimeStamp += ProcessTime;
+			ExtrapolationDelta = class'UTPure'.default.MaxJitterTime;
 		}
 
 		if (bExtrapolatedLastUpdate == false && ExtrapolationDelta > DeltaTime) {
-			//ClientMessage("["$Level.TimeSeconds$"]"@self@"Extrapolation", 'IGPlus', true);
 			bExtrapolatedLastUpdate = true;
 			SavedLocation = Location;
 			SavedVelocity = Velocity;
