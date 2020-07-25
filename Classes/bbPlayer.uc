@@ -288,6 +288,7 @@ var globalconfig bool bUseOldMouseInput;
 var transient float TurnFractionalPart, LookUpFractionalPart;
 
 var float TimeDead;
+var Pawn LastKiller;
 
 replication
 {
@@ -305,7 +306,7 @@ replication
 	unreliable if ( bNetOwner && Role == ROLE_Authority )
 		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed, zzMaximumNetspeed,
 		zzWaitTime,zzAntiTimerList,zzAntiTimerListCount,zzAntiTimerListState,
-		zzStat;
+		zzStat, LastKiller;
 
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
@@ -3465,6 +3466,7 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 
 	if ( RemoteRole == ROLE_AutonomousProxy )
 		ClientDying(DamageType, HitLocation);
+	LastKiller = Killer;
 	GotoState('Dying');
 }
 
@@ -4572,6 +4574,7 @@ state Dying
 
 	event PlayerTick( float DeltaTime )
 	{
+		local rotator TargetRotation, DeltaRotation;
 		if (Level.Pauser != "") {
 			TimeDead += (DeltaTime / Level.TimeDilation); // counting real time, undo dilation
 		}
@@ -4579,6 +4582,12 @@ state Dying
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
+
+		if (TimeDead < 2 && LastKiller != none) {
+			TargetRotation = rotator(LastKiller.Location - Location);
+			DeltaRotation = Normalize(TargetRotation - ViewRotation);
+			ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-2.5 * DeltaTime)));
+		}
 	}
 
 	simulated function BeginState()
@@ -4706,6 +4715,7 @@ state Dying
 		Super.EndState();
 		LastKillTime = 0;
 		bJustRespawned = true;
+		LastKiller = none;
 	}
 
 }
