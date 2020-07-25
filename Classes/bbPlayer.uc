@@ -152,6 +152,7 @@ var bool bClientIsWalking;
 var bool bJustRespawned;
 var float LastCAPTime; // ServerTime when last CAP was sent
 var vector oldClientLoc;
+var decoration carriedFlag;
 
 var globalconfig float MinDodgeClickTime;
 var float zzLastTimeForward, zzLastTimeBack, zzLastTimeLeft, zzLastTimeRight;
@@ -353,7 +354,7 @@ replication
 		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
 		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
-		xxExplodeOther, xxSetNetUpdateRate, xxServerAddVelocity, xxNN_Fire, xxNN_AltFire;
+		xxExplodeOther, xxSetNetUpdateRate, xxServerAddVelocity, xxNN_Fire, xxNN_AltFire, DropFlag;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ProjExplode, xxNN_TransFrag,
@@ -7601,6 +7602,20 @@ function xxExplodeOther(Projectile Other)
 {
 	if (Other != None)
 		Other.Explode(Other.Location, Normal(Location-Other.Location));
+}
+
+exec function DropFlag() {
+	local bbPlayer zzbbP;
+	ForEach AllActors(class'bbPlayer', zzbbP) {
+		if (zzbbP == Self) {
+			if (zzbbP.PlayerReplicationInfo.HasFlag != None) {
+				zzbbP.carriedFlag = zzbbP.PlayerReplicationInfo.HasFlag;
+				zzbbP.PlayerReplicationInfo.HasFlag = None;
+				zzbbP.carriedFlag.Drop(Velocity + 10 * VRand());
+				carriedFlag.SetLocation(zzbbP.Location + vect(0, 60, 0));
+			}
+		}
+	}
 }
 
 function DoJump( optional float F )

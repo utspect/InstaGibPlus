@@ -138,6 +138,7 @@ function PreBeginPlay()
 	if (zzDMP == None)
 		return;
 
+	// toggle first blood so it doesn't get triggered during warmup
 	zzDMP.bFirstBlood = True;
 
 	Spawn(class'NN_SpawnNotify');
