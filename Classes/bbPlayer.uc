@@ -1524,7 +1524,8 @@ function xxServerMove(
 	local bool NewbRun;
 	local bool NewbDuck;
 	local bool NewbJumpStatus;
-	local eDodgeDir DodgeMove;
+	local EDodgeDir DodgeMove;
+	local EPhysics ClientPhysics;
 	local byte ClientRoll;
 	local int MergeCount;
 
@@ -1559,6 +1560,7 @@ function xxServerMove(
 	NewbDuck = (MiscData & 0x20000) != 0;
 	NewbJumpStatus = (MiscData & 0x10000) != 0;
 	DodgeMove = GetDodgeDir((MiscData >> 8) & 0xF);
+	ClientPhysics = GetPhysics((MiscData >> 12) & 0xF);
 	ClientRoll = (MiscData & 0xFF);
 
 	if (ClientBase == none)
@@ -1726,7 +1728,7 @@ function xxServerMove(
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
 
-	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError)) {
+	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && (ClientLocErr > MaxPosError || ClientPhysics != Physics))) {
 		zzbForceUpdate = true;
 		if (ServerTimeStamp > zzForceUpdateUntil)
 			zzForceUpdateUntil = 0;
