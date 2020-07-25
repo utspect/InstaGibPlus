@@ -4677,36 +4677,18 @@ state Dying
 	{
 		local vector cameraLoc;
 		local rotator cameraRot;
-		local int tries, besttry;
-		local float bestdist, newdist;
-		local int startYaw;
 		local actor ViewActor;
 
 		//fixme - try to pick view with killer visible
 		//fixme - also try varying starting pitch
 
 		ViewRotation.Pitch = 56000;
-		tries = 0;
-		besttry = 0;
-		bestdist = 0.0;
-		startYaw = ViewRotation.Yaw;
 
-		for (tries=0; tries<16; tries++)
-		{
-			cameraLoc = Location;
-			PlayerCalcView(ViewActor, cameraLoc, cameraRot);
-			newdist = VSize(cameraLoc - Location);
-			if (newdist > bestdist)
-			{
-				bestdist = newdist;
-				besttry = tries;
-			}
-			ViewRotation.Yaw += 4096;
-		}
+		cameraLoc = Location;
+		PlayerCalcView(ViewActor, cameraLoc, cameraRot);
+
 		if (zzInfoThing != None)
 			zzInfoThing.zzPlayerCalcViewCalls = 1;
-
-		ViewRotation.Yaw = startYaw + besttry * 4096;
 	}
 
 	function EndState()
