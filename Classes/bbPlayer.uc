@@ -256,8 +256,7 @@ var bool SetPendingWeapon;
 // Net Updates
 var float MaxPosErrorFactor;
 var float TimeBetweenNetUpdates;
-var float OldServerTimeStamp;
-var float OldClientTimeStamp;
+var float ExtrapolationDelta;
 var bool bExtrapolatedLastUpdate;
 var vector SavedLocation;
 var vector SavedVelocity;
@@ -328,7 +327,8 @@ replication
 	// Server->Client debug data
 	unreliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
 		clientLastUpdateTime, clientForcedPosition, debugClientPing, debugNumOfForcedUpdates,
-		debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError;
+		debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError,
+		ExtrapolationDelta;
 
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( RemoteRole == ROLE_AutonomousProxy && !bDemoRecording )
@@ -1414,6 +1414,15 @@ function xxSetPendingWeapon(Weapon W)
 	PendingWeapon = W;
 }
 
+function UndoExtrapolation() {
+	if (bExtrapolatedLastUpdate) {
+		bExtrapolatedLastUpdate = false;
+		xxNewMoveSmooth(SavedLocation);
+		Velocity = SavedVelocity;
+		Acceleration = SavedAcceleration;
+	}
+}
+
 function EDodgeDir GetDodgeDir(int dir) {
 	switch(dir) {
 		case 0: return DODGE_None;
@@ -1464,13 +1473,14 @@ function OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData2) {
 	Accel.Y = (OldMoveData2 << 16 >> 16) * 0.1;
 	Accel.Z = (OldMoveData2 >> 16) * 0.1;
 
+	UndoExtrapolation();
 	MoveAutonomous(OldTimeStamp - CurrentTimeStamp, OldRun, OldDuck, OldJump, DodgeMove, Accel, rot(0,0,0));
 	CurrentTimeStamp = OldTimeStamp - 0.001;
 }
 
 function xxServerMove(
 	float TimeStamp,
-	float FrameTime,
+	float MoveDeltaTime,
 	float AccelX,
 	float AccelY,
 	float AccelZ,
@@ -1571,10 +1581,12 @@ function xxServerMove(
 
 	ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
 	if (ServerDeltaTime > 0.5)
-		ServerDeltaTime = FMin(ServerDeltaTime, FrameTime);
+		ServerDeltaTime = FMin(ServerDeltaTime, MoveDeltaTime);
 	DeltaTime = TimeStamp - CurrentTimeStamp;
 	if (DeltaTime > 0.5)
-		DeltaTime = FMin(DeltaTime, FrameTime);
+		DeltaTime = FMin(DeltaTime, MoveDeltaTime);
+
+	ExtrapolationDelta += (ServerDeltaTime - DeltaTime);
 
 	if ( ServerTimeStamp > 0 ) {
 		// allow 1% error
@@ -1618,12 +1630,7 @@ function xxServerMove(
 
 	// Predict new position
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
-		if (bExtrapolatedLastUpdate) {
-			bExtrapolatedLastUpdate = false;
-			xxNewMoveSmooth(SavedLocation);
-			Velocity = SavedVelocity;
-			Acceleration = SavedAcceleration;
-		}
+		UndoExtrapolation();
 
 		SimStep = DeltaTime / float(MergeCount + 1);
 
@@ -3562,6 +3569,8 @@ simulated function CheckHitSound()
 		PlayTeamHitSound(0);
 }
 
+event ServerTick(float DeltaTime);
+
 /** STATES
  * @Author: spect
  * @Date: 2020-02-19 02:13:05
@@ -3573,7 +3582,7 @@ state FeigningDeath
 	function xxServerMove
 	(
 		float TimeStamp,
-		float FrameTime,
+		float MoveDeltaTime,
 		float AccelX,
 		float AccelY,
 		float AccelZ,
@@ -3590,7 +3599,7 @@ state FeigningDeath
 	{
 		Global.xxServerMove(
 			TimeStamp,
-			FrameTime,
+			MoveDeltaTime,
 			AccelX,
 			AccelY,
 			AccelZ,
@@ -4007,42 +4016,38 @@ ignores SeePlayer, HearNoise, Bump;
 		bPressedJump = bSaveJump;
 	}
 
-	event PlayerTick( float DeltaTime )
-	{
+	event ServerTick(float DeltaTime) {
 		local float TimeSinceLastUpdate;
 		local float ProcessTime;
-		local float ClientDelta;
-		local float ServerDelta;
-
-		zzbCanCSL = zzFalse;
-		xxPlayerTickEvents();
-		zzTick = DeltaTime;
-		Super.PlayerTick(DeltaTime);
-
-		if (Role < ROLE_Authority || Level.NetMode != NM_DedicatedServer)
-			return;
 
 		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
+		ProcessTime = TimeSinceLastUpdate - class'UTPure'.default.MaxJitterTime;
 
-		if (TimeSinceLastUpdate > class'UTPure'.default.MaxJitterTime && bJustRespawned == false) {
-			MoveAutonomous(TimeSinceLastUpdate, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
-			CurrentTimeStamp += TimeSinceLastUpdate;
-			ServerTimeStamp += TimeSinceLastUpdate;
+		if (ProcessTime >= DeltaTime && bJustRespawned == false) {
+			UndoExtrapolation();
+			//ClientMessage("["$Level.TimeSeconds$"]"@self@"JitterFix"@TimeSinceLastUpdate@ProcessTime@Role@RemoteRole, 'IGPlus', true);
+			MoveAutonomous(ProcessTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+			CurrentTimeStamp += ProcessTime;
+			ServerTimeStamp += ProcessTime;
 		}
 
-		ServerDelta = ServerTimeStamp - OldServerTimeStamp;
-		ClientDelta = CurrentTimeStamp - OldClientTimeStamp;
-
-		if (ServerDelta > 1.5*ClientDelta) {
+		if (bExtrapolatedLastUpdate == false && ExtrapolationDelta > DeltaTime) {
+			//ClientMessage("["$Level.TimeSeconds$"]"@self@"Extrapolation", 'IGPlus', true);
 			bExtrapolatedLastUpdate = true;
 			SavedLocation = Location;
 			SavedVelocity = Velocity;
 			SavedAcceleration = Acceleration;
-			MoveAutonomous(ServerDelta - ClientDelta, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+			MoveAutonomous(ExtrapolationDelta, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
 		}
+		ExtrapolationDelta *= Exp(-0.125 * DeltaTime);
+	}
 
-		OldServerTimeStamp = ServerTimeStamp;
-		OldClientTimeStamp = CurrentTimeStamp;
+	event PlayerTick( float DeltaTime )
+	{
+		zzbCanCSL = zzFalse;
+		xxPlayerTickEvents();
+		zzTick = DeltaTime;
+		Super.PlayerTick(DeltaTime);
 	}
 
 	function BeginState()
@@ -4644,7 +4649,7 @@ state Dying
 	function xxServerMove
 	(
 		float TimeStamp,
-		float FrameTime,
+		float MoveDeltaTime,
 		float AccelX,
 		float AccelY,
 		float AccelZ,
@@ -4661,7 +4666,7 @@ state Dying
 	{
 		Global.xxServerMove(
 			TimeStamp,
-			FrameTime,
+			MoveDeltaTime,
 			AccelX,
 			AccelY,
 			AccelZ,
@@ -4713,6 +4718,7 @@ state CountdownDying extends Dying
 	function EndState() {
 		Self.bBehindView = false;
 		ServerReStartPlayer();
+		bJustRespawned = true;
 	}
 
 }
@@ -4769,7 +4775,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	function xxServerMove
 	(
 		float TimeStamp,
-		float FrameTime,
+		float MoveDeltaTime,
 		float AccelX,
 		float AccelY,
 		float AccelZ,
@@ -4786,7 +4792,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	{
 		Global.xxServerMove(
 			TimeStamp,
-			FrameTime,
+			MoveDeltaTime,
 			AccelX,
 			AccelY,
 			AccelZ,
@@ -5747,6 +5753,9 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 		zzC.DrawText("Velocity:"@Base.Velocity@"State:"@Base.GetStateName());
 	else
 		zzC.DrawText("Velocity:"@vect(0,0,0)@"State:");
+
+	zzC.SetPos(zzx, zzY + 500);
+	zzC.DrawText("ExtrapolationDelta:"@ExtrapolationDelta);
 
 	zzC.Style = ERenderStyle.STY_Normal;
 }
@@ -7704,4 +7713,5 @@ defaultproperties
 	DesiredNetUpdateRate=100.0
 	TimeBetweenNetUpdates=0.01
 	bLogClientMessages=true
+	bJustRespawned=true
 }

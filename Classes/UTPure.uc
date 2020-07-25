@@ -496,6 +496,10 @@ event Tick(float zzDelta)
 				zzbP.xxServerCheater("SK");
 			if (zzbDoShot)
 				zzbP.xxClientDoEndShot();
+
+			if ((Level.NetMode == NM_DedicatedServer) ||
+				(Level.NetMode == NM_ListenServer && zzbP.Role < ROLE_Authority))
+				zzbP.ServerTick(zzDelta);
 		}
 		else
 		{
