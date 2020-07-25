@@ -39,6 +39,7 @@ var globalconfig int    BeamOriginMode;
 var globalconfig float  DesiredNetUpdateRate;
 var globalconfig bool   bNoSmoothing;
 var globalconfig bool   bNoOwnFootsteps;
+var globalconfig bool   bLogClientMessages;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
@@ -810,6 +811,8 @@ event ClientMessage( coerce string zzS, optional Name zzType, optional bool zzbB
 	xxClientDemoMessage(zzS);
 	Super.ClientMessage(zzS, zzType, zzbBeep);
 	zzPrevClientMessage = "";
+	if (bLogClientMessages)
+		Log(zzS, zzType);
 }
 
 simulated function xxCheckAce()
@@ -7700,4 +7703,5 @@ defaultproperties
 	bDrawDebugData=False
 	DesiredNetUpdateRate=100.0
 	TimeBetweenNetUpdates=0.01
+	bLogClientMessages=true
 }
