@@ -4027,7 +4027,9 @@ ignores SeePlayer, HearNoise, Bump;
 		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
 		ProcessTime = TimeSinceLastUpdate - class'UTPure'.default.MaxJitterTime;
 
-		if (ProcessTime >= DeltaTime && bJustRespawned == false) {
+		if (class'UTPure'.default.bEnableJitterBounding &&
+			ProcessTime >= DeltaTime && bJustRespawned == false
+		) {
 			UndoExtrapolation();
 			MoveAutonomous(ProcessTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
 			CurrentTimeStamp += ProcessTime;
