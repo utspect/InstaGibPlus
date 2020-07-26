@@ -4047,7 +4047,7 @@ ignores SeePlayer, HearNoise, Bump;
 			SavedAcceleration = Acceleration;
 			MoveAutonomous(ExtrapolationDelta, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
 		}
-		ExtrapolationDelta *= Exp(-0.125 * DeltaTime);
+		ExtrapolationDelta *= Exp(-0.25 * DeltaTime);
 	}
 
 	event PlayerTick( float DeltaTime )
