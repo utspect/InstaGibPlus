@@ -4698,10 +4698,12 @@ state Dying
 		//fixme - try to pick view with killer visible
 		//fixme - also try varying starting pitch
 
-		ViewRotation.Pitch = 56000;
+		if (bEnableKillCam == false) {
+			ViewRotation.Pitch = 56000;
 
-		cameraLoc = Location;
-		PlayerCalcView(ViewActor, cameraLoc, cameraRot);
+			cameraLoc = Location;
+			PlayerCalcView(ViewActor, cameraLoc, cameraRot);
+		}
 
 		if (zzInfoThing != None)
 			zzInfoThing.zzPlayerCalcViewCalls = 1;
