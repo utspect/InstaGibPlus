@@ -4591,7 +4591,7 @@ state Dying
 	event PlayerTick( float DeltaTime )
 	{
 		local rotator TargetRotation, DeltaRotation;
-		if (Level.Pauser != "") {
+		if (Level.Pauser == "") {
 			TimeDead += (DeltaTime / Level.TimeDilation); // counting real time, undo dilation
 		}
 		zzbCanCSL = zzFalse;
