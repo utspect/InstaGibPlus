@@ -40,6 +40,7 @@ var globalconfig float  DesiredNetUpdateRate;
 var globalconfig bool   bNoSmoothing;
 var globalconfig bool   bNoOwnFootsteps;
 var globalconfig bool   bLogClientMessages;
+var globalconfig bool   bEnableKillCam;
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
@@ -4598,10 +4599,10 @@ state Dying
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 
-		if (TimeDead < 2 && LastKiller != none) {
+		if (bEnableKillCam && TimeDead < 2 && LastKiller != none) {
 			TargetRotation = rotator(LastKiller.Location - Location);
 			DeltaRotation = Normalize(TargetRotation - ViewRotation);
-			ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-2.5 * DeltaTime)));
+			ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-3.0 * DeltaTime)));
 		}
 	}
 
@@ -7734,5 +7735,6 @@ defaultproperties
 	DesiredNetUpdateRate=100.0
 	TimeBetweenNetUpdates=0.01
 	bLogClientMessages=true
+	bEnableKillCam=true
 	bJustRespawned=true
 }
