@@ -85,6 +85,7 @@ var localized config int MaxHitError;
 var localized config float MaxJitterTime;
 var localized config float MinNetUpdateRate;
 var localized config float MaxNetUpdateRate;
+var localized config bool bEnableServerExtrapolation;
 var localized config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
@@ -1407,5 +1408,6 @@ defaultproperties
 	MinNetUpdateRate=60.0
 	MaxNetUpdateRate=250.0
 	ShowTouchedPackage=False
-	MaxTradeTimeMargin=0.1;
+	MaxTradeTimeMargin=0.1
+	bEnableServerExtrapolation=true
 }

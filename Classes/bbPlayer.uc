@@ -4035,7 +4035,9 @@ ignores SeePlayer, HearNoise, Bump;
 			ExtrapolationDelta = class'UTPure'.default.MaxJitterTime;
 		}
 
-		if (bExtrapolatedLastUpdate == false && ExtrapolationDelta > DeltaTime) {
+		if (class'UTPure'.default.bEnableServerExtrapolation &&
+			bExtrapolatedLastUpdate == false && ExtrapolationDelta > DeltaTime
+		) {
 			bExtrapolatedLastUpdate = true;
 			SavedLocation = Location;
 			SavedVelocity = Velocity;
