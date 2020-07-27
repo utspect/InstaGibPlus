@@ -290,6 +290,7 @@ var globalconfig bool bUseOldMouseInput;
 var transient float TurnFractionalPart, LookUpFractionalPart;
 
 var float TimeDead;
+var float RealTimeDead;
 var Pawn LastKiller;
 
 replication
@@ -4550,7 +4551,7 @@ state Dying
                     SetPause(False);
                 return;
             }
-            if( Weapon != None && TimeDead < class'UTPure'.default.MaxTradeTimeMargin)
+            if( Weapon != None && RealTimeDead < class'UTPure'.default.MaxTradeTimeMargin)
             {
                 Weapon.bPointing = true;
                 Weapon.Fire(F);
@@ -4591,9 +4592,11 @@ state Dying
 	event PlayerTick( float DeltaTime )
 	{
 		local rotator TargetRotation, DeltaRotation;
-		if (Level.Pauser == "") {
-			TimeDead += (DeltaTime / Level.TimeDilation); // counting real time, undo dilation
-		}
+
+		RealTimeDead += (DeltaTime / Level.TimeDilation); // counting real time, undo dilation
+		if (Level.Pauser == "")
+			TimeDead += DeltaTime;
+
 		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
@@ -4622,6 +4625,7 @@ state Dying
     	Super.BeginState();
     	LastKillTime = LKT;
     	TimeDead = 0.0;
+    	RealTimeDead = 0.0;
 	}
 
 	function PlayerMove(float DeltaTime)
