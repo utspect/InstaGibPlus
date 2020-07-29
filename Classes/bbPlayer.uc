@@ -1731,7 +1731,7 @@ function xxServerMove(
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
 
-	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && (ClientLocErr > MaxPosError || ClientPhysics != Physics))) {
+	if (zzForceUpdateUntil > 0 || (zzIgnoreUpdateUntil == 0 && ClientLocErr > MaxPosError)) {
 		zzbForceUpdate = true;
 		if (ServerTimeStamp > zzForceUpdateUntil)
 			zzForceUpdateUntil = 0;
