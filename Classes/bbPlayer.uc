@@ -6576,6 +6576,15 @@ function xxServerSetMinDodgeClickTime(float f)
 	MinDodgeClickTime = f;
 }
 
+exec function SetKillCamEnabled(bool b) {
+	bEnableKillCam = b;
+	SaveConfig();
+	if (b)
+		ClientMessage("KillCam enabled!", 'IGPlus');
+	else
+		ClientMessage("KillCam disabled!", 'IGPlus');
+}
+
 exec function EndShot(optional bool b)
 {
 	bDoEndShot = b;
