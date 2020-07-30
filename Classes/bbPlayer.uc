@@ -4563,25 +4563,38 @@ state PlayerWaking
 
 state Dying
 {
-    exec function Fire( optional float F )
-    {
-        if (Level.NetMode == NM_DedicatedServer && Role == ROLE_Authority) {
-            bJustFired = true;
-            if( bShowMenu || (Level.Pauser != "") )
-            {
-                if ( !bShowMenu && (Level.Pauser == PlayerReplicationInfo.PlayerName)  )
-                    SetPause(False);
-                return;
-            }
-            if( Weapon != None && RealTimeDead < class'UTPure'.default.MaxTradeTimeMargin)
-            {
-                Weapon.bPointing = true;
-                Weapon.Fire(F);
-            }
-        } else {
-            super.Fire(F);
-        }
-    }
+	exec function Fire( optional float F )
+	{
+		local float TradeTimeMargin;
+		if ((Level.NetMode == NM_DedicatedServer) ||
+			(Level.NetMode == NM_ListenServer && RemoteRole == ROLE_AutonomousProxy)
+		) {
+			bJustFired = true;
+			if( bShowMenu || (Level.Pauser != "") )
+			{
+				if ( !bShowMenu && (Level.Pauser == PlayerReplicationInfo.PlayerName)  )
+					SetPause(False);
+				return;
+			}
+			if( Weapon != None) {
+				TradeTimeMargin = class'UTPure'.default.MaxTradeTimeMargin;
+				if (bbPlayer(zzNN_HitActor) != none) {
+					TradeTimeMargin = FMin(
+						TradeTimeMargin,
+						(AverageServerDeltaTime/Level.TimeDilation +
+						0.001 * (PlayerReplicationInfo.Ping - bbPlayer(zzNN_HitActor).PlayerReplicationInfo.Ping))
+					);
+				}
+				if (RealTimeDead < TradeTimeMargin)
+				{
+					Weapon.bPointing = true;
+					Weapon.Fire(F);
+				}
+			}
+		} else {
+			super.Fire(F);
+		}
+	}
 
 	function ServerReStartPlayer()
 	{
