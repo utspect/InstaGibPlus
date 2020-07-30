@@ -299,8 +299,8 @@ replication
 	unreliable if ( bClientDemoRecording )
 		xxReplicateVRToDemo, xxClientDemoMessage, xxClientLogToDemo, xxDemoSpawnSSRBeam;
 
-    reliable if (bClientDemoRecording && !bClientDemoNetFunc)
-        xxClientDemoFix, xxClientDemoBolt;
+	reliable if (bClientDemoRecording && !bClientDemoNetFunc)
+		xxClientDemoFix, xxClientDemoBolt;
 
 	reliable if ((Role == ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ClientProjExplode;
@@ -677,8 +677,8 @@ function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 {
 	local SavedMove M;
 	if (zzbCanCSL ||
-	     (zzNewRotation.Roll == 0 && zzNewRotation == ViewRotation &&
-	      (WarpZoneInfo(Region.Zone) != None || WarpZoneInfo(HeadRegion.Zone) != None || WarpZoneInfo(FootRegion.Zone) != None)))
+		 (zzNewRotation.Roll == 0 && zzNewRotation == ViewRotation &&
+		  (WarpZoneInfo(Region.Zone) != None || WarpZoneInfo(HeadRegion.Zone) != None || WarpZoneInfo(FootRegion.Zone) != None)))
 	{
 		ViewRotation = zzNewRotation;
 		If ( (ViewRotation.Pitch > RotationRate.Pitch) && (ViewRotation.Pitch < 65536 - RotationRate.Pitch) )
@@ -1241,8 +1241,8 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 				DeltaLoc = CurrentMove.SavedLocation - NewLoc;
 				DeltaLoc.Z = FMax(Abs(DeltaLoc.Z) - MaxStepHeight, 0);
 				if ((DeltaLoc dot DeltaLoc) < 9 &&
-				    // VSize(CurrentMove.SavedVelocity - NewVelocity) < 3 &&  // stijn: UE2 also checked velocity but honestly there isn't really any point in doing that...
-				    IsInState(newState))
+					// VSize(CurrentMove.SavedVelocity - NewVelocity) < 3 &&  // stijn: UE2 also checked velocity but honestly there isn't really any point in doing that...
+					IsInState(newState))
 				{
 					debugNumOfIgnoredForceUpdates += 1;
 					CurrentMove.Clear2();
@@ -1251,7 +1251,7 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 				// ok, this is a serious adjustment. Proceed
 				CurrentMove.Clear2();
 				break;
-		    }
+			}
 			CurrentMove.Clear2();
 			CurrentMove = bbSavedMove(SavedMoves);
 		}
@@ -1693,21 +1693,21 @@ function xxServerMove(
 
 	PlayerReplicationInfo.Ping = int(ConsoleCommand("GETPING"));
 	if (SetPendingWeapon) {
-        xxSetPendingWeapon(PendingWeapon);
-        zzPendingWeapon = PendingWeapon;
-    } else {
-        if (MMSupport) {
-            xxSetPendingWeapon(PendingWeapon);
-            zzPendingWeapon = PendingWeapon;
-        } else {
-            if (zzPendingWeapon != PendingWeapon) {
-                xxSetPendingWeapon(PendingWeapon);
-                zzPendingWeapon = PendingWeapon;
-                if (PendingWeapon != None && PendingWeapon.Owner == Self && Weapon != None && !Weapon.IsInState('DownWeapon'))
-                    Weapon.GotoState('DownWeapon');
-            }
-        }
-    }
+		xxSetPendingWeapon(PendingWeapon);
+		zzPendingWeapon = PendingWeapon;
+	} else {
+		if (MMSupport) {
+			xxSetPendingWeapon(PendingWeapon);
+			zzPendingWeapon = PendingWeapon;
+		} else {
+			if (zzPendingWeapon != PendingWeapon) {
+				xxSetPendingWeapon(PendingWeapon);
+				zzPendingWeapon = PendingWeapon;
+				if (PendingWeapon != None && PendingWeapon.Owner == Self && Weapon != None && !Weapon.IsInState('DownWeapon'))
+					Weapon.GotoState('DownWeapon');
+			}
+		}
+	}
 
 	if (zzDisabledPlayerCollision > 0) {
 		zzDisabledPlayerCollision--;
@@ -2942,7 +2942,7 @@ function xxReplicateVRToDemo(int zzYaw, int zzPitch, float zzEye)
 function SendVoiceMessage(PlayerReplicationInfo Sender, PlayerReplicationInfo Recipient, name messagetype, byte messageID, name broadcasttype)
 {
 	if (Sender == PlayerReplicationInfo)
-  		super.SendVoiceMessage(PlayerReplicationInfo, Recipient, MessageType, MessageID,broadcasttype);  //lame anti-cheat :P
+		super.SendVoiceMessage(PlayerReplicationInfo, Recipient, MessageType, MessageID,broadcasttype);  //lame anti-cheat :P
 }
 
 function ServerTaunt(name Sequence )
@@ -3660,7 +3660,7 @@ state FeigningDeath
 
 		Super.BeginState();
 		// Stop weapon firing
- 		//UsAaR33: prevent weapon from firing (brought on by missing bchangedweapon checks)
+		//UsAaR33: prevent weapon from firing (brought on by missing bchangedweapon checks)
 		if (zzbNoMultiWeapon && Weapon != none && (baltfire>0||bfire>0) )
 		{ //could only be true on server
 			zzOldbfire=bfire;
@@ -3850,28 +3850,28 @@ state PlayerWalking
 ignores SeePlayer, HearNoise, Bump;
 
 	simulated function Dodge(eDodgeDir DodgeMove)
-    {
-        local vector X,Y,Z;
+	{
+		local vector X,Y,Z;
 
-        if ( bIsCrouching || (Physics != PHYS_Walking) )
-            return;
+		if ( bIsCrouching || (Physics != PHYS_Walking) )
+			return;
 
-        GetAxes(Rotation,X,Y,Z);
-        if (DodgeMove == DODGE_Forward)
-            Velocity = 1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
-        else if (DodgeMove == DODGE_Back)
-            Velocity = -1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
-        else if (DodgeMove == DODGE_Left)
-            Velocity = 1.5*GroundSpeed*Y + (Velocity Dot X)*X;
-        else if (DodgeMove == DODGE_Right)
-            Velocity = -1.5*GroundSpeed*Y + (Velocity Dot X)*X;
+		GetAxes(Rotation,X,Y,Z);
+		if (DodgeMove == DODGE_Forward)
+			Velocity = 1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
+		else if (DodgeMove == DODGE_Back)
+			Velocity = -1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
+		else if (DodgeMove == DODGE_Left)
+			Velocity = 1.5*GroundSpeed*Y + (Velocity Dot X)*X;
+		else if (DodgeMove == DODGE_Right)
+			Velocity = -1.5*GroundSpeed*Y + (Velocity Dot X)*X;
 
-        Velocity.Z = 160;
-        PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, true, 800, 1.0 );
-        PlayDodge(DodgeMove);
-        DodgeDir = DODGE_Active;
-        SetPhysics(PHYS_Falling);
-    }
+		Velocity.Z = 160;
+		PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, true, 800, 1.0 );
+		PlayDodge(DodgeMove);
+		DodgeDir = DODGE_Active;
+		SetPhysics(PHYS_Falling);
+	}
 
 	function PlayerMove( float DeltaTime )
 	{
@@ -4150,53 +4150,53 @@ state PlayerWaiting
 
 simulated function PlayTurning()
 {
-    BaseEyeHeight = Default.BaseEyeHeight;
-    if ( (Weapon == None) || (Weapon.Mass < 20) )
-        PlayAnim('TurnSM', 0.3, 0.055);
-    else
-        PlayAnim('TurnLG', 0.3, 0.055);
+	BaseEyeHeight = Default.BaseEyeHeight;
+	if ( (Weapon == None) || (Weapon.Mass < 20) )
+		PlayAnim('TurnSM', 0.3, 0.055);
+	else
+		PlayAnim('TurnLG', 0.3, 0.055);
 }
 
 simulated function TweenToWalking(float tweentime)
 {
-    BaseEyeHeight = Default.BaseEyeHeight;
-    if (Weapon == None)
-        LoopAnim('Walk', 1.15, 0.001);
-    else if ( Weapon.bPointing || (CarriedDecoration != None) )
-    {
-        if (Weapon.Mass < 20)
-            LoopAnim('WalkSMFR', 1.15, 0.001);
-        else
-            LoopAnim('WalkLGFR', 1.15, 0.001);
-    }
-    else
-    {
-        if (Weapon.Mass < 20)
-            LoopAnim('WalkSM', 1.15, 0.001);
-        else
-            LoopAnim('WalkLG', 1.15, 0.001);
-    }
+	BaseEyeHeight = Default.BaseEyeHeight;
+	if (Weapon == None)
+		LoopAnim('Walk', 1.15, 0.001);
+	else if ( Weapon.bPointing || (CarriedDecoration != None) )
+	{
+		if (Weapon.Mass < 20)
+			LoopAnim('WalkSMFR', 1.15, 0.001);
+		else
+			LoopAnim('WalkLGFR', 1.15, 0.001);
+	}
+	else
+	{
+		if (Weapon.Mass < 20)
+			LoopAnim('WalkSM', 1.15, 0.001);
+		else
+			LoopAnim('WalkLG', 1.15, 0.001);
+	}
 }
 
 simulated function PlayWalking()
 {
-    BaseEyeHeight = Default.BaseEyeHeight;
-    if (Weapon == None)
-        LoopAnim('Walk', 1.3, 0.055);
-    else if ( Weapon.bPointing || (CarriedDecoration != None) )
-    {
-        if (Weapon.Mass < 20)
-            LoopAnim('WalkSMFR', 1.15, 0.055);
-        else
-            LoopAnim('WalkLGFR', 1.15, 0.055);
-    }
-    else
-    {
-        if (Weapon.Mass < 20)
-            LoopAnim('WalkSM', 1.15, 0.055);
-        else
-            LoopAnim('WalkLG', 1.15, 0.055);
-    }
+	BaseEyeHeight = Default.BaseEyeHeight;
+	if (Weapon == None)
+		LoopAnim('Walk', 1.3, 0.055);
+	else if ( Weapon.bPointing || (CarriedDecoration != None) )
+	{
+		if (Weapon.Mass < 20)
+			LoopAnim('WalkSMFR', 1.15, 0.055);
+		else
+			LoopAnim('WalkLGFR', 1.15, 0.055);
+	}
+	else
+	{
+		if (Weapon.Mass < 20)
+			LoopAnim('WalkSM', 1.15, 0.055);
+		else
+			LoopAnim('WalkLG', 1.15, 0.055);
+	}
 }
 
 simulated function PlayerPawn GetLocalPlayer() {
@@ -4230,80 +4230,80 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 
 simulated function TweenToRunning(float tweentime)
 {
-    local vector X,Y,Z, Dir;
+	local vector X,Y,Z, Dir;
 
-    BaseEyeHeight = Default.BaseEyeHeight;
-    if (bIsWalking)
-    {
-        TweenToWalking(0); // 0? yeah, it doesn't matter, check above
-        return;
-    }
+	BaseEyeHeight = Default.BaseEyeHeight;
+	if (bIsWalking)
+	{
+		TweenToWalking(0); // 0? yeah, it doesn't matter, check above
+		return;
+	}
 
-    GetAxes(Rotation, X,Y,Z);
-    Dir = Normal(Acceleration);
-    if ( (Dir Dot X < 0.75) && (Dir != vect(0,0,0)) )
-    {
-        // strafing or backing up
-        if ( Dir Dot X < -0.75 )
-            PlayAnim('BackRun', 1.1, 0.055);
-        else if ( Dir Dot Y > 0 )
-            PlayAnim('StrafeR', 1.1, 0.055);
-        else
-            PlayAnim('StrafeL', 1.1, 0.055);
-    }
-    else if (Weapon == None)
-        PlayAnim('RunSM', 1.1, 0.055);
-    else if ( Weapon.bPointing )
-    {
-        if (Weapon.Mass < 20)
-            PlayAnim('RunSMFR', 1.1, 0.055);
-        else
-            PlayAnim('RunLGFR', 1.1, 0.055);
-    }
-    else
-    {
-        if (Weapon.Mass < 20)
-            PlayAnim('RunSM', 1.1, 0.055);
-        else
-            PlayAnim('RunLG', 1.1, 0.055);
-    }
+	GetAxes(Rotation, X,Y,Z);
+	Dir = Normal(Acceleration);
+	if ( (Dir Dot X < 0.75) && (Dir != vect(0,0,0)) )
+	{
+		// strafing or backing up
+		if ( Dir Dot X < -0.75 )
+			PlayAnim('BackRun', 1.1, 0.055);
+		else if ( Dir Dot Y > 0 )
+			PlayAnim('StrafeR', 1.1, 0.055);
+		else
+			PlayAnim('StrafeL', 1.1, 0.055);
+	}
+	else if (Weapon == None)
+		PlayAnim('RunSM', 1.1, 0.055);
+	else if ( Weapon.bPointing )
+	{
+		if (Weapon.Mass < 20)
+			PlayAnim('RunSMFR', 1.1, 0.055);
+		else
+			PlayAnim('RunLGFR', 1.1, 0.055);
+	}
+	else
+	{
+		if (Weapon.Mass < 20)
+			PlayAnim('RunSM', 1.1, 0.055);
+		else
+			PlayAnim('RunLG', 1.1, 0.055);
+	}
 }
 
 simulated function PlayRunning()
 {
-    local vector X,Y,Z, Dir;
+	local vector X,Y,Z, Dir;
 
-    BaseEyeHeight = Default.BaseEyeHeight;
+	BaseEyeHeight = Default.BaseEyeHeight;
 
-    // determine facing direction
-    GetAxes(Rotation, X,Y,Z);
-    Dir = Normal(Acceleration);
-    if ( (Dir Dot X < 0.75) && (Dir != vect(0,0,0)) )
-    {
-        // strafing or backing up
-        if ( Dir Dot X < -0.75 )
-            LoopAnim('BackRun', 1.1);
-        else if ( Dir Dot Y > 0 )
-            LoopAnim('StrafeR', 1.1);
-        else
-            LoopAnim('StrafeL', 1.1);
-    }
-    else if (Weapon == None)
-        LoopAnim('RunSM', 1.1);
-    else if ( Weapon.bPointing )
-    {
-        if (Weapon.Mass < 20)
-            LoopAnim('RunSMFR', 1.1);
-        else
-            LoopAnim('RunLGFR', 1.1);
-    }
-    else
-    {
-        if (Weapon.Mass < 20)
-            LoopAnim('RunSM', 1.1);
-        else
-            LoopAnim('RunLG', 1.1);
-    }
+	// determine facing direction
+	GetAxes(Rotation, X,Y,Z);
+	Dir = Normal(Acceleration);
+	if ( (Dir Dot X < 0.75) && (Dir != vect(0,0,0)) )
+	{
+		// strafing or backing up
+		if ( Dir Dot X < -0.75 )
+			LoopAnim('BackRun', 1.1);
+		else if ( Dir Dot Y > 0 )
+			LoopAnim('StrafeR', 1.1);
+		else
+			LoopAnim('StrafeL', 1.1);
+	}
+	else if (Weapon == None)
+		LoopAnim('RunSM', 1.1);
+	else if ( Weapon.bPointing )
+	{
+		if (Weapon.Mass < 20)
+			LoopAnim('RunSMFR', 1.1);
+		else
+			LoopAnim('RunLGFR', 1.1);
+	}
+	else
+	{
+		if (Weapon.Mass < 20)
+			LoopAnim('RunSM', 1.1);
+		else
+			LoopAnim('RunLG', 1.1);
+	}
 }
 
 function xxServerSetReadyToPlay()
@@ -4612,20 +4612,20 @@ state Dying
 	simulated function BeginState()
 	{
 		local bbPlayer bbP;
-    	local float LKT;
+		local float LKT;
 
 		bClientIsWalking = false;
-    	bJumpStatus = false;
+		bJumpStatus = false;
 		bIsAlive = false;
-    	zzIgnoreUpdateUntil = 0;
-    	if (zzClientTTarget != None)
-        	zzClientTTarget.Destroy();
+		zzIgnoreUpdateUntil = 0;
+		if (zzClientTTarget != None)
+			zzClientTTarget.Destroy();
 
-    	LKT = LastKillTime;
-    	Super.BeginState();
-    	LastKillTime = LKT;
-    	TimeDead = 0.0;
-    	RealTimeDead = 0.0;
+		LKT = LastKillTime;
+		Super.BeginState();
+		LastKillTime = LKT;
+		TimeDead = 0.0;
+		RealTimeDead = 0.0;
 	}
 
 	function PlayerMove(float DeltaTime)
@@ -5060,7 +5060,7 @@ function xxDoShot()
 
 simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode, optional bool bIgnoreFireTime)
 {
-  	local bool bCant;
+	local bool bCant;
 	local float Diff;
 	local name WeapState;
 
@@ -5090,7 +5090,7 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 		else
 			bCant = true;
 	}
-  	else if (Weapon.IsInState('ClientDown'))
+	else if (Weapon.IsInState('ClientDown'))
 	{
 		bCant = true;
 	}
@@ -5106,7 +5106,7 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 		else
 			bCant = true;
 	}
- 	if (IsInState('Dying'))
+	if (IsInState('Dying'))
 	{
 		bCant = true;
 	}
@@ -5218,10 +5218,10 @@ simulated function xxCheckForKickers()
 static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
 	local string suffix;
 	/**
- 	* @Author: spect
- 	* @Date: 2020-02-21 01:17:00
- 	* @Desc: Sets the selected forced skin client side
- 	*/
+	* @Author: spect
+	* @Date: 2020-02-21 01:17:00
+	* @Desc: Sets the selected forced skin client side
+	*/
 
 	if (selectedSkin > 17)
 		selectedSkin = 12;
@@ -5426,8 +5426,8 @@ event PreRender( canvas zzCanvas )
 			if (zzPRI == None) continue;
 
 			if (zzPRI != PlayerReplicationInfo &&
-			    (!GameReplicationInfo.bTeamGame || zzPRI.Team != PlayerReplicationInfo.Team)
-		    ) {
+				(!GameReplicationInfo.bTeamGame || zzPRI.Team != PlayerReplicationInfo.Team)
+			) {
 				zzPRI.PlayerLocation = PlayerReplicationInfo.PlayerLocation;
 				zzPRI.PlayerZone = None;
 			}
@@ -5586,7 +5586,7 @@ simulated function xxClientAcceptMutator(string zzClass, float zzv)
 				for (zzi2 = 0; zzi2 < zzHMCnt; zzi2++)	// Check if HUDMut is already in
 				{
 					if (zzHudMutes[zzi2] != None &&
-					    string(zzHudMutes[zzi2].Class) == zzClass)
+						string(zzHudMutes[zzi2].Class) == zzClass)
 					{
 						zzHudMutes[zzi2].Destroy();
 						break;
@@ -5811,7 +5811,7 @@ simulated function xxAttachConsole()
 			}
 			else
 			{
-    			zzbBadConsole = zzTrue;
+				zzbBadConsole = zzTrue;
 			}
 		}
 	}
@@ -6002,23 +6002,23 @@ static function bool xxValidSP(string zzSkinName, string zzMeshName, optional Ac
 	//Attempt to use XC_Engine natives
    if ( bbPlayer(SkinActor) != none && SkinActor.Role == ROLE_Authority )
    {
-      XC_Version = int(SkinActor.ConsoleCommand("get ini:Unreali.SkaarjPlayer XC_Version"));
-      if ( XC_Version >= 13 )
-      {
-         if ( !bbPlayer(SkinActor).IsInPackageMap( zzPackName, true) )
-            return false;
-         return (Left(zzPackName, Len(zzMeshName)) ~= zzMeshName && !(Right(zzSkinName,2) ~= "t_"));
-      }
+	  XC_Version = int(SkinActor.ConsoleCommand("get ini:Unreali.SkaarjPlayer XC_Version"));
+	  if ( XC_Version >= 13 )
+	  {
+		 if ( !bbPlayer(SkinActor).IsInPackageMap( zzPackName, true) )
+			return false;
+		 return (Left(zzPackName, Len(zzMeshName)) ~= zzMeshName && !(Right(zzSkinName,2) ~= "t_"));
+	  }
    }
 	//Extra pass before potentially crash code
 	if ( zzPackName ~= "BOTPACK" || zzPackName ~= "UNREALI" || zzPackName ~= "UNREALSHARE" || zzPackName ~= "INSTAGIBPLUS")
-    	return false;
+		return false;
 	if (Default.zzMyPacks == "")
 		Default.zzMyPacks = Caps(SkinActor.ConsoleCommand("get ini:engine.engine.gameengine serverpackages")); //Can still crash a server
 
 	if ( Instr(Default.zzMyPacks, Chr(34)$zzPackName$Chr(34)) == -1 )
 		return false;
-  	return (Left(zzPackName, Len(zzMeshName)) ~= zzMeshName && !(Right(zzSkinName,2) ~= "t_"));
+	return (Left(zzPackName, Len(zzMeshName)) ~= zzMeshName && !(Right(zzSkinName,2) ~= "t_"));
 }
 
 function xxSet(string zzS, byte zzNetMode)
@@ -7148,7 +7148,7 @@ exec function TeamSay( string Msg )
 			}
 			else if (cmd ~= "%P" && GameReplicationInfo.IsA('CTFReplicationInfo')) //CTF only
 			{
-			        // Figure out Posture.
+					// Figure out Posture.
 
 				for (zzi=0; zzi < 4; zzi++)
 				{
@@ -7333,9 +7333,9 @@ simulated function xxClientDemoBolt(Actor A, optional Vector V, optional Rotator
 	xxGetDemoPlaybackSpec();
 	if (A == none)
 		return;
-    A.SetLocation(V);
-    A.SetRotation(R);
-    PBolt(A).CheckBeam(X, Delta);
+	A.SetLocation(V);
+	A.SetRotation(R);
+	PBolt(A).CheckBeam(X, Delta);
 }
 
 // AUTODEMO CODE
@@ -7743,8 +7743,8 @@ defaultproperties
 	sHitSound(1)="UnrealShare.StingerFire"
 	cShockBeam=1
 	BeamScale=0.45
-    BeamFadeCurve=4
- 	BeamDuration=0.75
+	BeamFadeCurve=4
+	BeamDuration=0.75
 	bIsFinishedLoading=False
 	bDrawDebugData=False
 	DesiredNetUpdateRate=100.0
