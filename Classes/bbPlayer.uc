@@ -1418,9 +1418,26 @@ function xxSetPendingWeapon(Weapon W)
 }
 
 function UndoExtrapolation() {
+	local vector OldLoc;
+	local Decoration Carried;
 	if (bExtrapolatedLastUpdate) {
 		bExtrapolatedLastUpdate = false;
-		xxNewMoveSmooth(SavedLocation);
+
+		if (xxNewMoveSmooth(SavedLocation) == false && OtherPawnAtLocation(SavedLocation) == false) {
+			Carried = CarriedDecoration;
+			OldLoc = Location;
+
+			bCanTeleport = false;
+			xxNewSetLocation(SavedLocation, SavedVelocity);
+			bCanTeleport = true;
+
+			if (Carried != None) {
+				CarriedDecoration = Carried;
+				CarriedDecoration.SetLocation(SavedLocation + CarriedDecoration.Location - OldLoc);
+				CarriedDecoration.SetPhysics(PHYS_None);
+				CarriedDecoration.SetBase(self);
+			}
+		}
 		Velocity = SavedVelocity;
 		Acceleration = SavedAcceleration;
 	}
