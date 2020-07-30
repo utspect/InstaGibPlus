@@ -289,6 +289,7 @@ var float EyeHeightOffset;
 var globalconfig bool bUseOldMouseInput;
 var transient float TurnFractionalPart, LookUpFractionalPart;
 
+var float AverageServerDeltaTime;
 var float TimeDead;
 var float RealTimeDead;
 var Pawn LastKiller;
@@ -3592,7 +3593,9 @@ simulated function CheckHitSound()
 		PlayTeamHitSound(0);
 }
 
-event ServerTick(float DeltaTime);
+event ServerTick(float DeltaTime) {
+	AverageServerDeltaTime = (AverageServerDeltaTime*99 + DeltaTime) * 0.01;
+}
 
 /** STATES
  * @Author: spect
@@ -4066,6 +4069,8 @@ ignores SeePlayer, HearNoise, Bump;
 			MoveAutonomous(ExtrapolationDelta, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
 		}
 		ExtrapolationDelta *= Exp(-0.25 * DeltaTime);
+
+		global.ServerTick(DeltaTime);
 	}
 
 	event PlayerTick( float DeltaTime )
