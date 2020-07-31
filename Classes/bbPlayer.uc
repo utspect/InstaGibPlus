@@ -1424,7 +1424,9 @@ function UndoExtrapolation() {
 	if (bExtrapolatedLastUpdate) {
 		bExtrapolatedLastUpdate = false;
 
-		if (xxNewMoveSmooth(SavedLocation) == false && OtherPawnAtLocation(SavedLocation) == false) {
+		if (FastTrace(SavedLocation)) {
+			xxNewMoveSmooth(SavedLocation);
+		} else {
 			Carried = CarriedDecoration;
 			OldLoc = Location;
 
