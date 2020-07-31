@@ -58,3 +58,127 @@ As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickra
 <b>Deaod</b> - For the support and pointers when I got stuck, without him I don't think I could've finished this so fast.<br>
 <b>UT99 Community</b> - For their endless patience, support and help testing and reporting bugs.<br>
 <b>Epic</b> - For not open sourcing a 20 year old game running on their 20 year old engine.
+
+# Settings
+
+## Server Settings
+Server settings can be found inside InstaGibPlus.ini.
+
+### HeadshotDamage (float, default: 100)
+Controls how much damage a headshot with the sniper rifle deals.
+### SniperSpeed (float, default: 1)
+Controls sniper rifle reload time, higher values lead to less time between shots.
+### SniperDamagePri (float, default: 60)
+Controls damage of body hits by sniper rifle.
+### SetPendingWeapon (bool, default: False)
+???
+### NNAnnouncer (bool, default: False)
+Whether to automatically add an announcer for multi-kills, or not.
+### bUTPureEnabled (bool, default: True)
+Big switch to enable/disable IG+.
+### Advertise (int, default: 1)
+Controls whether to add a tag to the server's name.
+- `1` - Add tag at the beginning of the server's name
+- `2` - Add tag at the end of the server's name
+- anything else - Dont advertise
+### AdvertiseMsg (int, default: 1)
+Controls the tag to add to the server's name
+- `0` - `[CSHP]`
+- `1` - `[IG+]`
+- anything else - `[PWND]`
+### bAllowCenterView (bool, default: False)
+Whether to allow use of the bSnapLevel button or not.
+### CenterViewDelay (float, default: 1)
+If bAllowCenterView is True, controls how much time has to pass between uses of bSnapLevel.
+### bAllowBehindView (bool, default: False)
+Whether to allow 3rd Person perspective or not.
+### TrackFOV (int, default: 0)
+Controls how strictly the FOV is checked.
+- `1` - very strict, no zooming with sniper
+- `2` - looser, zooming with sniper possible
+- anything else - no restrictions
+### bAllowMultiWeapon (bool, default: False)
+Whether to allow the multi-weapon bug to be (ab)used
+### bFastTeams (bool, default: True)
+Whether to allow the use of `mutate FixTeams`, `mutate NextTeam`, and `mutate ChangeTeam <Team>` or not. `True` enables the use of these commands, `False` disables.
+### bUseClickboard (bool, default: True)
+Enables a set of alternative scoreboards that show the ready-status for players before the match has started.
+### MinClientRate (int, default: 10000)
+The server will force clients to use at least this netspeed.
+### bAdvancedTeamSay (bool, default: True)
+Whether to allow the use of advanced TeamSay or not.
+Advanced TeamSay allows showing game-information in your chat messages, by replacing the following with the corresponding information:
+- `%H` -> "<Health> Health"
+- `%h` -> "<Health>%"
+- `%W` -> "<WeaponName>" or "Empty hands"
+- `%A` -> "Shieldbelt and <Armor> Armor" or "<Armor> Armor"
+- `%a` -> "SB <Armor>A" or "<Armor>A"
+- `%P`, `%p` -> Current CTF objective
+### ForceSettingsLevel (int, default: 2)
+When to check that default settings for all objects are correct client-side.
+- `0` and below -> never
+- `1` -> once after PostNetBeginPlay
+- `2` -> in addition, every time a new object is spawned
+- `3` and above -> in addition, once every 5000 server-ticks on average
+### bNoLockdown (bool, default: True)
+Whether to have lockdown when players get hit by mini/pulse or not.
+- `True` -> don't allow lockdown
+- `False` -> allow lockdown
+### bWarmup (bool, default: True)
+Whether to allow warmup in tournament games or not.
+### bCoaches (bool, default: False)
+Whether to allow spectators to coach teams in tournament games or not.
+### bAutoPause (bool, default: True)
+Whether to automatically pause the game in tournament games or not.
+### ForceModels (int, default: 1)
+Force models mode.
+- `1` -> Client controlled
+- `2` -> Forced on
+- anything else -> Disabled
+### ImprovedHUD (int, default: 1)
+Enable various HUD improvements. Depends on PureClickBoard mutator (set [bUseClickboard](#buseclickboard) to `True`, or add mutator through configuration).
+- `1` -> Show boots, Clock
+- `2` -> In addition, show enhanced team info
+- anything else -> dont show anything
+### bDelayedPickupSpawn (bool, default: False)
+Enable or disable delayed first pickup spawn.
+### bTellSpectators (bool, default: False)
+Enable or disable telling spectators of reason for kicks.
+### PlayerPacks (string\[8\], default: Empty)
+Config list of supported player packs
+### DefaultHitSound (int, default: 2)
+HitSound for enemy damage to use when forcing clients (see [bForceDefaultHitSounds](bforcedefaulthitsounds)).
+### DefaultTeamHitSound (int, default: 3)
+HitSound for friendly fire to use when forcing clients (see [bForceDefaultHitSounds](bforcedefaulthitsounds)).
+### bForceDefaultHitSounds (bool, default: False)
+Force clients to use a specific HitSound.
+### TeleRadius (int, default: 210)
+Radius within which to telefrag enemies using translocator.
+### ThrowVelocity (int, default: 750)
+Horizontal speed with which to throw weapons.
+### bForceDemo (bool, default: False)
+Forces clients to do demos.
+### MinPosError (float, default: 100)
+Unused. Intended to be minimum squared distance error for updating clients.
+### MaxPosError (float, default: 3000)
+Unused. Intended to be maximum squared distance error for updating clients.
+### MaxHitError (float, default: 10000)
+Distance to any position over the last 500ms for hits to be counted.
+### ShowTouchedPackage (bool, default: False)
+Send package-names of touched actors to clients when those clients touch the actors.
+### ExcludeMapsForKickers (string\[128\], default: Empty)
+List of map names (with or without .unr) for maps that should not have their Kickers replaced with NN_Kickers.
+### MaxJitterTime (float, default 0.1)
+Maximum time between updates by clients that's tolerated by IG+. If a client exceeds this time and [bEnableJitterBounding](#benablejitterbounding) is `True` an update is generated for the client. Guideline setting is half the maximum supported ping.
+### MinNetUpdateRate (float, default: 60)
+Minimum frequency of client updates for server.
+### MaxNetUpdateRate (float, default: 250)
+Maximum frequency of client updates for server.
+### MaxClientRate (int, default: 25000)
+Maximum netspeed allowed for clients.
+### MaxTradeTimeMargin (float, default: 0.1)
+Maximum time after death (on server) that players can still fire their weapons.
+### bEnableServerExtrapolation (bool, default: True)
+If enabled the server will extrapolate client movement when the client's movement updates are too far behind the server's timepoint.
+### bEnableJitterBounding (bool, default: True)
+If enabled the server will generate movement updates for clients that havent sent updates in a while.
