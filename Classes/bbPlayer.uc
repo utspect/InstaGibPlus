@@ -1816,7 +1816,6 @@ function xxServerMove(
 		zzLastClientErr = 0;
 	}
 	xxFakeCAP(TimeStamp);
-	xxRememberPosition();
 }
 
 function bool OtherPawnAtLocation(vector Loc) {
@@ -3595,6 +3594,7 @@ simulated function CheckHitSound()
 
 event ServerTick(float DeltaTime) {
 	AverageServerDeltaTime = (AverageServerDeltaTime*99 + DeltaTime) * 0.01;
+	xxRememberPosition();
 }
 
 /** STATES
