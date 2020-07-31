@@ -1405,11 +1405,11 @@ defaultproperties
 	MinPosError=100
 	MaxPosError=3000
 	MaxHitError=10000
-	MaxJitterTime=0.040
+	MaxJitterTime=0.1
 	MinNetUpdateRate=60.0
 	MaxNetUpdateRate=250.0
 	ShowTouchedPackage=False
 	MaxTradeTimeMargin=0.1
-	bEnableServerExtrapolation=true
-	bEnableJitterBounding=true
+	bEnableServerExtrapolation=True
+	bEnableJitterBounding=True
 }
