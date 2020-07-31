@@ -1820,19 +1820,19 @@ function xxServerMove(
 }
 
 function bool OtherPawnAtLocation(vector Loc) {
-	local bbPlayer P;
+	local Pawn P;
 	local vector RadiusDelta;
 	local float HeightDelta;
 
-	foreach RadiusActors(class'bbPlayer', P, 2*(CollisionRadius+CollisionHeight)) {
+	foreach RadiusActors(class'Pawn', P, 2*(CollisionRadius+CollisionHeight)) {
 		if (P == self) continue;
 		if (P.Health <= 0) continue;
 
 		RadiusDelta = vect(1,1,0) * (P.Location - Loc);
-		if ((RadiusDelta dot RadiusDelta) > CollisionRadius * CollisionRadius) continue;
+		if (VSize(RadiusDelta) >= 2*CollisionRadius) continue;
 
 		HeightDelta = P.Location.Z - Loc.Z;
-		if (Abs(HeightDelta) > CollisionHeight) continue;
+		if (Abs(HeightDelta) >= 2*CollisionHeight) continue;
 
 		return true;
 	}
