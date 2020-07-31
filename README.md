@@ -136,7 +136,7 @@ Force models mode.
 - `2` -> Forced on
 - anything else -> Disabled
 ### ImprovedHUD (int, default: 1)
-Enable various HUD improvements. Depends on PureClickBoard mutator (set [bUseClickboard](#buseclickboard) to `True`, or add mutator through configuration).
+Enable various HUD improvements. Depends on PureClickBoard mutator (set [bUseClickboard](#buseclickboard-bool-default-true) to `True`, or add mutator through configuration).
 - `1` -> Show boots, Clock
 - `2` -> In addition, show enhanced team info
 - anything else -> dont show anything
@@ -147,9 +147,9 @@ Enable or disable telling spectators of reason for kicks.
 ### PlayerPacks (string\[8\], default: Empty)
 Config list of supported player packs
 ### DefaultHitSound (int, default: 2)
-HitSound for enemy damage to use when forcing clients (see [bForceDefaultHitSounds](bforcedefaulthitsounds)).
+HitSound for enemy damage to use when forcing clients (see [bForceDefaultHitSounds](bforcedefaulthitsounds-bool-default-false)).
 ### DefaultTeamHitSound (int, default: 3)
-HitSound for friendly fire to use when forcing clients (see [bForceDefaultHitSounds](bforcedefaulthitsounds)).
+HitSound for friendly fire to use when forcing clients (see [bForceDefaultHitSounds](bforcedefaulthitsounds-bool-default-false)).
 ### bForceDefaultHitSounds (bool, default: False)
 Force clients to use a specific HitSound.
 ### TeleRadius (int, default: 210)
@@ -169,7 +169,7 @@ Send package-names of touched actors to clients when those clients touch the act
 ### ExcludeMapsForKickers (string\[128\], default: Empty)
 List of map names (with or without .unr) for maps that should not have their Kickers replaced with NN_Kickers.
 ### MaxJitterTime (float, default 0.1)
-Maximum time between updates by clients that's tolerated by IG+. If a client exceeds this time and [bEnableJitterBounding](#benablejitterbounding) is `True` an update is generated for the client. Guideline setting is half the maximum supported ping.
+Maximum time between updates by clients that's tolerated by IG+. If a client exceeds this time and [bEnableJitterBounding](#benablejitterbounding-bool-default-true) is `True` an update is generated for the client. Guideline setting is half the maximum supported ping.
 ### MinNetUpdateRate (float, default: 60)
 Minimum frequency of client updates for server.
 ### MaxNetUpdateRate (float, default: 250)
