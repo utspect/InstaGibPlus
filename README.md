@@ -147,9 +147,9 @@ Enable or disable telling spectators of reason for kicks.
 ### PlayerPacks (string\[8\], default: Empty)
 Config list of supported player packs
 ### DefaultHitSound (int, default: 2)
-HitSound for enemy damage to use when forcing clients (see [bForceDefaultHitSounds](bforcedefaulthitsounds-bool-default-false)).
+HitSound for enemy damage to use when forcing clients (see [bForceDefaultHitSounds](#bforcedefaulthitsounds-bool-default-false)).
 ### DefaultTeamHitSound (int, default: 3)
-HitSound for friendly fire to use when forcing clients (see [bForceDefaultHitSounds](bforcedefaulthitsounds-bool-default-false)).
+HitSound for friendly fire to use when forcing clients (see [bForceDefaultHitSounds](#bforcedefaulthitsounds-bool-default-false)).
 ### bForceDefaultHitSounds (bool, default: False)
 Force clients to use a specific HitSound.
 ### TeleRadius (int, default: 210)
