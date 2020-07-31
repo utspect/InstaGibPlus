@@ -256,7 +256,6 @@ var bool MMSupport;
 var bool SetPendingWeapon;
 
 // Net Updates
-var float MaxPosErrorFactor;
 var float TimeBetweenNetUpdates;
 var float ExtrapolationDelta;
 var bool bExtrapolatedLastUpdate;
@@ -541,7 +540,6 @@ event PostBeginPlay()
 	}
 	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
 
-	MaxPosErrorFactor = class'UTPure'.default.MaxJitterTime * class'UTPure'.default.MaxJitterTime;
 	PlayerReplicationInfo.NetUpdateFrequency = 10;
 }
 
