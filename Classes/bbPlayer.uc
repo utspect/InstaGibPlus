@@ -438,7 +438,7 @@ simulated function Touch( actor Other )
 			ClientMessage(Package);
 		}
 
-		if (Other.IsA('Kicker') && Other.Class.Name != 'Kicker') {
+		if (Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker' && Other.Class.Name != 'Kicker') {
 			zzForceUpdateUntil = Level.TimeSeconds + 0.15 + float(Other.GetPropertyText("ToggleTime"));
 			zzbForceUpdate = true;
 		}
