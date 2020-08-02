@@ -320,9 +320,7 @@ function ModifyPlayer(Pawn Other)
 
 function bool AlwaysKeep(Actor Other)
 {
-    if (((Level.Game.IsA('NewNetIG') || Level.Game.IsA('NewNetTG')
-									 || Level.Game.IsA('NewNetSDOM')) && Other.IsA('NN_Armor2')
-									 || Other.IsA('NN_ThighPads')))
+    if (Level.Game.IsA('NewNetSDOM') && (Other.IsA('NN_Armor2') || Other.IsA('NN_ThighPads')))
         return true;
 
     return Super.AlwaysKeep(Other);
@@ -330,9 +328,7 @@ function bool AlwaysKeep(Actor Other)
 
 function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 {
-    if (Level.Game.IsA('NewNetIG') ||
-		Level.Game.IsA('NewNetTG') ||
-		Level.Game.IsA('NewNetSDOM'))
+    if (Level.Game.IsA('NewNetSDOM'))
 	{
 		if ( Other.IsA('Armor2') || Other.IsA('Armor') )
 		{
