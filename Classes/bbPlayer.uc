@@ -1979,15 +1979,13 @@ exec function Fire( optional float F )
 	}
 
 	xxEnableCarcasses();
-	if (!bNewNet || !xxWeaponIsNewNet())
-	{
+	if (!bNewNet || !xxWeaponIsNewNet()) {
 		if (xxCanFire())
 			Super.Fire(F);
-	}
-	else if (Role < ROLE_Authority)
-	{
+	} else if (Role < ROLE_Authority)
 		Weapon.ClientFire(1);
-	}
+	else
+		Super.Fire(F);
 	xxDisableCarcasses();
 }
 
@@ -2027,7 +2025,7 @@ function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator V
 	}
 	else if (xxCanFire())
 	{
-		Super.Fire(1);
+		Fire(1);
 	}
 	zzNN_HitActor = None;
 	zzbNN_Special = false;
@@ -4582,7 +4580,7 @@ state Dying
 					TradeTimeMargin = FMin(
 						TradeTimeMargin,
 						(AverageServerDeltaTime/Level.TimeDilation +
-						0.001 * (PlayerReplicationInfo.Ping - bbPlayer(zzNN_HitActor).PlayerReplicationInfo.Ping))
+						0.0005 * (PlayerReplicationInfo.Ping - bbPlayer(zzNN_HitActor).PlayerReplicationInfo.Ping))
 					);
 				}
 				if (RealTimeDead < TradeTimeMargin)
@@ -4622,6 +4620,14 @@ state Dying
 			log("Restartplayer failed");
 		}
 
+	}
+
+	event ServerTick(float DeltaTime) {
+		RealTimeDead += (DeltaTime / Level.TimeDilation); // counting real time, undo dilation
+		if (Level.Pauser == "")
+			TimeDead += DeltaTime;
+
+		global.ServerTick(DeltaTime);
 	}
 
 	event PlayerTick( float DeltaTime )
