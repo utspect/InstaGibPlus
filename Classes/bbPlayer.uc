@@ -1787,7 +1787,7 @@ function xxServerMove(
 		else
 			xxCAP(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
 
-		LastCAPTime = CurrentTimeStamp + FClamp(PlayerReplicationInfo.Ping*0.001, 0, 0.5);
+		LastCAPTime = ServerTimeStamp;
 		zzLastClientErr = 0;
 		xxRememberPosition();
 		return;
@@ -1821,7 +1821,11 @@ function xxServerMove(
 
 		zzLastClientErr = 0;
 	}
-	xxFakeCAP(TimeStamp);
+
+	if (ServerTimeStamp - LastCAPTime > 0.1) {
+		xxFakeCAP(TimeStamp);
+		LastCAPTime = ServerTimeStamp;
+	}
 }
 
 function bool OtherPawnAtLocation(vector Loc) {
