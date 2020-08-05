@@ -229,7 +229,6 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 {
 	local UT_Shellcase s;
 	local Pawn PawnOwner;
-	local float CH;
 
 	if (Owner.IsA('Bot'))
 		return false;
@@ -254,13 +253,11 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		if ( Other.bIsPawn )
 		{
 			if ((Other.GetAnimGroup(Other.AnimSequence) == 'Ducking') && (Other.AnimFrame > -0.03)) {
-				CH = 0.3 * Other.CollisionHeight;
 				return false; // disable crouching headshot
-			} else {
-				CH = Other.CollisionHeight;
 			}
 
-			if (HitLocation.Z - Other.Location.Z > BodyHeight * CH)
+			HitLocation += Normal(X+Y+Z) * (Other.CollisionRadius * 0.5);
+			if (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight)
 				return true;
 		}
 
