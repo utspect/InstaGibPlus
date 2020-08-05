@@ -241,6 +241,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	{
 		s.DrawScale = 2.0;
 		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
+		s.RemoteRole = ROLE_None;
 	}
 	if (Other == Level || Other.IsA('Mover'))
 	{
@@ -349,19 +350,10 @@ simulated function DoShellCase(PlayerPawn Pwner, vector HitLoc, Vector X, Vector
 		return;
 
 	if (RemoteRole < ROLE_Authority) {
-		//for (P = Level.PawnList; P != None; P = P.NextPawn)
-		ForEach AllActors(class'PlayerPawn', P)
-		{
-			if (P != Pwner) {
-				CR = P.Spawn(class'UT_ShellCase',P, '', HitLoc);
-				CR.bOnlyOwnerSee = True;
-				s = UT_Shellcase(CR);
-			if ( s != None )
-			{
-				s.DrawScale = 2.0;
-				s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
-			}
-			}
+		s = Spawn(class'NN_UT_ShellCaseOwnerHidden', Pwner,, HitLoc);
+		if ( s != None ) {
+			s.DrawScale = 2.0;
+			s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
 		}
 	}
 }
