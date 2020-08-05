@@ -247,12 +247,6 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
 		if (bbPlayer(Owner) != None)
 			bbPlayer(Owner).xxClientDemoFix(None, class'UT_HeavyWallHitEffect', HitLocation+HitNormal,,, Rotator(HitNormal));
-		//if (Other.IsA('Mover')) {
-		//	if (HitDamage > 0)
-		//		bbPlayer(Owner).xxMover_TakeDamage(Mover(Other), HitDamage, Pawn(Owner), HitLocation, 30000.0 * X, MyDamageType);
-		//	else
-		//		bbPlayer(Owner).xxMover_TakeDamage(Mover(Other), class'UTPure'.default.SniperDamagePri, Pawn(Owner), HitLocation, 30000.0 * X, MyDamageType);
-		//}
 	}
 	else if ( (Other != self) && (Other != Owner) && (Other != None) )
 	{
@@ -389,12 +383,6 @@ function TraceFire( float Accuracy )
 	{
 		Super.TraceFire(Accuracy);
 		return;
-	}
-
-	if (bbP == None)
-	{
-		if (bbP.zzNN_HitActor.IsA('bbPlayer') && !bbPlayer(bbP.zzNN_HitActor).xxCloseEnough(bbP.zzNN_HitLoc))
-		bbP.zzNN_HitActor = None;
 	}
 
 	Owner.MakeNoise(bbP.SoundDampening);

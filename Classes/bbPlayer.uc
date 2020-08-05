@@ -521,7 +521,6 @@ simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeigh
 event PostBeginPlay()
 {
 	local int i;
-	local Arena NewNetIG;
 
 	for (i = 0; i < FRVI_length; i++)
 		zzFRandVals[i] = FRand();
