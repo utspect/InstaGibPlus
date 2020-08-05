@@ -1993,6 +1993,7 @@ function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator V
 {
 	local ImpactHammer IH;
 	local bbPlayer bbP;
+	local float TradeTimeMargin;
 
 	if (!bNewNet || !xxWeaponIsNewNet() || Role < ROLE_Authority)
 		return;
@@ -2025,7 +2026,22 @@ function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator V
 	}
 	else if (xxCanFire())
 	{
-		Fire(1);
+		if (IsInState('Dying')) {
+			TradeTimeMargin = class'UTPure'.default.MaxTradeTimeMargin;
+			if (bbPlayer(LastKiller) != none) {
+				TradeTimeMargin = FMin(
+					TradeTimeMargin,
+					(AverageServerDeltaTime/Level.TimeDilation +
+					0.0005 * (PlayerReplicationInfo.Ping - bbPlayer(LastKiller).PlayerReplicationInfo.Ping))
+				);
+			}
+			if (RealTimeDead < TradeTimeMargin) {
+				Log("["$Level.TimeSeconds$"] Traded! TradeTimeMargin="$TradeTimeMargin@"RealTimeDead="$RealTimeDead, 'IGPlus');
+				Super.Fire(1);
+			}
+		} else {
+			Super.Fire(1);
+		}
 	}
 	zzNN_HitActor = None;
 	zzbNN_Special = false;
@@ -4561,39 +4577,6 @@ state PlayerWaking
 
 state Dying
 {
-	exec function Fire( optional float F )
-	{
-		local float TradeTimeMargin;
-		if ((Level.NetMode == NM_DedicatedServer) ||
-			(Level.NetMode == NM_ListenServer && RemoteRole == ROLE_AutonomousProxy)
-		) {
-			bJustFired = true;
-			if( bShowMenu || (Level.Pauser != "") )
-			{
-				if ( !bShowMenu && (Level.Pauser == PlayerReplicationInfo.PlayerName)  )
-					SetPause(False);
-				return;
-			}
-			if( Weapon != None) {
-				TradeTimeMargin = class'UTPure'.default.MaxTradeTimeMargin;
-				if (bbPlayer(zzNN_HitActor) != none) {
-					TradeTimeMargin = FMin(
-						TradeTimeMargin,
-						(AverageServerDeltaTime/Level.TimeDilation +
-						0.0005 * (PlayerReplicationInfo.Ping - bbPlayer(zzNN_HitActor).PlayerReplicationInfo.Ping))
-					);
-				}
-				if (RealTimeDead < TradeTimeMargin)
-				{
-					Weapon.bPointing = true;
-					Weapon.Fire(F);
-				}
-			}
-		} else {
-			super.Fire(F);
-		}
-	}
-
 	function ServerReStartPlayer()
 	{
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
