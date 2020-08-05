@@ -1606,10 +1606,10 @@ function xxServerMove(
 	bJumpStatus = NewbJumpStatus;
 
 	ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
-	if (ServerDeltaTime > 0.5)
+	if (ServerDeltaTime > 0.9)
 		ServerDeltaTime = FMin(ServerDeltaTime, MoveDeltaTime);
 	DeltaTime = TimeStamp - CurrentTimeStamp;
-	if (DeltaTime > 0.5)
+	if (DeltaTime > 0.9)
 		DeltaTime = FMin(DeltaTime, MoveDeltaTime);
 
 	ExtrapolationDelta += (ServerDeltaTime - DeltaTime);
