@@ -4106,6 +4106,7 @@ ignores SeePlayer, HearNoise, Bump;
 		bIsTurning = false;
 		bPressedJump = false;
 		bIsAlive = true;
+		bExtrapolatedLastUpdate = false;
 		if (Physics != PHYS_Falling) SetPhysics(PHYS_Walking);
 		if ( !IsAnimating() )
 			PlayWaiting();
