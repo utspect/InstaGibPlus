@@ -276,6 +276,7 @@ var int CompressedViewRotation; // Compressed Pitch/Yaw
 // +----------------+----------------+
 
 var bool bWasDodging;
+var bool bWasPaused;
 
 const NumLastAddVelocityTimeStamps=4;
 var float LastAddVelocityTimeStamp[4];
@@ -1549,6 +1550,7 @@ function xxServerMove(
 	local EPhysics ClientPhysics;
 	local byte ClientRoll;
 	local int MergeCount;
+	local bool bClientPaused;
 
 	if (bDeleteMe)
 		return;
@@ -1576,6 +1578,7 @@ function xxServerMove(
 	ClientLoc.Y = ClientLocY;
 	ClientLoc.Z = ClientLocZ;
 
+	bClientPaused = (MiscData & 0x01000000) != 0;
 	MergeCount = (MiscData >> 19) & 0x1F;
 	NewbRun = (MiscData & 0x40000) != 0;
 	NewbDuck = (MiscData & 0x20000) != 0;
@@ -1653,7 +1656,7 @@ function xxServerMove(
 	ClientVelCalc.Z = FMax(ClientVel.Z, Velocity.Z);
 
 	// Predict new position
-	if ((Level.Pauser == "") && (DeltaTime > 0)) {
+	if ((Level.Pauser == "") && bClientPaused == false && (DeltaTime > 0)) {
 		UndoExtrapolation();
 
 		SimStep = DeltaTime / float(MergeCount + 1);
@@ -1670,6 +1673,8 @@ function xxServerMove(
 		}
 		// Important input is usually the cause for buffer breakup, so it happens last on the client.
 		MoveAutonomous(SimStep, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
+
+		bWasPaused = false;
 	}
 
 	// HACK
@@ -2490,6 +2495,7 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	else
 		RelLoc = Location - Base.Location;
 
+	if (Level.Pauser != "") MiscData = MiscData | 0x01000000;
 	MiscData = MiscData | ((Move.MergeCount & 0x1F) << 19);
 	if (Move.bRun) MiscData = MiscData | 0x40000;
 	if (Move.bDuck) MiscData = MiscData | 0x20000;
@@ -4061,29 +4067,33 @@ ignores SeePlayer, HearNoise, Bump;
 		local float TimeSinceLastUpdate;
 		local float ProcessTime;
 
-		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
-		ProcessTime = TimeSinceLastUpdate - class'UTPure'.default.MaxJitterTime;
+		if (Level.Pauser == "" && !bWasPaused) {
+			TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
+			ProcessTime = TimeSinceLastUpdate - class'UTPure'.default.MaxJitterTime;
 
-		if (class'UTPure'.default.bEnableJitterBounding &&
-			ProcessTime >= DeltaTime && bJustRespawned == false
-		) {
-			UndoExtrapolation();
-			MoveAutonomous(ProcessTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
-			CurrentTimeStamp += ProcessTime;
-			ServerTimeStamp += ProcessTime;
-			ExtrapolationDelta = class'UTPure'.default.MaxJitterTime;
-		}
+			if (class'UTPure'.default.bEnableJitterBounding &&
+				ProcessTime > AverageServerDeltaTime && bJustRespawned == false
+			) {
+				UndoExtrapolation();
+				MoveAutonomous(ProcessTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+				CurrentTimeStamp += ProcessTime;
+				ServerTimeStamp += ProcessTime;
+				ExtrapolationDelta = class'UTPure'.default.MaxJitterTime;
+			}
 
-		if (class'UTPure'.default.bEnableServerExtrapolation &&
-			bExtrapolatedLastUpdate == false && ExtrapolationDelta > DeltaTime
-		) {
-			bExtrapolatedLastUpdate = true;
-			SavedLocation = Location;
-			SavedVelocity = Velocity;
-			SavedAcceleration = Acceleration;
-			MoveAutonomous(ExtrapolationDelta, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+			if (class'UTPure'.default.bEnableServerExtrapolation &&
+				bExtrapolatedLastUpdate == false && ExtrapolationDelta > AverageServerDeltaTime
+			) {
+				bExtrapolatedLastUpdate = true;
+				SavedLocation = Location;
+				SavedVelocity = Velocity;
+				SavedAcceleration = Acceleration;
+				MoveAutonomous(ExtrapolationDelta, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+			}
+			ExtrapolationDelta *= Exp(-2.0 * DeltaTime);
+		} else {
+			bWasPaused = true;
 		}
-		ExtrapolationDelta *= Exp(-0.25 * DeltaTime);
 
 		global.ServerTick(DeltaTime);
 	}
