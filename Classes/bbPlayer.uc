@@ -41,6 +41,7 @@ var globalconfig bool   bNoSmoothing;
 var globalconfig bool   bNoOwnFootsteps;
 var globalconfig bool   bLogClientMessages;
 var globalconfig bool   bEnableKillCam;
+var globalconfig float  FakeCAPInterval; // Send a FakeCAP after no CAP has been sent for this amount of time
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
@@ -326,7 +327,7 @@ replication
 
 	// Client->Server debug data
 	reliable if ( Role == ROLE_AutonomousProxy )
-		bDrawDebugData;
+		bDrawDebugData, FakeCAPInterval;
 
 	// Server->Client debug data
 	unreliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
@@ -1821,7 +1822,7 @@ function xxServerMove(
 		zzLastClientErr = 0;
 	}
 
-	if (ServerTimeStamp - LastCAPTime > 0.1) {
+	if (ServerTimeStamp - LastCAPTime > FakeCAPInterval) {
 		xxFakeCAP(TimeStamp);
 		LastCAPTime = ServerTimeStamp;
 	}
@@ -7788,7 +7789,8 @@ defaultproperties
 	bDrawDebugData=False
 	DesiredNetUpdateRate=100.0
 	TimeBetweenNetUpdates=0.01
-	bLogClientMessages=true
-	bEnableKillCam=true
-	bJustRespawned=true
+	bLogClientMessages=True
+	bEnableKillCam=False
+	bJustRespawned=True
+	FakeCAPInterval=0.1
 }
