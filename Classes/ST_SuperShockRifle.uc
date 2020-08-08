@@ -318,7 +318,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	bbP = bbPlayer(Owner);
 
 	if (Other.isA('Pawn')) {
-		if (bbP.bEnableHitSounds) {
+		if (bbP.Settings.bEnableHitSounds) {
 			if (!bbP.GameReplicationInfo.bTeamGame || bbPlayer(Other).PlayerReplicationInfo.Team != bbP.PlayerReplicationInfo.Team) {
 				//Log("Hitsound:"@bbP.playedHitSound);
 				bbP.ClientPlaySound(bbP.playedHitSound);
@@ -326,7 +326,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		}
 	}
 
-	if (bbPlayer(Owner).cShockBeam == 2) {
+	if (bbPlayer(Owner).Settings.cShockBeam == 2) {
 		if (bbPlayer(Owner).PlayerReplicationInfo.Team == 1) {
 			Spawn(class'ut_RingExplosion',,, HitLocation+HitNormal*8,rotator(HitNormal));
 			a = Spawn(class'EnergyImpact');

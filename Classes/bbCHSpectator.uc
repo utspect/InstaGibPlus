@@ -39,10 +39,6 @@ var UTPure zzUTPure;
 var PureStats Stat;		// For player stats
 var Class<PureStats> cStat;	// The class to use
 
-// HitSounds
-var globalconfig int HitSound;	// if Client wishes hitsounds (default 2, must be enabled on server)
-var globalconfig int TeamHitSound;	// if Client wishes team hitsounds (default 3, must be enabled on server)
-var globalconfig bool bDisableForceHitSounds;
 var int   zzRecentDmgGiven, zzRecentTeamDmgGiven;
 var float   zzLastHitSound, zzLastTeamHitSound, zzNextTimeTime;
 var int DefaultHitSound, DefaultTeamHitSound;
@@ -63,9 +59,8 @@ var PIDController PitchController;
 var PIDController YawController;
 var rotator LastRotation;
 
-var globalconfig float Kp;
-var globalconfig float Ki;
-var globalconfig float Kd;
+var Object ClientSettingsHelper;
+var ClientSettings Settings;
 
 replication
 {
@@ -74,7 +69,7 @@ replication
 		Stat;
 	// Client -> Server
 	reliable if (ROLE < ROLE_Authority)
-		ShowStats, xxServerSetHitSounds, xxServerSetTeamHitSounds; //, xxServerActivateMover;
+		ShowStats; //, xxServerActivateMover;
 
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
 		NewCAP;
@@ -100,13 +95,13 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 	SmokeRotation = rotator(DVector);
 	SmokeRotation.roll = Rand(65535);
 
-	if (class'bbPlayer'.default.cShockBeam == 3) return;
+	if (Settings.cShockBeam == 3) return;
 
 	Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
 	if (Smoke == none) return;
 	MoveAmount = DVector / NumPoints;
 
-	if (class'bbPlayer'.default.cShockBeam == 1) {
+	if (Settings.cShockBeam == 1) {
 		Smoke.SetProperties(
 			-1,
 			1,
@@ -115,21 +110,21 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 			MoveAmount,
 			NumPoints - 1);
 
-	} else if (class'bbPlayer'.default.cShockBeam == 2) {
+	} else if (Settings.cShockBeam == 2) {
 		Smoke.SetProperties(
 			PlayerPawn(O).PlayerReplicationInfo.Team,
-			class'bbPlayer'.default.BeamScale,
-			class'bbPlayer'.default.BeamFadeCurve,
-			class'bbPlayer'.default.BeamDuration,
+			Settings.BeamScale,
+			Settings.BeamFadeCurve,
+			Settings.BeamDuration,
 			MoveAmount,
 			NumPoints - 1);
 
-	} else if (class'bbPlayer'.default.cShockBeam == 4) {
+	} else if (Settings.cShockBeam == 4) {
 		Smoke.SetProperties(
 			PlayerPawn(O).PlayerReplicationInfo.Team,
-			class'bbPlayer'.default.BeamScale,
-			class'bbPlayer'.default.BeamFadeCurve,
-			class'bbPlayer'.default.BeamDuration,
+			Settings.BeamScale,
+			Settings.BeamFadeCurve,
+			Settings.BeamDuration,
 			MoveAmount,
 			0);
 
@@ -139,9 +134,9 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 			if (Smoke == None) break;
 			Smoke.SetProperties(
 				PlayerPawn(O).PlayerReplicationInfo.Team,
-				class'bbPlayer'.default.BeamScale,
-				class'bbPlayer'.default.BeamFadeCurve,
-				class'bbPlayer'.default.BeamDuration,
+				Settings.BeamScale,
+				Settings.BeamFadeCurve,
+				Settings.BeamDuration,
 				MoveAmount,
 				0);
 		}
@@ -209,22 +204,15 @@ function int TickPID(out PIDController C, float DeltaTime, int Error) {
     Derivative = (Error - C.PrevErr) / DeltaTime;
     C.PrevErr = Error;
 
-    return NormRotDiff(Kp * Error + Ki * C.Integral + Kd * Derivative);
+    return NormRotDiff(
+    	Settings.SmoothVRController.p * Error +
+    	Settings.SmoothVRController.i * C.Integral +
+    	Settings.SmoothVRController.d * Derivative);
 }
 
 function xxPlayerTickEvents()
 {
 	CheckHitSound();
-}
-
-function xxServerSetHitSounds(int b)
-{
-	HitSound = b;
-}
-
-function xxServerSetTeamHitSounds(int b)
-{
-	TeamHitSound = b;
 }
 
 simulated function xxSetHitSounds(int DHS, int DTHS, bool bFDHS)
@@ -248,19 +236,17 @@ event Possess()
 
 	if ( Level.Netmode == NM_Client )
 	{	// Only do this for clients.
-		xxServerSetHitSounds(HitSound);
-		xxServerSetTeamHitSounds(TeamHitSound);
 	}
 	else
 	{
 		DefaultHitSound = zzUTPure.Default.DefaultHitSound;
 		DefaultTeamHitSound = zzUTPure.Default.DefaultTeamHitSound;
 		bForceDefaultHitSounds = zzUTPure.Default.bForceDefaultHitSounds;
-		//xxSetHitSounds(DefaultHitSound, DefaultTeamHitSound, bForceDefaultHitSounds);
+		xxSetHitSounds(DefaultHitSound, DefaultTeamHitSound, bForceDefaultHitSounds);
 
 		GameReplicationInfo.RemainingTime = DeathMatchPlus(Level.Game).RemainingTime;
 		GameReplicationInfo.ElapsedTime = DeathMatchPlus(Level.Game).ElapsedTime;
-		//xxSetTimes(GameReplicationInfo.RemainingTime, GameReplicationInfo.ElapsedTime);
+		xxSetTimes(GameReplicationInfo.RemainingTime, GameReplicationInfo.ElapsedTime);
 	}
 	Super.Possess();
 }
@@ -419,6 +405,9 @@ event PlayerTick( float DeltaTime )
 
 event PostBeginPlay()
 {
+	local bbPlayer P;
+	local bbCHSpectator S;
+
 	ForEach AllActors(Class'UTPure', zzUTPure)
 		break;
 
@@ -426,6 +415,23 @@ event PostBeginPlay()
 		Stat = Spawn(cStat, Self);
 
 	Super.PostBeginPlay();
+
+	foreach AllActors(class'bbPlayer', P)
+		if (P.Settings != none) {
+			Settings = P.Settings;
+			break;
+		}
+
+	foreach AllActors(class'bbCHSpectator', S)
+		if (S.Settings != none) {
+			Settings = S.Settings;
+			break;
+		}
+
+	if (Settings == none) {
+		ClientSettingsHelper = new(self) class'Object';
+		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings';
+	}
 }
 
 event PostRender( canvas Canvas )
@@ -839,10 +845,10 @@ simulated function PlayHitSound(int Dmg)
 		Pitch = FClamp(42/zzRecentDmgGiven, 0.22, 3.2);
 		zzRecentDmgGiven = 0;
 
-		if (bForceDefaultHitSounds && !bDisableForceHitSounds)
+		if (bForceDefaultHitSounds && !Settings.bDisableForceHitSounds)
 			HS = DefaultHitSound;
 		else
-			HS = HitSound;
+			HS = Settings.HitSound;
 
 		if (HS == 1)
 			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
@@ -878,10 +884,10 @@ simulated function PlayTeamHitSound(int Dmg)
 		Pitch = FClamp(42/zzRecentTeamDmgGiven, 0.22, 3.2);
 		zzRecentTeamDmgGiven = 0;
 
-		if (bForceDefaultHitSounds && !bDisableForceHitSounds)
+		if (bForceDefaultHitSounds && !Settings.bDisableForceHitSounds)
 			HS = DefaultTeamHitSound;
 		else
-			HS = TeamHitSound;
+			HS = Settings.TeamHitSound;
 
 		if (HS == 1)
 			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
@@ -917,12 +923,12 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 
 		if (GameReplicationInfo != None && GameReplicationInfo.bTeamGame && RelatedPRI_2 != None && RelatedPRI_1.Team == RelatedPRI_2.Team)
 		{
-			if (TeamHitSound > 0)
+			if (Settings.TeamHitSound > 0)
 				Sw = -1*Sw;
 			else
 				return;
 		}
-		else if (HitSound == 0)
+		else if (Settings.HitSound == 0)
 			return;
 	}
 
@@ -931,9 +937,8 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 
 exec function HitSounds(int b)
 {
-	HitSound = b;
-	xxServerSetHitSounds(b);
-	SaveConfig();
+	Settings.HitSound = b;
+	Settings.SaveConfig();
 	if (b == 0)
 		ClientMessage("HitSounds: Off");
 	else if (b == 1)
@@ -946,9 +951,8 @@ exec function HitSounds(int b)
 
 exec function TeamHitSounds(int b)
 {
-	TeamHitSound = b;
-	xxServerSetTeamHitSounds(b);
-	SaveConfig();
+	Settings.TeamHitSound = b;
+	Settings.SaveConfig();
 	if (b == 0)
 		ClientMessage("TeamHitSounds: Off");
 	else if (b == 1)
@@ -990,9 +994,4 @@ exec function ShowStats()
 
 defaultproperties
 {
-     HitSound=2
-     TeamHitSound=3
-     Kp=0.09
-     Ki=0.05
-     Kd=0.00
 }

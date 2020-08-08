@@ -148,11 +148,6 @@ function PreBeginPlay()
 	if (NNAnnouncer)
 		Spawn(class'NNAnnouncerSA');
 
-	class'bbPlayer'.Default.HitSound = DefaultHitSound;
-	class'bbPlayer'.Default.TeamHitSound = DefaultTeamHitSound;
-	class'bbCHSpectator'.Default.HitSound = DefaultHitSound;
-	class'bbCHSpectator'.Default.TeamHitSound = DefaultTeamHitSound;
-
  	if (zzDMP.HUDType == Class'ChallengeDominationHUD')
 		zzDMP.HUDType = Class'PureDOMHUD';
 	else if (zzDMP.HUDType == Class'ChallengeCTFHUD')

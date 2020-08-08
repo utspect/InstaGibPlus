@@ -12,36 +12,6 @@ class bbPlayer extends TournamentPlayer
 var int bReason;
 // Client Config
 var bool bNewNet;	// if Client wants new or old netcode. (default true)
-var globalconfig bool   bNoRevert;    // if Client does not want the Revert to Previous Weapon option on Translocator. (default true)
-var globalconfig bool   bForceModels; // if Client wishes models forced to his own. (default false)
-var globalconfig int    HitSound;     // if Client wishes hitsounds (default 2, must be enabled on server)
-var globalconfig int    TeamHitSound; // if Client wishes team hitsounds (default 3, must be enabled on server)
-var globalconfig bool   bDisableForceHitSounds;
-var globalconfig bool   bTeamInfo;    // if Client wants extra team info.
-var globalconfig bool   bDoEndShot;   // if Client wants Screenshot at end of match.
-var globalconfig bool   bAutoDemo;    // if Client wants demo or not.
-var globalconfig bool   bShootDead;
-var globalconfig bool   bNoDeemerToIG;
-var globalconfig bool   bNoSwitchWeapon4;
-var globalconfig string DemoMask; // The options for creating demo filename.
-var globalconfig string DemoPath; // The path for creating the demo.
-var globalconfig string DemoChar; // Character to use instead of illegal ones.
-var globalconfig int    desiredSkin;
-var globalconfig int    desiredSkinFemale;
-var globalConfig int    desiredTeamSkin;
-var globalconfig int    desiredTeamSkinFemale;
-var globalconfig bool   bEnableHitSounds;
-var globalconfig int    selectedHitSound;
-var globalconfig string sHitSound[16];
-var globalconfig int    cShockBeam;
-var globalconfig float  BeamScale;
-var globalconfig int    BeamOriginMode;
-var globalconfig float  DesiredNetUpdateRate;
-var globalconfig bool   bNoSmoothing;
-var globalconfig bool   bNoOwnFootsteps;
-var globalconfig bool   bLogClientMessages;
-var globalconfig bool   bEnableKillCam;
-var globalconfig float  FakeCAPInterval; // Send a FakeCAP after no CAP has been sent for this amount of time
 var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
@@ -119,8 +89,6 @@ var Weapon  zzThrownWeapon;
 var int     zzRecentDmgGiven, zzRecentTeamDmgGiven, TeleRadius;
 var name    zzDefaultWeapon;
 var float   zzLastHitSound, zzLastTeamHitSound;
-var float   zzFRandVals[47]; // Let's use a prime number ;)
-var vector  zzVRandVals[17]; // Let's use a prime number ;)
 var Projectile zzNN_Projectiles[256];
 var vector zzNN_ProjLocations[256];
 var int     zzFRVI, zzNN_FRVI, FRVI_length, zzVRVI, zzNN_VRVI, VRVI_length, zzNN_ProjIndex, NN_ProjLength, zzEdgeCount, zzCheckedCount;
@@ -156,8 +124,6 @@ var float LastCAPTime; // ServerTime when last CAP was sent
 var vector oldClientLoc;
 var decoration carriedFlag;
 
-var globalconfig float MinDodgeClickTime;
-var float zzLastTimeForward, zzLastTimeBack, zzLastTimeLeft, zzLastTimeRight;
 
 struct MoveInfo {
 	var float Delta;
@@ -246,7 +212,6 @@ var PureStatMutator zzStatMut;	// The mutator that receives special calls
 
 var PureLevelBase PureLevel;	// And Level.
 var PurePlayer PurePlayer;	// And player.
-//var PurexxLinker PureLinker;
 var bool bDeterminedLocalPlayer;
 var PlayerPawn LocalPlayer;
 
@@ -258,6 +223,7 @@ var bool SetPendingWeapon;
 
 // Net Updates
 var float TimeBetweenNetUpdates;
+var float FakeCAPInterval; // Send a FakeCAP after no CAP has been sent for this amount of time
 var float ExtrapolationDelta;
 var bool bExtrapolatedLastUpdate;
 var vector SavedLocation;
@@ -265,8 +231,6 @@ var vector SavedVelocity;
 var vector SavedAcceleration;
 
 // SSR Beam
-var byte BeamFadeCurve;
-var float BeamDuration;
 var float LastSSRBeamCreated;
 
 //
@@ -287,13 +251,16 @@ var float OldShakeVert;
 var float OldBaseEyeHeight;
 var float EyeHeightOffset;
 
-var globalconfig bool bUseOldMouseInput;
+var transient float zzLastTimeForward, zzLastTimeBack, zzLastTimeLeft, zzLastTimeRight;
 var transient float TurnFractionalPart, LookUpFractionalPart;
 
 var float AverageServerDeltaTime;
 var float TimeDead;
 var float RealTimeDead;
 var Pawn LastKiller;
+
+var Object ClientSettingsHelper;
+var ClientSettings Settings;
 
 replication
 {
@@ -320,7 +287,7 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		zzbForceModels, bIsAlive, bClientIsWalking, zzbIsWarmingUp, zzFRandVals, zzVRandVals,
+		zzbForceModels, bIsAlive, bClientIsWalking, zzbIsWarmingUp,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
 		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam;
@@ -354,8 +321,8 @@ replication
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
 		xxServerCheckMutator, xxSet,
-		xxServerReceiveMenuItems,xxServerSetNoRevert,xxServerSetReadyToPlay, Hold, Go,
-		xxServerSetForceModels, xxServerSetHitSounds, xxServerSetTeamHitSounds, xxServerDisableForceHitSounds, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
+		xxServerReceiveMenuItems, xxServerSetReadyToPlay, Hold, Go,
+		xxServerSetForceModels, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
 		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
 		xxExplodeOther, xxSetNetUpdateRate, xxServerAddVelocity, xxNN_Fire, xxNN_AltFire, DropFlag;
@@ -521,14 +488,8 @@ simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeigh
 
 event PostBeginPlay()
 {
-	local int i;
-
-	for (i = 0; i < FRVI_length; i++)
-		zzFRandVals[i] = FRand();
-
-	for (i = 0; i < VRVI_length; i++)
-		zzVRandVals[i] = VRand()*10000;
-
+	local bbPlayer P;
+	local bbCHSpectator S;
 
 	Super.PostBeginPlay();
 
@@ -542,6 +503,23 @@ event PostBeginPlay()
 	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
 
 	PlayerReplicationInfo.NetUpdateFrequency = 10;
+
+	foreach AllActors(class'bbPlayer', P)
+		if (P.Settings != none) {
+			Settings = P.Settings;
+			break;
+		}
+
+	foreach AllActors(class'bbCHSpectator', S)
+		if (S.Settings != none) {
+			Settings = S.Settings;
+			break;
+		}
+
+	if (Settings == none) {
+		ClientSettingsHelper = new(self) class'Object';
+		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings';
+	}
 }
 
 // called after PostBeginPlay on net client
@@ -588,16 +566,11 @@ event Possess()
 		Log("Possessed PlayerPawn (bbPlayer) by InstaGib Plus");
 		zzTrue = !zzFalse;
 		zzInfoThing = Spawn(Class'PureInfo');
-		playedHitSound = loadHitSound(selectedHitSound);
-		SetNetUpdateRate(DesiredNetUpdateRate);
-		xxServerSetNoRevert(bNoRevert);
-		xxServerSetForceModels(bForceModels);
-		xxServerSetHitSounds(HitSound);
-		xxServerSetTeamHitSounds(TeamHitSound);
-		if (bDisableForceHitSounds)
-			xxServerDisableForceHitSounds();
-		xxServerSetTeamInfo(bTeamInfo);
-		xxServerSetMinDodgeClickTime(MinDodgeClickTime);
+		playedHitSound = loadHitSound(Settings.selectedHitSound);
+		SetNetUpdateRate(Settings.DesiredNetUpdateRate);
+		xxServerSetForceModels(Settings.bForceModels);
+		xxServerSetTeamInfo(Settings.bTeamInfo);
+		xxServerSetMinDodgeClickTime(Settings.MinDodgeClickTime);
 		if (class'UTPlayerClientWindow'.default.PlayerSetupClass != class'UTPureSetupScrollClient')
 			class'UTPlayerClientWindow'.default.PlayerSetupClass = class'UTPureSetupScrollClient';
 		// This blocks silly set commands by kicking player, after resetting them.
@@ -628,6 +601,7 @@ event Possess()
 			xxServerCheater(chr(90)$chr(69));		// ZE
 		}
 		SetPropertyText("PureLevel", GetPropertyText("xLevel"));
+		FakeCAPInterval = Settings.FakeCAPInterval;
 	}
 	else
 	{
@@ -726,12 +700,12 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 
 		if (GameReplicationInfo.bTeamGame && RelatedPRI_1.Team == RelatedPRI_2.Team)
 		{
-			if (TeamHitSound > 0)
+			if (Settings.TeamHitSound > 0)
 				Sw = -1*Sw;
 			else
 				return;
 		}
-		else if (HitSound == 0)
+		else if (Settings.HitSound == 0)
 			return;
 	}
 	else if (ClassIsChildOf(Message, class'DecapitationMessage'))
@@ -814,7 +788,7 @@ event ClientMessage( coerce string zzS, optional Name zzType, optional bool zzbB
 	xxClientDemoMessage(zzS);
 	Super.ClientMessage(zzS, zzType, zzbBeep);
 	zzPrevClientMessage = "";
-	if (bLogClientMessages)
+	if (Settings.bLogClientMessages)
 		Log(zzS, zzType);
 }
 
@@ -981,7 +955,7 @@ event PlayerInput( float DeltaTime )
 
 	AbsSmoothX = SmoothMouseX;
 	AbsSmoothY = SmoothMouseY;
-	if (bNoSmoothing) {
+	if (Settings.bNoSmoothing) {
 		SmoothMouseX = aMouseX;
 		SmoothMouseY = aMouseY;
 		BorrowedMouseX = 0;
@@ -1955,7 +1929,7 @@ simulated function xxEnableCarcasses()
 {
 	local Carcass C;
 
-	if (!bShootDead)
+	if (!Settings.bShootDead)
 		return;
 
 	ForEach AllActors(class'Carcass', C)
@@ -1970,7 +1944,7 @@ simulated function xxDisableCarcasses()
 {
 	local Carcass C;
 
-	if (!bShootDead)
+	if (!Settings.bShootDead)
 		return;
 
 	ForEach AllActors(class'Carcass', C)
@@ -2603,7 +2577,7 @@ exec function ThrowWeapon()
 }
 
 simulated function Sound loadHitSound(int c) {
-	cHitSound[c] = Sound(DynamicLoadObject(sHitSound[c], class'Sound'));
+	cHitSound[c] = Sound(DynamicLoadObject(Settings.sHitSound[c], class'Sound'));
 	return cHitSound[c];
 }
 
@@ -2670,8 +2644,8 @@ exec function enableDebugData(bool b) {
 }
 
 exec function enableHitSounds(bool b) {
-	bEnableHitSounds = b;
-	SaveConfig();
+	Settings.bEnableHitSounds = b;
+	Settings.SaveConfig();
 	if (b) {
 		ClientMessage("Hitsounds: on");
 		reconnectClient();
@@ -2697,8 +2671,8 @@ exec function setForcedSkins(int maleSkin, int femaleSkin) {
 		return;
 	}
 
-	desiredSkin = maleSkin - 1;
-	desiredSkinFemale = femaleSkin - 1;
+	Settings.desiredSkin = maleSkin - 1;
+	Settings.desiredSkinFemale = femaleSkin - 1;
 	SaveConfig();
 	ClientMessage("Forced enemy skin set!");
 }
@@ -2719,16 +2693,16 @@ exec function setForcedTeamSkins(int maleSkin, int femaleSkin) {
 		return;
 	}
 
-	desiredTeamSkin = maleSkin - 1;
-	desiredTeamSkinFemale = femaleSkin - 1;
+	Settings.desiredTeamSkin = maleSkin - 1;
+	Settings.desiredTeamSkinFemale = femaleSkin - 1;
 	SaveConfig();
 	ClientMessage("Forced team skin set!");
 }
 
 exec function setHitSound(int hs) {
 	if (hs >= 0 && hs <= 16) {
-		selectedHitSound = hs;
-		SaveConfig();
+		Settings.selectedHitSound = hs;
+		Settings.SaveConfig();
 		ClientMessage("Hitsound set!");
 		reconnectClient();
 	} else {
@@ -2739,8 +2713,8 @@ exec function setHitSound(int hs) {
 
 exec function setShockBeam(int sb) {
 	if (sb > 0 && sb <= 4) {
-		cShockBeam = sb;
-		SaveConfig();
+		Settings.cShockBeam = sb;
+		Settings.SaveConfig();
 		ClientMessage("Shock beam set!");
 	} else
 		ClientMessage("Please input a value between 1 and 4");
@@ -2748,8 +2722,8 @@ exec function setShockBeam(int sb) {
 
 exec function setBeamScale(float bs) {
 	if (bs >= 0.1 && bs <= 1.0) {
-		BeamScale = bs;
-		SaveConfig();
+		Settings.BeamScale = bs;
+		Settings.SaveConfig();
 		ClientMessage("Beam scale set!");
 	} else
 		ClientMessage("Please input a value between 0.1 and 1.0");
@@ -2780,15 +2754,15 @@ exec function listSkins() {
 
 exec function myIgSettings() {
 	ClientMessage("Your IG+ client settings:");
-	ClientMessage("Hitsounds:"@bEnableHitSounds);
+	ClientMessage("Hitsounds:"@Settings.bEnableHitSounds);
 	ClientMessage("Forced Models:"@zzbForceModels);
-	ClientMessage("Current Enemy Forced Model:"@forcedModelToString(desiredSkin));
-	ClientMessage("Current Enemy Female Forced Model:"@forcedModelToString(desiredSkinFemale));
-	ClientMessage("Current Team Forced Model:"@forcedModelToString(desiredTeamSkin));
-	ClientMessage("Current Team Female Forced Model:"@forcedModelToString(desiredTeamSkinFemale));
+	ClientMessage("Current Enemy Forced Model:"@forcedModelToString(Settings.desiredSkin));
+	ClientMessage("Current Enemy Female Forced Model:"@forcedModelToString(Settings.desiredSkinFemale));
+	ClientMessage("Current Team Forced Model:"@forcedModelToString(Settings.desiredTeamSkin));
+	ClientMessage("Current Team Female Forced Model:"@forcedModelToString(Settings.desiredTeamSkinFemale));
 	ClientMessage("Current selected hit sound:"@playedHitSound);
-	ClientMessage("Current Shock Beam:"@cShockBeam);
-	ClientMessage("Current Beam Scale:"@BeamScale);
+	ClientMessage("Current Shock Beam:"@Settings.cShockBeam);
+	ClientMessage("Current Beam Scale:"@Settings.BeamScale);
 }
 
 function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation, float Dist)
@@ -2941,14 +2915,14 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 
 	PitchDelta = 32.0 * DeltaTime * aLookUp + LookUpFractionalPart;
 	ViewRotation.Pitch += int(PitchDelta);
-	if (!bUseOldMouseInput)
+	if (!Settings.bUseOldMouseInput)
 		LookUpFractionalPart = PitchDelta - int(PitchDelta);
 
 	ViewRotation.Pitch = Clamp((ViewRotation.Pitch << 16 >> 16), -16384, 16383) & 0xFFFF;
 
 	YawDelta = 32.0 * DeltaTime * aTurn + TurnFractionalPart;
 	ViewRotation.Yaw += int(YawDelta);
-	if (!bUseOldMouseInput)
+	if (!Settings.bUseOldMouseInput)
 		TurnFractionalPart = YawDelta - int(YawDelta);
 
 	ViewShake(deltaTime);		// ViewRotation is fuked in here.
@@ -3552,10 +3526,10 @@ simulated function PlayHitSound(int Dmg)
 		Pitch = FClamp(42/zzRecentDmgGiven, 0.22, 3.2);
 		zzRecentDmgGiven = 0;
 
-		if (bForceDefaultHitSounds && !bDisableForceHitSounds)
+		if (bForceDefaultHitSounds && !Settings.bDisableForceHitSounds)
 			HS = DefaultHitSound;
 		else
-			HS = HitSound;
+			HS = Settings.HitSound;
 
 		if (HS == 1)
 			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
@@ -3591,10 +3565,10 @@ simulated function PlayTeamHitSound(int Dmg)
 		Pitch = FClamp(42/zzRecentTeamDmgGiven, 0.22, 3.2);
 		zzRecentTeamDmgGiven = 0;
 
-		if (bForceDefaultHitSounds && !bDisableForceHitSounds)
+		if (bForceDefaultHitSounds && !Settings.bDisableForceHitSounds)
 			HS = DefaultTeamHitSound;
 		else
-			HS = TeamHitSound;
+			HS = Settings.TeamHitSound;
 
 		if (HS == 1)
 			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
@@ -3960,28 +3934,28 @@ ignores SeePlayer, HearNoise, Bump;
 
 				if (bEdgeForward && bWasForward)
 				{
-					if (Now - zzLastTimeForward > MinDodgeClickTime) {
+					if (Now - zzLastTimeForward > Settings.MinDodgeClickTime) {
 						DodgeDir = DODGE_Forward;
 						zzLastTimeForward = Now;
 					}
 				}
 				else if (bEdgeBack && bWasBack)
 				{
-					if (Now - zzLastTimeBack > MinDodgeClickTime) {
+					if (Now - zzLastTimeBack > Settings.MinDodgeClickTime) {
 						DodgeDir = DODGE_Back;
 						zzLastTimeBack = Now;
 					}
 				}
 				else if (bEdgeLeft && bWasLeft)
 				{
-					if (Now - zzLastTimeLeft > MinDodgeClickTime) {
+					if (Now - zzLastTimeLeft > Settings.MinDodgeClickTime) {
 						DodgeDir = DODGE_Left;
 						zzLastTimeLeft = Now;
 					}
 				}
 				else if (bEdgeRight && bWasRight)
 				{
-					if (Now - zzLastTimeRight > MinDodgeClickTime) {
+					if (Now - zzLastTimeRight > Settings.MinDodgeClickTime) {
 						DodgeDir = DODGE_Right;
 						zzLastTimeRight = Now;
 					}
@@ -4642,7 +4616,7 @@ state Dying
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 
-		if (bEnableKillCam && TimeDead < 2 && LastKiller != none) {
+		if (Settings.bEnableKillCam && TimeDead < 2 && LastKiller != none) {
 			TargetRotation = rotator(LastKiller.Location - Location);
 			DeltaRotation = Normalize(TargetRotation - ViewRotation);
 			ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-3.0 * DeltaTime)));
@@ -4742,7 +4716,7 @@ state Dying
 		//fixme - try to pick view with killer visible
 		//fixme - also try varying starting pitch
 
-		if (bEnableKillCam == false) {
+		if (Settings.bEnableKillCam == false) {
 			ViewRotation.Pitch = 56000;
 
 			cameraLoc = Location;
@@ -5054,7 +5028,7 @@ function PlayHit(float Damage, vector HitLocation, name damageType, vector Momen
 
 simulated function FootStepping()
 {
-	if (Level.NetMode != NM_DedicatedServer && bNoOwnFootsteps)
+	if (Level.NetMode != NM_DedicatedServer && Settings.bNoOwnFootsteps)
 		if (Role >= ROLE_AutonomousProxy || GetLocalPlayer().ViewTarget == self)
 			return;
 
@@ -5239,7 +5213,7 @@ function xxPlayerTickEvents()
 	if (PureLevel != None)	// Why would this be None?!
 	{
 		zzbDemoRecording = PureLevel.zzDemoRecDriver != None;
-		if (!zzbDemoRecording && zzbGameStarted && (zzbForceDemo || bAutoDemo && zzUTPure.zzDMP.CountDown < 1))
+		if (!zzbDemoRecording && zzbGameStarted && (zzbForceDemo || Settings.bAutoDemo && zzUTPure.zzDMP.CountDown < 1))
 			xxClientDemoRec();
 	}
 }
@@ -5486,15 +5460,15 @@ event PreRender( canvas zzCanvas )
 				// force skins
 				if (GameReplicationInfo.bTeamGame && zzPRI.Team == Self.PlayerReplicationInfo.Team) {
 					if (zzPRI.bIsFemale) {
-						skin = desiredTeamSkinFemale;
+						skin = Settings.desiredTeamSkinFemale;
 					} else {
-						skin = desiredTeamSkin;
+						skin = Settings.desiredTeamSkin;
 					}
 				} else {
 					if (zzPRI.bIsFemale) {
-						skin = desiredSkinFemale;
+						skin = Settings.desiredSkinFemale;
 					} else {
-						skin = desiredSkin;
+						skin = Settings.desiredSkin;
 					}
 				}
 				setForcedSkin(zzPRI.Owner, skin, GameReplicationInfo.bTeamGame, zzPRI.Team);
@@ -5502,14 +5476,14 @@ event PreRender( canvas zzCanvas )
 				// fix up Flip animation
 				if (zzPRI.Owner.AnimSequence == 'Flip') {
 					if (GameReplicationInfo.bTeamGame && PlayerReplicationInfo.Team == zzPRI.Team) {
-						if (class'bbPlayer'.default.DesiredTeamSkinFemale > 8 && zzPRI.bIsFemale)
+						if (Settings.DesiredTeamSkinFemale > 8 && zzPRI.bIsFemale)
 							zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-						else if (class'bbPlayer'.default.DesiredTeamSkin <= 8 && zzPRI.bIsFemale == false)
+						else if (Settings.DesiredTeamSkin <= 8 && zzPRI.bIsFemale == false)
 							zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
 					} else {
-						if (class'bbPlayer'.default.DesiredSkinFemale > 8 && zzPRI.bIsFemale)
+						if (Settings.DesiredSkinFemale > 8 && zzPRI.bIsFemale)
 							zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-						else if (class'bbPlayer'.default.DesiredSkin <= 8 && zzPRI.bIsFemale == false)
+						else if (Settings.DesiredSkin <= 8 && zzPRI.bIsFemale == false)
 							zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
 					}
 				}
@@ -5785,7 +5759,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.SetPos(zzx, zzY + 360);
 	zzC.DrawText("finishedLoading?:"@bIsFinishedLoading);
 	zzC.SetPos(zzx, zzY + 380);
-	zzC.DrawText("NetUpdateRate:"@DesiredNetUpdateRate);
+	zzC.DrawText("NetUpdateRate:"@Settings.DesiredNetUpdateRate);
 	zzC.SetPos(zzx, zzY + 400);
 	zzC.DrawText("UpdatedPosition:"@clientForcedPosition);
 	zzC.SetPos(zzx+20, zzY + 420);
@@ -6081,7 +6055,7 @@ function xxClientSet(string zzS)
 
 simulated function xxClientDoEndShot()
 {
-	if (bDoEndShot)
+	if (Settings.bDoEndShot)
 	{
 		bShowScores = True;
 		zzbDoScreenshot = True;
@@ -6351,14 +6325,6 @@ exec function Sens(float F)
 	ClientMessage("Sensitivity :"@F);
 }
 
-exec function NoRevert(bool b)
-{
-	bNoRevert = b;
-	xxServerSetNoRevert(b);
-	SaveConfig();
-	ClientMessage("NoRevert :"@bNoRevert);
-}
-
 exec function ForceModels(bool b)
 {
 
@@ -6368,11 +6334,11 @@ exec function ForceModels(bool b)
 	 * @Desc: Console command to force models client side
 	 */
 
-	bForceModels = b;
+	Settings.bForceModels = b;
 	xxServerSetForceModels(b);
-	SaveConfig();
-	ClientMessage("ForceModels :"@bForceModels);
-	if (!bForceModels) {
+	Settings.SaveConfig();
+	ClientMessage("ForceModels :"@b);
+	if (!b) {
 		ClientMessage("You will be reconnected in 3 seconds...");
 		SetTimer(5, false);
 		bReason = 1;
@@ -6386,9 +6352,8 @@ simulated function reconnectClient() {
 
 exec function HitSounds(int b)
 {
-	HitSound = b;
-	xxServerSetHitSounds(b);
-	SaveConfig();
+	Settings.HitSound = b;
+	Settings.SaveConfig();
 	if (b == 0)
 		ClientMessage("HitSounds: Off");
 	else if (b == 1)
@@ -6401,9 +6366,8 @@ exec function HitSounds(int b)
 
 exec function TeamHitSounds(int b)
 {
-	TeamHitSound = b;
-	xxServerSetTeamHitSounds(b);
-	SaveConfig();
+	Settings.TeamHitSound = b;
+	Settings.SaveConfig();
 	if (b == 0)
 		ClientMessage("TeamHitSounds: Off");
 	else if (b == 1)
@@ -6416,62 +6380,42 @@ exec function TeamHitSounds(int b)
 
 exec function DisableForceHitSounds()
 {
-	bDisableForceHitSounds = true;
-	xxServerDisableForceHitSounds();
-	SaveConfig();
-	ClientMessage("bDisableForceHitSounds:"@bDisableForceHitSounds);
+	Settings.bDisableForceHitSounds = true;
+	Settings.SaveConfig();
+	ClientMessage("bDisableForceHitSounds: True");
 }
 
 exec function MyHitsounds()
 {
-	bDisableForceHitSounds = true;
-	xxServerDisableForceHitSounds();
-	SaveConfig();
-	ClientMessage("bDisableForceHitSounds:"@bDisableForceHitSounds);
+	Settings.bDisableForceHitSounds = true;
+	Settings.SaveConfig();
+	ClientMessage("bDisableForceHitSounds: True");
 }
 
 exec function TeamInfo(bool b)
 {
-	bTeamInfo = b;
+	Settings.bTeamInfo = b;
 	xxServerSetTeamInfo(b);
-	SaveConfig();
-	ClientMessage("TeamInfo :"@bTeamInfo);
+	Settings.SaveConfig();
+	ClientMessage("TeamInfo :"@b);
 }
 
 exec function mdct( float f )
 {
-	MinDodgeClickTime = f;
-	xxServerSetMinDodgeClickTime(MinDodgeClickTime);
-	SaveConfig();
-	ClientMessage("MinDodgeClickTime:"@MinDodgeClickTime);
+	SetMinDodgeClickTime(f);
 }
 
 exec function SetMinDodgeClickTime( float f )
 {
-	MinDodgeClickTime = f;
-	xxServerSetMinDodgeClickTime(MinDodgeClickTime);
-	SaveConfig();
-	ClientMessage("MinDodgeClickTime:"@MinDodgeClickTime);
-}
-
-exec function NoDeemerToIG(bool b)
-{
-	bNoDeemerToIG = b;
-	SaveConfig();
-	ClientMessage("GetWeapon WarheadLauncher doesn't get IG rifle:"@bNoDeemerToIG);
-}
-
-exec function NoSwitchWeapon4(bool b)
-{
-	bNoSwitchWeapon4 = b;
-	SaveConfig();
-	ClientMessage("GetWeapon ShockRifle doesn't trigger SwitchWeapon 4:"@bNoSwitchWeapon4);
+	Settings.MinDodgeClickTime = f;
+	Settings.SaveConfig();
+	ClientMessage("MinDodgeClickTime:"@f);
 }
 
 exec function SetMouseSmoothing(bool b)
 {
-	bNoSmoothing = !b;
-	SaveConfig();
+	Settings.bNoSmoothing = !b;
+	Settings.SaveConfig();
 	if (b) ClientMessage("Mouse Smoothing enabled!");
 	else   ClientMessage("Mouse Smoothing disabled!");
 }
@@ -6488,7 +6432,7 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 
 	if (Level.NetMode == NM_DedicatedServer) return;
 
-	if (BeamOriginMode == 1) {
+	if (Settings.BeamOriginMode == 1) {
 		// Show beam originating from its Owner
 		OriginLocation = Owner.Location + SmokeOffset;
 	} else {
@@ -6502,13 +6446,13 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 	SmokeRotation = rotator(DVector);
 	SmokeRotation.roll = Rand(65535);
 
-	if (cShockBeam == 3) return;
+	if (Settings.cShockBeam == 3) return;
 
 	Smoke = Spawn(class'ClientSuperShockBeam',O,, OriginLocation, SmokeRotation);
 	if (Smoke == none) return;
 	MoveAmount = DVector / NumPoints;
 
-	if (cShockBeam == 1) {
+	if (Settings.cShockBeam == 1) {
 		Smoke.SetProperties(
 			-1,
 			1,
@@ -6517,21 +6461,21 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 			MoveAmount,
 			NumPoints - 1);
 
-	} else if (cShockBeam == 2) {
+	} else if (Settings.cShockBeam == 2) {
 		Smoke.SetProperties(
 			PlayerPawn(O).PlayerReplicationInfo.Team,
-			BeamScale,
-			BeamFadeCurve,
-			BeamDuration,
+			Settings.BeamScale,
+			Settings.BeamFadeCurve,
+			Settings.BeamDuration,
 			MoveAmount,
 			NumPoints - 1);
 
-	} else if (cShockBeam == 4) {
+	} else if (Settings.cShockBeam == 4) {
 		Smoke.SetProperties(
 			PlayerPawn(O).PlayerReplicationInfo.Team,
-			BeamScale,
-			BeamFadeCurve,
-			BeamDuration,
+			Settings.BeamScale,
+			Settings.BeamFadeCurve,
+			Settings.BeamDuration,
 			MoveAmount,
 			0);
 
@@ -6541,9 +6485,9 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 			if (Smoke == None) break;
 			Smoke.SetProperties(
 				PlayerPawn(O).PlayerReplicationInfo.Team,
-				BeamScale,
-				BeamFadeCurve,
-				BeamDuration,
+				Settings.BeamScale,
+				Settings.BeamFadeCurve,
+				Settings.BeamDuration,
 				MoveAmount,
 				0);
 		}
@@ -6563,11 +6507,6 @@ simulated function xxDemoSpawnSSRBeam(vector HitLocation, vector SmokeLocation, 
 	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
 }
 
-function xxServerSetNoRevert(bool b)
-{
-	bNoRevert = b;
-}
-
 function xxServerSetForceModels(bool b)
 {
 	local int zzPureSetting;
@@ -6581,21 +6520,6 @@ function xxServerSetForceModels(bool b)
 		zzbForceModels = b;
 	else					// Server always disallows
 		zzbForceModels = False;
-}
-
-function xxServerSetHitSounds(int b)
-{
-	HitSound = b;
-}
-
-function xxServerSetTeamHitSounds(int b)
-{
-	TeamHitSound = b;
-}
-
-function xxServerDisableForceHitSounds()
-{
-	bDisableForceHitSounds = true;
 }
 
 function xxServerSetTeamInfo(bool b)
@@ -6613,12 +6537,12 @@ function xxServerSetTeamInfo(bool b)
 
 function xxServerSetMinDodgeClickTime(float f)
 {
-	MinDodgeClickTime = f;
+	Settings.MinDodgeClickTime = f;
 }
 
 exec function SetKillCamEnabled(bool b) {
-	bEnableKillCam = b;
-	SaveConfig();
+	Settings.bEnableKillCam = b;
+	Settings.SaveConfig();
 	if (b)
 		ClientMessage("KillCam enabled!", 'IGPlus');
 	else
@@ -6627,9 +6551,9 @@ exec function SetKillCamEnabled(bool b) {
 
 exec function EndShot(optional bool b)
 {
-	bDoEndShot = b;
+	Settings.bDoEndShot = b;
 	ClientMessage("Screenshot at end of match:"@b);
-	SaveConfig();
+	Settings.SaveConfig();
 }
 
 exec function Hold()
@@ -7319,16 +7243,6 @@ function xxCleanAvars()
 	aUp = zzNull;
 }
 
-function float GetFRV(int Index)
-{
-	return zzFRandVals[Index];
-}
-
-function vector GetVRV(int Index)
-{
-	return zzVRandVals[Index];
-}
-
 simulated function xxGetDemoPlaybackSpec()
 {
 	local Pawn P;
@@ -7587,24 +7501,24 @@ function string xxCreateDemoName(string zzDemoName)
 		zzDemoName = Mid(zzDemoName, zzx + 2);
 	}
 
-	return DemoPath $ xxFixFileName(result $ zzDemoName, DemoChar);
+	return Settings.DemoPath $ xxFixFileName(result $ zzDemoName, Settings.DemoChar);
 }
 
 exec function AutoDemo(bool zzb)
 {
-	bAutoDemo = zzb;
+	Settings.bAutoDemo = zzb;
 	ClientMessage("Record demos automatically after countdown:"@zzb);
-	SaveConfig();
+	Settings.SaveConfig();
 }
 
 exec function ShootDead()
 {
-	bShootDead = !bShootDead;
-	if (bShootDead)
+	Settings.bShootDead = !Settings.bShootDead;
+	if (Settings.bShootDead)
 		ClientMessage("Shooting carcasses enabled.");
 	else
 		ClientMessage("Shooting carcasses disabled.");
-	SaveConfig();
+	Settings.SaveConfig();
 }
 
 exec function SetDemoMask(optional string zzMask)
@@ -7613,11 +7527,11 @@ exec function SetDemoMask(optional string zzMask)
 
 	if (zzMask != "")
 	{
-		DemoMask = zzMask;
-		SaveConfig();
+		Settings.DemoMask = zzMask;
+		Settings.SaveConfig();
 	}
 
-	ClientMessage("Current demo mask:"@DemoMask);
+	ClientMessage("Current demo mask:"@Settings.DemoMask);
 }
 
 exec function DemoStart()
@@ -7635,7 +7549,7 @@ simulated function xxClientDemoRec()
 {
 	local string zzS;
 
-	zzS = ConsoleCommand("DemoRec"@xxCreateDemoName(DemoMask));
+	zzS = ConsoleCommand("DemoRec"@xxCreateDemoName(Settings.DemoMask));
 	ClientMessage(zzS);
 	if (zzbForceDemo)
 		xxServerDemoReply(zzS);
@@ -7648,9 +7562,9 @@ function xxSetNetUpdateRate(float NewVal, int netspeed) {
 }
 
 exec function SetNetUpdateRate(float NewVal) {
-	DesiredNetUpdateRate = NewVal;
+	Settings.DesiredNetUpdateRate = NewVal;
 	xxSetNetUpdateRate(NewVal, Player.CurrentNetSpeed);
-	SaveConfig();
+	Settings.SaveConfig();
 }
 
 function xxServerDemoReply(string zzS)
@@ -7761,36 +7675,13 @@ defaultproperties
 {
 	bAlwaysRelevant=True
 	bNewNet=True
-	bNoRevert=True
-	HitSound=2
-	TeamHitSound=3
-	bTeamInfo=True
-	DemoMask="%l_[%y_%m_%d_%t]_[%c]_%e"
 	HUDInfo=1
 	TeleRadius=210
-	FRVI_length=47
-	VRVI_length=17
 	NN_ProjLength=256
 	bIsAlpha=False
-	desiredSkin=9
-	desiredSkinFemale=0
-	desiredTeamSkin=9
-	desiredTeamSkinFemale=0
-	bEnableHitSounds=True
-	selectedHitSound=0
 	bIsPatch469=False
-	sHitSound(0)="InstaGibPlus.UTPure.HitSound"
-	sHitSound(1)="UnrealShare.StingerFire"
-	cShockBeam=1
-	BeamScale=0.45
-	BeamFadeCurve=4
-	BeamDuration=0.75
 	bIsFinishedLoading=False
 	bDrawDebugData=False
-	DesiredNetUpdateRate=100.0
 	TimeBetweenNetUpdates=0.01
-	bLogClientMessages=True
-	bEnableKillCam=False
-	bJustRespawned=True
 	FakeCAPInterval=0.1
 }
