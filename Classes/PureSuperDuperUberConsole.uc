@@ -45,10 +45,18 @@ event PostRender( canvas zzC )
 
 	//Log("Console.PostRender");
 	
-	if (zzMyState==1)
-		xxWindowPostRender(zzC);
-	else
-	{
+	if (zzMyState==1) {
+		if( bTimeDemo )
+		{	
+			TimeDemoCalc();
+			TimeDemoRender( zzC );
+		}
+
+		if(Root != None)
+			Root.bUWindowActive = True;
+
+		RenderUWindow( zzC );
+	} else {
 		if(bNoDrawWorld)
 		{
 			zzC.SetPos(0,0);
@@ -109,32 +117,13 @@ event PostRender( canvas zzC )
 //			RenderUWindow(zzC);
                         
 	}
-
-	zzbb = bbPlayer(ViewPort.Actor);
-	if (zzbb != None)
-	{
-		zzbb.zzbCanCSL = zzbb.zzTrue; //allow csl.
-		zzbb.zzbConsoleInvalid = zzbb.zzFalse;
-		zzbb.zzCannibal = zzC;
-		zzbb.zzCanOldFont = zzC.Font;
-		zzbb.zzCanOldStyle = zzC.Style;
-	}
 }
 
 final function xxWindowPostRender(canvas zzCanvas)
 { //UWindow.postrender
 
 //	Log("Console.WindowPostRender");
-	if( bTimeDemo )
-	{	
-		TimeDemoCalc();
-		TimeDemoRender( zzCanvas );
-	}
-
-	if(Root != None)
-		Root.bUWindowActive = True;
-
-	RenderUWindow( zzCanvas );
+	
 }
 
 event bool KeyType( EInputKey Key )
@@ -177,24 +166,11 @@ event NotifyLevelChange()
 
 event bool KeyEvent( EInputKey Key, EInputAction Action, FLOAT Delta )
 {
-//	local bool zzretval;
-	// If any KeyEvent is received, adopt bShowMenu tracking of Execs
-	return xxKeyEvent(Key, Action, Delta);
-}
-
-final function bool xxKeyEvent( EInputKey Key, EInputAction Action, FLOAT Delta )
-{
 	local byte zzk;
 	local bbPlayer zzbbP;
 
 	zzbbP = bbPlayer(ViewPort.Actor);
-	// Stop FireBots (TraceBots)
-	if (zzbbP != None && zzbbP.zzbCanCSL)
-	{	
-		zzbbP.zzbStoppingTraceBot = zzbbP.zzTrue;
-		zzbbP.xxStopTracebot();
-	}
-	
+
 	if (zzMyState!=0)
 	{
 		if (zzMyState==1&&Key!=IK_F9) //exception for screenshot.
@@ -249,7 +225,7 @@ final function bool xxKeyEvent( EInputKey Key, EInputAction Action, FLOAT Delta 
 	if (zzMyState==2) //emulates global key event.
 		return xxTypingKeyEvent(Key,Action,Delta);
 
-	return False; 
+	return False;
 }
 
 final function bool xxWinKeyEvent( EInputKey Key, EInputAction Action, FLOAT Delta )
@@ -453,20 +429,10 @@ final function bool xxTypingKeyEvent( EInputKey Key, EInputAction Action, FLOAT 
 	}
 	return true;
 }
-/*
-function bool ConsoleCommand( coerce string S )
-{
-	Log("ConsoleCommand"@S@bbPlayer(ViewPort.Actor).zzbCanCSL);
-	return bbPlayer(ViewPort.Actor).zzbCanCSL && Super.ConsoleCommand(S);
-}
-*/
 
 // Called each rendering iteration to update any time-based display.
 event Tick( float Delta )
 {
-//	Log("Console.Tick");
-//	local rotator zzVR;
-	
 	// Tick is
 
 	//Console (probably not needed though):
@@ -1263,60 +1229,12 @@ exec function BanID(string ID)	{ ViewPort.Actor.Mutate("BanID"@ID); }
 //=============================================================================
 /*
 2001-08-28 : DB : Fixed BDBMapVote Bug (there might still be some)
-								: VR Checking of MenuCmd, ShowObjective
+                : VR Checking of MenuCmd, ShowObjective
 				: Capturing LaunchUWindow/CloseUWindow
 2001-06-1 USA : (no idea what month you are on DB):
-		: implamented complete no state console
+              : implamented complete no state console
 2001-12-02 DB : Set as PureConsole
  */
-
-exec simulated function GetWeapon(class<Weapon> NewWeaponClass )
-{
-	if (ViewPort != None && ViewPort.Actor != None) {
-		bbPlayer(ViewPort.Actor).zzSwitchedTime = ViewPort.Actor.Level.TimeSeconds;
-		ViewPort.Actor.GetWeapon(NewWeaponClass);
-	}
-}
-
-exec simulated function SwitchWeapon(byte F)
-{
-	if (ViewPort != None && ViewPort.Actor != None) {
-		bbPlayer(ViewPort.Actor).zzSwitchedTime = ViewPort.Actor.Level.TimeSeconds;
-		ViewPort.Actor.SwitchWeapon(F);
-	}
-}
-
-exec simulated function PrevWeapon()
-{
-	if (ViewPort != None && ViewPort.Actor != None) {
-		bbPlayer(ViewPort.Actor).zzSwitchedTime = ViewPort.Actor.Level.TimeSeconds;
-		ViewPort.Actor.PrevWeapon();
-	}
-}
-
-exec simulated function NextWeapon()
-{
-	if (ViewPort != None && ViewPort.Actor != None) {
-		bbPlayer(ViewPort.Actor).zzSwitchedTime = ViewPort.Actor.Level.TimeSeconds;
-		ViewPort.Actor.NextWeapon();
-	}
-}
-
-exec simulated function SwitchToBestWeapon()
-{
-	if (ViewPort != None && ViewPort.Actor != None) {
-		bbPlayer(ViewPort.Actor).zzSwitchedTime = ViewPort.Actor.Level.TimeSeconds;
-		ViewPort.Actor.SwitchToBestWeapon();
-	}
-}
-
-exec function ThrowWeapon()
-{
-	if (ViewPort != None && ViewPort.Actor != None && !ViewPort.Actor.Weapon.bTossedOut && !bbPlayer(ViewPort.Actor).xxUsingDefaultWeapon()) {
-		bbPlayer(ViewPort.Actor).zzSwitchedTime = ViewPort.Actor.Level.TimeSeconds;
-		ViewPort.Actor.ThrowWeapon();
-	}
-}
 
 exec function ShowScores()
 {
@@ -1346,9 +1264,4 @@ exec function Version()
 		bbPlayer(ViewPort.Actor).ClientMessage(class'UTPure'.Default.VersionStr@class'UTPure'.Default.LongVersion$class'UTPure'.Default.NiceVer);
 	else if (bbCHSpectator(ViewPort.Actor) != None)
 		bbCHSpectator(ViewPort.Actor).ClientMessage(class'UTPure'.Default.VersionStr@class'UTPure'.Default.LongVersion$class'UTPure'.Default.NiceVer);
-}
-
-defaultproperties
-{
-     Ello="g0v"
 }

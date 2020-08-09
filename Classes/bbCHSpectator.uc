@@ -4,30 +4,6 @@
 
 class bbCHSpectator expands CHSpectator;
 
-// TNSe
-// RC5p:
-// Added: Ignore Speech & ShowInventory, to avoid server CPU Spike
-// Added: ViewRotation.Roll = 0 to avoid problems with headshot when viewing in-eyes.
-// RC5T:
-// Added: Antispam for ViewClass/ViewPlayer/ViewPlayerNum
-// Added: ShowPath to the ignores list in CheatFlying
-// Fixed: exec function Jump accessed None
-// Added: GotoState('CheatFlying') in PlayerWalking & PlayerSwimming
-// RC5v:
-// Added: Profile() to the ignoring.
-// Added: New DoViewPlayerNum/DoViewClass to avoid server crashes.
-// RC5y:
-// Fixed: Teleport code to use ProcessMove instead of PlayerTick.
-// RC54:
-// Added: Anti-adminlogin bruteforce.
-// RC55:
-// Added: Spec leaves server notifies. (Destroyed())
-// Added: Pause bug fix (Scoreboard/Time/HUD)
-// RC7A:
-// Changed: Removed the Destroyed() part, seems to crash clients on mapswitch (?)
-// Added: Specfix into pure. (PlayerCalcView) - IN PROGRESS
-// Fixed: 'FindFlag' should now work with some ascii names on linux too.
-
 // AntiSpam
 var float zzLastView1,zzLastView2;
 var int zzAdminLoginTries;
@@ -264,32 +240,32 @@ event PreRender( canvas zzCanvas )
 // ==================================================================================
 simulated function xxAttachConsole()
 {
-	local PureSuperDuperUberConsole c;
-	local UTConsole oldc;
+	// local PureSuperDuperUberConsole c;
+	// local UTConsole oldc;
 
-	if (zzMyConsole == None)
-	{
-		zzMyConsole = PureSuperDuperUberConsole(Player.Console);
-		if (zzMyConsole == None)
-		{
-			//zzbLogoDone = False;
-			Player.Console.Disable('Tick');
-			c = New(None) class'PureSuperDuperUberConsole';
-			if (c != None)
-			{
-				oldc = UTConsole(Player.Console);
-				c.zzOldConsole = oldc;
-				Player.Console = c;
-				zzMyConsole = c;
-				zzMyConsole.xxGetValues(); //copy all values from old console to new
-			}
-			else
-			{
-            	zzbBadConsole = zzTrue;
-			}
-		}
-	}
-	zzbBadConsole = (Player.Console.Class != Class'PureSuperDuperUberConsole');
+	// if (zzMyConsole == None)
+	// {
+	// 	zzMyConsole = PureSuperDuperUberConsole(Player.Console);
+	// 	if (zzMyConsole == None)
+	// 	{
+	// 		//zzbLogoDone = False;
+	// 		Player.Console.Disable('Tick');
+	// 		c = New(None) class'PureSuperDuperUberConsole';
+	// 		if (c != None)
+	// 		{
+	// 			oldc = UTConsole(Player.Console);
+	// 			c.zzOldConsole = oldc;
+	// 			Player.Console = c;
+	// 			zzMyConsole = c;
+	// 			zzMyConsole.xxGetValues(); //copy all values from old console to new
+	// 		}
+	// 		else
+	// 		{
+ //            	zzbBadConsole = zzTrue;
+	// 		}
+	// 	}
+	// }
+	// zzbBadConsole = (Player.Console.Class != Class'PureSuperDuperUberConsole');
 }
 
 auto state InvalidState

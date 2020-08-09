@@ -16,7 +16,7 @@ var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
 // Replicated settings Client -> Server
-var bool	zzbConsoleInvalid;	// Should always be false on server.
+//	var bool	zzbConsoleInvalid;	// Should always be false on server.
 var bool	zzbStoppingTraceBot;	// True while stopping Trace Bot
 var int		zzNetspeed;		// The netspeed this client is using
 var bool	zzbForcedTick;		// True on server if Tick was forced (Called more than once)
@@ -84,7 +84,7 @@ var string	FakeClass;		// Class that the model replaces
 var string	zzMyPacks;		// Defined only for defaults
 var bool	zzbBadGuy;		// BadGuy! (Avoid kick spamming)
 var int		zzOldForceSettingsLevel;	// Kept to see if things change.
-var float  	zzThrownTime, zzSwitchedTime;
+var float  	zzThrownTime;
 var Weapon  zzThrownWeapon;
 var int     zzRecentDmgGiven, zzRecentTeamDmgGiven, TeleRadius;
 var name    zzDefaultWeapon;
@@ -157,15 +157,15 @@ var float	zzLogoStart;		// Start of logo display
 var int		zzSMCnt;		// ServerMove Count
 var bool	bMenuFixed;		// Fixed Menu item
 var float	zzCVTO;			// CenterView Time out.
-var bool	zzbCanCSL;		// Console sets this to true if they are allowed to CSL
+//var bool	zzbCanCSL;		// Console sets this to true if they are allowed to CSL
 
 // Consoles & Canvas
-var Console	zzOldConsole;
-var PureSuperDuperUberConsole	zzMyConsole;
+//var Console	zzOldConsole;
+//var PureSuperDuperUberConsole	zzMyConsole;
 var bool	zzbBadConsole;
-var Canvas zzCannibal;			// Old console
-var font zzCanOldFont;			// Canvas messing checks
-var byte zzCanOldStyle;			// And more
+// var Canvas zzCannibal;			// Old console
+// var font zzCanOldFont;			// Canvas messing checks
+// var byte zzCanOldStyle;			// And more
 
 // Anti Timing Variables
 var Inventory	zzAntiTimerList[32];
@@ -315,7 +315,7 @@ replication
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
 		bIsFinishedLoading, xxServerCheater, xxServerMove,
-		zzbConsoleInvalid, zzFalse, zzTrue, zzNetspeed, zzbBadConsole, zzbBadCanvas, zzbVRChanged,
+		zzFalse, zzTrue, zzNetspeed, zzbBadConsole, zzbBadCanvas, zzbVRChanged,
 		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD;
 
 	// Client->Server
@@ -495,7 +495,6 @@ event PostBeginPlay()
 
 	if ( Level.NetMode != NM_Client )
 	{
-		zzbCanCSL = True;
 		zzMinimumNetspeed = Class'UTPure'.Default.MinClientRate;
 		zzMaximumNetspeed = Class'UTPure'.Default.MaxClientRate;
 		zzWaitTime = 5.0;
@@ -650,37 +649,33 @@ function Timer() {
 function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 {
 	local SavedMove M;
-	if (zzbCanCSL ||
-		 (zzNewRotation.Roll == 0 && zzNewRotation == ViewRotation &&
-		  (WarpZoneInfo(Region.Zone) != None || WarpZoneInfo(HeadRegion.Zone) != None || WarpZoneInfo(FootRegion.Zone) != None)))
+	
+	ViewRotation = zzNewRotation;
+	If ( (ViewRotation.Pitch > RotationRate.Pitch) && (ViewRotation.Pitch < 65536 - RotationRate.Pitch) )
 	{
-		ViewRotation = zzNewRotation;
-		If ( (ViewRotation.Pitch > RotationRate.Pitch) && (ViewRotation.Pitch < 65536 - RotationRate.Pitch) )
-		{
-			If (ViewRotation.Pitch < 32768)
-				zzNewRotation.Pitch = RotationRate.Pitch;
-			else
-				zzNewRotation.Pitch = 65536 - RotationRate.Pitch;
-		}
-		zzNewRotation.Roll  = 0;
-		SetRotation( zzNewRotation );
-		SetLocation( zzNewLocation );
+		If (ViewRotation.Pitch < 32768)
+			zzNewRotation.Pitch = RotationRate.Pitch;
+		else
+			zzNewRotation.Pitch = 65536 - RotationRate.Pitch;
+	}
+	zzNewRotation.Roll  = 0;
+	SetRotation( zzNewRotation );
+	SetLocation( zzNewLocation );
 
-		// Clean up moves
-		if (PendingMove != none) {
-			PendingMove.NextMove = FreeMoves;
-			PendingMove.Clear();
-			FreeMoves = PendingMove;
-			PendingMove = none;
-		}
+	// Clean up moves
+	if (PendingMove != none) {
+		PendingMove.NextMove = FreeMoves;
+		PendingMove.Clear();
+		FreeMoves = PendingMove;
+		PendingMove = none;
+	}
 
-		while(SavedMoves != none) {
-			M = SavedMoves;
-			SavedMoves = M.NextMove;
-			M.NextMove = FreeMoves;
-			M.Clear();
-			FreeMoves = M;
-		}
+	while(SavedMoves != none) {
+		M = SavedMoves;
+		SavedMoves = M.NextMove;
+		M.NextMove = FreeMoves;
+		M.Clear();
+		FreeMoves = M;
 	}
 }
 
@@ -759,20 +754,8 @@ function xxSendSpreeToSpecs(optional int Sw, optional PlayerReplicationInfo Rela
 
 event PlayerTick( float Time )
 {
-	zzbCanCSL = zzFalse;
 	xxPlayerTickEvents();
 	zzTick = Time;
-}
-
-function ClientSetRotation( rotator zzNewRotation )
-{
-	if (zzbCanCSL)
-	{
-		ViewRotation		= zzNewRotation;
-		zzNewRotation.Pitch = 0;
-		zzNewRotation.Roll  = 0;
-		SetRotation( zzNewRotation );
-	}
 }
 
 simulated function xxClientDemoMessage(string zzS)
@@ -3667,7 +3650,6 @@ state FeigningDeath
 
 	event PlayerTick( float DeltaTime )
 	{
-		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -3730,7 +3712,6 @@ state PlayerSwimming
 
 	event PlayerTick( float DeltaTime )
 	{
-		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -3801,7 +3782,6 @@ state PlayerFlying
 {
 	event PlayerTick( float DeltaTime )
 	{
-		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -3835,7 +3815,6 @@ state CheatFlying
 {
 	event PlayerTick( float DeltaTime )
 	{
-		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4078,7 +4057,6 @@ ignores SeePlayer, HearNoise, Bump;
 
 	event PlayerTick( float DeltaTime )
 	{
-		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4119,7 +4097,6 @@ state PlayerWaiting
 {
 	event PlayerTick( float DeltaTime )
 	{
-		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4489,7 +4466,6 @@ state PlayerSpectating
 {
 	event PlayerTick( float DeltaTime )
 	{
-		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4524,7 +4500,6 @@ state PlayerWaking
 
 	event PlayerTick( float DeltaTime )
 	{
-		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4611,7 +4586,6 @@ state Dying
 		if (Level.Pauser == "")
 			TimeDead += DeltaTime;
 
-		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4759,7 +4733,6 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 
 	event PlayerTick( float DeltaTime )
 	{
-		zzbCanCSL = zzFalse;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -5078,11 +5051,6 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 	local float Diff;
 	local name WeapState;
 
-	if (zzSwitchedTime > 0)
-	{
-		Weapon.bChangeWeapon = true;
-		bCant = true;
-	}
 	Diff = Level.TimeSeconds - zzSpawnedTime;
 	if (Diff < 1)
 	{
@@ -5165,9 +5133,6 @@ function xxPlayerTickEvents()
 			zzbInitialized = true;
 		}
 
-		if (zzSwitchedTime > 0 && CurrentTime - zzSwitchedTime > float(PlayerReplicationInfo.Ping)/499)
-			zzSwitchedTime = 0;
-
 		if (Player.CurrentNetSpeed != 0 && CurrentTime - zzLastStuffUpdate > 500.0/Player.CurrentNetSpeed)
 		{
 			xxGetDemoPlaybackSpec();
@@ -5184,13 +5149,6 @@ function xxPlayerTickEvents()
 	if (zzbIsWarmingUp)
 		ClearProgressMessages();
 
-	if (zzCannibal != None)
-	{
-		if ((zzCannibal.Font != zzCanOldFont) || (zzCannibal.Style != zzCanOldStyle))
-		{
-			xxServerCheater("HA");
-		}
-	}
 	if (zzbReportScreenshot)
 		xxDoShot();
 
@@ -5408,8 +5366,6 @@ event PreRender( canvas zzCanvas )
 	local int skin;
 
 	zzbDemoRecording = PureLevel != None && PureLevel.zzDemoRecDriver != None;
-
-	zzbConsoleInvalid = zzTrue;
 
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas != None && zzCanvas.Class != Class'Canvas');
 
@@ -5799,39 +5755,39 @@ exec function PureLogo()
 // ==================================================================================
 simulated function xxAttachConsole()
 {
-	local PureSuperDuperUberConsole c;
-	local UTConsole oldc;
+	// local PureSuperDuperUberConsole c;
+	// local UTConsole oldc;
 
-	if (Player.Actor != Self)
-		xxServerCheater("VA");
+	// if (Player.Actor != Self)
+	// 	xxServerCheater("VA");
 
-	if (zzMyConsole == None)
-	{
-		zzMyConsole = PureSuperDuperUberConsole(Player.Console);
-		if (zzMyConsole == None)
-		{
-			// Initialize Logo Display
-			zzbLogoDone = False;
-			//
-			Player.Console.Disable('Tick');
-			c = New(None) class'PureSuperDuperUberConsole';
-			if (c != None)
-			{
-				oldc = UTConsole(Player.Console);
-				c.zzOldConsole = oldc;
-				Player.Console = c;
-				zzMyConsole = c;
-				zzMyConsole.xxGetValues(); //copy all values from old console to new
-			}
-			else
-			{
-				zzbBadConsole = zzTrue;
-			}
-		}
-	}
-	// Do not use ELSE or it wont work correctly
+	// if (zzMyConsole == None)
+	// {
+	// 	zzMyConsole = PureSuperDuperUberConsole(Player.Console);
+	// 	if (zzMyConsole == None)
+	// 	{
+	// 		// Initialize Logo Display
+	// 		zzbLogoDone = False;
+	// 		//
+	// 		Player.Console.Disable('Tick');
+	// 		c = New(None) class'PureSuperDuperUberConsole';
+	// 		if (c != None)
+	// 		{
+	// 			oldc = UTConsole(Player.Console);
+	// 			c.zzOldConsole = oldc;
+	// 			Player.Console = c;
+	// 			zzMyConsole = c;
+	// 			zzMyConsole.xxGetValues(); //copy all values from old console to new
+	// 		}
+	// 		else
+	// 		{
+	// 			zzbBadConsole = zzTrue;
+	// 		}
+	// 	}
+	// }
+	// // Do not use ELSE or it wont work correctly
 
-	zzbBadConsole = (Player.Console.Class != Class'PureSuperDuperUberConsole');
+	// zzbBadConsole = (Player.Console.Class != Class'PureSuperDuperUberConsole');
 }
 
 function xxServerCheater(string zzCode)
@@ -5905,42 +5861,38 @@ function xxServerCheater(string zzCode)
 // ==================================================================================
 simulated function xxCheatFound(string zzCode)
 {
-	local UTConsole zzcon;
+	local UTConsole C;
 
 	if (zzbBadGuy)
 		return;
 	zzbBadGuy = True;
 
-	if (zzMyConsole == None || zzcon == None)
-		return;
-
-	zzMyConsole.xxRevert();
-	zzcon = zzMyConsole.zzOldConsole;
-	zzcon.AddString( "=====================================================================" );
-	zzcon.AddString( "  UTPure has detected an impurity hiding in your client!" );
-	zzcon.AddString( "  ID:"@zzCode );
-	zzcon.AddString( "=====================================================================" );
-	zzcon.AddString( "Because of this you have been removed from the" );
-	zzcon.AddString( "server.  Fair play is important, remove the impurity" );
-	zzcon.AddString( "and you can return!");
-	zzcon.AddString( " ");
-	zzcon.AddString( "If you feel this was in error, please contact the admin" );
-	zzcon.AddString( "at: "$GameReplicationInfo.AdminEmail);
-	zzcon.AddString( " ");
-	zzcon.AddString( "Please visit http://forums.utpure.com" );
-	zzcon.AddString( "You can read info regarding what UTPure is and maybe find a fix there!" );
+	C = UTConsole(Player.Console);
+	C.AddString( "=====================================================================" );
+	C.AddString( "  UTPure has detected an impurity hiding in your client!" );
+	C.AddString( "  ID:"@zzCode );
+	C.AddString( "=====================================================================" );
+	C.AddString( "Because of this you have been removed from the" );
+	C.AddString( "server.  Fair play is important, remove the impurity" );
+	C.AddString( "and you can return!");
+	C.AddString( " ");
+	C.AddString( "If you feel this was in error, please contact the admin" );
+	C.AddString( "at: "$GameReplicationInfo.AdminEmail);
+	C.AddString( " ");
+	C.AddString( "Please visit http://forums.utpure.com" );
+	C.AddString( "You can read info regarding what UTPure is and maybe find a fix there!" );
 
 	if (int(Level.EngineVersion) < 436)
 	{
-		zzcon.AddString(" ");
-		zzcon.AddString("You currently have UT version"@Level.EngineVersion$"!");
-		zzcon.AddString("In order to play on this server, you must have version 436 or greater!");
-		zzcon.AddString("To download newest patch, go to: http://unreal.epicgames.com/Downloads.htm");
+		C.AddString(" ");
+		C.AddString("You currently have UT version"@Level.EngineVersion$"!");
+		C.AddString("In order to play on this server, you must have version 436 or greater!");
+		C.AddString("To download newest patch, go to: http://unreal.epicgames.com/Downloads.htm");
 	}
 
-	zzcon.bQuickKeyEnable = True;
-	zzcon.LaunchUWindow();
-	zzcon.ShowConsole();
+	C.bQuickKeyEnable = True;
+	C.LaunchUWindow();
+	C.ShowConsole();
 }
 
 simulated function String GetItemName( string FullName )	// Originally not Simulated .. wtf!
@@ -7219,20 +7171,7 @@ function Typing( bool bTyping )
 
 function bool xxCanFire()
 {
-	return (Role==ROLE_Authority || (Role<ROLE_Authority && zzbValidFire));
-}
-
-function xxStopTracebot()
-{
-	if (!zzbValidFire)
-	{
-		zzbValidFire = zzTrue;
-		bFire = zzbFire;
-		bAltFire = zzbAltFire;
-		bJustFired = zzFalse;
-		bJustAltFired = zzFalse;
-	}
-	zzbStoppingTraceBot = !zzbValidFire;
+	return true;
 }
 
 function xxCleanAvars()
