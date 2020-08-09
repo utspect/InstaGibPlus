@@ -230,9 +230,36 @@ simulated function xxSetTimes(int RemainingTime, int ElapsedTime)
 	GameReplicationInfo.ElapsedTime = ElapsedTime;
 }
 
+function InitSettings() {
+	local bbPlayer P;
+	local bbCHSpectator S;
+
+	if (Settings != none) return;
+
+	foreach AllActors(class'bbPlayer', P)
+		if (P.Settings != none) {
+			Settings = P.Settings;
+			break;
+		}
+
+	foreach AllActors(class'bbCHSpectator', S)
+		if (S.Settings != none) {
+			Settings = S.Settings;
+			break;
+		}
+
+	if (Settings == none) {
+		ClientSettingsHelper = new(self, 'InstaGibPlus') class'Object';
+		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings';
+		Log("Loaded Settings!", 'IGPlus');
+	}
+}
+
 event Possess()
 {
 	local Mover M;
+
+	InitSettings();
 
 	if ( Level.Netmode == NM_Client )
 	{	// Only do this for clients.
@@ -405,9 +432,6 @@ event PlayerTick( float DeltaTime )
 
 event PostBeginPlay()
 {
-	local bbPlayer P;
-	local bbCHSpectator S;
-
 	ForEach AllActors(Class'UTPure', zzUTPure)
 		break;
 
@@ -416,22 +440,7 @@ event PostBeginPlay()
 
 	Super.PostBeginPlay();
 
-	foreach AllActors(class'bbPlayer', P)
-		if (P.Settings != none) {
-			Settings = P.Settings;
-			break;
-		}
-
-	foreach AllActors(class'bbCHSpectator', S)
-		if (S.Settings != none) {
-			Settings = S.Settings;
-			break;
-		}
-
-	if (Settings == none) {
-		ClientSettingsHelper = new(self) class'Object';
-		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings';
-	}
+	InitSettings();
 }
 
 event PostRender( canvas Canvas )

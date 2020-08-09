@@ -486,23 +486,11 @@ simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeigh
 	}
 }
 
-event PostBeginPlay()
-{
+function InitSettings() {
 	local bbPlayer P;
 	local bbCHSpectator S;
 
-	Super.PostBeginPlay();
-
-	if ( Level.NetMode != NM_Client )
-	{
-		zzbCanCSL = True;
-		zzMinimumNetspeed = Class'UTPure'.Default.MinClientRate;
-		zzMaximumNetspeed = Class'UTPure'.Default.MaxClientRate;
-		zzWaitTime = 5.0;
-	}
-	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
-
-	PlayerReplicationInfo.NetUpdateFrequency = 10;
+	if (Settings != none) return;
 
 	foreach AllActors(class'bbPlayer', P)
 		if (P.Settings != none) {
@@ -517,9 +505,27 @@ event PostBeginPlay()
 		}
 
 	if (Settings == none) {
-		ClientSettingsHelper = new(self) class'Object';
-		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings';
+		ClientSettingsHelper = new(self, 'InstaGibPlus') class'Object'; // object name = INI file name
+		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings'; // object name = Section name
+		Log("Loaded Settings!", 'IGPlus');
 	}
+}
+
+event PostBeginPlay()
+{
+	Super.PostBeginPlay();
+	InitSettings();
+
+	if ( Level.NetMode != NM_Client )
+	{
+		zzbCanCSL = True;
+		zzMinimumNetspeed = Class'UTPure'.Default.MinClientRate;
+		zzMaximumNetspeed = Class'UTPure'.Default.MaxClientRate;
+		zzWaitTime = 5.0;
+	}
+	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
+
+	PlayerReplicationInfo.NetUpdateFrequency = 10;
 }
 
 // called after PostBeginPlay on net client
@@ -559,6 +565,8 @@ event Possess()
 	local Trigger T;
 	local int TimeLimitSeconds, clientFPS;
 	local bbPlayer zzPP;
+
+	InitSettings();
 
 	if ( Level.Netmode == NM_Client )
 	{	// Only do this for clients.
