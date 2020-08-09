@@ -5593,11 +5593,9 @@ simulated function xxDrawLogo(canvas zzC, float zzx, float zzY, float zzFadeValu
 	zzC.DrawColor = ChallengeHud(MyHud).CyanColor * zzFadeValue;
 	zzC.SetPos(zzx+70,zzY+8);
 	zzC.Font = ChallengeHud(MyHud).MyFonts.GetBigFont(zzC.ClipX);
-	zzC.DrawText("InstaGib+");
+	zzC.DrawText(class'UTPure'.default.VersionStr$class'UTPure'.default.NiceVer);
 	zzC.SetPos(zzx+70,zzY+35);
 	zzC.Font = ChallengeHud(MyHud).MyFonts.GetBigFont(zzC.ClipX);
-	zzC.DrawText(class'UTPure'.default.LongVersion$class'UTPure'.default.NiceVer);
-	zzC.SetPos(zzx+70,zzY+62);
 	if (zzbDoScreenshot)
 		zzC.DrawText(PlayerReplicationInfo.PlayerName@zzMagicCode);
 	else

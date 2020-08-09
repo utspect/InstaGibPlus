@@ -65,7 +65,6 @@ var string VersionStr;				// Holds the version code from VUC++
 var string LongVersion;				// Holds the version code from VUC++
 var string ThisVer;					// Holds the version letters
 var string NiceVer;					// Holds the version letters (no underscore)
-var string ConsoleName;				// Set console system name
 var string BADminText;				// Text to give players that want admin commands without being admin.
 var bool bDidEndWarn;				// True if screenshot warning has been sent to players.
 var bool bDidShot;
@@ -1389,16 +1388,15 @@ defaultproperties
 	DefaultTeamHitSound=3
 	TeleRadius=210
 	ThrowVelocity=750
-	ConsoleName="InstaGib+ Console"
-	VersionStr="InstaGib+ Final"
-	LongVersion="RC "
-	ThisVer="3H"
-	NiceVer="3H"
+	VersionStr="IG+ "
+	LongVersion=""
+	ThisVer="4"
+	NiceVer="4"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
 	MinPosError=100
-	MaxPosError=3000
+	MaxPosError=1000
 	MaxHitError=10000
 	MaxJitterTime=0.1
 	MinNetUpdateRate=60.0
