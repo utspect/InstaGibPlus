@@ -266,7 +266,7 @@ replication
 {
 	//	Client->Demo
 	unreliable if ( bClientDemoRecording )
-		xxReplicateVRToDemo, xxClientDemoMessage, xxClientLogToDemo, xxDemoSpawnSSRBeam;
+		xxReplicateVRToDemo, xxClientDemoMessage, xxClientLogToDemo, xxDemoSpawnSSRBeam, DemoInitSettings;
 
 	reliable if (bClientDemoRecording && !bClientDemoNetFunc)
 		xxClientDemoFix, xxClientDemoBolt;
@@ -511,6 +511,10 @@ function InitSettings() {
 	}
 }
 
+function DemoInitSettings() {
+	InitSettings();
+}
+
 event PostBeginPlay()
 {
 	Super.PostBeginPlay();
@@ -530,6 +534,7 @@ event PostBeginPlay()
 // called after PostBeginPlay on net client
 simulated event PostNetBeginPlay()
 {
+	InitSettings();
 
 	if ( Role != ROLE_SimulatedProxy )	// Other players are Simulated, local player is Autonomous or Authority (if listen server which pure doesn't support anyway :P)
 	{
@@ -657,7 +662,7 @@ function Timer() {
 function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 {
 	local SavedMove M;
-	
+
 	ViewRotation = zzNewRotation;
 	If ( (ViewRotation.Pitch > RotationRate.Pitch) && (ViewRotation.Pitch < 65536 - RotationRate.Pitch) )
 	{
@@ -5072,14 +5077,6 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 		PendingWeapon.bChangeWeapon = false;
 		bCant = true;
 	}
-	else if (!Weapon.bWeaponUp)
-	{
-		WeapState = Weapon.GetStateName();
-		if (WeapState == 'ClientFiring' || WeapState == 'ClientAltFiring' || WeapState == 'Idle' || WeapState == '' || WeapState == Weapon.Class.Name || Weapon.AnimSequence == 'Still')
-			Weapon.bWeaponUp = true;
-		else
-			bCant = true;
-	}
 	else if (Weapon.IsInState('ClientDown'))
 	{
 		bCant = true;
@@ -5102,7 +5099,7 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 	}
 	else if (!bCant)
 	{
-		bCant = (Player == None) || (PureSuperDuperConsole(Player.Console) == None);
+		bCant = (Player == None);
 	}
 	else if (!bCant && (Weapon != None) && Weapon.IsInState('ClientActive'))
 	{
@@ -5132,6 +5129,7 @@ function xxPlayerTickEvents()
 
 	CurrentTime = Level.TimeSeconds;
 
+	DemoInitSettings();
 	CheckHitSound();
 
 	if (Level.NetMode == NM_Client)
@@ -5378,9 +5376,6 @@ event PreRender( canvas zzCanvas )
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas != None && zzCanvas.Class != Class'Canvas');
 
 	zzLastVR = ViewRotation;
-
-	if (Role < ROLE_Authority)
-		xxAttachConsole();
 
 	if (Role < ROLE_Authority)
 		if (!zzbRenderHUD)
@@ -5756,46 +5751,6 @@ exec function PureLogo()
 {
 	zzbLogoDone = False;
 	zzLogoStart = Level.TimeSeconds;
-}
-
-// ==================================================================================
-// AttachConsole - Adds our console
-// ==================================================================================
-simulated function xxAttachConsole()
-{
-	// local PureSuperDuperUberConsole c;
-	// local UTConsole oldc;
-
-	// if (Player.Actor != Self)
-	// 	xxServerCheater("VA");
-
-	// if (zzMyConsole == None)
-	// {
-	// 	zzMyConsole = PureSuperDuperUberConsole(Player.Console);
-	// 	if (zzMyConsole == None)
-	// 	{
-	// 		// Initialize Logo Display
-	// 		zzbLogoDone = False;
-	// 		//
-	// 		Player.Console.Disable('Tick');
-	// 		c = New(None) class'PureSuperDuperUberConsole';
-	// 		if (c != None)
-	// 		{
-	// 			oldc = UTConsole(Player.Console);
-	// 			c.zzOldConsole = oldc;
-	// 			Player.Console = c;
-	// 			zzMyConsole = c;
-	// 			zzMyConsole.xxGetValues(); //copy all values from old console to new
-	// 		}
-	// 		else
-	// 		{
-	// 			zzbBadConsole = zzTrue;
-	// 		}
-	// 	}
-	// }
-	// // Do not use ELSE or it wont work correctly
-
-	// zzbBadConsole = (Player.Console.Class != Class'PureSuperDuperUberConsole');
 }
 
 function xxServerCheater(string zzCode)

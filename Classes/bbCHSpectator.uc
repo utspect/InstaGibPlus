@@ -21,7 +21,6 @@ var int DefaultHitSound, DefaultTeamHitSound;
 var bool bForceDefaultHitSounds;
 var bool zzbInitialized;
 
-var PureSuperDuperUberConsole	zzMyConsole;
 var bool	zzbBadConsole;
 var bool zzTrue,zzFalse;		// True & False
 
@@ -53,6 +52,9 @@ replication
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
 		xxSetHitSounds, xxSetTimes, xxReceivePosition, xxClientSpawnSSRBeam; //, xxClientActivateMover;
+
+	unreliable if (bClientDemoRecording)
+		DemoInitSettings;
 }
 
 simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
@@ -188,6 +190,7 @@ function int TickPID(out PIDController C, float DeltaTime, int Error) {
 
 function xxPlayerTickEvents()
 {
+	DemoInitSettings();
 	CheckHitSound();
 }
 
@@ -231,6 +234,10 @@ function InitSettings() {
 	}
 }
 
+function DemoInitSettings() {
+	InitSettings();
+}
+
 event Possess()
 {
 	local Mover M;
@@ -252,47 +259,6 @@ event Possess()
 		xxSetTimes(GameReplicationInfo.RemainingTime, GameReplicationInfo.ElapsedTime);
 	}
 	Super.Possess();
-}
-
-event PreRender( canvas zzCanvas )
-{
-	if (Role < ROLE_Authority)
-		xxAttachConsole();
-
-	Super.PreRender(zzCanvas);
-}
-
-// ==================================================================================
-// AttachConsole - Adds our console
-// ==================================================================================
-simulated function xxAttachConsole()
-{
-	// local PureSuperDuperUberConsole c;
-	// local UTConsole oldc;
-
-	// if (zzMyConsole == None)
-	// {
-	// 	zzMyConsole = PureSuperDuperUberConsole(Player.Console);
-	// 	if (zzMyConsole == None)
-	// 	{
-	// 		//zzbLogoDone = False;
-	// 		Player.Console.Disable('Tick');
-	// 		c = New(None) class'PureSuperDuperUberConsole';
-	// 		if (c != None)
-	// 		{
-	// 			oldc = UTConsole(Player.Console);
-	// 			c.zzOldConsole = oldc;
-	// 			Player.Console = c;
-	// 			zzMyConsole = c;
-	// 			zzMyConsole.xxGetValues(); //copy all values from old console to new
-	// 		}
-	// 		else
-	// 		{
- //            	zzbBadConsole = zzTrue;
-	// 		}
-	// 	}
-	// }
-	// zzbBadConsole = (Player.Console.Class != Class'PureSuperDuperUberConsole');
 }
 
 auto state InvalidState
@@ -415,6 +381,12 @@ event PostBeginPlay()
 		Stat = Spawn(cStat, Self);
 
 	Super.PostBeginPlay();
+
+	InitSettings();
+}
+
+event PostNetBeginPlay() {
+	super.PostNetBeginPlay();
 
 	InitSettings();
 }
