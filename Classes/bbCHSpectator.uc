@@ -52,9 +52,6 @@ replication
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
 		xxSetHitSounds, xxSetTimes, xxReceivePosition, xxClientSpawnSSRBeam; //, xxClientActivateMover;
-
-	unreliable if (bClientDemoRecording)
-		DemoInitSettings;
 }
 
 simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
@@ -190,7 +187,6 @@ function int TickPID(out PIDController C, float DeltaTime, int Error) {
 
 function xxPlayerTickEvents()
 {
-	DemoInitSettings();
 	CheckHitSound();
 }
 
@@ -209,7 +205,7 @@ simulated function xxSetTimes(int RemainingTime, int ElapsedTime)
 	GameReplicationInfo.ElapsedTime = ElapsedTime;
 }
 
-function InitSettings() {
+simulated function InitSettings() {
 	local bbPlayer P;
 	local bbCHSpectator S;
 
@@ -232,10 +228,6 @@ function InitSettings() {
 		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings';
 		Log("Loaded Settings!", 'IGPlus');
 	}
-}
-
-function DemoInitSettings() {
-	InitSettings();
 }
 
 event Possess()

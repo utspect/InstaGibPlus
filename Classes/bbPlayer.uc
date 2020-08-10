@@ -266,7 +266,7 @@ replication
 {
 	//	Client->Demo
 	unreliable if ( bClientDemoRecording )
-		xxReplicateVRToDemo, xxClientDemoMessage, xxClientLogToDemo, xxDemoSpawnSSRBeam, DemoInitSettings;
+		xxReplicateVRToDemo, xxClientDemoMessage, xxClientLogToDemo, xxDemoSpawnSSRBeam;
 
 	reliable if (bClientDemoRecording && !bClientDemoNetFunc)
 		xxClientDemoFix, xxClientDemoBolt;
@@ -486,7 +486,7 @@ simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeigh
 	}
 }
 
-function InitSettings() {
+simulated function InitSettings() {
 	local bbPlayer P;
 	local bbCHSpectator S;
 
@@ -509,10 +509,6 @@ function InitSettings() {
 		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings'; // object name = Section name
 		Log("Loaded Settings!", 'IGPlus');
 	}
-}
-
-function DemoInitSettings() {
-	InitSettings();
 }
 
 event PostBeginPlay()
@@ -5129,7 +5125,6 @@ function xxPlayerTickEvents()
 
 	CurrentTime = Level.TimeSeconds;
 
-	DemoInitSettings();
 	CheckHitSound();
 
 	if (Level.NetMode == NM_Client)
