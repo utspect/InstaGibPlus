@@ -11,16 +11,14 @@ Different Shock beam types.<br>
 Extract the zipped files to your system folder.<br>
 Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or Deepu's Ultimate NewNet.<br>
 Add the following lines to your server's <b>UnrealTournament.ini</b> under <b>[Engine.GameEngine]</b>:<br><br>
-<b>ServerPackages=InstaGibPlus</b><br>
-<b>ServerActors=InstaGibPlus.NewNetServer</b><br>
-<b>ServerActors=InstaGibPlus.PureStats</b><br>
+<b>ServerPackages=InstaGibPlus4</b><br>
+<b>ServerActors=InstaGibPlus4.NewNetServer</b><br>
+<b>ServerActors=InstaGibPlus4.PureStats</b><br>
 
 <b>It is highly recommended to set your server's tickrate to 100.</b>
 
 # Usage
-If you want to make sure InstaGib+ is loaded every map you can also add under <b>[Engine.GameEngine]</b>:<br><br>
-<b>ServerActors=InstaGibPlus.NewNetIG</b><br><br>
-otherwise make sure the mutator <b>InstaGibPlus.NewNetIG</b> is loaded via your map vote configuration or during server launch.<br><br>
+For InstaGib, make sure the mutator <b>InstaGibPlus4.NewNetIG</b> is loaded via your map vote configuration or during server launch.<br><br>
 InstaGib+ has minimal weapons code and will load the default UT weapons if the NewNetIG mutator is not loaded, so it is absolutely unusable in normal weapons, make sure to use it only if your objective is to play or to run an InstaGib centered server.<br><br>
 When connected to the server type <b>'mutate playerhelp'</b> in the console to view the available commands and options.
 
@@ -60,6 +58,112 @@ As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickra
 <b>Epic</b> - For not open sourcing a 20 year old game running on their 20 year old engine.
 
 # Settings
+
+## Client Settings
+
+### bForceModels (bool, default: False)
+If set to `True`, forces all other players to use fixed models and skins (see DesiredSkin settings).
+If set to `False`, all players will show as their chosen model and skin.
+### DesiredSkin (int, default: 9)
+### DesiredSkinFemale (int, default: 0)
+### DesiredTeamSkin (int, default: 9)
+### DesiredTeamSkinFemale (int, default: 0)
+
+### HitSound (int, default: 2)
+Plays the specified sound when the server detects you dealing damage to enemies.
+### TeamHitSound (int, default: 3)
+Plays the specified sound when the server detects you dealing damage to teammates.
+### bDisableForceHitSounds (bool, default: False)
+If `False`, server can override HitSound and TeamHitSound.
+If `True`, server can not override HitSound and TeamHitSound.
+
+### bEnableHitSounds (bool, default: True)
+If `True`, plays a sound when a weapon you fire hits an enemy on your client.
+If `False`, no sound is played.
+### selectedHitSound (int, default: 0)
+Index into sHitSound array for the sound to play.
+### sHitSound (string\[16\])
+Specifies sounds that can be played.
+
+### bDoEndShot (bool, default: False)
+If `True`, automatically create a screenshot at the end of a match.
+If `False`, no screenshot is automatically created.
+### bAutoDemo (bool, default: False)
+If `True`, automatically start recording a demo when the game starts.
+### DemoMask (string)
+Template for the name of the demo started because of [bAutoDemo](#bautodemo-bool-default-false).
+The following (case-insensitive) placeholders will be replaced with match-specific details:
+- `%E` -> Name of the map file
+- `%F` -> Title of the map
+- `%D` -> Day (two digits)
+- `%M` -> Month (two digits)
+- `%Y` -> Year
+- `%H` -> Hour
+- `%N` -> Minute
+- `%T` -> Combined Hour and Minute (two digits each)
+- `%C` -> Clan Tags (detected by determining common prefix of all players on a team, or "Unknown")
+- `%L` -> Name of the recording player
+- `%%` -> Replaced with a single %
+### DemoPath (string)
+Prefix for name of the demo started because of [bAutoDemo](#bautodemo-bool-default-false).
+### DemoChar (string)
+Characters filesystems can not handle are replaced with this.
+
+### bTeamInfo (bool, default: True)
+if Client wants extra team info.
+### bShootDead (bool, default: False)
+If `True`, client shots can collide with carcasses from dead players.
+If `False`, client shots will not collide with carcasses.
+
+### cShockBeam (int, default: 1)
+The style of beam to use for the SuperShockRifle.
+- `1` -> Default beam
+- `2` -> Team colored beam that looks like a projectile
+- `3` -> No beam at all
+- `4` -> Team colored, instant beam
+### BeamScale (float, default: 0.45)
+Visuals for the beam are scaled with this factor
+### BeamFadeCurve (float, default: 4.0)
+Exponent of the polynomial curve the beam's visuals decay with
+### BeamDuration (float, default: 0.75)
+The time the beam's visuals decay over.
+### BeamOriginMode (int, default: 0)
+- `0` -> Originates where the player was when the shot was fired
+- `1` -> Originates at an offset from where the player is on your screen.
+
+### bNoOwnFootsteps (bool, default: False)
+If `True`, footstep sounds are not played for your own footsteps.
+If `False`, your own footstep sounds will be played.
+### DesiredNetUpdateRate (float, default: 100)
+How often you want your client to update the server on your movement. The server places upper and lower limits on this (see [MinNetUpdateRate](#minnetupdaterate-float-default), [MaxNetUpdateRate](#maxnetupdaterate-float-default)), and the actual update rate will never exceed your netspeed divided by 100.
+
+This is here to provide players with constrained upload bandwidth a way to reduce the required upload bandwidth at the expense of greater susceptibility to packet loss, and glitches arising from it.
+
+Players with high upload bandwidth can set this to a high value to lessen the impact of packet loss.
+### FakeCAPInterval (float, defaul: 0.1)
+Tells the server to send an acknowledgement of your movement updates (see [DesiredNetUpdateRate](#desirednetupdaterate-float-default)) after this amount of time has passed since the last acknowledgement. This saves download bandwidth and lessens server load.
+
+Smaller values (closer to 0) result in acknowledgements being sent more frequently, negative values send an acknowledgement for every movement update.
+Higher values result in less frequent acknowledgements which can result in degraded client performance (FPS), or even crashes.
+### bNoSmoothing (bool, default: False)
+The default mouse input smoothing algorithm always smears input over at least two frames, half the input being applied on one frame, the other half on the next frame. If set to `True`, the game will always apply all input on the current frame. If set to `False`, the default algorithm will be used.
+
+This is a backport from UT99 client version 469, where the equivalent setting is called bNoMouseSmoothing.
+### bLogClientMessages (bool, default: True)
+Causes all ClientMessages to be logged, if set to `True`
+### bEnableKillCam (bool, default: False)
+KillCam follows the player that killed you for two seconds.
+### MinDodgeClickTime (float, default: 0.0)
+Minimum time between two presses of the same direction for them to count as a dodge.
+### bUseOldMouseInput (bool, default: False)
+The old mouse input processing algorithm discards the fractional part before turning the view according to the mouse input. The new algorithm preserves fractional rotation across frames.
+
+A players view is defined by yaw and pitch, which are quantized to 65536 degrees (a circle has 65536 degrees instead of 360). If a players mouse input sensitivity is set such that the players mouse input can result in some fraction of a degree, that fractional part must be discarded before the view is changed. The new algorithm preserves that fractional part and adds it to the next mouse input.
+
+If `True`, two successive inputs of 1.5° change in yaw result in a 2° turn (int(1.5) + int(1.5) = 1 + 1 = 2).
+If `False`, two successive inputs of 1.5° change in yaw result in a 3° turn.
+### SmoothVRController (PIDControllerSettings, default: (p=0.09,i=0.05,d=0.00))
+This holds the PID settings for the controller thats smoothing the view of players youre spectating as a spectator (see [PID controller](https://en.wikipedia.org/wiki/PID_controller)).
 
 ## Server Settings
 Server settings can be found inside InstaGibPlus.ini.
