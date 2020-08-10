@@ -228,12 +228,20 @@ simulated function NN_TraceFire()
 simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z, float yMod)
 {
 	local UT_Shellcase s;
-	local Pawn PawnOwner;
+	local bbPlayer O;
 
 	if (Owner.IsA('Bot'))
 		return false;
 
-	PawnOwner = Pawn(Owner);
+	O = bbPlayer(Owner);
+
+	if (Other.isA('Pawn')) {
+		if (O.Settings.bEnableHitSounds) {
+			if (!O.GameReplicationInfo.bTeamGame || PlayerPawn(Other).PlayerReplicationInfo.Team != O.PlayerReplicationInfo.Team) {
+				O.ClientPlaySound(O.playedHitSound);
+			}
+		}
+	}
 
 	s = Spawn(class'UT_ShellCase',, '', Owner.Location + CDO + 30 * X + (2.8 * yMod+5.0) * Y - Z * 1);
 	if ( s != None )
