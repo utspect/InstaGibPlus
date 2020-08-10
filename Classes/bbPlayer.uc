@@ -4032,6 +4032,9 @@ ignores SeePlayer, HearNoise, Bump;
 	event ServerTick(float DeltaTime) {
 		local float TimeSinceLastUpdate;
 		local float ProcessTime;
+		local float SimTime;
+		local int i;
+		local int SimSteps;
 
 		if (Level.Pauser == "" && !bWasPaused) {
 			TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
@@ -4051,10 +4054,15 @@ ignores SeePlayer, HearNoise, Bump;
 				bExtrapolatedLastUpdate == false && ExtrapolationDelta > AverageServerDeltaTime
 			) {
 				bExtrapolatedLastUpdate = true;
+
 				SavedLocation = Location;
 				SavedVelocity = Velocity;
 				SavedAcceleration = Acceleration;
-				MoveAutonomous(ExtrapolationDelta, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+
+				SimSteps = int(ExtrapolationDelta / AverageServerDeltaTime);
+				SimTime = ExtrapolationDelta / SimSteps;
+				for (i = 0; i < SimSteps; i += 1)
+					MoveAutonomous(SimTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
 			}
 			ExtrapolationDelta *= Exp(-2.0 * DeltaTime);
 		} else {
