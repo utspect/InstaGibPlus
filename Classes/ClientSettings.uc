@@ -34,12 +34,27 @@ var config int    BeamOriginMode;
 var config float  DesiredNetUpdateRate;
 var config bool   bNoSmoothing;
 var config bool   bNoOwnFootsteps;
-var config bool   bLogClientMessages; 
+var config bool   bLogClientMessages;
 var config bool   bEnableKillCam;
 var config float  FakeCAPInterval; // Send a FakeCAP after no CAP has been sent for this amount of time
 var config float  MinDodgeClickTime; // Minimum time between two presses of the same direction for them to count as a dodge
 var config bool   bUseOldMouseInput;
 var config PIDControllerSettings SmoothVRController;
+
+simulated function CheckConfig() {
+	local int i;
+	local int p;
+	local string PackageName;
+
+	PackageName = string(self.Class);
+	PackageName = Left(PackageName, InStr(PackageName, "."));
+
+	for (i = 0; i < 16; i += 1)
+		if (Left(sHitSound[i], 12) ~= "InstaGibPlus")
+			sHitSound[i] = PackageName$Mid(sHitSound[i], InStr(sHitSound[i], "."));
+
+	SaveConfig();
+}
 
 defaultproperties
 {
@@ -60,7 +75,7 @@ defaultproperties
 	DesiredTeamSkinFemale=0
 	bEnableHitSounds=True
 	selectedHitSound=0
-	sHitSound(0)="InstaGibPlus.UTPure.HitSound"
+	sHitSound(0)="InstaGibPlus4.HitSound"
 	sHitSound(1)="UnrealShare.StingerFire"
 	cShockBeam=1
 	BeamScale=0.45
