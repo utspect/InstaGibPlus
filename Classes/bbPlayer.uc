@@ -5010,7 +5010,7 @@ function PlayHit(float Damage, vector HitLocation, name damageType, vector Momen
 
 simulated function FootStepping()
 {
-	if (Level.NetMode != NM_DedicatedServer && Settings.bNoOwnFootsteps)
+	if (Settings != none && Settings.bNoOwnFootsteps)
 		if (Role >= ROLE_AutonomousProxy || GetLocalPlayer().ViewTarget == self)
 			return;
 
