@@ -66,24 +66,24 @@ If set to `True`, forces all other players to use fixed models and skins (see De
 If set to `False`, all players will show as their chosen model and skin.
 #### List of Skins
 Note that these numbers only apply when editing INI settings
-- `0` - Class: Female Commando, Skin: Aphex, Face: Idina
-- `1` - Class: Female Commando, Skin: Commando, Face: Anna
-- `2` - Class: Female Commando, Skin: Mercenary, Face: Jayce
-- `3` - Class: Female Commando, Skin: Necris, Face: Cryss
-- `4` - Class: Female Soldier, Skin: Marine, Face: Annaka
-- `5` - Class: Female Soldier, Skin: Metal Guard, Face: Isis
-- `6` - Class: Female Soldier, Skin: Soldier, Face: Lauren
-- `7` - Class: Female Soldier, Skin: Venom, Face: Athena
-- `8` - Class: Female Soldier, Skin: War Machine, Face: Cathode
-- `9` - Class: Male Commando, Skin: Commando, Face: Blake
-- `10` - Class: Male Commando, Skin: Mercenary, Face: Boris
-- `11` - Class: Male Commando, Skin: Necris, Face: Grail
-- `12` - Class: Male Soldier, Skin: Marine, Face: Malcolm
-- `13` - Class: Male Soldier, Skin: Metal Guard, Face: Drake
-- `14` - Class: Male Soldier, Skin: RawSteel, Face: Arkon
-- `15` - Class: Male Soldier, Skin: Soldier, Face: Brock
-- `16` - Class: Male Soldier, Skin: War Machine, Face: Matrix
-- `17` - Class: Boss, Skin: Boss, Face: Xan
+0. - Class: Female Commando, Skin: Aphex, Face: Idina
+1. - Class: Female Commando, Skin: Commando, Face: Anna
+2. - Class: Female Commando, Skin: Mercenary, Face: Jayce
+3. - Class: Female Commando, Skin: Necris, Face: Cryss
+4. - Class: Female Soldier, Skin: Marine, Face: Annaka
+5. - Class: Female Soldier, Skin: Metal Guard, Face: Isis
+6. - Class: Female Soldier, Skin: Soldier, Face: Lauren
+7. - Class: Female Soldier, Skin: Venom, Face: Athena
+8. - Class: Female Soldier, Skin: War Machine, Face: Cathode
+9. - Class: Male Commando, Skin: Commando, Face: Blake
+10. - Class: Male Commando, Skin: Mercenary, Face: Boris
+11. - Class: Male Commando, Skin: Necris, Face: Grail
+12. - Class: Male Soldier, Skin: Marine, Face: Malcolm
+13. - Class: Male Soldier, Skin: Metal Guard, Face: Drake
+14. - Class: Male Soldier, Skin: RawSteel, Face: Arkon
+15. - Class: Male Soldier, Skin: Soldier, Face: Brock
+16. - Class: Male Soldier, Skin: War Machine, Face: Matrix
+17. - Class: Boss, Skin: Boss, Face: Xan
 ### DesiredSkin (int, default: 9)
 ### DesiredSkinFemale (int, default: 0)
 ### DesiredTeamSkin (int, default: 9)
@@ -137,10 +137,10 @@ If `False`, client shots will not collide with carcasses.
 
 ### cShockBeam (int, default: 1)
 The style of beam to use for the SuperShockRifle.
-- `1` -> Default beam
-- `2` -> Team colored beam that looks like a projectile
-- `3` -> No beam at all
-- `4` -> Team colored, instant beam
+1. Default beam
+2. Team colored beam that looks like a projectile
+3. No beam at all
+4. Team colored, instant beam
 ### BeamScale (float, default: 0.45)
 Visuals for the beam are scaled with this factor
 ### BeamFadeCurve (float, default: 4.0)
@@ -148,8 +148,8 @@ Exponent of the polynomial curve the beam's visuals decay with
 ### BeamDuration (float, default: 0.75)
 The time the beam's visuals decay over.
 ### BeamOriginMode (int, default: 0)
-- `0` -> Originates where the player was when the shot was fired
-- `1` -> Originates at an offset from where the player is on your screen.
+0. Originates where the player was when the shot was fired
+1. Originates at an offset from where the player is on your screen.
 
 ### bNoOwnFootsteps (bool, default: False)
 If `True`, footstep sounds are not played for your own footsteps.
