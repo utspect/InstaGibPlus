@@ -64,6 +64,26 @@ As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickra
 ### bForceModels (bool, default: False)
 If set to `True`, forces all other players to use fixed models and skins (see DesiredSkin settings).
 If set to `False`, all players will show as their chosen model and skin.
+#### List of Skins
+Note that these numbers only apply when editing INI settings
+- `0` - Class: Female Commando, Skin: Aphex, Face: Idina
+- `1` - Class: Female Commando, Skin: Commando, Face: Anna
+- `2` - Class: Female Commando, Skin: Mercenary, Face: Jayce
+- `3` - Class: Female Commando, Skin: Necris, Face: Cryss
+- `4` - Class: Female Soldier, Skin: Marine, Face: Annaka
+- `5` - Class: Female Soldier, Skin: Metal Guard, Face: Isis
+- `6` - Class: Female Soldier, Skin: Soldier, Face: Lauren
+- `7` - Class: Female Soldier, Skin: Venom, Face: Athena
+- `8` - Class: Female Soldier, Skin: War Machine, Face: Cathode
+- `9` - Class: Male Commando, Skin: Commando, Face: Blake
+- `10` - Class: Male Commando, Skin: Mercenary, Face: Boris
+- `11` - Class: Male Commando, Skin: Necris, Face: Grail
+- `12` - Class: Male Soldier, Skin: Marine, Face: Malcolm
+- `13` - Class: Male Soldier, Skin: Metal Guard, Face: Drake
+- `14` - Class: Male Soldier, Skin: RawSteel, Face: Arkon
+- `15` - Class: Male Soldier, Skin: Soldier, Face: Brock
+- `16` - Class: Male Soldier, Skin: War Machine, Face: Matrix
+- `17` - Class: Boss, Skin: Boss, Face: Xan
 ### DesiredSkin (int, default: 9)
 ### DesiredSkinFemale (int, default: 0)
 ### DesiredTeamSkin (int, default: 9)
