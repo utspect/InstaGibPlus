@@ -135,13 +135,13 @@ The time the beam's visuals decay over.
 If `True`, footstep sounds are not played for your own footsteps.
 If `False`, your own footstep sounds will be played.
 ### DesiredNetUpdateRate (float, default: 100)
-How often you want your client to update the server on your movement. The server places upper and lower limits on this (see [MinNetUpdateRate](#minnetupdaterate-float-default), [MaxNetUpdateRate](#maxnetupdaterate-float-default)), and the actual update rate will never exceed your netspeed divided by 100.
+How often you want your client to update the server on your movement. The server places upper and lower limits on this (see [MinNetUpdateRate](#minnetupdaterate-float-default-60), [MaxNetUpdateRate](#maxnetupdaterate-float-default-250)), and the actual update rate will never exceed your netspeed divided by 100.
 
 This is here to provide players with constrained upload bandwidth a way to reduce the required upload bandwidth at the expense of greater susceptibility to packet loss, and glitches arising from it.
 
 Players with high upload bandwidth can set this to a high value to lessen the impact of packet loss.
 ### FakeCAPInterval (float, defaul: 0.1)
-Tells the server to send an acknowledgement of your movement updates (see [DesiredNetUpdateRate](#desirednetupdaterate-float-default)) after this amount of time has passed since the last acknowledgement. This saves download bandwidth and lessens server load.
+Tells the server to send an acknowledgement of your movement updates (see [DesiredNetUpdateRate](#desirednetupdaterate-float-default-100)) after this amount of time has passed since the last acknowledgement. This saves download bandwidth and lessens server load.
 
 Smaller values (closer to 0) result in acknowledgements being sent more frequently, negative values send an acknowledgement for every movement update.
 Higher values result in less frequent acknowledgements which can result in degraded client performance (FPS), or even crashes.
