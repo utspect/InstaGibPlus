@@ -1400,6 +1400,47 @@ function SimMoveAutonomous(float DeltaTime) {
 	}
 }
 
+function WarpCompensation(float DeltaTime) {
+	local float TimeSinceLastUpdate;
+	local float ProcessTime;
+
+	if (Level.Pauser == "" && !bWasPaused) {
+		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
+		ProcessTime = TimeSinceLastUpdate - class'UTPure'.default.MaxJitterTime;
+
+		if (class'UTPure'.default.bEnableJitterBounding &&
+			ProcessTime > AverageServerDeltaTime && bJustRespawned == false
+		) {
+			if (class'UTPure'.default.bEnableServerExtrapolation) {
+				UndoExtrapolation();
+				MoveAutonomous(ProcessTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+				CurrentTimeStamp += ProcessTime;
+				ServerTimeStamp += ProcessTime;
+				ExtrapolationDelta = class'UTPure'.default.MaxJitterTime;
+			} else {
+				SimMoveAutonomous(TimeSinceLastUpdate);
+				CurrentTimeStamp += TimeSinceLastUpdate;
+				ServerTimeStamp += TimeSinceLastUpdate;
+			}
+		}
+
+		if (class'UTPure'.default.bEnableServerExtrapolation &&
+			bExtrapolatedLastUpdate == false && ExtrapolationDelta > AverageServerDeltaTime
+		) {
+			bExtrapolatedLastUpdate = true;
+
+			SavedLocation = Location;
+			SavedVelocity = Velocity;
+			SavedAcceleration = Acceleration;
+
+			SimMoveAutonomous(ExtrapolationDelta);
+		}
+		ExtrapolationDelta *= Exp(-2.0 * DeltaTime);
+	} else {
+		bWasPaused = true;
+	}
+}
+
 function UndoExtrapolation() {
 	local vector OldLoc;
 	local Decoration Carried;
@@ -3778,6 +3819,10 @@ state PlayerSwimming
 		bPressedJump = false;
 	}
 
+	event ServerTick(float DeltaTime) {
+		WarpCompensation(DeltaTime);
+		global.ServerTick(DeltaTime);
+	}
 
 	event UpdateEyeHeight(float DeltaTime)
 	{
@@ -4047,45 +4092,7 @@ ignores SeePlayer, HearNoise, Bump;
 	}
 
 	event ServerTick(float DeltaTime) {
-		local float TimeSinceLastUpdate;
-		local float ProcessTime;
-
-		if (Level.Pauser == "" && !bWasPaused) {
-			TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
-			ProcessTime = TimeSinceLastUpdate - class'UTPure'.default.MaxJitterTime;
-
-			if (class'UTPure'.default.bEnableJitterBounding &&
-				ProcessTime > AverageServerDeltaTime && bJustRespawned == false
-			) {
-				if (class'UTPure'.default.bEnableServerExtrapolation) {
-					UndoExtrapolation();
-					MoveAutonomous(ProcessTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
-					CurrentTimeStamp += ProcessTime;
-					ServerTimeStamp += ProcessTime;
-					ExtrapolationDelta = class'UTPure'.default.MaxJitterTime;
-				} else {
-					SimMoveAutonomous(TimeSinceLastUpdate);
-					CurrentTimeStamp += TimeSinceLastUpdate;
-					ServerTimeStamp += TimeSinceLastUpdate;
-				}
-			}
-
-			if (class'UTPure'.default.bEnableServerExtrapolation &&
-				bExtrapolatedLastUpdate == false && ExtrapolationDelta > AverageServerDeltaTime
-			) {
-				bExtrapolatedLastUpdate = true;
-
-				SavedLocation = Location;
-				SavedVelocity = Velocity;
-				SavedAcceleration = Acceleration;
-
-				SimMoveAutonomous(ExtrapolationDelta);
-			}
-			ExtrapolationDelta *= Exp(-2.0 * DeltaTime);
-		} else {
-			bWasPaused = true;
-		}
-
+		WarpCompensation(DeltaTime);
 		global.ServerTick(DeltaTime);
 	}
 
