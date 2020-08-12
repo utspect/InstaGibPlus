@@ -47,7 +47,7 @@ simulated function RenderOverlays(Canvas Canvas)
 simulated function yModInit()
 {
 	if (bbPlayer(Owner) != None && Owner.ROLE == ROLE_AutonomousProxy)
-		GV = bbPlayer(Owner).zzViewRotation;
+		GV = bbPlayer(Owner).ViewRotation;
 
 	if (PlayerPawn(Owner) == None)
 		return;
@@ -286,7 +286,7 @@ simulated function NN_TraceFire()
 	}
 
 	NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(GV),Y,Z);
-	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.zzViewRotation, Other, HitLocation, HitDiff, false);
+	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, false);
 	if (Other == bbP.zzClientTTarget)
 		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(GV), MyDamageType);
 }
@@ -318,7 +318,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	bbP = bbPlayer(Owner);
 
 	if (Other.isA('Pawn')) {
-		if (bbP.bEnableHitSounds) {
+		if (bbP.Settings.bEnableHitSounds) {
 			if (!bbP.GameReplicationInfo.bTeamGame || bbPlayer(Other).PlayerReplicationInfo.Team != bbP.PlayerReplicationInfo.Team) {
 				//Log("Hitsound:"@bbP.playedHitSound);
 				bbP.ClientPlaySound(bbP.playedHitSound);
@@ -326,7 +326,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		}
 	}
 
-	if (bbPlayer(Owner).cShockBeam == 2) {
+	if (bbPlayer(Owner).Settings.cShockBeam == 2) {
 		if (bbPlayer(Owner).PlayerReplicationInfo.Team == 1) {
 			Spawn(class'ut_RingExplosion',,, HitLocation+HitNormal*8,rotator(HitNormal));
 			a = Spawn(class'EnergyImpact');
@@ -376,22 +376,6 @@ function TraceFire( float Accuracy )
 		bbP.zzNN_HitActor = None;
 
 	NN_Other = bbP.zzNN_HitActor;
-	bbPP = bbPlayer(NN_Other);
-	bShockCombo = bbP.zzbNN_Special && (NN_Other == None || NN_ShockProjOwnerHidden(NN_Other) != None && NN_Other.Owner != Owner);
-
-	if (bShockCombo && NN_Other == None)
-	{
-		ForEach AllActors(class'NN_ShockProjOwnerHidden', NNSP)
-			if (NNSP.zzNN_ProjIndex == bbP.zzNN_ProjIndex)
-				NN_Other = NNSP;
-
-		if (NN_Other == None)
-			NN_Other = Spawn(class'NN_ShockProjOwnerHidden', Owner,, bbP.zzNN_HitLoc);
-		else
-			NN_Other.SetLocation(bbP.zzNN_HitLoc);
-
-		bbP.zzNN_HitActor = NN_Other;
-	}
 
 	Owner.MakeNoise(bbP.SoundDampening);
 	GetAxes(bbP.zzNN_ViewRot,X,Y,Z);
@@ -453,21 +437,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	zzSmokeOffset = CalcDrawOffset() + (FireOffset.X + 20) * X + FireOffset.Y * Y + FireOffset.Z * Z;
 	SpawnEffect(HitLocation, Owner.Location + zzSmokeOffset);
 
-	if ( NN_ShockProjOwnerHidden(Other)!=None )
-	{
-		Other.SetOwner(Owner);
-		NN_ShockProjOwnerHidden(Other).SuperDuperExplosion();
-		return;
-	}
-	else if ( ST_ShockProj(Other)!=None )
-	{
-		ST_ShockProj(Other).SuperDuperExplosion();
-		return;
-	}
-	else
-	{
-		Spawn(class'NN_UT_Superring2OwnerHidden',Owner,, HitLocation+HitNormal*8,rotator(HitNormal));
-	}
+	Spawn(class'NN_UT_Superring2OwnerHidden',Owner,, HitLocation+HitNormal*8,rotator(HitNormal));
 
 	if ( (Other != self) && (Other != Owner) && (Other != None) )
 	{

@@ -320,9 +320,7 @@ function ModifyPlayer(Pawn Other)
 
 function bool AlwaysKeep(Actor Other)
 {
-    if (((Level.Game.IsA('NewNetIG') || Level.Game.IsA('NewNetTG')
-									 || Level.Game.IsA('NewNetSDOM')) && Other.IsA('NN_Armor2')
-									 || Other.IsA('NN_ThighPads')))
+    if (Level.Game.IsA('NewNetSDOM') && (Other.IsA('NN_Armor2') || Other.IsA('NN_ThighPads')))
         return true;
 
     return Super.AlwaysKeep(Other);
@@ -330,17 +328,15 @@ function bool AlwaysKeep(Actor Other)
 
 function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 {
-    if (Level.Game.IsA('NewNetIG') ||
-		Level.Game.IsA('NewNetTG') ||
-		Level.Game.IsA('NewNetSDOM'))
+    if (Level.Game.IsA('NewNetSDOM'))
 	{
 		if ( Other.IsA('Armor2') || Other.IsA('Armor') )
 		{
-			ReplaceWith( Other, Prefix$"NN_Armor2" );
+			ReplaceWith( Other, PreFix$"NN_Armor2" );
 			return false;
 		} else if ( Other.IsA('ThighPads') || Other.IsA('KevlarSuit') )
 		{
-			ReplaceWith( Other, Prefix$"NN_ThighPads" );
+			ReplaceWith( Other, PreFix$"NN_ThighPads" );
 			return false;
 		}
 	}
@@ -382,8 +378,9 @@ function PreBeginPlay()
 		DMP.BotConfig = Spawn(DMP.BotConfigType);
 	}
 	bTranslocatorGame = DMP.bUseTranslocator;
-	SelfName = string(self);
+	SelfName = string(self.Class);
 	PreFix = Left(SelfName, InStr(SelfName, ".") + 1);
+	Log("ST_Mutator determined prefix="$PreFix, 'IGPlus');
 /* 	Level.Game.RegisterMessageMutator(Self);
 	Class'bbCHSpectator'.Default.cStat = Class'ST_PureStatsSpec'; */
 	Super.PreBeginPlay();
@@ -481,6 +478,5 @@ function bool ReplaceWith(actor Other, string aClassName)
 
 defaultproperties
 {
-	Prefix="UN"
 	DefaultWeapon=Class'ST_ImpactHammer'
 }

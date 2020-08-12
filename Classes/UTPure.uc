@@ -7,8 +7,6 @@ class UTPure extends Mutator config(InstaGibPlus);
 #exec Audio Import FILE=Sounds\HitSound.wav Name=HitSound
 #exec Audio Import FILE=Sounds\HitSoundFriendly.wav Name=HitSoundFriendly
 
-#exec OBJ LOAD FILE=Pack\ShockRifle.utx PACKAGE=InstaGibPlus.ShockRifle
-
 var ModifyLoginHandler NextMLH;			// Link list of handlers
 
 var localized config float HeadshotDamage;
@@ -65,7 +63,6 @@ var string VersionStr;				// Holds the version code from VUC++
 var string LongVersion;				// Holds the version code from VUC++
 var string ThisVer;					// Holds the version letters
 var string NiceVer;					// Holds the version letters (no underscore)
-var string ConsoleName;				// Set console system name
 var string BADminText;				// Text to give players that want admin commands without being admin.
 var bool bDidEndWarn;				// True if screenshot warning has been sent to players.
 var bool bDidShot;
@@ -85,6 +82,8 @@ var localized config int MaxHitError;
 var localized config float MaxJitterTime;
 var localized config float MinNetUpdateRate;
 var localized config float MaxNetUpdateRate;
+var localized config bool bEnableServerExtrapolation;
+var localized config bool bEnableJitterBounding;
 var localized config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
@@ -127,7 +126,6 @@ function PreBeginPlay()
 	local GameInfo GI;
 	local string n;
 	local int XC_Version;
-	local Kicker K;
 
 	XC_Version = int(ConsoleCommand("get ini:engine.engine.gameengine XC_Version"));
 	if ( XC_Version >= 11 )
@@ -146,13 +144,6 @@ function PreBeginPlay()
 
 	if (NNAnnouncer)
 		Spawn(class'NNAnnouncerSA');
-
-	Spawn(class'VTFix');
-
-	class'bbPlayer'.Default.HitSound = DefaultHitSound;
-	class'bbPlayer'.Default.TeamHitSound = DefaultTeamHitSound;
-	class'bbCHSpectator'.Default.HitSound = DefaultHitSound;
-	class'bbCHSpectator'.Default.TeamHitSound = DefaultTeamHitSound;
 
  	if (zzDMP.HUDType == Class'ChallengeDominationHUD')
 		zzDMP.HUDType = Class'PureDOMHUD';
@@ -500,6 +491,10 @@ event Tick(float zzDelta)
 				zzbP.xxServerCheater("SK");
 			if (zzbDoShot)
 				zzbP.xxClientDoEndShot();
+
+			if ((Level.NetMode == NM_DedicatedServer) ||
+				(Level.NetMode == NM_ListenServer && zzbP.Role < ROLE_Authority))
+				zzbP.ServerTick(zzDelta);
 		}
 		else
 		{
@@ -723,7 +718,7 @@ function ModifyPlayer(Pawn Other)
 		}
 		else if (zzP != None)
 		{
-			zzP.zzViewRotation = Other.ViewRotation;
+			zzP.ViewRotation = Other.ViewRotation;
 			zzP.zzTrackFOV = TrackFOV;
 			zzP.zzCVDelay = CenterViewDelay;
 			zzP.zzCVDeny = !bAllowCenterView;
@@ -1391,20 +1386,21 @@ defaultproperties
 	DefaultTeamHitSound=3
 	TeleRadius=210
 	ThrowVelocity=750
-	ConsoleName="InstaGib+ Console"
-	VersionStr="InstaGib+ Final"
-	LongVersion="RC "
-	ThisVer="3G"
-	NiceVer="3G"
+	VersionStr="IG+ "
+	LongVersion=""
+	ThisVer="4"
+	NiceVer="4"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
 	MinPosError=100
-	MaxPosError=3000
+	MaxPosError=1000
 	MaxHitError=10000
-	MaxJitterTime=0.040
+	MaxJitterTime=0.1
 	MinNetUpdateRate=60.0
 	MaxNetUpdateRate=250.0
 	ShowTouchedPackage=False
-	MaxTradeTimeMargin=0.1;
+	MaxTradeTimeMargin=0.1
+	bEnableServerExtrapolation=True
+	bEnableJitterBounding=True
 }

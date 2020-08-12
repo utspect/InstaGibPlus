@@ -20,10 +20,10 @@ simulated function InitGraphics()
 simulated function RenderOverlays(Canvas Canvas)
 {
 	local bbPlayer bbP;
-	
+
 	Super.RenderOverlays(Canvas);
 	yModInit();
-	
+
 	bbP = bbPlayer(Owner);
 	if (bNewNet && Role < ROLE_Authority && bbP != None)
 	{
@@ -37,11 +37,11 @@ simulated function RenderOverlays(Canvas Canvas)
 simulated function yModInit()
 {
 	if (bbPlayer(Owner) != None && Owner.Role == ROLE_AutonomousProxy)
-		GV = bbPlayer(Owner).zzViewRotation;
-	
+		GV = bbPlayer(Owner).ViewRotation;
+
 	if (PlayerPawn(Owner) == None)
 		return;
-		
+
 	yMod = PlayerPawn(Owner).Handedness;
 	if (yMod != 2.0)
 		yMod *= Default.FireOffset.Y;
@@ -53,7 +53,7 @@ simulated function yModInit()
 
 state Active
 {
-	function Fire(float F) 
+	function Fire(float F)
 	{
 		if (Owner.IsA('Bot'))
 		{
@@ -63,7 +63,7 @@ state Active
 		if (F > 0 && bbPlayer(Owner) != None)
 			Global.Fire(F);
 	}
-	function AltFire(float F) 
+	function AltFire(float F)
 	{
 		if (Owner.IsA('Bot'))
 		{
@@ -92,7 +92,7 @@ State ClientActive
 		bForceAltFire = bbPlayer(Owner) == None || !bbPlayer(Owner).ClientCannotShoot();
 		return bForceAltFire;
 	}
-	
+
 	simulated function AnimEnd()
 	{
 		if ( Owner == None )
@@ -100,7 +100,7 @@ State ClientActive
 			Global.AnimEnd();
 			GotoState('');
 		}
-		else if ( Owner.IsA('TournamentPlayer') 
+		else if ( Owner.IsA('TournamentPlayer')
 			&& (TournamentPlayer(Owner).PendingWeapon != None || TournamentPlayer(Owner).ClientPending != None) )
 			GotoState('ClientDown');
 		else if ( bWeaponUp )
@@ -138,7 +138,7 @@ simulated function AnimEnd ()
 auto state Pickup
 {
 	ignores AnimEnd;
-	
+
 	simulated function Landed(Vector HitNormal)
 	{
 		Super(Inventory).Landed(HitNormal);

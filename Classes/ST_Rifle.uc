@@ -24,7 +24,7 @@ function float RateSelf( out int bUseAltMode )
 		{
 			if ( dist > 2000 )
 				return (AIRating + 0.75);
-			return (AIRating + FMin(0.0001 * dist, 0.45)); 
+			return (AIRating + FMin(0.0001 * dist, 0.45));
 		}
 	}
 	return AIRating;
@@ -36,9 +36,9 @@ simulated function RenderOverlays(Canvas Canvas)
 	local bool bPlayerOwner;
 	local int Hand;
 	local PlayerPawn PlayerOwner;
-	
+
 	Super.RenderOverlays(Canvas);
-	
+
 	if ( bHideWeapon || (Owner == None) )
 		return;
 
@@ -137,11 +137,11 @@ simulated function bool ClientAltFire( float Value )
 function Fire( float Value )
 {
 	local bbPlayer bbP;
-	
+
 	bbP = bbPlayer(Owner);
 	if (bbP != None && bNewNet && Value < 1)
 		return;
-		
+
 	if ( (AmmoType == None) && (AmmoName != None) )
 	{
 		GiveAmmo(Pawn(Owner));
@@ -181,7 +181,7 @@ function AltFire( float Value )
 
 state NormalFire
 {
-	function Fire(float F) 
+	function Fire(float F)
 	{
 		if (Owner.IsA('Bot'))
 		{
@@ -191,7 +191,7 @@ state NormalFire
 		if (F > 0 && bbPlayer(Owner) != None)
 			Global.Fire(F);
 	}
-	function AltFire(float F) 
+	function AltFire(float F)
 	{
 		if (Owner.IsA('Bot'))
 		{
@@ -274,13 +274,13 @@ function Timer()
 		bPointing = true;
 		Pawn(targ).WarnTarget(Pawn(Owner), 200, FireDir);
 	}
-	else 
+	else
 	{
 		SetTimer(0.4 + 1.6 * FRand(), false);
 			if ( (Pawn(Owner).bFire == 0) && (Pawn(Owner).bAltFire == 0) )
 				bPointing = false;
 	}
-}  
+}
 
 function Finish()
 {
@@ -320,19 +320,19 @@ state Idle
 	}
 	function BeginState()
 	{
-		if (Pawn(Owner).bFire!=0) Fire(0.0);    
+		if (Pawn(Owner).bFire!=0) Fire(0.0);
 			bPointing = false;
 			SetTimer(0.4 + 1.6 * FRand(), false);
 			Super.BeginState();
 	}
 	function EndState()
-	{  
+	{
 		SetTimer(0.0, false);
 		Super.EndState();
 	}
 Begin:
 	bPointing=False;
-	if ( (AmmoType != None) && (AmmoType.AmmoAmount<=0) ) 
+	if ( (AmmoType != None) && (AmmoType.AmmoAmount<=0) )
 		Pawn(Owner).SwitchToBestWeapon();
 	if ( Pawn(Owner).bFire!=0 ) Fire(0.0);
 		Disable('AnimEnd');
@@ -383,12 +383,12 @@ simulated function NN_TraceFire()
 	local Pawn PawnOwner;
 	local bbPlayer bbP;
 	local bool bHeadshot;
-	
+
 	if (Owner.IsA('Bot'))
 		return;
-	
+
 	yModInit();
-	
+
 	PawnOwner = Pawn(Owner);
 	bbP = bbPlayer(Owner);
 	if (bbP == None)
@@ -397,13 +397,13 @@ simulated function NN_TraceFire()
 	GetAxes(GV,X,Y,Z);
 	StartTrace = Owner.Location + bbP.Eyeheight * vect(0,0,1);
 	EndTrace = StartTrace + (100000 * vector(GV));
-	
+
 	Other = bbP.NN_TraceShot(HitLocation,HitNormal,EndTrace,StartTrace,PawnOwner);
 	if (Other.IsA('Pawn'))
 		HitDiff = HitLocation - Other.Location;
-	
+
 	bHeadshot = NN_ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z,yMod);
-	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.zzViewRotation, Other, HitLocation, HitDiff, bHeadshot);
+	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, bHeadshot);
 }
 
 simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z, float yMod)
@@ -411,17 +411,17 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	local UT_Shellcase s;
 	local Pawn PawnOwner;
 	local float CH;
-	
+
 	if (Owner.IsA('Bot'))
 		return false;
 
 	PawnOwner = Pawn(Owner);
 
 	s = Spawn(class'UT_ShellCase',, '', Owner.Location + CDO + 30 * X + (2.8 * yMod+5.0) * Y - Z * 1);
-	if ( s != None ) 
+	if ( s != None )
 	{
 		s.DrawScale = 2.0;
-		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);              
+		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
 	}
 	if (Other == Level || Other.IsA('Mover'))
 	{
@@ -439,13 +439,13 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 			} else {
 				CH = Other.CollisionHeight;
 			}
-			
+
 			if (HitLocation.Z - Other.Location.Z > BodyHeight * CH)
 				return true;
 		}
-		
+
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
-			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);	
+			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}
 	return false;
 }
@@ -492,9 +492,9 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	{
 		if ( Other.bIsPawn )
 			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
-		
+
 		if ( (bbP.zzbNN_Special || !bNewNet &&
-			Other.bIsPawn && (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight) 
+			Other.bIsPawn && (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight)
 			&& (instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice)) )
 			&& !PPOther.bIsCrouching && PPOther.GetAnimGroup(PPOther.AnimSequence) != 'Ducking' )
 		{
@@ -519,7 +519,7 @@ simulated function DoShellCase(PlayerPawn Pwner, vector HitLoc, Vector X, Vector
 	local PlayerPawn P;
 	local Actor CR;
 	local UT_Shellcase s;
-	
+
 	if (Owner.IsA('Bot'))
 		return;
 
@@ -531,10 +531,10 @@ simulated function DoShellCase(PlayerPawn Pwner, vector HitLoc, Vector X, Vector
 				CR = P.Spawn(class'UT_ShellCase',P, '', HitLoc);
 				CR.bOnlyOwnerSee = True;
 				s = UT_Shellcase(CR);
-			if ( s != None ) 
+			if ( s != None )
 			{
 				s.DrawScale = 2.0;
-				s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);              
+				s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
 			}
 			}
 		}
@@ -545,37 +545,37 @@ function TraceFire( float Accuracy )
 {
 	local bbPlayer bbP;
 	local vector NN_HitLoc, HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
-	
+
 	if (Owner.IsA('Bot'))
 	{
 		Super.TraceFire(Accuracy);
 		return;
 	}
-	
+
 	bbP = bbPlayer(Owner);
-	
+
 	if (bbP == None || !bNewNet)
 	{
 		Super.TraceFire(Accuracy);
 		return;
 	}
-	
+
 	if (bbP == None)
 	{
 		if (bbP.zzNN_HitActor.IsA('bbPlayer') && !bbPlayer(bbP.zzNN_HitActor).xxCloseEnough(bbP.zzNN_HitLoc))
 		bbP.zzNN_HitActor = None;
 	}
-	
+
 	Owner.MakeNoise(bbP.SoundDampening);
 	GetAxes(bbP.zzNN_ViewRot,X,Y,Z);
 	StartTrace = Owner.Location + bbP.Eyeheight * vect(0,0,1);
-	AdjustedAim = bbP.AdjustAim(1000000, StartTrace, 2*AimError, False, False);	
+	AdjustedAim = bbP.AdjustAim(1000000, StartTrace, 2*AimError, False, False);
 	X = vector(AdjustedAim);
 	EndTrace = StartTrace + 100000 * X;
-	
+
 	if (bbP.zzNN_HitActor != None && VSize(bbP.zzNN_HitDiff) > bbP.zzNN_HitActor.CollisionRadius + bbP.zzNN_HitActor.CollisionHeight)
 		bbP.zzNN_HitDiff = vect(0,0,0);
-	
+
 	if (bbP.zzNN_HitActor != None && (bbP.zzNN_HitActor.IsA('Pawn') || bbP.zzNN_HitActor.IsA('Projectile')) && FastTrace(bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff, StartTrace))
 	{
 		NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
@@ -616,7 +616,7 @@ state Active
 		if (F > 0 && bbPlayer(Owner) != None)
 			Global.Fire(F);
 	}
-	function AltFire(float F) 
+	function AltFire(float F)
 	{
 		if (Owner.IsA('Bot'))
 		{

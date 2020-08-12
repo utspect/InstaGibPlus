@@ -19,4 +19,5 @@ function Clear2() {
 defaultproperties
 {
      bHidden=True
+     RemoteRole=ROLE_None
 }

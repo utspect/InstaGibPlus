@@ -1,9 +1,9 @@
 class ST_ShockProjGib extends ST_ShockProj;
 
 function SuperExplosion()	// aka, combo.
-{	
+{
 	local bbPlayer bbP;
-	
+
 	bbP = bbPlayer(Owner);
 
 	/* if (bbP != None && bbP.bNewNet)
@@ -18,18 +18,18 @@ function SuperExplosion()	// aka, combo.
 	{
 		HurtRadius(Damage*3000, 250, MyDamageType, MomentumTransfer*2, Location );
 	} */
-	
+
 	Spawn(Class'ut_ComboRing',,'',Location, Instigator.ViewRotation);
 	PlayOwnedSound(ExploSound,,20.0,,2000,0.6);
-	
-	Destroy(); 
+
+	Destroy();
 }
 
 function SuperDuperExplosion()	// aka, combo.
-{	
+{
 	local bbPlayer bbP;
     local UT_SuperComboRing Ring;
-	
+
 	bbP = bbPlayer(Owner);
 
 	/* if (bbP != None && bbP.bNewNet)
@@ -47,8 +47,8 @@ function SuperDuperExplosion()	// aka, combo.
 
 	Ring = Spawn(Class'UT_SuperComboRing',,'',Location, Instigator.ViewRotation);
 	PlayOwnedSound(ExploSound,,20.0,,2000,0.6);
-	
-	Destroy(); 
+
+	Destroy();
 }
 
 simulated function NN_SuperExplosion(Pawn Pwner)	// aka, combo.
@@ -56,14 +56,10 @@ simulated function NN_SuperExplosion(Pawn Pwner)	// aka, combo.
 	local rotator Tater;
 	local bbPlayer bbP;
     local UT_ComboRing Ring;
-	
+
 	bbP = bbPlayer(Pwner);
-		
-	if (bbP != None)
-		Tater = bbP.zzViewRotation;
-	else
-		Tater = Pwner.ViewRotation;
-		
+	Tater = Pwner.ViewRotation;
+
 	/* if (bbP != None && bbP.bNewNet)
 	{
 		if (Level.NetMode == NM_Client)
@@ -82,19 +78,19 @@ simulated function NN_SuperExplosion(Pawn Pwner)	// aka, combo.
     {
         bbP.xxClientDemoFix(Ring, Class'UT_ComboRing', Location, Ring.Velocity, Ring.Acceleration, Tater);
     }
-	
+
 	Destroy();
 }
 
 simulated function Explode(vector HitLocation, vector HitNormal)
 {
 	local bbPlayer bbP;
-	
+
 	bbP = bbPlayer(Owner);
-	
+
 	if (bDeleteMe)
 		return;
-	
+
 	/* if (bbP != None && bbP.bNewNet)
 	{
 		if (Level.NetMode == NM_Client && !IsA('NN_ShockProjOwnerHidden'))
@@ -112,7 +108,7 @@ simulated function Explode(vector HitLocation, vector HitNormal)
 		Spawn(class'ut_RingExplosion3',,, HitLocation+HitNormal*8,rotator(HitNormal));
 	else
 		Spawn(class'ut_RingExplosion',,, HitLocation+HitNormal*8,rotator(Velocity));
-		
+
 	PlayOwnedSound(ImpactSound, SLOT_Misc, 0.5,,, 0.5+FRand());
 
 	Destroy();
