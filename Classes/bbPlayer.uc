@@ -1384,6 +1384,22 @@ function xxSetPendingWeapon(Weapon W)
 	PendingWeapon = W;
 }
 
+/**
+ * Splits a large DeltaTime into chunks reasonable enough for MoveAutonomous,
+ * so players dont warp through walls
+ */
+function SimMoveAutonomous(float DeltaTime) {
+	local int SimSteps;
+	local float SimTime;
+
+	SimSteps = Max(1, int(DeltaTime / AverageServerDeltaTime)); // handle (DeltaTime < AverageServerDeltaTime)
+	SimTime = DeltaTime / SimSteps;
+	while(SimSteps > 0) {
+		MoveAutonomous(SimTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+		SimSteps--;
+	}
+}
+
 function UndoExtrapolation() {
 	local vector OldLoc;
 	local Decoration Carried;
@@ -4033,9 +4049,6 @@ ignores SeePlayer, HearNoise, Bump;
 	event ServerTick(float DeltaTime) {
 		local float TimeSinceLastUpdate;
 		local float ProcessTime;
-		local float SimTime;
-		local int i;
-		local int SimSteps;
 
 		if (Level.Pauser == "" && !bWasPaused) {
 			TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
@@ -4044,11 +4057,17 @@ ignores SeePlayer, HearNoise, Bump;
 			if (class'UTPure'.default.bEnableJitterBounding &&
 				ProcessTime > AverageServerDeltaTime && bJustRespawned == false
 			) {
-				UndoExtrapolation();
-				MoveAutonomous(ProcessTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
-				CurrentTimeStamp += ProcessTime;
-				ServerTimeStamp += ProcessTime;
-				ExtrapolationDelta = class'UTPure'.default.MaxJitterTime;
+				if (class'UTPure'.default.bEnableServerExtrapolation) {
+					UndoExtrapolation();
+					MoveAutonomous(ProcessTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+					CurrentTimeStamp += ProcessTime;
+					ServerTimeStamp += ProcessTime;
+					ExtrapolationDelta = class'UTPure'.default.MaxJitterTime;
+				} else {
+					SimMoveAutonomous(TimeSinceLastUpdate);
+					CurrentTimeStamp += TimeSinceLastUpdate;
+					ServerTimeStamp += TimeSinceLastUpdate;
+				}
 			}
 
 			if (class'UTPure'.default.bEnableServerExtrapolation &&
@@ -4060,10 +4079,7 @@ ignores SeePlayer, HearNoise, Bump;
 				SavedVelocity = Velocity;
 				SavedAcceleration = Acceleration;
 
-				SimSteps = int(ExtrapolationDelta / AverageServerDeltaTime);
-				SimTime = ExtrapolationDelta / SimSteps;
-				for (i = 0; i < SimSteps; i += 1)
-					MoveAutonomous(SimTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+				SimMoveAutonomous(ExtrapolationDelta);
 			}
 			ExtrapolationDelta *= Exp(-2.0 * DeltaTime);
 		} else {
