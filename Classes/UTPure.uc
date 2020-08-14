@@ -52,6 +52,8 @@ var localized config int TeleRadius;
 var localized config int ThrowVelocity;	// How far a player can throw weapons
 var localized config bool bForceDemo;		// Forces clients to do demos.
 var localized config float MaxTradeTimeMargin;
+var localized config float KillCamDelay;
+var localized config float KillCamDuration;
 var string MapName;
 
 
@@ -727,6 +729,8 @@ function ModifyPlayer(Pawn Other)
 			zzP.zzbForceDemo = bForceDemo;
 			zzP.zzbGameStarted = True;
 			zzP.zzbUsingTranslocator = DeathMatchPlus(Level.Game).bUseTranslocator;
+			zzP.KillCamDelay = FMax(0.0, KillCamDelay);
+			zzP.KillCamDuration = KillCamDuration;
 		}
 	}
 	Super.ModifyPlayer(Other);
@@ -1403,4 +1407,6 @@ defaultproperties
 	MaxTradeTimeMargin=0.1
 	bEnableServerExtrapolation=True
 	bEnableJitterBounding=True
+	KillCamDelay=0.0
+	KillCamDuration=2.0
 }

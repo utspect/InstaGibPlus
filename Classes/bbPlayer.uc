@@ -258,6 +258,8 @@ var float AverageServerDeltaTime;
 var float TimeDead;
 var float RealTimeDead;
 var Pawn LastKiller;
+var float KillCamDelay;
+var float KillCamDuration;
 
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
@@ -278,7 +280,7 @@ replication
 	unreliable if ( bNetOwner && Role == ROLE_Authority )
 		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed, zzMaximumNetspeed,
 		zzWaitTime,zzAntiTimerList,zzAntiTimerListCount,zzAntiTimerListState,
-		zzStat, LastKiller;
+		zzStat, LastKiller, KillCamDelay, KillCamDuration;
 
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
@@ -4631,10 +4633,12 @@ state Dying
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 
-		if (Settings.bEnableKillCam && TimeDead < 2 && LastKiller != none) {
-			TargetRotation = rotator(LastKiller.Location - Location);
-			DeltaRotation = Normalize(TargetRotation - ViewRotation);
-			ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-3.0 * DeltaTime)));
+		if (Settings.bEnableKillCam && LastKiller != none) {
+			if (TimeDead > KillCamDelay && TimeDead < KillCamDelay + KillCamDuration) {
+				TargetRotation = rotator(LastKiller.Location - Location);
+				DeltaRotation = Normalize(TargetRotation - ViewRotation);
+				ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-3.0 * DeltaTime)));
+			}
 		}
 	}
 
@@ -4731,7 +4735,7 @@ state Dying
 		//fixme - try to pick view with killer visible
 		//fixme - also try varying starting pitch
 
-		if (Settings.bEnableKillCam == false) {
+		if (Settings.bEnableKillCam == false || KillCamDuration <= 0.0 || KillCamDelay > 0.0) {
 			ViewRotation.Pitch = 56000;
 
 			cameraLoc = Location;
