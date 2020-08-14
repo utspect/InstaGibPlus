@@ -1862,6 +1862,7 @@ function bool OtherPawnAtLocation(vector Loc) {
 	foreach RadiusActors(class'Pawn', P, 2*(CollisionRadius+CollisionHeight)) {
 		if (P == self) continue;
 		if (P.Health <= 0) continue;
+		if (P.IsA('Spectator')) continue;
 
 		RadiusDelta = vect(1,1,0) * (P.Location - Loc);
 		if (VSize(RadiusDelta) >= 2*CollisionRadius) continue;
