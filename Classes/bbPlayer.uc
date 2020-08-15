@@ -2760,7 +2760,6 @@ simulated function setClientNetspeed() {
 
 exec function enableDebugData(bool b) {
 	bDrawDebugData = b;
-	SaveConfig();
 	if (b) {
 		ClientMessage("Debug data: on");
 	} else {
@@ -2798,7 +2797,7 @@ exec function setForcedSkins(int maleSkin, int femaleSkin) {
 
 	Settings.desiredSkin = maleSkin - 1;
 	Settings.desiredSkinFemale = femaleSkin - 1;
-	SaveConfig();
+	Settings.SaveConfig();
 	ClientMessage("Forced enemy skin set!");
 }
 
@@ -2820,7 +2819,7 @@ exec function setForcedTeamSkins(int maleSkin, int femaleSkin) {
 
 	Settings.desiredTeamSkin = maleSkin - 1;
 	Settings.desiredTeamSkinFemale = femaleSkin - 1;
-	SaveConfig();
+	Settings.SaveConfig();
 	ClientMessage("Forced team skin set!");
 }
 
@@ -5607,6 +5606,7 @@ event PostRender( canvas zzCanvas )
 			{
 				ChangeName(zzDelayedName);
 				UpdateURL("Name", zzDelayedName, true);
+				Settings.SaveConfig();
 				SaveConfig();
 				zzDelayedName = "";
 			}
