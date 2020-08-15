@@ -1730,11 +1730,21 @@ function xxServerMove(
 	MaxPosError = 3.0;
 	if (bNewNet && DeltaTime > 0) {
 		PosErrFactor = FMin(DeltaTime, class'UTPure'.default.MaxJitterTime);
-		PosErr =
-			3 // constant part
-			+ PosErrFactor * VSize(ClientVel - Velocity) // velocity
-			+ FMin(1.0, FMax(0, GroundSpeed - VSize(ClientVelCalc*vect(1,1,0))) / (AccelRate * PosErrFactor)) // bound acceleration by how much we can still speed up
-				* 0.5 * AccelRate * PosErrFactor * PosErrFactor; // acceleration
+		if (ClientPhysics == PHYS_Walking) {
+			PosErr =
+				3 // constant part
+				+ PosErrFactor * VSize(ClientVel - Velocity) // velocity
+				+ FMin(1.0, FMax(0, GroundSpeed - VSize(ClientVelCalc*vect(1,1,0))) / (AccelRate * PosErrFactor)) // bound acceleration by how much we can still speed up
+					* 0.5 * AccelRate * PosErrFactor * PosErrFactor; // acceleration
+		} else if (ClientPhysics == PHYS_Swimming) {
+			PosErr =
+				3
+				+ PosErrFactor * VSize(ClientVel - Velocity)
+				+ FMin(1.0, FMax(0, WaterSpeed - VSize(ClientVelCalc)) / (AccelRate * PosErrFactor))
+					* 0.5 * AccelRate * PosErrFactor * PosErrFactor;
+		} else {
+			PosErr = 3;
+		}
 
 		MaxPosError = PosErr * PosErr;
 	}
