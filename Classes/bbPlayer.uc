@@ -294,7 +294,7 @@ replication
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
 		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam;
 
-	// Client->Server debug data
+	// Client->Server
 	reliable if ( Role == ROLE_AutonomousProxy )
 		bDrawDebugData, FakeCAPInterval;
 
@@ -307,12 +307,15 @@ replication
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( RemoteRole == ROLE_AutonomousProxy && !bDemoRecording )
 		xxCheatFound,xxClientSet,xxClientDoScreenshot,xxClientDoEndShot,xxClientConsole,
-		xxClientKeys, xxClientReadINT, xxClientReStart;
+		xxClientKeys, xxClientReadINT;
 
 	// Server->Client function.
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
 		xxCAP, xxCAPLevelBase, xxCAPWalking, xxCAPWalkingWalkingLevelBase, xxCAPWalkingWalking, xxFakeCAP,
 		xxClientResetPlayer, xxClientAddVelocity, ClientAddMomentum;
+
+	reliable if (RemoteRole == ROLE_AutonomousProxy)
+		xxClientReStart;
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
