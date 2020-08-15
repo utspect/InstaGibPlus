@@ -85,6 +85,7 @@ Note that these numbers only apply when editing INI settings
 15. Class: Male Soldier, Skin: Soldier, Face: Brock
 16. Class: Male Soldier, Skin: War Machine, Face: Matrix
 17. Class: Boss, Skin: Boss, Face: Xan
+
 ### DesiredSkin (int, default: 9)
 ### DesiredSkinFemale (int, default: 0)
 ### DesiredTeamSkin (int, default: 9)
@@ -114,34 +115,40 @@ If `True`, automatically start recording a demo when the game starts.
 ### DemoMask (string)
 Template for the name of the demo started because of [bAutoDemo](#bautodemo-bool-default-false).
 The following (case-insensitive) placeholders will be replaced with match-specific details:
-- `%E` -> Name of the map file
-- `%F` -> Title of the map
-- `%D` -> Day (two digits)
-- `%M` -> Month (two digits)
-- `%Y` -> Year
-- `%H` -> Hour
-- `%N` -> Minute
-- `%T` -> Combined Hour and Minute (two digits each)
-- `%C` -> Clan Tags (detected by determining common prefix of all players on a team, or "Unknown")
-- `%L` -> Name of the recording player
-- `%%` -> Replaced with a single %
+
+- `%E` ➜ Name of the map file
+- `%F` ➜ Title of the map
+- `%D` ➜ Day (two digits)
+- `%M` ➜ Month (two digits)
+- `%Y` ➜ Year
+- `%H` ➜ Hour
+- `%N` ➜ Minute
+- `%T` ➜ Combined Hour and Minute (two digits each)
+- `%C` ➜ Clan Tags (detected by determining common prefix of all players on a team, or "Unknown")
+- `%L` ➜ Name of the recording player
+- `%%` ➜ Replaced with a single %
+
 ### DemoPath (string)
-Prefix for name of the demo started because of [bAutoDemo](#bautodemo-bool-default-false).
+Prefix for name of the demo started because of [bAutoDemo](#bautodemo-bool-default-false) or [DemoStart](#demostart).
+
 ### DemoChar (string)
 Characters filesystems can not handle are replaced with this.
 
 ### bTeamInfo (bool, default: True)
 if Client wants extra team info.
+
 ### bShootDead (bool, default: False)
 If `True`, client shots can collide with carcasses from dead players.
 If `False`, client shots will not collide with carcasses.
 
 ### cShockBeam (int, default: 1)
 The style of beam to use for the SuperShockRifle.
+
 1. Default beam
 2. Team colored beam that looks like a projectile
 3. No beam at all
 4. Team colored, instant beam
+
 ### BeamScale (float, default: 0.45)
 Visuals for the beam are scaled with this factor
 ### BeamFadeCurve (float, default: 4.0)
@@ -233,22 +240,28 @@ The server will force clients to use at least this netspeed.
 ### bAdvancedTeamSay (bool, default: True)
 Whether to allow the use of advanced TeamSay or not.
 Advanced TeamSay allows showing game-information in your chat messages, by replacing the following with the corresponding information:
+
 - `%H` -> "<Health> Health"
 - `%h` -> "<Health>%"
 - `%W` -> "<WeaponName>" or "Empty hands"
 - `%A` -> "Shieldbelt and <Armor> Armor" or "<Armor> Armor"
 - `%a` -> "SB <Armor>A" or "<Armor>A"
 - `%P`, `%p` -> Current CTF objective
+
 ### ForceSettingsLevel (int, default: 2)
 When to check that default settings for all objects are correct client-side.
+
 - `0` and below -> never
 - `1` -> once after PostNetBeginPlay
 - `2` -> in addition, every time a new object is spawned
 - `3` and above -> in addition, once every 5000 server-ticks on average
+
 ### bNoLockdown (bool, default: True)
 Whether to have lockdown when players get hit by mini/pulse or not.
+
 - `True` -> don't allow lockdown
 - `False` -> allow lockdown
+
 ### bWarmup (bool, default: True)
 Whether to allow warmup in tournament games or not.
 ### bCoaches (bool, default: False)
@@ -257,9 +270,11 @@ Whether to allow spectators to coach teams in tournament games or not.
 Whether to automatically pause the game in tournament games or not.
 ### ForceModels (int, default: 1)
 Force models mode.
+
 - `1` -> Client controlled
 - `2` -> Forced on
 - anything else -> Disabled
+
 ### ImprovedHUD (int, default: 1)
 Enable various HUD improvements. Depends on PureClickBoard mutator (set [bUseClickboard](#buseclickboard-bool-default-true) to `True`, or add mutator through configuration).
 - `1` -> Show boots, Clock
