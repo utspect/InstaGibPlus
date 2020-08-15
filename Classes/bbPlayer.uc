@@ -307,7 +307,7 @@ replication
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( RemoteRole == ROLE_AutonomousProxy && !bDemoRecording )
 		xxCheatFound,xxClientSet,xxClientDoScreenshot,xxClientDoEndShot,xxClientConsole,
-		xxClientKeys, xxClientReadINT;
+		xxClientKeys, xxClientReadINT, xxClientReStart;
 
 	// Server->Client function.
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
@@ -316,7 +316,7 @@ replication
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
-		bIsFinishedLoading, xxServerCheater, xxServerMove,
+		bIsFinishedLoading, xxServerCheater, xxServerMove, xxServerMoveDead,
 		zzFalse, zzTrue, zzNetspeed, zzbBadConsole, zzbBadCanvas, zzbVRChanged,
 		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD;
 
@@ -691,6 +691,10 @@ function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 	}
 }
 
+function xxClientReStart(EPhysics phys) {
+	ClientReStart();
+	SetPhysics(phys);
+}
 
 event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject )
 {
@@ -1852,6 +1856,64 @@ function xxServerMove(
 		xxFakeCAP(TimeStamp);
 		LastCAPTime = ServerTimeStamp;
 	}
+}
+
+function xxServerMoveDead(
+	float TimeStamp,
+	float MoveDeltaTime
+){
+	local float ServerDeltaTime;
+	local float DeltaTime;
+
+	if (bDeleteMe)
+		return;
+
+	if (Role < ROLE_Authority) {
+		zzbLogoDone = True;
+		zzTrackFOV = 0;
+		zzbDemoPlayback = True;
+		return;
+	}
+
+	zzKickReady = Max(zzKickReady - 1,0);
+
+	if (TimeStamp > Level.TimeSeconds)
+		TimeStamp = Level.TimeSeconds;
+
+	if ( CurrentTimeStamp >= TimeStamp )
+		return;
+
+	ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
+	if (ServerDeltaTime > 0.9)
+		ServerDeltaTime = FMin(ServerDeltaTime, MoveDeltaTime);
+	DeltaTime = TimeStamp - CurrentTimeStamp;
+	if (DeltaTime > 0.9)
+		DeltaTime = FMin(DeltaTime, MoveDeltaTime);
+
+	ExtrapolationDelta += (ServerDeltaTime - DeltaTime);
+
+	if ( ServerTimeStamp > 0 ) {
+		// allow 1% error
+		TimeMargin += DeltaTime - 1.01 * ServerDeltaTime;
+		if ( TimeMargin > MaxTimeMargin ) {
+			// player is too far ahead
+			TimeMargin -= DeltaTime;
+			if ( TimeMargin < 0.5 )
+				MaxTimeMargin = Default.MaxTimeMargin;
+			else
+				MaxTimeMargin = 0.5;
+			DeltaTime = 0;
+			Log("["$Level.TimeSeconds$"]"@PlayerReplicationInfo.PlayerName@"MaxTimeMargin exceeded ("$TimeMargin$")", 'IGPlus');
+		}
+	}
+
+	CurrentTimeStamp = TimeStamp;
+	ServerTimeStamp = Level.TimeSeconds;
+
+	LastUpdateTime = ServerTimeStamp;
+	clientLastUpdateTime = LastUpdateTime;
+
+	Acceleration = vect(0,0,0);
 }
 
 function bool OtherPawnAtLocation(vector Loc) {
@@ -4602,7 +4664,7 @@ state Dying
 			if ( Mesh != None )
 				PlayWaiting();
 
-			ClientReStart();
+			xxClientReStart(Physics);
 
 			ChangedWeapon();
 			zzSpawnedTime = Level.TimeSeconds;
@@ -4690,6 +4752,12 @@ state Dying
 		}
 		ViewShake(DeltaTime);
 		ViewFlash(DeltaTime);
+
+		ClientUpdateTime -= DeltaTime;
+		if (ClientUpdateTime < 0) {
+			ClientUpdateTime += TimeBetweenNetUpdates;
+			xxServerMoveDead(Level.TimeSeconds, DeltaTime);
+		}
 	}
 
 	function xxServerMove
@@ -4754,6 +4822,7 @@ state Dying
 		LastKillTime = 0;
 		bJustRespawned = true;
 		LastKiller = none;
+		ClientUpdateTime = 0;
 	}
 
 }
