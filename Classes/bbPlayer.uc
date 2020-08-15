@@ -646,6 +646,7 @@ event Possess()
 		}
 	}
 	Super.Possess();
+	SetPhysics(PHYS_None);
 }
 
 function Timer() {
