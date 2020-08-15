@@ -1565,10 +1565,8 @@ function xxServerMove(
 	local Decoration Carried;
 	local vector OldLoc;
 	local vector ClientLocAbs;
-	local vector ClientVelCalc;
 	local bool bCanTraceNewLoc;
 	local bool bMovedToNewLoc;
-	local float PosErrFactor;
 	local float PosErr;
 	local vector InAccel;
 	local vector ClientLoc;
@@ -1679,12 +1677,6 @@ function xxServerMove(
 	if (ClientVel.Z < 0)
 		zzLastFallVelZ = ClientVel.Z;
 
-	// Maximum of old and new velocity
-	// Ensures we dont force updates when slowing down or speeding up
-	ClientVelCalc.X = FMax(ClientVel.X, Velocity.X);
-	ClientVelCalc.Y = FMax(ClientVel.Y, Velocity.Y);
-	ClientVelCalc.Z = FMax(ClientVel.Z, Velocity.Z);
-
 	// Predict new position
 	if ((Level.Pauser == "") && bClientPaused == false && (DeltaTime > 0)) {
 		UndoExtrapolation();
@@ -1729,23 +1721,7 @@ function xxServerMove(
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxPosError = 3.0;
 	if (bNewNet && DeltaTime > 0) {
-		PosErrFactor = FMin(DeltaTime, class'UTPure'.default.MaxJitterTime);
-		if (ClientPhysics == PHYS_Walking) {
-			PosErr =
-				3 // constant part
-				+ PosErrFactor * VSize(ClientVel - Velocity) // velocity
-				+ FMin(1.0, FMax(0, GroundSpeed - VSize(ClientVelCalc*vect(1,1,0))) / (AccelRate * PosErrFactor)) // bound acceleration by how much we can still speed up
-					* 0.5 * AccelRate * PosErrFactor * PosErrFactor; // acceleration
-		} else if (ClientPhysics == PHYS_Swimming) {
-			PosErr =
-				3
-				+ PosErrFactor * VSize(ClientVel - Velocity)
-				+ FMin(1.0, FMax(0, WaterSpeed - VSize(ClientVelCalc)) / (AccelRate * PosErrFactor))
-					* 0.5 * AccelRate * PosErrFactor * PosErrFactor;
-		} else {
-			PosErr = 3;
-		}
-
+		PosErr = CalculatePosError(DeltaTime, ClientPhysics, ClientVel);
 		MaxPosError = PosErr * PosErr;
 	}
 
@@ -1924,6 +1900,42 @@ function xxServerMoveDead(
 	clientLastUpdateTime = LastUpdateTime;
 
 	Acceleration = vect(0,0,0);
+}
+
+function float CalculatePosError(float DeltaTime, EPhysics Phys, vector ClientVel) {
+	local vector ClientVelCalc;
+	local float PosErrFactor;
+	// Maximum of old and new velocity
+	// Ensures we dont force updates when slowing down or speeding up
+	ClientVelCalc.X = FMax(ClientVel.X, Velocity.X);
+	ClientVelCalc.Y = FMax(ClientVel.Y, Velocity.Y);
+	ClientVelCalc.Z = FMax(ClientVel.Z, Velocity.Z);
+
+	PosErrFactor = FMin(DeltaTime, class'UTPure'.default.MaxJitterTime);
+	switch (Phys) {
+	case PHYS_Walking:
+		return
+			3 // constant part
+			+ PosErrFactor * VSize(ClientVel - Velocity) // velocity
+			// bound acceleration by how much we can still speed up
+			+ FMin(1.0, FMax(0, GroundSpeed - VSize(ClientVelCalc*vect(1,1,0))) / (AccelRate * PosErrFactor))
+				// acceleration
+				* 0.5 * AccelRate * PosErrFactor * PosErrFactor;
+	case PHYS_Falling:
+		return
+			3
+			+ PosErrFactor * VSize(ClientVel - Velocity)
+			+ FMin(1.0, FMax(0, AirControl*GroundSpeed - VSize(ClientVelCalc*vect(1,1,0))) / (AccelRate * AirControl * PosErrFactor))
+				* 0.5 * AccelRate * AirControl * PosErrFactor * PosErrFactor;
+	case PHYS_Swimming:
+		return
+			3
+			+ PosErrFactor * VSize(ClientVel - Velocity)
+			+ FMin(1.0, FMax(0, WaterSpeed - VSize(ClientVelCalc)) / (AccelRate * PosErrFactor))
+				* 0.5 * AccelRate * PosErrFactor * PosErrFactor;
+	default:
+		return 3;
+	}
 }
 
 function bool OtherPawnAtLocation(vector Loc) {
