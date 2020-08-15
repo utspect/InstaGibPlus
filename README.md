@@ -11,9 +11,9 @@ Different Shock beam types.<br>
 Extract the zipped files to your system folder.<br>
 Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or Deepu's Ultimate NewNet.<br>
 Add the following lines to your server's <b>UnrealTournament.ini</b> under <b>[Engine.GameEngine]</b>:<br><br>
-<b>ServerPackages=InstaGibPlus4</b><br>
-<b>ServerActors=InstaGibPlus4.NewNetServer</b><br>
-<b>ServerActors=InstaGibPlus4.PureStats</b><br>
+<b>ServerPackages=InstaGibPlus5</b><br>
+<b>ServerActors=InstaGibPlus5.NewNetServer</b><br>
+<b>ServerActors=InstaGibPlus5.PureStats</b><br>
 
 <b>It is highly recommended to set your server's tickrate to 100.</b>
 
