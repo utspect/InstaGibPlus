@@ -4860,6 +4860,7 @@ state CountdownDying extends Dying
 		Self.bBehindView = false;
 		ServerReStartPlayer();
 		bJustRespawned = true;
+		ClientUpdateTime = 0;
 	}
 
 }
