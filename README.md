@@ -307,3 +307,104 @@ Maximum time after death (on server) that players can still fire their weapons.
 If enabled the server will extrapolate client movement when the client's movement updates are too far behind the server's timepoint.
 ### bEnableJitterBounding (bool, default: True)
 If enabled the server will generate movement updates for clients that havent sent updates in a while.
+
+# Commands
+The following commands are additions by IG+ to the standard set of commands.
+
+Types for parameters:
+
+* bool: Binary value, `True`/`1` or `False`/`0`
+* int: Whole number, e.g. `6`, `78`
+* float: Real number, e.g. `1.35`, accurate up to 7 significant digits
+* string: String of characters, e.g. `"Hello, World!"`
+
+Parameters marked `optional` do not have to be supplied.
+
+## EnableDebugData
+**Parameters: (bool b)**  
+
+Displays a variety of useful debugging information on screen.
+
+### Examples
+    EnableDebugData 1
+    EnableDebugData True
+    EnableDebugData 0
+    EnableDebugData False
+
+## EnableHitSounds
+**Parameters: (bool b)**
+
+Enables/Disables client-side hitsounds.
+## SetHitSound
+**Parameters: (int hs)**
+
+Switches between the 16 slots available for hitsounds (see [sHitSound](#shitsound-string16)). `hs` must be a value between `0` and `15`.
+
+## ForceModels
+**Parameters: (bool b)**
+
+Enables/Disables forced models/skins for all players.
+
+## ListSkins
+Prints a list of models/skins you can force enemies and teammates to.
+
+## SetForcedSkins
+**Parameters: (int maleSkin, int femaleSkin)**
+
+Sets the forced models/skins for opponents who are using male or female models respectively. Valid values for `maleSkin` and `femaleSkin` range from `1` to `18`. The [ListSkins](#listskins) command prints how those numbers map to models and skins.
+
+### Examples
+Forcing all opponents to Xan:
+
+    SetForcedSkins 18 18
+
+Forcing opponents to bright skins:
+
+    SetForcedSkins 16 7
+## SetForcedTeamSkins
+**Parameters: (int maleSkin, int femaleSkin)**
+
+Sets the forced models/skins for teammates who are using male or female models respectively. Valid values for `maleSkin` and `femaleSkin` range from `1` to `18`. The [ListSkins](#listskins) command prints how those numbers map to models and skins.
+## SetShockBeam
+**Parameters: (int sb)**
+
+Changes the style of beam fired by the SuperShockRifle. See [cShockBeam setting](#cshockbeam-int-default-1).
+## SetBeamScale
+**Parameters: (float bs)**
+## MyIgSettings
+## SetNetUpdateRate
+**Parameters: (float NewVal)**
+
+Changes how often your client will send a movement update to the server. See [DesiredNetUpdateRate setting](#desirednetupdaterate-float-default-100).
+## SetMouseSmoothing
+**Parameters: (bool b)**
+## SetKillCamEnabled
+**Parameters: (bool b)**
+## DropFlag
+## PureLogo
+Shows IG+ version in the bottom left corner of the screen.
+## HitSounds
+**Parameters: (int b)**
+## TeamHitSounds
+**Parameters: (int b)**
+## DisableForceHitSounds
+## MyHitsounds
+## TeamInfo
+**Parameters: (bool b)**
+## SetMinDodgeClickTime
+**Parameters: (float f)**
+## mdct
+**Parameters: (float f)**
+## EndShot
+**Parameters: (optional bool b)**
+## Hold
+Resets the AutoPause countdown. Can only be used if the AutoPause was triggered by an opponent leaving or switching sides.
+## Go
+Resumes the game immediately. Can only be used by the team that lost at least one of its players.
+## AutoDemo
+**Parameters: (bool b)**
+## ShootDead
+## SetDemoMask
+**Parameters: (optional string Mask)**
+## DemoStart
+Starts recording a demo with the [DemoPath](#demopath-string) and [DemoMask](#demomask-string) that are currently configured.
