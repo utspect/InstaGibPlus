@@ -247,6 +247,9 @@ const NumLastAddVelocityTimeStamps=4;
 var float LastAddVelocityTimeStamp[4];
 var int LastAddVelocityIndex;
 
+var bool bForceZSmoothing;
+var EPhysics OldPhysics;
+var float OldZ;
 var float OldShakeVert;
 var float OldBaseEyeHeight;
 var float EyeHeightOffset;
@@ -850,17 +853,27 @@ function rotator GR()
 event UpdateEyeHeight(float DeltaTime)
 {
 	local float smooth, bound;
-	local vector Delta;
+	local float DeltaZ;
 
-	// smooth up/down stairs
-	if ((Physics == PHYS_Walking) && !bJustLanded) {
-		Delta = Location - OldLocation;
+	// smooth up/down stairs, landing, dont smooth ramps
+	if ((Physics == PHYS_Walking && bJustLanded == false) ||
+		// Smooth out stepping up onto unwalkable ramps
+		(OldPhysics == PHYS_Walking && Physics == PHYS_Falling)
+	) {
+		DeltaZ = Location.Z - OldZ;
 		// stair detection heuristic
-		if (Abs(Delta.Z) > DeltaTime * GroundSpeed)
-			EyeHeightOffset += FClamp(Delta.Z, -MaxStepHeight, MaxStepHeight);
-	} else {
-		bJustLanded = false;
+		if (Abs(DeltaZ) > DeltaTime * GroundSpeed || bForceZSmoothing)
+			EyeHeightOffset += FClamp(DeltaZ, -MaxStepHeight, MaxStepHeight);
+		bForceZSmoothing = false;
+	} else if (bJustLanded) {
+		// Always smooth out landing, because you apparently are not considered
+		// to have landed until you penetrate the ground by at least 2uu.
+		bForceZSmoothing = true;
 	}
+
+	bJustLanded = false;
+	OldPhysics = Physics;
+	OldZ = Location.Z;
 
 	EyeHeightOffset += ShakeVert - OldShakeVert;
 	OldShakeVert = ShakeVert;
@@ -868,7 +881,10 @@ event UpdateEyeHeight(float DeltaTime)
 	EyeHeightOffset += BaseEyeHeight - OldBaseEyeHeight;
 	OldBaseEyeHeight = BaseEyeHeight;
 
-	EyeHeightOffset = EyeHeightOffset * Exp(-10.0 * DeltaTime);
+	if (bJustRespawned) EyeHeightOffset = 0;
+	bJustRespawned = false;
+
+	EyeHeightOffset = EyeHeightOffset * Exp(-9.0 * DeltaTime);
 	EyeHeight = ShakeVert + BaseEyeHeight - EyeHeightOffset;
 
 	// teleporters affect your FOV, so adjust it back down
@@ -890,6 +906,17 @@ event UpdateEyeHeight(float DeltaTime)
 	}
 
 	xxCheckFOV();
+}
+
+event Landed(vector HitNormal)
+{
+	//Note - physics changes type to PHYS_Walking by default for landed pawns
+	if ( bUpdating )
+		return;
+	PlayLanded(Velocity.Z);
+	LandBob = FMin(50, Bob * Velocity.Z);
+	TakeFallingDamage();
+	bJustLanded = true;
 }
 
 function xxCheckFOV()
@@ -4007,6 +4034,18 @@ state CheatFlying
 state PlayerWalking
 {
 ignores SeePlayer, HearNoise, Bump;
+	event Landed(vector HitNormal)
+	{
+		Global.Landed(HitNormal);
+		if (DodgeDir == DODGE_Active)
+		{
+			DodgeDir = DODGE_Done;
+			DodgeClickTimer = 0.0;
+			Velocity *= vect(1,1,0) * 0.8;
+		}
+		else
+			DodgeDir = DODGE_None;
+	}
 
 	simulated function Dodge(eDodgeDir DodgeMove)
 	{
@@ -5869,6 +5908,8 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 
 	zzC.SetPos(zzx, zzY + 500);
 	zzC.DrawText("ExtrapolationDelta:"@ExtrapolationDelta);
+	zzC.SetPos(zzx, zzY + 520);
+	zzC.DrawText("EyeHeight:"@EyeHeight);
 
 	zzC.Style = ERenderStyle.STY_Normal;
 }
