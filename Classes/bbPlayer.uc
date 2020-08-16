@@ -261,6 +261,7 @@ var float AverageServerDeltaTime;
 var float TimeDead;
 var float RealTimeDead;
 var Pawn LastKiller;
+var rotator KillCamTargetRotation;
 var float KillCamDelay;
 var float KillCamDuration;
 
@@ -4750,7 +4751,7 @@ state Dying
 
 	event PlayerTick( float DeltaTime )
 	{
-		local rotator TargetRotation, DeltaRotation;
+		local rotator DeltaRotation;
 
 		RealTimeDead += (DeltaTime / Level.TimeDilation); // counting real time, undo dilation
 		if (Level.Pauser == "")
@@ -4761,11 +4762,11 @@ state Dying
 		Super.PlayerTick(DeltaTime);
 
 		if ((Settings.bEnableKillCam && LastKiller != none) &&
-			(TimeDead > KillCamDelay && TimeDead < KillCamDelay + KillCamDuration) &&
-			FastTrace(LastKiller.Location, Location)
+			(TimeDead > KillCamDelay && TimeDead < KillCamDelay + KillCamDuration)
 		) {
-			TargetRotation = rotator(LastKiller.Location - Location);
-			DeltaRotation = Normalize(TargetRotation - ViewRotation);
+			if (FastTrace(LastKiller.Location, Location))
+				KillCamTargetRotation = rotator(LastKiller.Location - Location);
+			DeltaRotation = Normalize(KillCamTargetRotation - ViewRotation);
 			ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-3.0 * DeltaTime)));
 		}
 	}
