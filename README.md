@@ -210,14 +210,14 @@ Whether to automatically add an announcer for multi-kills, or not.
 Big switch to enable/disable IG+.
 ### Advertise (int, default: 1)
 Controls whether to add a tag to the server's name.
-- `1` - Add tag at the beginning of the server's name
-- `2` - Add tag at the end of the server's name
+- `1` ➜ Add tag at the beginning of the server's name
+- `2` ➜ Add tag at the end of the server's name
 - anything else - Dont advertise
 ### AdvertiseMsg (int, default: 1)
 Controls the tag to add to the server's name
-- `0` - `[CSHP]`
-- `1` - `[IG+]`
-- anything else - `[PWND]`
+- `0` ➜ `[CSHP]`
+- `1` ➜ `[IG+]`
+- anything else ➜ `[PWND]`
 ### bAllowCenterView (bool, default: False)
 Whether to allow use of the bSnapLevel button or not.
 ### CenterViewDelay (float, default: 1)
@@ -226,9 +226,9 @@ If bAllowCenterView is True, controls how much time has to pass between uses of 
 Whether to allow 3rd Person perspective or not.
 ### TrackFOV (int, default: 0)
 Controls how strictly the FOV is checked.
-- `1` - very strict, no zooming with sniper
-- `2` - looser, zooming with sniper possible
-- anything else - no restrictions
+- `1` ➜ very strict, no zooming with sniper
+- `2` ➜ looser, zooming with sniper possible
+- anything else ➜ no restrictions
 ### bAllowMultiWeapon (bool, default: False)
 Whether to allow the multi-weapon bug to be (ab)used
 ### bFastTeams (bool, default: True)
@@ -241,26 +241,26 @@ The server will force clients to use at least this netspeed.
 Whether to allow the use of advanced TeamSay or not.
 Advanced TeamSay allows showing game-information in your chat messages, by replacing the following with the corresponding information:
 
-- `%H` -> "<Health> Health"
-- `%h` -> "<Health>%"
-- `%W` -> "<WeaponName>" or "Empty hands"
-- `%A` -> "Shieldbelt and <Armor> Armor" or "<Armor> Armor"
-- `%a` -> "SB <Armor>A" or "<Armor>A"
-- `%P`, `%p` -> Current CTF objective
+- `%H` ➜ "<Health> Health"
+- `%h` ➜ "<Health>%"
+- `%W` ➜ "<WeaponName>" or "Empty hands"
+- `%A` ➜ "Shieldbelt and <Armor> Armor" or "<Armor> Armor"
+- `%a` ➜ "SB <Armor>A" or "<Armor>A"
+- `%P`, `%p` ➜ Current CTF objective
 
 ### ForceSettingsLevel (int, default: 2)
 When to check that default settings for all objects are correct client-side.
 
-- `0` and below -> never
-- `1` -> once after PostNetBeginPlay
-- `2` -> in addition, every time a new object is spawned
-- `3` and above -> in addition, once every 5000 server-ticks on average
+- `0` and below ➜ never
+- `1` ➜ once after PostNetBeginPlay
+- `2` ➜ in addition, every time a new object is spawned
+- `3` and above ➜ in addition, once every 5000 server-ticks on average
 
 ### bNoLockdown (bool, default: True)
 Whether to have lockdown when players get hit by mini/pulse or not.
 
-- `True` -> don't allow lockdown
-- `False` -> allow lockdown
+- `True` ➜ don't allow lockdown
+- `False` ➜ allow lockdown
 
 ### bWarmup (bool, default: True)
 Whether to allow warmup in tournament games or not.
@@ -271,15 +271,15 @@ Whether to automatically pause the game in tournament games or not.
 ### ForceModels (int, default: 1)
 Force models mode.
 
-- `1` -> Client controlled
-- `2` -> Forced on
-- anything else -> Disabled
+- `1` ➜ Client controlled
+- `2` ➜ Forced on
+- anything else ➜ Disabled
 
 ### ImprovedHUD (int, default: 1)
 Enable various HUD improvements. Depends on PureClickBoard mutator (set [bUseClickboard](#buseclickboard-bool-default-true) to `True`, or add mutator through configuration).
-- `1` -> Show boots, Clock
-- `2` -> In addition, show enhanced team info
-- anything else -> dont show anything
+- `1` ➜ Show boots, Clock
+- `2` ➜ In addition, show enhanced team info
+- anything else ➜ dont show anything
 ### bDelayedPickupSpawn (bool, default: False)
 Enable or disable delayed first pickup spawn.
 ### bTellSpectators (bool, default: False)
