@@ -4760,12 +4760,13 @@ state Dying
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 
-		if (Settings.bEnableKillCam && LastKiller != none) {
-			if (TimeDead > KillCamDelay && TimeDead < KillCamDelay + KillCamDuration) {
-				TargetRotation = rotator(LastKiller.Location - Location);
-				DeltaRotation = Normalize(TargetRotation - ViewRotation);
-				ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-3.0 * DeltaTime)));
-			}
+		if ((Settings.bEnableKillCam && LastKiller != none) &&
+			(TimeDead > KillCamDelay && TimeDead < KillCamDelay + KillCamDuration) &&
+			FastTrace(LastKiller.Location, Location)
+		) {
+			TargetRotation = rotator(LastKiller.Location - Location);
+			DeltaRotation = Normalize(TargetRotation - ViewRotation);
+			ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-3.0 * DeltaTime)));
 		}
 	}
 
