@@ -61,7 +61,10 @@ As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickra
 
 ## Client Settings
 
-### bForceModels (bool, default: False)
+### bForceModels
+**Type: bool**  
+**Default: False**  
+
 If set to `True`, forces all other players to use fixed models and skins (see DesiredSkin settings).
 If set to `False`, all players will show as their chosen model and skin.
 #### List of Skins
@@ -86,34 +89,72 @@ Note that these numbers only apply when editing INI settings
 16. Class: Male Soldier, Skin: War Machine, Face: Matrix
 17. Class: Boss, Skin: Boss, Face: Xan
 
-### DesiredSkin (int, default: 9)
-### DesiredSkinFemale (int, default: 0)
-### DesiredTeamSkin (int, default: 9)
-### DesiredTeamSkinFemale (int, default: 0)
+### DesiredSkin
+**Type: int**  
+**Default: 9**  
 
-### HitSound (int, default: 2)
+### DesiredSkinFemale
+**Type: int**  
+**Default: 0**  
+
+### DesiredTeamSkin
+**Type: int**  
+**Default: 9**  
+
+### DesiredTeamSkinFemale
+**Type: int**  
+**Default: 0**  
+
+
+### HitSound
+**Type: int**  
+**Default: 2**  
+
 Plays the specified sound when the server detects you dealing damage to enemies.
-### TeamHitSound (int, default: 3)
+### TeamHitSound
+**Type: int**  
+**Default: 3**  
+
 Plays the specified sound when the server detects you dealing damage to teammates.
-### bDisableForceHitSounds (bool, default: False)
+### bDisableForceHitSounds
+**Type: bool**  
+**Default: False**  
+
 If `False`, server can override HitSound and TeamHitSound.
 If `True`, server can not override HitSound and TeamHitSound.
 
-### bEnableHitSounds (bool, default: True)
+### bEnableHitSounds
+**Type: bool**  
+**Default: True**  
+
 If `True`, plays a sound when a weapon you fire hits an enemy on your client.
 If `False`, no sound is played.
 ### selectedHitSound (int, default: 0)
+**Type: int**  
+**Default: 0**  
+
 Index into sHitSound array for the sound to play.
-### sHitSound (string\[16\])
+### sHitSound
+**Type: string\[16\]**  
+
 Specifies sounds that can be played.
 
-### bDoEndShot (bool, default: False)
+### bDoEndShot
+**Type: bool**  
+**Default: False**  
+
 If `True`, automatically create a screenshot at the end of a match.
 If `False`, no screenshot is automatically created.
-### bAutoDemo (bool, default: False)
+### bAutoDemo
+**Type: bool**  
+**Default: False**  
+
 If `True`, automatically start recording a demo when the game starts.
-### DemoMask (string)
-Template for the name of the demo started because of [bAutoDemo](#bautodemo-bool-default-false).
+### DemoMask
+**Type: string**  
+**Default: %l\_\[%y\_%m\_%d\_%t\]\_\[%c\]\_%e**  
+
+Template for the name of the demo started because of [bAutoDemo](#bautodemo).
 The following (case-insensitive) placeholders will be replaced with match-specific details:
 
 - `%E` ➜ Name of the map file
@@ -128,20 +169,35 @@ The following (case-insensitive) placeholders will be replaced with match-specif
 - `%L` ➜ Name of the recording player
 - `%%` ➜ Replaced with a single %
 
-### DemoPath (string)
-Prefix for name of the demo started because of [bAutoDemo](#bautodemo-bool-default-false) or [DemoStart](#demostart).
+### DemoPath
+**Type: string**  
+**Default: *empty***  
 
-### DemoChar (string)
+Prefix for name of the demo started because of [bAutoDemo](#bautodemo) or [DemoStart](#demostart).
+
+### DemoChar
+**Type: string**  
+**Default: *empty***  
+
 Characters filesystems can not handle are replaced with this.
 
-### bTeamInfo (bool, default: True)
+### bTeamInfo
+**Type: bool**  
+**Default: True**  
+
 if Client wants extra team info.
 
-### bShootDead (bool, default: False)
+### bShootDead
+**Type: bool**  
+**Default: False**  
+
 If `True`, client shots can collide with carcasses from dead players.
 If `False`, client shots will not collide with carcasses.
 
-### cShockBeam (int, default: 1)
+### cShockBeam
+**Type: int**  
+**Default: 1**  
+
 The style of beam to use for the SuperShockRifle.
 
 1. Default beam
@@ -149,95 +205,191 @@ The style of beam to use for the SuperShockRifle.
 3. No beam at all
 4. Team colored, instant beam
 
-### BeamScale (float, default: 0.45)
+### BeamScale
+**Type: float**  
+**Default: 0.45**  
+
 Visuals for the beam are scaled with this factor
-### BeamFadeCurve (float, default: 4.0)
+### BeamFadeCurve
+**Type: float**  
+**Default: 4.0**  
+
 Exponent of the polynomial curve the beam's visuals decay with
-### BeamDuration (float, default: 0.75)
+### BeamDuration
+**Type: float**  
+**Default: 0.75**  
+**Unit: s**  
+
 The time the beam's visuals decay over.
-### BeamOriginMode (int, default: 0)
+### BeamOriginMode
+**Type: int**  
+**Default: 0**  
+
 0. Originates where the player was when the shot was fired
 1. Originates at an offset from where the player is on your screen.
 
-### bNoOwnFootsteps (bool, default: False)
+### bNoOwnFootsteps
+**Type: bool**  
+**Default: False**  
+
 If `True`, footstep sounds are not played for your own footsteps.
 If `False`, your own footstep sounds will be played.
-### DesiredNetUpdateRate (float, default: 100)
-How often you want your client to update the server on your movement. The server places upper and lower limits on this (see [MinNetUpdateRate](#minnetupdaterate-float-default-60), [MaxNetUpdateRate](#maxnetupdaterate-float-default-250)), and the actual update rate will never exceed your netspeed divided by 100.
+### DesiredNetUpdateRate
+**Type: float**  
+**Default: 100**  
+**Unit: Hz**  
+
+How often you want your client to update the server on your movement. The server places upper and lower limits on this (see [MinNetUpdateRate](#minnetupdaterate), [MaxNetUpdateRate](#maxnetupdaterate)), and the actual update rate will never exceed your netspeed divided by 100.
 
 This is here to provide players with constrained upload bandwidth a way to reduce the required upload bandwidth at the expense of greater susceptibility to packet loss, and glitches arising from it.
 
 Players with high upload bandwidth can set this to a high value to lessen the impact of packet loss.
-### FakeCAPInterval (float, defaul: 0.1)
-Tells the server to send an acknowledgement of your movement updates (see [DesiredNetUpdateRate](#desirednetupdaterate-float-default-100)) after this amount of time has passed since the last acknowledgement. This saves download bandwidth and lessens server load.
+### FakeCAPInterval
+**Type: float**  
+**Default: 0.1**  
+**Unit: s**  
+
+Tells the server to send an acknowledgement of your movement updates (see [DesiredNetUpdateRate](#desirednetupdaterate)) after this amount of time has passed since the last acknowledgement. This saves download bandwidth and lessens server load.
 
 Smaller values (closer to 0) result in acknowledgements being sent more frequently, negative values send an acknowledgement for every movement update.
 Higher values result in less frequent acknowledgements which can result in degraded client performance (FPS), or even crashes.
-### bNoSmoothing (bool, default: False)
+### bNoSmoothing
+**Type: bool**  
+**Default: False**  
+
 The default mouse input smoothing algorithm always smears input over at least two frames, half the input being applied on one frame, the other half on the next frame. If set to `True`, the game will always apply all input on the current frame. If set to `False`, the default algorithm will be used.
 
 This is a backport from UT99 client version 469, where the equivalent setting is called bNoMouseSmoothing.
-### bLogClientMessages (bool, default: True)
+### bLogClientMessages
+**Type: bool**  
+**Default: True**  
+
 Causes all ClientMessages to be logged, if set to `True`
-### bEnableKillCam (bool, default: False)
+### bEnableKillCam
+**Type: bool**  
+**Default: False**  
+
 KillCam follows the player that killed you for two seconds.
-### MinDodgeClickTime (float, default: 0.0)
-Minimum time between two presses of the same direction for them to count as a dodge.
-### bUseOldMouseInput (bool, default: False)
+### MinDodgeClickTime
+**Type: float**  
+**Default: 0.0**  
+**Unit: s**  
+
+Minimum time between two rising edges of movement in the same direction for them to count as a dodge.
+### bUseOldMouseInput
+**Type: bool**  
+**Default: False**  
+
 The old mouse input processing algorithm discards the fractional part before turning the view according to the mouse input. The new algorithm preserves fractional rotation across frames.
 
 A players view is defined by yaw and pitch, which are quantized to 65536 degrees (a circle has 65536 degrees instead of 360). If a players mouse input sensitivity is set such that the players mouse input can result in some fraction of a degree, that fractional part must be discarded before the view is changed. The new algorithm preserves that fractional part and adds it to the next mouse input.
 
 If `True`, two successive inputs of 1.5° change in yaw result in a 2° turn (int(1.5) + int(1.5) = 1 + 1 = 2).
 If `False`, two successive inputs of 1.5° change in yaw result in a 3° turn.
-### SmoothVRController (PIDControllerSettings, default: (p=0.09,i=0.05,d=0.00))
+### SmoothVRController
+**Type: PIDControllerSettings**  
+**Default: (p=0.09,i=0.05,d=0.00)**  
+
 This holds the PID settings for the controller thats smoothing the view of players youre spectating as a spectator (see [PID controller](https://en.wikipedia.org/wiki/PID_controller)).
 
 ## Server Settings
 Server settings can be found inside InstaGibPlus.ini.
 
-### HeadshotDamage (float, default: 100)
+### HeadshotDamage
+**Type: float**  
+**Default: 100**  
+
 Controls how much damage a headshot with the sniper rifle deals.
-### SniperSpeed (float, default: 1)
+### SniperSpeed
+**Type: float**  
+**Default: 1**  
+
 Controls sniper rifle reload time, higher values lead to less time between shots.
-### SniperDamagePri (float, default: 60)
+### SniperDamagePri
+**Type: float**  
+**Default: 60**  
+
 Controls damage of body hits by sniper rifle.
-### SetPendingWeapon (bool, default: False)
+### SetPendingWeapon
+**Type: bool**  
+**Default: False**  
+
 ???
-### NNAnnouncer (bool, default: False)
+### NNAnnouncer
+**Type: bool**  
+**Default: False**  
+
 Whether to automatically add an announcer for multi-kills, or not.
-### bUTPureEnabled (bool, default: True)
+### bUTPureEnabled
+**Type: bool**  
+**Default: True**  
+
 Big switch to enable/disable IG+.
-### Advertise (int, default: 1)
+### Advertise
+**Type: int**  
+**Default: 1**  
+
 Controls whether to add a tag to the server's name.
 - `1` ➜ Add tag at the beginning of the server's name
 - `2` ➜ Add tag at the end of the server's name
 - anything else - Dont advertise
-### AdvertiseMsg (int, default: 1)
+### AdvertiseMsg
+**Type: int**  
+**Default: 1**  
+
 Controls the tag to add to the server's name
 - `0` ➜ `[CSHP]`
 - `1` ➜ `[IG+]`
 - anything else ➜ `[PWND]`
-### bAllowCenterView (bool, default: False)
+### bAllowCenterView
+**Type: bool**  
+**Default: False**  
+
 Whether to allow use of the bSnapLevel button or not.
-### CenterViewDelay (float, default: 1)
+### CenterViewDelay
+**Type: float**  
+**Default: 1**  
+**Unit: s**  
+
 If bAllowCenterView is True, controls how much time has to pass between uses of bSnapLevel.
-### bAllowBehindView (bool, default: False)
+### bAllowBehindView
+**Type: bool**  
+**Default: False**  
+
 Whether to allow 3rd Person perspective or not.
-### TrackFOV (int, default: 0)
+### TrackFOV
+**Type: int**  
+**Default: 0**  
+
 Controls how strictly the FOV is checked.
 - `1` ➜ very strict, no zooming with sniper
 - `2` ➜ looser, zooming with sniper possible
 - anything else ➜ no restrictions
-### bAllowMultiWeapon (bool, default: False)
+### bAllowMultiWeapon
+**Type: bool**  
+**Default: False**  
+
 Whether to allow the multi-weapon bug to be (ab)used
-### bFastTeams (bool, default: True)
+### bFastTeams
+**Type: bool**  
+**Default: True**  
+
 Whether to allow the use of `mutate FixTeams`, `mutate NextTeam`, and `mutate ChangeTeam <Team>` or not. `True` enables the use of these commands, `False` disables.
-### bUseClickboard (bool, default: True)
+### bUseClickboard
+**Type: bool**  
+**Default: True**  
+
 Enables a set of alternative scoreboards that show the ready-status for players before the match has started.
-### MinClientRate (int, default: 10000)
+### MinClientRate
+**Type: int**  
+**Default: 10000**  
+**Unit: B/s**  
+
 The server will force clients to use at least this netspeed.
-### bAdvancedTeamSay (bool, default: True)
+### bAdvancedTeamSay
+**Type: bool**  
+**Default: True**  
+
 Whether to allow the use of advanced TeamSay or not.
 Advanced TeamSay allows showing game-information in your chat messages, by replacing the following with the corresponding information:
 
@@ -248,7 +400,10 @@ Advanced TeamSay allows showing game-information in your chat messages, by repla
 - `%a` ➜ "SB <Armor>A" or "<Armor>A"
 - `%P`, `%p` ➜ Current CTF objective
 
-### ForceSettingsLevel (int, default: 2)
+### ForceSettingsLevel
+**Type: int**  
+**Default: 2**  
+
 When to check that default settings for all objects are correct client-side.
 
 - `0` and below ➜ never
@@ -256,72 +411,175 @@ When to check that default settings for all objects are correct client-side.
 - `2` ➜ in addition, every time a new object is spawned
 - `3` and above ➜ in addition, once every 5000 server-ticks on average
 
-### bNoLockdown (bool, default: True)
+### bNoLockdown
+**Type: bool**  
+**Default: True**  
+
 Whether to have lockdown when players get hit by mini/pulse or not.
 
 - `True` ➜ don't allow lockdown
 - `False` ➜ allow lockdown
 
-### bWarmup (bool, default: True)
+### bWarmup
+**Type: bool**  
+**Default: True**  
+
 Whether to allow warmup in tournament games or not.
-### bCoaches (bool, default: False)
+### bCoaches
+**Type: bool**  
+**Default: False**  
+
 Whether to allow spectators to coach teams in tournament games or not.
-### bAutoPause (bool, default: True)
+### bAutoPause
+**Type: bool**  
+**Default: True**  
+
 Whether to automatically pause the game in tournament games or not.
-### ForceModels (int, default: 1)
+### ForceModels
+**Type: int**  
+**Default: 1**  
+
 Force models mode.
 
 - `1` ➜ Client controlled
 - `2` ➜ Forced on
 - anything else ➜ Disabled
 
-### ImprovedHUD (int, default: 1)
-Enable various HUD improvements. Depends on PureClickBoard mutator (set [bUseClickboard](#buseclickboard-bool-default-true) to `True`, or add mutator through configuration).
+### ImprovedHUD
+**Type: int**  
+**Default: 1**  
+
+Enable various HUD improvements. Depends on PureClickBoard mutator (set [bUseClickboard](#buseclickboard) to `True`, or add mutator through configuration).
 - `1` ➜ Show boots, Clock
 - `2` ➜ In addition, show enhanced team info
 - anything else ➜ dont show anything
-### bDelayedPickupSpawn (bool, default: False)
+### bDelayedPickupSpawn
+**Type: bool**  
+**Default: False**  
+
 Enable or disable delayed first pickup spawn.
-### bTellSpectators (bool, default: False)
+### bTellSpectators
+**Type: bool**  
+**Default: False**  
+
 Enable or disable telling spectators of reason for kicks.
-### PlayerPacks (string\[8\], default: Empty)
+### PlayerPacks
+**Type: string\[8\]**  
+**Default: *empty***  
+
 Config list of supported player packs
-### DefaultHitSound (int, default: 2)
-HitSound for enemy damage to use when forcing clients (see [bForceDefaultHitSounds](#bforcedefaulthitsounds-bool-default-false)).
-### DefaultTeamHitSound (int, default: 3)
-HitSound for friendly fire to use when forcing clients (see [bForceDefaultHitSounds](#bforcedefaulthitsounds-bool-default-false)).
-### bForceDefaultHitSounds (bool, default: False)
+### DefaultHitSound
+**Type: int**  
+**Default: 2**  
+
+HitSound for enemy damage to use when forcing clients (see [bForceDefaultHitSounds](#bforcedefaulthitsounds)).
+### DefaultTeamHitSound
+**Type: int**  
+**Default: 3**  
+
+HitSound for friendly fire to use when forcing clients (see [bForceDefaultHitSounds](#bforcedefaulthitsounds)).
+### bForceDefaultHitSounds
+**Type: bool**  
+**Default: False**  
+
 Force clients to use a specific HitSound.
-### TeleRadius (int, default: 210)
+### TeleRadius
+**Type: int**  
+**Default: 210**  
+**Unit: uu**  
+
 Radius within which to telefrag enemies using translocator.
-### ThrowVelocity (int, default: 750)
+### ThrowVelocity
+**Type: int**  
+**Default: 750**  
+**Unit: uu/s**  
+
 Horizontal speed with which to throw weapons.
-### bForceDemo (bool, default: False)
+### bForceDemo
+**Type: bool**  
+**Default: False**  
+
 Forces clients to do demos.
-### MinPosError (float, default: 100)
+### MinPosError
+**Type: float**  
+**Default: 100**  
+**Unit: uu²**  
+
 Unused. Intended to be minimum squared distance error for updating clients.
-### MaxPosError (float, default: 3000)
+### MaxPosError
+**Type: float**  
+**Default: 3000**  
+**Unit: uu²**
+
 Unused. Intended to be maximum squared distance error for updating clients.
-### MaxHitError (float, default: 10000)
+### MaxHitError
+**Type: float**  
+**Default: 10000**  
+**Unit: uu**  
+
 Distance to any position over the last 500ms for hits to be counted.
-### ShowTouchedPackage (bool, default: False)
+### ShowTouchedPackage
+**Type: bool**  
+**Default: False**  
+
 Send package-names of touched actors to clients when those clients touch the actors.
-### ExcludeMapsForKickers (string\[128\], default: Empty)
+### ExcludeMapsForKickers
+**Type: string\[128\]**  
+**Default: *empty***  
+
 List of map names (with or without .unr) for maps that should not have their Kickers replaced with NN_Kickers.
-### MaxJitterTime (float, default 0.1)
-Maximum time between updates by clients that's tolerated by IG+. If a client exceeds this time and [bEnableJitterBounding](#benablejitterbounding-bool-default-true) is `True` an update is generated for the client. Guideline setting is half the maximum supported ping.
-### MinNetUpdateRate (float, default: 60)
+### MaxJitterTime
+**Type: float**  
+**Default: 0.1**  
+**Unit: s**  
+
+Maximum time between updates by clients that's tolerated by IG+. If a client exceeds this time and [bEnableJitterBounding](#benablejitterbounding) is `True` an update is generated for the client. Guideline setting is half the maximum supported ping.
+### MinNetUpdateRate
+**Type: float**  
+**Default: 60**  
+**Unit: Hz**  
+
 Minimum frequency of client updates for server.
-### MaxNetUpdateRate (float, default: 250)
+### MaxNetUpdateRate
+**Type: float**  
+**Default: 250**  
+**Unit: Hz**  
+
 Maximum frequency of client updates for server.
-### MaxClientRate (int, default: 25000)
+### MaxClientRate
+**Type: int**  
+**Default: 25000**  
+**Unit: B/s**  
+
 Maximum netspeed allowed for clients.
-### MaxTradeTimeMargin (float, default: 0.1)
+### MaxTradeTimeMargin
+**Type: float**  
+**Default: 0.1**  
+**Unit: s**  
+
 Maximum time after death (on server) that players can still fire their weapons.
-### bEnableServerExtrapolation (bool, default: True)
+### bEnableServerExtrapolation
+**Type: bool**  
+**Default: True**  
+
 If enabled the server will extrapolate client movement when the client's movement updates are too far behind the server's timepoint.
-### bEnableJitterBounding (bool, default: True)
+### bEnableJitterBounding
+**Type: bool**  
+**Default: True**  
+
 If enabled the server will generate movement updates for clients that havent sent updates in a while.
+### KillCamDelay
+**Type: float**  
+**Default: 0**  
+**Unit: s**  
+
+KillCam can not start before a player has been dead for this long.
+### KillCamDuration
+**Type: float**  
+**Default: 2**  
+**Unit: s**  
+
+KillCam follows the killing player for this long after its start.
 
 # Commands
 The following commands are additions by IG+ to the standard set of commands.
@@ -339,13 +597,6 @@ Parameters marked `optional` do not have to be supplied.
 **Parameters: (bool b)**  
 
 Displays a variety of useful debugging information on screen.
-
-### Examples
-    EnableDebugData 1
-    EnableDebugData True
-    EnableDebugData 0
-    EnableDebugData False
-
 ## EnableHitSounds
 **Parameters: (bool b)**
 
@@ -353,7 +604,7 @@ Enables/Disables client-side hitsounds.
 ## SetHitSound
 **Parameters: (int hs)**
 
-Switches between the 16 slots available for hitsounds (see [sHitSound](#shitsound-string16)). `hs` must be a value between `0` and `15`.
+Switches between the 16 slots available for hitsounds (see [sHitSound](#shitsound)). `hs` must be a value between `0` and `15`.
 
 ## ForceModels
 **Parameters: (bool b)**
@@ -386,40 +637,61 @@ Sets the forced models/skins for teammates who are using male or female models r
 Changes the style of beam fired by the SuperShockRifle. See [cShockBeam setting](#cshockbeam-int-default-1).
 ## SetBeamScale
 **Parameters: (float bs)**
+Changes [BeamScale setting](#beamscale).
 ## MyIgSettings
+Prints a selection of IG+ settings.
 ## SetNetUpdateRate
 **Parameters: (float NewVal)**
 
-Changes how often your client will send a movement update to the server. See [DesiredNetUpdateRate setting](#desirednetupdaterate-float-default-100).
+Changes how often your client will send a movement update to the server. See [DesiredNetUpdateRate setting](#desirednetupdaterate).
 ## SetMouseSmoothing
 **Parameters: (bool b)**
+
+Changes [bNoSmoothing setting](#bnosmoothing).
 ## SetKillCamEnabled
 **Parameters: (bool b)**
+
+Changes [bEnableKillCam setting](#benablekillcam).
 ## DropFlag
+Drops the currently held flag, if any.
 ## PureLogo
 Shows IG+ version in the bottom left corner of the screen.
 ## HitSounds
 **Parameters: (int b)**
+
+Changes server-side hit-sound when damaging enemies. See [HitSound setting](#hitsound).
 ## TeamHitSounds
 **Parameters: (int b)**
+
+Changes server-side hit-sound when damaging teammates. See [TeamHitSound setting](#teamhitsound).
 ## DisableForceHitSounds
+Overrides (Team)HitSound choice of the server, even if the server forces its (Team)HitSound choice. See [bDisableForceHitSounds setting](#bdisableforcehitsounds).
 ## MyHitsounds
 ## TeamInfo
 **Parameters: (bool b)**
 ## SetMinDodgeClickTime
 **Parameters: (float f)**
+
+Changes [MinDodgeClickTime setting](#mindodgeclicktime).
 ## mdct
 **Parameters: (float f)**
 ## EndShot
 **Parameters: (optional bool b)**
+
+Changes [bDoEndShot setting](#bdoendshot).
 ## Hold
 Resets the AutoPause countdown. Can only be used if the AutoPause was triggered by an opponent leaving or switching sides.
 ## Go
 Resumes the game immediately. Can only be used by the team that lost at least one of its players.
 ## AutoDemo
 **Parameters: (bool b)**
+
+Changes [bAutoDemo setting](#bautodemo).
 ## ShootDead
+Toggles [bShootDead setting](#bshootdead) between `True` and `False`.
 ## SetDemoMask
 **Parameters: (optional string Mask)**
+
+Changes [DemoMask setting](#demomask).
 ## DemoStart
-Starts recording a demo with the [DemoPath](#demopath-string) and [DemoMask](#demomask-string) that are currently configured.
+Starts recording a demo with the [DemoPath](#demopath) and [DemoMask](#demomask) that are currently configured.
