@@ -863,6 +863,11 @@ event UpdateEyeHeight(float DeltaTime)
 		(OldPhysics == PHYS_Walking && Physics == PHYS_Falling)
 	) {
 		DeltaZ = Location.Z - OldZ;
+
+		// remove lifts from the equation.
+        if (Base != none)
+            DeltaZ -= DeltaTime * Base.Velocity.Z;
+
 		// stair detection heuristic
 		if (Abs(DeltaZ) > DeltaTime * GroundSpeed || bForceZSmoothing)
 			EyeHeightOffset += FClamp(DeltaZ, -MaxStepHeight, MaxStepHeight);
