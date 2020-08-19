@@ -446,6 +446,16 @@ simulated function bool xxNewMoveSmooth(vector NewLoc)
 	return Move(Delta);
 }
 
+simulated function vector SafeVector(vector In) {
+	local vector O;
+
+	O.X = Clamp(In.X, -32767, 32767);
+	O.Y = Clamp(In.Y, -32767, 32767);
+	O.Z = Clamp(In.Z, -32767, 32767);
+
+	return O;
+}
+
 simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeight, float KLocationX, float KLocationY, float KLocationZ, int KRotationYaw, int KRotationPitch, int KRotationRoll, name KTag, name KEvent, name KAttachTag, vector KKickVelocity, name KKickedClasses, bool KbKillVelocity, bool KbRandomize )
 {
 	local Actor A;
@@ -646,7 +656,7 @@ event Possess()
 			{
 				if (K.Class.Name != 'Kicker')
 					continue;
-				xxClientKicker(K.CollisionRadius, K.CollisionHeight, K.Location.X, K.Location.Y, K.Location.Z, K.Rotation.Yaw, K.Rotation.Pitch, K.Rotation.Roll, K.Tag, K.Event, K.AttachTag, K.KickVelocity, K.KickedClasses, K.bKillVelocity, K.bRandomize );
+				xxClientKicker(K.CollisionRadius, K.CollisionHeight, K.Location.X, K.Location.Y, K.Location.Z, K.Rotation.Yaw, K.Rotation.Pitch, K.Rotation.Roll, K.Tag, K.Event, K.AttachTag, SafeVector(K.KickVelocity), K.KickedClasses, K.bKillVelocity, K.bRandomize );
 			}
 		}
 	}
