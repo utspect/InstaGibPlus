@@ -248,6 +248,7 @@ var float LastAddVelocityTimeStamp[4];
 var int LastAddVelocityIndex;
 
 var bool bForceZSmoothing;
+var int IgnoreZChangeTicks;
 var EPhysics OldPhysics;
 var float OldZ;
 var float OldShakeVert;
@@ -424,6 +425,8 @@ simulated function Touch( actor Other )
 	if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0) {
 		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
 	}
+	if (Other.IsA('Teleporter'))
+		IgnoreZChangeTicks = 2;
 	Super.Touch(Other);
 }
 
@@ -869,7 +872,7 @@ event UpdateEyeHeight(float DeltaTime)
             DeltaZ -= DeltaTime * Base.Velocity.Z;
 
 		// stair detection heuristic
-		if (Abs(DeltaZ) > DeltaTime * GroundSpeed || bForceZSmoothing)
+		if (IgnoreZChangeTicks == 0 && (Abs(DeltaZ) > DeltaTime * GroundSpeed || bForceZSmoothing))
 			EyeHeightOffset += FClamp(DeltaZ, -MaxStepHeight, MaxStepHeight);
 		bForceZSmoothing = false;
 	} else if (bJustLanded) {
@@ -878,6 +881,7 @@ event UpdateEyeHeight(float DeltaTime)
 		bForceZSmoothing = true;
 	}
 
+	if (IgnoreZChangeTicks > 0) IgnoreZChangeTicks--;
 	bJustLanded = false;
 	OldPhysics = Physics;
 	OldZ = Location.Z;
@@ -887,9 +891,6 @@ event UpdateEyeHeight(float DeltaTime)
 
 	EyeHeightOffset += BaseEyeHeight - OldBaseEyeHeight;
 	OldBaseEyeHeight = BaseEyeHeight;
-
-	if (bJustRespawned) EyeHeightOffset = 0;
-	bJustRespawned = false;
 
 	EyeHeightOffset = EyeHeightOffset * Exp(-9.0 * DeltaTime);
 	EyeHeight = ShakeVert + BaseEyeHeight - EyeHeightOffset;
@@ -6843,6 +6844,8 @@ function ClientReStart()
 		PendingTouch.PendingTouch = none;
 		PendingTouch = none;
 	}
+
+	IgnoreZChangeTicks = 1;
 }
 
 exec function GetWeapon(class<Weapon> NewWeaponClass )
