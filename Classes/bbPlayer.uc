@@ -857,7 +857,6 @@ function rotator GR()
 
 event UpdateEyeHeight(float DeltaTime)
 {
-	local float smooth, bound;
 	local float DeltaZ;
 
 	// smooth up/down stairs, landing, dont smooth ramps
@@ -3161,8 +3160,6 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	local vector delta;
 
 	TraceDir = Normal(TraceDir);
-	// The following line leads to a rounded edge of the top of the crouching hitbox
-	//HitLocation = HitLocation + 0.33 * CollisionRadius * TraceDir; // newnet value is 0.4 // default is 0.5
 
 	if ( (GetAnimGroup(AnimSequence) == 'Ducking') && (AnimFrame > -0.03) )
 	{
