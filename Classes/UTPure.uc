@@ -170,7 +170,9 @@ function PostBeginPlay()
 	local string zzMD5Values;
 	local int XC_Version;
 
-	Super.PostBeginPlay();
+   Super.PostBeginPlay();
+   
+   // Future HTTP Betting Code
 
 	xxLog("");
 	xxLog("###############################");
