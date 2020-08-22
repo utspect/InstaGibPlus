@@ -218,7 +218,6 @@ var PlayerPawn LocalPlayer;
 var TranslocatorTarget zzClientTTarget, TTarget;
 var float LastTick, AvgTickDiff;
 
-var bool MMSupport;
 var bool SetPendingWeapon;
 
 // Net Updates
@@ -1783,16 +1782,11 @@ function xxServerMove(
 		xxSetPendingWeapon(PendingWeapon);
 		zzPendingWeapon = PendingWeapon;
 	} else {
-		if (MMSupport) {
+		if (zzPendingWeapon != PendingWeapon) {
 			xxSetPendingWeapon(PendingWeapon);
 			zzPendingWeapon = PendingWeapon;
-		} else {
-			if (zzPendingWeapon != PendingWeapon) {
-				xxSetPendingWeapon(PendingWeapon);
-				zzPendingWeapon = PendingWeapon;
-				if (PendingWeapon != None && PendingWeapon.Owner == Self && Weapon != None && !Weapon.IsInState('DownWeapon'))
-					Weapon.GotoState('DownWeapon');
-			}
+			if (PendingWeapon != None && PendingWeapon.Owner == Self && Weapon != None && !Weapon.IsInState('DownWeapon'))
+				Weapon.GotoState('DownWeapon');
 		}
 	}
 
