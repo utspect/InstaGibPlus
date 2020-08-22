@@ -4062,7 +4062,7 @@ ignores SeePlayer, HearNoise, Bump;
 		if ( bIsCrouching || (Physics != PHYS_Walking) )
 			return;
 
-		GetAxes(Rotation,X,Y,Z);
+		GetAxes(Rotation.Yaw*rot(0,1,0),X,Y,Z);
 		if (DodgeMove == DODGE_Forward)
 			Velocity = 1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
 		else if (DodgeMove == DODGE_Back)
@@ -4072,7 +4072,7 @@ ignores SeePlayer, HearNoise, Bump;
 		else if (DodgeMove == DODGE_Right)
 			Velocity = -1.5*GroundSpeed*Y + (Velocity Dot X)*X;
 
-		Velocity.Z = 160;
+		Velocity.Z = 210;
 		PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, true, 800, 1.0 );
 		PlayDodge(DodgeMove);
 		DodgeDir = DODGE_Active;
@@ -4397,7 +4397,6 @@ simulated function PlayerPawn GetLocalPlayer() {
 
 simulated function PlayDodge(eDodgeDir DodgeMove)
 {
-	Velocity.Z = 210;
 	if ( DodgeMove == DODGE_Left )
 		TweenAnim('DodgeL', 0.1);
 	else if ( DodgeMove == DODGE_Right )
