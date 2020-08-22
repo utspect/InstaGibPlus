@@ -436,7 +436,7 @@ simulated function Touch( actor Other )
 }
 
 
-simulated function bool xxNewSetLocation(vector NewLoc, vector NewVel, optional EPhysics EndPhysics)
+simulated function bool xxNewSetLocation(vector NewLoc, vector NewVel)
 {
 	if (!SetLocation(NewLoc))
 		return false;
@@ -461,6 +461,7 @@ simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeigh
 	local AttachMover AM;
 	local rotator KRotation;
 	local vector KKickVelocity;
+	local int i;
 
 	if(Level.NetMode != NM_Client)
 		return;
@@ -872,8 +873,8 @@ event UpdateEyeHeight(float DeltaTime)
 		DeltaZ = Location.Z - OldZ;
 
 		// remove lifts from the equation.
-        if (Base != none)
-            DeltaZ -= DeltaTime * Base.Velocity.Z;
+		if (Base != none)
+			DeltaZ -= DeltaTime * Base.Velocity.Z;
 
 		// stair detection heuristic
 		if (IgnoreZChangeTicks == 0 && (Abs(DeltaZ) > DeltaTime * GroundSpeed || bForceZSmoothing))
