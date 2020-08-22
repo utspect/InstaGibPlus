@@ -266,6 +266,8 @@ var rotator KillCamTargetRotation;
 var float KillCamDelay;
 var float KillCamDuration;
 
+var bool bJumpingPreservesMomentum;
+
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
 
@@ -297,7 +299,8 @@ replication
 		zzbForceModels, bIsAlive, bClientIsWalking, zzbIsWarmingUp,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
-		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam;
+		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
+		bJumpingPreservesMomentum;
 
 	// Client->Server
 	reliable if ( Role == ROLE_AutonomousProxy )
@@ -4043,8 +4046,10 @@ ignores SeePlayer, HearNoise, Bump;
 	{
 		Global.Landed(HitNormal);
 
-		Velocity *= vect(1,1,0);
-		Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * FMin(VSize(Velocity), GroundSpeed);
+		if (bJumpingPreservesMomentum == false || DodgeDir == DODGE_Active) {
+			Velocity *= vect(1,1,0);
+			Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * FMin(VSize(Velocity), GroundSpeed);
+		}
 
 		if (DodgeDir == DODGE_Active)
 		{

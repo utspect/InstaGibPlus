@@ -54,6 +54,7 @@ var localized config bool bForceDemo;		// Forces clients to do demos.
 var localized config float MaxTradeTimeMargin;
 var localized config float KillCamDelay;
 var localized config float KillCamDuration;
+var localized config bool bJumpingPreservesMomentum;
 var string MapName;
 
 
@@ -731,6 +732,7 @@ function ModifyPlayer(Pawn Other)
 			zzP.zzbUsingTranslocator = DeathMatchPlus(Level.Game).bUseTranslocator;
 			zzP.KillCamDelay = FMax(0.0, KillCamDelay);
 			zzP.KillCamDuration = KillCamDuration;
+			zzP.bJumpingPreservesMomentum = bJumpingPreservesMomentum;
 		}
 	}
 	Super.ModifyPlayer(Other);
@@ -1409,4 +1411,5 @@ defaultproperties
 	bEnableJitterBounding=True
 	KillCamDelay=0.0
 	KillCamDuration=2.0
+	bJumpingPreservesMomentum=False
 }
