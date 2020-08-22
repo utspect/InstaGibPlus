@@ -255,6 +255,9 @@ var float OldShakeVert;
 var float OldBaseEyeHeight;
 var float EyeHeightOffset;
 
+var input byte bDodge;
+var byte bOldDodge;
+var bool bPressedDodge;
 var transient float zzLastTimeForward, zzLastTimeBack, zzLastTimeLeft, zzLastTimeRight;
 var transient float TurnFractionalPart, LookUpFractionalPart;
 
@@ -982,6 +985,9 @@ event PlayerInput( float DeltaTime )
 	bEdgeBack = bOldWasBack != bWasBack;
 	bEdgeLeft = bOldWasLeft != bWasLeft;
 	bEdgeRight = bOldWasRight != bWasRight;
+
+	bPressedDodge = (bDodge != bOldDodge) && (bDodge > 0);
+	bOldDodge = bDodge;
 
 	// Smooth and amplify mouse movement
 	SmoothTime = FMin(0.2, 3 * DeltaTime * Level.TimeDilation);
@@ -4161,16 +4167,7 @@ ignores SeePlayer, HearNoise, Bump;
 					DodgeMove = DodgeDir;
 			}
 
-			if (DodgeDir == DODGE_Done || DodgeDir == DODGE_Active && Base != None)
-			{
-				DodgeClickTimer -= DeltaTime;
-				if (DodgeClickTimer < -0.35)
-				{
-					DodgeDir = DODGE_None;
-					DodgeClickTimer = DodgeClickTime;
-				}
-			}
-			else if ((DodgeDir != DODGE_None) && (DodgeDir != DODGE_Active))
+			if ((DodgeDir != DODGE_None) && (DodgeDir != DODGE_Active))
 			{
 				DodgeClickTimer -= DeltaTime;
 				if (DodgeClickTimer < 0)
@@ -4178,6 +4175,27 @@ ignores SeePlayer, HearNoise, Bump;
 					DodgeDir = DODGE_None;
 					DodgeClickTimer = DodgeClickTime;
 				}
+			}
+		}
+
+		if (bPressedDodge && DodgeDir < DODGE_Active && DodgeMove == DODGE_None) {
+			if (bWasForward)
+				DodgeMove = DODGE_Forward;
+			else if (bWasBack)
+				DodgeMove = DODGE_Back;
+			else if (bWasLeft)
+				DodgeMove = DODGE_Left;
+			else if (bWasRight)
+				DodgeMove = DODGE_Right;
+		}
+
+		if (DodgeDir == DODGE_Done || DodgeDir == DODGE_Active && Base != None)
+		{
+			DodgeClickTimer -= DeltaTime;
+			if (DodgeClickTimer < -0.35)
+			{
+				DodgeDir = DODGE_None;
+				DodgeClickTimer = DodgeClickTime;
 			}
 		}
 
