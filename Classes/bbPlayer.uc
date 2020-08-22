@@ -4042,11 +4042,14 @@ ignores SeePlayer, HearNoise, Bump;
 	event Landed(vector HitNormal)
 	{
 		Global.Landed(HitNormal);
+
+		Velocity *= vect(1,1,0);
+		Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * FMin(VSize(Velocity), GroundSpeed);
+
 		if (DodgeDir == DODGE_Active)
 		{
 			DodgeDir = DODGE_Done;
 			DodgeClickTimer = 0.0;
-			Velocity *= vect(1,1,0) * 0.8;
 		}
 		else
 			DodgeDir = DODGE_None;
