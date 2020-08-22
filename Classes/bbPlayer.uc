@@ -454,7 +454,7 @@ simulated function bool xxNewMoveSmooth(vector NewLoc)
 	return Move(Delta);
 }
 
-simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeight, vector KLocation, int KRotationYaw, int KRotationPitch, int KRotationRoll, name KTag, name KEvent, name KAttachTag, float KKickVelocityX, float KKickVelocityY, float KKickVelocityZ, name KKickedClasses, bool KbKillVelocity, bool KbRandomize )
+simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeight, vector KLocation, int KRotationYaw, int KRotationPitch, int KRotationRoll, name KTag, name KEvent, float KKickVelocityX, float KKickVelocityY, float KKickVelocityZ, name KKickedClasses, bool KbKillVelocity, bool KbRandomize )
 {
 	local Actor A;
 	local Kicker K;
@@ -477,31 +477,17 @@ simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeigh
 	K.SetCollisionSize(KCollisionRadius, KCollisionHeight);
 	K.Tag = KTag;
 	K.Event = KEvent;
-	K.AttachTag = KAttachTag;
 	K.KickVelocity = KKickVelocity;
 	K.KickedClasses = KKickedClasses;
 	K.bKillVelocity = KbKillVelocity;
 	K.bRandomize = KbRandomize;
 
-	if(K.AttachTag != '')
-	{
-		Foreach AllActors(class'Actor', A, K.AttachTag)
-		{
-			K.SetBase(A);
-			break;
-		}
-	}
 	if(K.Tag != '')
-	{
-		Foreach AllActors(class'AttachMover', AM)
-		{
-			if(AM.AttachTag == K.Tag)
-			{
+		foreach AllActors(class'AttachMover', AM)
+			if(AM.AttachTag == K.Tag) {
 				K.SetBase(AM);
 				break;
 			}
-		}
-	}
 }
 
 simulated function InitSettings() {
@@ -655,7 +641,7 @@ event Possess()
 			{
 				if (K.Class.Name != 'Kicker')
 					continue;
-				xxClientKicker(K.CollisionRadius, K.CollisionHeight, K.Location, K.Rotation.Yaw, K.Rotation.Pitch, K.Rotation.Roll, K.Tag, K.Event, K.AttachTag, K.KickVelocity.X, K.KickVelocity.Y, K.KickVelocity.Z, K.KickedClasses, K.bKillVelocity, K.bRandomize );
+				xxClientKicker(K.CollisionRadius, K.CollisionHeight, K.Location, K.Rotation.Yaw, K.Rotation.Pitch, K.Rotation.Roll, K.Tag, K.Event, K.KickVelocity.X, K.KickVelocity.Y, K.KickVelocity.Z, K.KickedClasses, K.bKillVelocity, K.bRandomize );
 			}
 		}
 	}
