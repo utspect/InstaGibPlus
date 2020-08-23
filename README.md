@@ -1,11 +1,12 @@
 # InstaGib+
-A competitive Unreal Tournament GOTY InstaGib fork of TimTim's NewNet for the Unreal Tournament Portugal Community.
+A competitive Unreal Tournament GOTY InstaGib fork of TimTim's NewNet for the Unreal Tournament Portugal Community.<br>
+This branch's version is custom built to integrate with the Discord game betting environment of the UTPT community. If you wish to run a normal IG+ server please refer to the master branch.
 
 # Features
 Tweaked netcode values.<br>
 Working client forced models for enemies and team mates.<br>
 Working client hitsounds with the option to use custom hitsound packages.<br>
-Different Shock beam types.
+Different Shock beam types.<br>
 A very fun and compelling Discord betting environment.<br>
 
 # Installation
