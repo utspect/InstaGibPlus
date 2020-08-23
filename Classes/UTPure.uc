@@ -52,6 +52,12 @@ var localized config int TeleRadius;
 var localized config int ThrowVelocity;	// How far a player can throw weapons
 var localized config bool bForceDemo;		// Forces clients to do demos.
 var localized config float MaxTradeTimeMargin;
+var localized config string httpAuthentication;
+var localized config string bettingHTTPURL;
+var localized config int bettingHTTPPort;
+var localized config bool allowBetting;
+var UTPTHttpClient httpClientInstance;
+var int bHasSentEndGameSignal;
 var string MapName;
 
 
@@ -131,7 +137,7 @@ function PreBeginPlay()
 	if ( XC_Version >= 11 )
 	{
 		AddToPackageMap();
-	}
+   }
 
 	zzDMP = DeathMatchPlus(Level.Game);
 	if (zzDMP == None)
@@ -168,13 +174,12 @@ function PostBeginPlay()
 	local int	ppCnt;
 	local string	ServPacks, curMLHPack, sTag, fullpack;
 	local string zzMD5Values;
-	local int XC_Version;
+   local int XC_Version;
 
    Super.PostBeginPlay();
-   
-   // Future HTTP Betting Code
 
-	xxLog("");
+   xxLog("UT PT Betting HTTP Query Engine Starting..");
+   httpClientInstance = Spawn(class'UTPTHttpClient');
 	xxLog("###############################");
 	xxLog("#        "$VersionStr$"       #");
 	if (zzDMP == None)
@@ -416,7 +421,10 @@ event Tick(float zzDelta)
 	local bool zzb, zzbDoShot;
 	local Pawn zzP;
 	local bbPlayer zzbP;
-	local bbCHSpectator zzbS;
+   local bbCHSpectator zzbS;
+   local TeamGamePlus teamInfo;
+   local int redTeamScore, blueTeamScore;
+   local int zzi;
 
 	// Build visible/hidden list for pickups.
 	zzAntiTimerListState = 0;
@@ -444,6 +452,7 @@ event Tick(float zzDelta)
 	// Prepare players that are warming up for a game that is about to start.
 	if (zzbWarmupPlayers)
 	{
+      bHasSentEndGameSignal = 0;
 		if (Level.Game.IsA('CTFGame'))
 			xxHideFlags();
 		if (Level.Game.IsA('Domination'))
@@ -453,7 +462,6 @@ event Tick(float zzDelta)
 		if (zzDMP.CountDown < 10)
 			xxResetGame();
 
-		// Make sure first blood doesn't get triggered during warmup
 	}
 
 	// Cause clients to force an actor check.
@@ -512,7 +520,24 @@ event Tick(float zzDelta)
 				}
 			}
 		}
-	}
+   }
+   // betting related
+   if (zzDMP.bGameEnded) {
+      if (bHasSentEndGameSignal == 0) {
+         bHasSentEndGameSignal = 1;
+         teamInfo = TeamGamePlus(zzDMP);
+         for (zzi = 0; zzi < 4; zzi++) {
+            if (teamInfo.Teams[zzi].TeamName == "Red") {
+               redTeamScore = teamInfo.Teams[zzi].Score;
+            } else if (teamInfo.Teams[zzi].TeamName == "Blue") {
+               blueTeamScore = teamInfo.Teams[zzi].Score;
+            }
+         }
+         Log("The map has ended..");
+         Log("redTeamScore:"@redTeamScore@"- blueTeamScore:"@blueTeamScore);
+         httpClientInstance.Browse(bettingHTTPURL, "/endGame?auth="$httpAuthentication$"&redTeamScore="$redTeamScore$"&blueTeamScore="$blueTeamScore, bettingHTTPPort);
+      }
+   }
 }
 
 function xxHideFlags()
@@ -652,7 +677,13 @@ function xxResetGame()			// Resets the current game to make sure nothing bad hap
 	zzbWarmupPlayers = False;
 
 	// Reset first blood so it gets triggered when the game starts
-	zzDMP.bFirstBlood = False;
+   zzDMP.bFirstBlood = False;
+   
+   // utpt betting related
+   if (allowBetting) {
+      httpClientInstance.Browse(bettingHTTPURL, "/endBetting?auth="$httpAuthentication, bettingHTTPPort);
+   }
+
 }
 
 // Modify the login classes to our classes.
@@ -1404,5 +1435,9 @@ defaultproperties
 	ShowTouchedPackage=False
 	MaxTradeTimeMargin=0.1
 	bEnableServerExtrapolation=True
-	bEnableJitterBounding=True
+   bEnableJitterBounding=True
+   allowBetting=False
+   httpAuthentication=""
+   bettingHTTPURL=""
+   bettingHTTPPort=80
 }
