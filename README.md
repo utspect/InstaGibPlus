@@ -5,7 +5,7 @@ A competitive Unreal Tournament GOTY InstaGib fork of TimTim's NewNet for the Un
 Tweaked netcode values.<br>
 Working client forced models for enemies and team mates.<br>
 Working client hitsounds with the option to use custom hitsound packages.<br>
-Different Shock beam types.
+Different Shock beam types.<br>
 A very fun and compelling Discord betting environment.<br>
 
 # Installation
