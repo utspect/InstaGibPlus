@@ -4775,7 +4775,7 @@ state Dying
 		Super.PlayerTick(DeltaTime);
 
 		if ((Settings.bEnableKillCam && LastKiller != none) &&
-			(TimeDead > KillCamDelay && TimeDead < KillCamDelay + KillCamDuration)
+			(TimeDead >= KillCamDelay && TimeDead < KillCamDelay + KillCamDuration)
 		) {
 			if (FastTrace(LastKiller.Location, Location))
 				KillCamTargetRotation = rotator(LastKiller.Location - Location);
@@ -4888,6 +4888,8 @@ state Dying
 
 			cameraLoc = Location;
 			PlayerCalcView(ViewActor, cameraLoc, cameraRot);
+		} else {
+			KillCamTargetRotation = ViewRotation;
 		}
 
 		if (zzInfoThing != None)
