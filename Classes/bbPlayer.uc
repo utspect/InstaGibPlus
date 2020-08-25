@@ -269,6 +269,8 @@ var float KillCamDelay;
 var float KillCamDuration;
 
 var bool bJumpingPreservesMomentum;
+var float DodgeEndVelocity;
+var float JumpEndVelocity;
 
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
@@ -4038,13 +4040,14 @@ ignores SeePlayer, HearNoise, Bump;
 			Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * FMin(VSize(Velocity), GroundSpeed);
 		}
 
-		if (DodgeDir == DODGE_Active)
-		{
+		if (DodgeDir == DODGE_Active) {
 			DodgeDir = DODGE_Done;
 			DodgeClickTimer = 0.0;
-		}
-		else
+			Velocity *= DodgeEndVelocity;
+		} else {
 			DodgeDir = DODGE_None;
+			Velocity *= JumpEndVelocity;
+		}
 	}
 
 	simulated function Dodge(eDodgeDir DodgeMove)
@@ -7767,4 +7770,6 @@ defaultproperties
 	bDrawDebugData=False
 	TimeBetweenNetUpdates=0.01
 	FakeCAPInterval=0.1
+	DodgeEndVelocity=0.75
+	JumpEndVelocity=1.0
 }
