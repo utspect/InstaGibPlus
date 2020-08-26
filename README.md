@@ -11,14 +11,14 @@ Different Shock beam types.<br>
 Extract the zipped files to your system folder.<br>
 Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or Deepu's Ultimate NewNet.<br>
 Add the following lines to your server's <b>UnrealTournament.ini</b> under <b>[Engine.GameEngine]</b>:<br><br>
-<b>ServerPackages=InstaGibPlus4</b><br>
-<b>ServerActors=InstaGibPlus4.NewNetServer</b><br>
-<b>ServerActors=InstaGibPlus4.PureStats</b><br>
+<b>ServerPackages=InstaGibPlus4B</b><br>
+<b>ServerActors=InstaGibPlus4B.NewNetServer</b><br>
+<b>ServerActors=InstaGibPlus4B.PureStats</b><br>
 
 <b>It is highly recommended to set your server's tickrate to 100.</b>
 
 # Usage
-For InstaGib, make sure the mutator <b>InstaGibPlus4.NewNetIG</b> is loaded via your map vote configuration or during server launch.<br><br>
+For InstaGib, make sure the mutator <b>InstaGibPlus4B.NewNetIG</b> is loaded via your map vote configuration or during server launch.<br><br>
 InstaGib+ has minimal weapons code and will load the default UT weapons if the NewNetIG mutator is not loaded, so it is absolutely unusable in normal weapons, make sure to use it only if your objective is to play or to run an InstaGib centered server.<br><br>
 When connected to the server type <b>'mutate playerhelp'</b> in the console to view the available commands and options.
 
