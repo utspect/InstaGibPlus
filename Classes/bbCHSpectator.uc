@@ -239,6 +239,7 @@ event Possess()
 
 	if ( Level.Netmode == NM_Client )
 	{	// Only do this for clients.
+		ClientSetMusic( Level.Song, Level.SongSection, Level.CdTrack, MTRAN_Fade );
 	}
 	else
 	{

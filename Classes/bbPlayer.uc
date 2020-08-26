@@ -611,6 +611,7 @@ event Possess()
 		}
 		SetPropertyText("PureLevel", GetPropertyText("xLevel"));
 		FakeCAPInterval = Settings.FakeCAPInterval;
+		ClientSetMusic( Level.Song, Level.SongSection, Level.CdTrack, MTRAN_Fade );
 	}
 	else
 	{
