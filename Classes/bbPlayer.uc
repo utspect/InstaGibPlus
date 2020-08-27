@@ -7772,6 +7772,6 @@ defaultproperties
 	bDrawDebugData=False
 	TimeBetweenNetUpdates=0.01
 	FakeCAPInterval=0.1
-	DodgeEndVelocity=0.75
+	DodgeEndVelocity=0.2
 	JumpEndVelocity=1.0
 }
