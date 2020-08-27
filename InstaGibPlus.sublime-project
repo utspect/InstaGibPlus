@@ -1,0 +1,24 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+			"folder_exclude_patterns": ["System"]
+		}
+	],
+    "settings":
+    {
+        "tab_size": 4,
+        "translate_tabs_to_spaces": false,
+        "default_encoding": "UTF-8",
+        "default_line_ending": "windows",
+    },
+    "build_systems":
+    [
+        {
+            "name": "Build IG+",
+            "file_patterns": ["*.uc"],
+            "cmd": ["$project_path/build.bat"]
+        }
+    ]
+}
