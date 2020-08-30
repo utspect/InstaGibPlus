@@ -8,3 +8,4 @@
 PostBuildHook.bat
 
 /System/**/*
+!/System/**/InstaGibPlus*.int
