@@ -123,6 +123,7 @@ var bool bJustRespawned;
 var float LastCAPTime; // ServerTime when last CAP was sent
 var vector oldClientLoc;
 var decoration carriedFlag;
+var String replicatedDiscordID;
 
 
 struct MoveInfo {
@@ -325,7 +326,7 @@ replication
 		xxServerSetForceModels, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
 		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
 		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
-		xxExplodeOther, xxSetNetUpdateRate, xxServerAddVelocity, xxNN_Fire, xxNN_AltFire, DropFlag;
+		xxExplodeOther, xxSetNetUpdateRate, xxServerAddVelocity, xxNN_Fire, xxNN_AltFire, DropFlag, replicatedDiscordID;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ProjExplode, xxNN_TransFrag,
@@ -575,7 +576,8 @@ event Possess()
 		Log("Possessed PlayerPawn (bbPlayer) by InstaGib Plus");
 		zzTrue = !zzFalse;
 		zzInfoThing = Spawn(Class'PureInfo');
-		playedHitSound = loadHitSound(Settings.selectedHitSound);
+      playedHitSound = loadHitSound(Settings.selectedHitSound);
+      replicatedDiscordID = Settings.playerDiscordID;
 		SetNetUpdateRate(Settings.DesiredNetUpdateRate);
 		xxServerSetForceModels(Settings.bForceModels);
 		xxServerSetTeamInfo(Settings.bTeamInfo);
@@ -2672,17 +2674,6 @@ function string forcedModelToString(int fm) {
 	}
 }
 
-simulated function setClientNetspeed() {
-
-	/**
-	 * @Author: spect
-	 * @Date: 2020-02-23 15:05:21
-	 * @Desc: Force client netspeed, gets set on every connect request, for now it remains at 20000
-	 */
-
-	ConsoleCommand("netspeed 20000");
-}
-
 exec function enableDebugData(bool b) {
 	bDrawDebugData = b;
 	SaveConfig();
@@ -2691,6 +2682,13 @@ exec function enableDebugData(bool b) {
 	} else {
 		ClientMessage("Debug data: off");
 	}
+}
+
+exec function setPlayerDiscordID(String id) {
+   Settings.playerDiscordID = id;
+   Settings.SaveConfig();
+   ClientMessage("O teu ID de jogador foi introduzido com sucesso!");
+   reconnectClient();
 }
 
 exec function enableHitSounds(bool b) {
@@ -2812,7 +2810,8 @@ exec function myIgSettings() {
 	ClientMessage("Current Team Female Forced Model:"@forcedModelToString(Settings.desiredTeamSkinFemale));
 	ClientMessage("Current selected hit sound:"@playedHitSound);
 	ClientMessage("Current Shock Beam:"@Settings.cShockBeam);
-	ClientMessage("Current Beam Scale:"@Settings.BeamScale);
+   ClientMessage("Current Beam Scale:"@Settings.BeamScale);
+   ClientMessage("Current Discord ID:"@Settings.playerDiscordID);
 }
 
 function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation, float Dist)
@@ -7610,5 +7609,5 @@ defaultproperties
 	bIsFinishedLoading=False
 	bDrawDebugData=False
 	TimeBetweenNetUpdates=0.01
-	FakeCAPInterval=0.1
+   FakeCAPInterval=0.1
 }

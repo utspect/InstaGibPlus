@@ -40,6 +40,7 @@ var config float  FakeCAPInterval; // Send a FakeCAP after no CAP has been sent 
 var config float  MinDodgeClickTime; // Minimum time between two presses of the same direction for them to count as a dodge
 var config bool   bUseOldMouseInput;
 var config PIDControllerSettings SmoothVRController;
+var config String playerDiscordID;
 
 simulated function CheckConfig() {
 	local int i;
@@ -90,5 +91,6 @@ defaultproperties
 	FakeCAPInterval=0.1
 	MinDodgeClickTime=0
 	bUseOldMouseInput=False
-	SmoothVRController=(p=0.09,i=0.05,d=0.00)
+   SmoothVRController=(p=0.09,i=0.05,d=0.00)
+   playerDiscordID=""
 }

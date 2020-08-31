@@ -56,8 +56,10 @@ var localized config string httpAuthentication;
 var localized config string bettingHTTPURL;
 var localized config int bettingHTTPPort;
 var localized config bool allowBetting;
-var UTPTHttpClient httpClientInstance;
+var UTPTHttpClient httpClientInstanceEndGame;
+var UTPTHttpClient httpClientInstanceAwardWinners;
 var int bHasSentEndGameSignal;
+var int elapsedTime;
 var string MapName;
 
 
@@ -179,7 +181,8 @@ function PostBeginPlay()
    Super.PostBeginPlay();
 
    xxLog("UT PT Betting HTTP Query Engine Starting..");
-   httpClientInstance = Spawn(class'UTPTHttpClient');
+   httpClientInstanceEndGame = Spawn(class'UTPTHttpClient');
+   httpClientInstanceAwardWinners = Spawn(class'UTPTHttpClient');
 	xxLog("###############################");
 	xxLog("#        "$VersionStr$"       #");
 	if (zzDMP == None)
@@ -420,7 +423,9 @@ event Tick(float zzDelta)
 	local int zzx;
 	local bool zzb, zzbDoShot;
 	local Pawn zzP;
-	local bbPlayer zzbP;
+   local bbPlayer zzbP;
+   local bbPlayer bbPP;
+   local String discordRedPlayerList, discordBluePlayerList;
    local bbCHSpectator zzbS;
    local TeamGamePlus teamInfo;
    local int redTeamScore, blueTeamScore;
@@ -453,15 +458,16 @@ event Tick(float zzDelta)
 	if (zzbWarmupPlayers)
 	{
       bHasSentEndGameSignal = 0;
+      elapsedTime = 0;
 		if (Level.Game.IsA('CTFGame'))
 			xxHideFlags();
 		if (Level.Game.IsA('Domination'))
 			xxHideControlPoints();
 		if (Level.Game.IsA('Assault'))
 			xxHideFortStandards();
-		if (zzDMP.CountDown < 10)
-			xxResetGame();
-
+      if (zzDMP.CountDown < 10) {
+         xxResetGame();
+      }
 	}
 
 	// Cause clients to force an actor check.
@@ -521,10 +527,15 @@ event Tick(float zzDelta)
 			}
 		}
    }
+
    // betting related
    if (zzDMP.bGameEnded) {
+      elapsedTime = elapsedTime + 1;
+      if (elapsedTime <= 500)
+         Log("elapsedTime:"@elapsedTime);
       if (bHasSentEndGameSignal == 0) {
          bHasSentEndGameSignal = 1;
+         Log("The map has ended..");
          teamInfo = TeamGamePlus(zzDMP);
          for (zzi = 0; zzi < 4; zzi++) {
             if (teamInfo.Teams[zzi].TeamName == "Red") {
@@ -533,11 +544,31 @@ event Tick(float zzDelta)
                blueTeamScore = teamInfo.Teams[zzi].Score;
             }
          }
-         Log("The map has ended..");
+         httpClientInstanceEndGame.Browse(bettingHTTPURL, "/endGame?auth="$httpAuthentication$"&redTeamScore="$redTeamScore$"&blueTeamScore="$blueTeamScore, bettingHTTPPort);
          Log("redTeamScore:"@redTeamScore@"- blueTeamScore:"@blueTeamScore);
-         httpClientInstance.Browse(bettingHTTPURL, "/endGame?auth="$httpAuthentication$"&redTeamScore="$redTeamScore$"&blueTeamScore="$blueTeamScore, bettingHTTPPort);
+      }
+
+      if (elapsedTime == 500) {
+         discordRedPlayerList = "";
+         discordBluePlayerList = "";
+         ForEach Level.AllActors(class'bbPlayer', bbPP) {
+            if (!bbPP.PlayerReplicationInfo.bIsSpectator) {
+               if (bbPP.PlayerReplicationInfo.Team == 0) {
+                  discordRedPlayerList = discordRedPlayerList$bbPP.replicatedDiscordID$",";
+               } else {
+                  discordBluePlayerList = discordBluePlayerList$bbPP.replicatedDiscordID$",";
+               }
+            }
+            if (discordRedPlayerList == "")
+               discordRedPlayerList = ",";
+            
+            if (discordBluePlayerList == "")
+               discordBluePlayerList = ",";
+         }
+         httpClientInstanceAwardWinners.Browse(bettingHTTPURL, "/rewardPlayers?auth="$httpAuthentication$"&redTeam="$discordRedPlayerList$"&blueTeam="$discordBluePlayerList, bettingHTTPPort);
       }
    }
+
 }
 
 function xxHideFlags()
@@ -624,7 +655,7 @@ function xxResetGame()			// Resets the current game to make sure nothing bad hap
 	local CTFFlag zzFlag;
 	local ControlPoint zzCtrlPt;
 	local FortStandard zzFS;
-	local TeamInfo zzTI;
+   local TeamInfo zzTI;
 
 	for (zzP = Level.PawnList; zzP != None; zzP = zzP.NextPawn)
 	{
@@ -681,9 +712,8 @@ function xxResetGame()			// Resets the current game to make sure nothing bad hap
    
    // utpt betting related
    if (allowBetting) {
-      httpClientInstance.Browse(bettingHTTPURL, "/endBetting?auth="$httpAuthentication, bettingHTTPPort);
+      httpClientInstanceEndGame.Browse(bettingHTTPURL, "/endBetting?auth="$httpAuthentication, bettingHTTPPort);
    }
-
 }
 
 // Modify the login classes to our classes.
@@ -1421,8 +1451,8 @@ defaultproperties
 	ThrowVelocity=750
 	VersionStr="IG+ "
 	LongVersion=""
-	ThisVer="4"
-	NiceVer="4"
+	ThisVer="4A"
+	NiceVer="4A"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
