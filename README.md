@@ -4,7 +4,7 @@ A competitive Unreal Tournament GOTY InstaGib fork of TimTim's NewNet.
 1. [Features](#features)
 2. [Client Settings](#client-settings)
 3. [Client Commands](#client-commands)
-4. [Server Installation](#installation)
+4. [Server Installation](#server-installation)
 5. [Usage](#usage)
 6. [Admin Commands](#admin-commands)
 6. [Server Settings](#server-settings)
@@ -19,6 +19,8 @@ A competitive Unreal Tournament GOTY InstaGib fork of TimTim's NewNet.
 * Different Shock beam types (team-colored, none, instant beam)
 * Fixed pop-in of enemies around corners
 * Fixed delay of visible flag pick-up
+* Fixed stuttering on respawn with high ping
+* Fixed Bunny Jumping
 
 # Client Settings
 
@@ -407,7 +409,7 @@ Changes [DemoMask setting](#demomask).
 ## DemoStart
 Starts recording a demo with the [DemoPath](#demopath) and [DemoMask](#demomask) that are currently configured.
 
-# Installation
+# Server Installation
 
 Extract the zipped files to your system folder.  
 Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or Deepu's Ultimate NewNet.  
