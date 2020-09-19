@@ -1230,6 +1230,7 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 	local vector OldLoc, DeltaLoc;
 	local bbPlayer bbP;
 	local bbSavedMove CurrentMove;
+	local NN_Kicker K;
 
 	if ( CurrentTimeStamp > TimeStamp )
 		return;
@@ -1285,6 +1286,9 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 	}
 
 	ClientDebugMessage("["$FrameCount@Level.TimeSeconds$"] CAP");
+
+	foreach AllActors(class'NN_Kicker', K)
+		K.ForceReset();
 
 	Carried = CarriedDecoration;
 	OldLoc = Location;

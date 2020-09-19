@@ -22,6 +22,11 @@ simulated event PostTouch(Actor Other) {
 	}
 }
 
+simulated function ForceReset() {
+	Last = none;
+	LastTimeStamp = -1;
+}
+
 defaultproperties
 {
 	RemoteRole=ROLE_None
