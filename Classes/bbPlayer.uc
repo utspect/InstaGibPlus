@@ -5384,8 +5384,7 @@ simulated function xxCheckForKickers()
 
 	ForEach AllActors(class'Kicker', K)
 		if (K.Owner != Self)
-			K.SetCollision(false, true);
-		return;
+			K.SetCollision(false, false, false);
 }
 
 
