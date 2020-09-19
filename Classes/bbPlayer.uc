@@ -415,12 +415,6 @@ function string ParseDelimited(string Text, string Delimiter, int Count, optiona
 	return Result;
 }
 
-simulated function PostTouch( Actor Other) {
-	if (Other.IsA('Kicker')) {
-		bForcePacketSplit = true;
-	}
-}
-
 simulated function Touch( actor Other )
 {
 	local string Package;
@@ -433,15 +427,16 @@ simulated function Touch( actor Other )
 			ClientMessage(Package);
 		}
 
-		if ((Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker' && Other.Class.Name != 'Kicker') ||
+		if ((Other.IsA('Kicker') && Other.Class.Name != 'Kicker') ||
 			(Other.Class.Name == 'swJumpPad')) {
 			zzForceUpdateUntil = Level.TimeSeconds + 0.15 + float(Other.GetPropertyText("ToggleTime"));
 			zzbForceUpdate = true;
 		}
 	}
-	if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0) {
+	if (Other.IsA('Kicker'))
+		bForcePacketSplit = true;
+	if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0)
 		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
-	}
 	if (Other.IsA('Teleporter'))
 		IgnoreZChangeTicks = 2;
 	Super.Touch(Other);
