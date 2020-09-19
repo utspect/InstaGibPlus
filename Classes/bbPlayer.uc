@@ -276,6 +276,8 @@ var float JumpEndVelocity;
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
 
+var int FrameCount;
+
 replication
 {
 	//	Client->Demo
@@ -5710,6 +5712,8 @@ event PostRender( canvas zzCanvas )
 	if (bDrawDebugData) {
 		xxDrawDebugData(zzCanvas, 10, 120);
 	}
+
+	FrameCount += 1;
 }
 
 exec simulated Function TellConsole()
