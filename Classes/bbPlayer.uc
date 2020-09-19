@@ -222,6 +222,7 @@ var bool SetPendingWeapon;
 
 // Net Updates
 var float TimeBetweenNetUpdates;
+var bool bForcePacketSplit;
 var float FakeCAPInterval; // Send a FakeCAP after no CAP has been sent for this amount of time
 var float ExtrapolationDelta;
 var bool bExtrapolatedLastUpdate;
@@ -410,6 +411,12 @@ function string ParseDelimited(string Text, string Delimiter, int Count, optiona
 	}
 
 	return Result;
+}
+
+simulated function PostTouch( Actor Other) {
+	if (Other.IsA('Kicker')) {
+		bForcePacketSplit = true;
+	}
 }
 
 simulated function Touch( actor Other )
@@ -2525,6 +2532,7 @@ function xxReplicateMove(
 		if (VSize(NewAccel - PendingMove.Acceleration) < 0.125 * AccelRate &&
 			PendingMove.bRun == (bRun > 0) &&
 			PendingMove.bDuck == (bDuck > 0) &&
+			bForcePacketSplit == false &&
 			bbSavedMove(PendingMove).MergeCount < 31
 		) {
 			//add this move to the pending move
@@ -2613,9 +2621,11 @@ function xxReplicateMove(
 	NewMove.SavedVelocity = Velocity;
 
 	if ((PendingMove.Delta < NetMoveDelta - ClientUpdateTime) &&
-		(PendingMove.bPressedJump == false))
+		(PendingMove.bPressedJump == false) &&
+		(bForcePacketSplit == false))
 		return;
 
+	bForcePacketSplit = false;
 	ClientUpdateTime = PendingMove.Delta - NetMoveDelta;
 	if ( SavedMoves == None )
 		SavedMoves = PendingMove;
