@@ -317,7 +317,7 @@ replication
 	unreliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
 		clientLastUpdateTime, clientForcedPosition, debugClientPing, debugNumOfForcedUpdates,
 		debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError,
-		ExtrapolationDelta;
+		ExtrapolationDelta, ClientDebugMessage;
 
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( RemoteRole == ROLE_AutonomousProxy && !bDemoRecording )
@@ -805,6 +805,10 @@ event ClientMessage( coerce string zzS, optional Name zzType, optional bool zzbB
 	zzPrevClientMessage = "";
 	if (Settings.bLogClientMessages)
 		Log(zzS, zzType);
+}
+
+function ClientDebugMessage(coerce string S, optional name Type, optional bool bBeep) {
+	ClientMessage(S,Type,bBeep);
 }
 
 simulated function xxCheckAce()
