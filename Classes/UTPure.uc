@@ -322,31 +322,6 @@ function bool IsMapExcluded (string MapName)
 	return false;
 }
 
-function string trim(string source)
-{
-	local int index;
-	local string result;
-
-	// Remove leading spaces.
-	result = source;
-	while (index < len(result) && mid(result, index, 1) == " ")
-        {
-		index++;
-	}
-	result = mid(result, index);
-
-	// Remove trailing spaces.
-	index = len(result) - 1;
-	while (index >= 0 && mid(result, index, 1) == " ")
-        {
-		index--;
-	}
-	result = left(result, index + 1);
-
-	// Return new string.
-	return result;
-}
-
 /////////////////////////////////////////////////////////////////////////
 
 function int getErrorDetails() {
@@ -391,17 +366,6 @@ function xxReplaceTeamInfo()
 		zzTGP.Teams[zzi].TeamIndex = zzi;
 		TournamentGameReplicationInfo(zzTGP.GameReplicationInfo).Teams[zzi] = zzTGP.Teams[zzi];
 	}
-}
-
-// Helpfunction
-static final function string xxGetPackage(string str)
-{
-	local int pos;
-
-	pos = Instr(str, ".");
-	if (pos == -1)
-		return str;
-	return Left(str, pos);
 }
 
 // TICK!!! And it's not the bug kind. Sorta :/
