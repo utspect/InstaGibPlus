@@ -97,11 +97,6 @@ var PureAutoPause	zzAutoPauser;
 // What server info is used
 var Class<ServerInfo> zzSI;
 
-// MD5 Stuff
-var string zzPurePackageName;
-var string zzMD5KeyInit;
-var string zzPureMD5;
-
 var bbPlayer PlayerOwner;
 
 //Add the maplist where kickers will work using normal network
@@ -170,7 +165,6 @@ function PostBeginPlay()
 	local ModifyLoginHandler        MLH;
 	local int	ppCnt;
 	local string	ServPacks, curMLHPack, sTag, fullpack;
-	local string zzMD5Values;
 	local int XC_Version;
 
 	Super.PostBeginPlay();
@@ -270,9 +264,6 @@ function PostBeginPlay()
 		MLH.Accepted();
 
 	xxBuildAntiTimerList();
-
-	zzMD5Values = "0123456789abcdef";
-	zzPurePackageName = Default.VersionStr$Default.ThisVer;
 
 	//Log("bAutoPause:"@bAutoPause@"bTeamGame:"@zzDMP.bTeamGame@"bTournament:"@zzDMP.bTournament);
 	if (bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
