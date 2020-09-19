@@ -158,6 +158,18 @@ function PreBeginPlay()
 
 }
 
+function PrintVersionInfo() {
+	local string LongStr;
+	LongStr = VersionStr@LongVersion$NiceVer;
+
+	if (Len(LongStr) > 20) {
+		xxLog("#"$class'StringUtils'.static.CenteredString(VersionStr, 29, " ")$"#");
+		LongStr = LongVersion$NiceVer;
+	}
+
+	xxLog("#"$class'StringUtils'.static.CenteredString(LongStr, 29, " ")$"#");
+}
+
 function PostBeginPlay()
 {
 	local int i;
@@ -171,7 +183,7 @@ function PostBeginPlay()
 
 	xxLog("");
 	xxLog("###############################");
-	xxLog("#        "$VersionStr$"       #");
+	PrintVersionInfo();
 	if (zzDMP == None)
 	{
 		xxLog("#          ERROR!             #");
@@ -184,14 +196,9 @@ function PostBeginPlay()
 	}
 	else
 	{
-		sTag = "#           "$LongVersion$NiceVer;
-		while (Len(sTag) < 30)
-			sTag = sTag$" ";
-		sTag = sTag$"#";
-		xxLog(sTag);
 		xxLog("###############################");
 	}
-	xxLog("");
+	xxLog("#");
 
 	if (AdvertiseMsg == 0)
 		sTag = "[CSHP]";
@@ -254,9 +261,9 @@ function PostBeginPlay()
 			xxLog("You need to add 'ServerPackages="$curMLHPack$"' for PlayerPack["$i$"] to load");
 	}
 	zzDMP.RegisterMessageMutator(self);
-	xxLog("");
-	xxLog(" Protection is Active!");
-	xxLog("");
+	xxLog("#");
+	xxLog("# Protection is Active!");
+	xxLog("#");
 	xxLog("###############################");
 
 	// Tell each ModifyLoginHandler They've been accepted
@@ -826,7 +833,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 
 	if (MutateString ~= "CheatInfo")
 	{
-		Sender.ClientMessage("This server is running "$VersionStr$NiceVer);
+		Sender.ClientMessage("This server is running "$VersionStr@NiceVer);
 		if (bUTPureEnabled)
 		{
 			Sender.ClientMessage("UTPure settings:");
@@ -1379,7 +1386,7 @@ defaultproperties
 	DefaultTeamHitSound=3
 	TeleRadius=210
 	ThrowVelocity=750
-	VersionStr="IG+ "
+	VersionStr="IG+"
 	LongVersion=""
 	ThisVer="5"
 	NiceVer="5"
