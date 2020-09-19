@@ -1845,7 +1845,6 @@ function xxServerMove(
 
 		LastCAPTime = ServerTimeStamp;
 		zzLastClientErr = 0;
-		xxRememberPosition();
 		return;
 	}
 
