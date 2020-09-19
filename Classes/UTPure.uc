@@ -306,13 +306,9 @@ function bool GetCurrentMapName (out string MapName)
 function bool IsMapExcluded (string MapName)
 {
     local int index;
-    local string MapNameUNR;
 
-    MapNameUNR = MapName$".unr";
-
-	while (index < arrayCount(ExcludeMapsForKickers))
-    {
-        if ((trim(ExcludeMapsForKickers[index]) ~= MapName) || (trim(ExcludeMapsForKickers[index]) ~= MapNameUNR))
+	while (index < arrayCount(ExcludeMapsForKickers)) {
+        if ((Left(ExcludeMapsForKickers[index], Len(MapName)) ~= MapName))
             return true;
         ++index;
 	}
