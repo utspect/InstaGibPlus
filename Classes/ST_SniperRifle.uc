@@ -264,7 +264,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 				return false; // disable crouching headshot
 			}
 
-			HitLocation += Normal(X+Y+Z) * (Other.CollisionRadius * 0.5);
+			HitLocation += (X * Other.CollisionRadius * 0.5);
 			if (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight)
 				return true;
 		}
