@@ -1283,7 +1283,8 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 			break;
 		}
 	}
-	// stijn: End of fix
+
+	ClientDebugMessage("["$FrameCount@Level.TimeSeconds$"] CAP");
 
 	Carried = CarriedDecoration;
 	OldLoc = Location;
