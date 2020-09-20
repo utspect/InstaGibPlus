@@ -121,6 +121,7 @@ var bool bIsPatch469;
 var bool bClientIsWalking;
 var bool bJustRespawned;
 var float LastCAPTime; // ServerTime when last CAP was sent
+var float LastRealCAPTime;
 var vector oldClientLoc;
 var decoration carriedFlag;
 
@@ -229,6 +230,11 @@ var bool bExtrapolatedLastUpdate;
 var vector SavedLocation;
 var vector SavedVelocity;
 var vector SavedAcceleration;
+
+// Clientside smoothing of position adjustment.
+var vector PreAdjustLocation;
+var vector AdjustLocationOffset;
+var float AdjustLocationAlpha;
 
 // SSR Beam
 var float LastSSRBeamCreated;
@@ -1232,6 +1238,15 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 		return;
 	CurrentTimeStamp = TimeStamp;
 
+	// Higor: keep track of Position prior to adjustment
+	// and stop current smoothed adjustment (if in progress).
+	PreAdjustLocation = Location;
+	if ( AdjustLocationAlpha > 0 )
+	{
+		AdjustLocationAlpha = 0;
+		AdjustLocationOffset = vect(0,0,0);
+	}
+
 	SetPhysics(newPhysics);
 
 	SetBase(NewBase);
@@ -1251,26 +1266,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 			SavedMoves = bbSavedMove(CurrentMove.NextMove);
 			CurrentMove.NextMove = FreeMoves;
 			FreeMoves = CurrentMove;
-			if (CurrentMove.TimeStamp == CurrentTimeStamp)
-			{
-
-				// if this is a small adjustment that does not
-				// change our state, then reject it. This way
-				// we can ensure that movement remains smooth
-				DeltaLoc = CurrentMove.SavedLocation - NewLoc;
-				DeltaLoc.Z = FMax(Abs(DeltaLoc.Z) - MaxStepHeight, 0);
-				if ((DeltaLoc dot DeltaLoc) < 9 &&
-					// VSize(CurrentMove.SavedVelocity - NewVelocity) < 3 &&  // stijn: UE2 also checked velocity but honestly there isn't really any point in doing that...
-					IsInState(newState))
-				{
-					debugNumOfIgnoredForceUpdates += 1;
-					CurrentMove.Clear2();
-					return;
-				};
-				// ok, this is a serious adjustment. Proceed
-				CurrentMove.Clear2();
-				break;
-			}
 			CurrentMove.Clear2();
 			CurrentMove = bbSavedMove(SavedMoves);
 		}
@@ -1341,6 +1336,8 @@ function ClientUpdatePosition()
 	local float TotalTime;
 	local Pawn P;
 	local vector Dir;
+	local float AdjustDistance;
+	local vector PostAdjustLocation;
 
 	bUpdatePosition = false;
 	realbRun= bRun;
@@ -1376,6 +1373,26 @@ function ClientUpdatePosition()
 	if (!zzbFakeUpdate && PendingMove != none) {
 		ClientReplayMove(bbSavedMove(PendingMove));
 	}
+
+	if (zzbFakeUpdate == false) {
+		// Higor: evaluate location adjustment and see if we should either
+		// - Discard it
+		// - Negate and process over a certain amount of time.
+		// - Keep adjustment as is (instant relocation)
+		AdjustLocationOffset = (Location - PreAdjustLocation);
+		AdjustDistance = VSize(AdjustLocationOffset);
+		AdjustLocationAlpha = 0;
+		if ((AdjustDistance < 50) && FastTrace(Location,PreAdjustLocation))
+		{
+			// Undo adjustment and re-enact smoothly
+			PostAdjustLocation = Location;
+			MoveSmooth( -AdjustLocationOffset);
+			AdjustLocationAlpha = PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation;
+			AdjustLocationOffset = (PostAdjustLocation - Location) / AdjustLocationAlpha;
+		}
+	}
+	// Keep as is.
+
 	bUpdating = false;
 	bDuck = realbDuck;
 	bRun = realbRun;
@@ -1822,6 +1839,9 @@ function xxServerMove(
 			zzForceUpdateUntil = 0;
 	}
 
+	if (ServerTimeStamp < LastRealCAPTime + PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation + AverageServerDeltaTime)
+		return;
+
 	if (zzbForceUpdate)
 	{
 		debugClientForceUpdate = zzbForceUpdate;
@@ -1849,6 +1869,7 @@ function xxServerMove(
 			xxCAP(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
 
 		LastCAPTime = ServerTimeStamp;
+		LastRealCAPTime = ServerTimeStamp;
 		zzLastClientErr = 0;
 		return;
 	}
@@ -2520,6 +2541,20 @@ function xxReplicateMove(
 	local vector Accel;
 	local int MiscData;
 	local EPhysics OldPhys;
+
+	// Higor: process smooth adjustment.
+	if (AdjustLocationAlpha > 0)
+	{
+		// explicit condition to avoid floating point imprecision in pre-469 versions
+		if (AdjustLocationAlpha > DeltaTime) {
+			MoveSmooth(AdjustLocationOffset * DeltaTime);
+			AdjustLocationAlpha -= DeltaTime;
+		} else {
+			MoveSmooth(AdjustLocationOffset * AdjustLocationAlpha);
+			AdjustLocationAlpha = 0;
+			AdjustLocationOffset = vect(0,0,0);
+		}
+	}
 
 	if ( VSize(NewAccel) > 3072)
 		NewAccel = 3072 * Normal(NewAccel);
