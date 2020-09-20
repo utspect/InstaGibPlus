@@ -803,7 +803,8 @@ event ClientMessage( coerce string zzS, optional Name zzType, optional bool zzbB
 }
 
 function ClientDebugMessage(coerce string S, optional name Type, optional bool bBeep) {
-	ClientMessage(S,Type,bBeep);
+	if (bDrawDebugData)
+		ClientMessage(S,Type,bBeep);
 }
 
 simulated function xxCheckAce()
