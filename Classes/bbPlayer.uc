@@ -2541,19 +2541,14 @@ function xxReplicateMove(
 	local vector Accel;
 	local int MiscData;
 	local EPhysics OldPhys;
+	local float AdjustAlpha;
 
 	// Higor: process smooth adjustment.
 	if (AdjustLocationAlpha > 0)
 	{
-		// explicit condition to avoid floating point imprecision in pre-469 versions
-		if (AdjustLocationAlpha > DeltaTime) {
-			MoveSmooth(AdjustLocationOffset * DeltaTime);
-			AdjustLocationAlpha -= DeltaTime;
-		} else {
-			MoveSmooth(AdjustLocationOffset * AdjustLocationAlpha);
-			AdjustLocationAlpha = 0;
-			AdjustLocationOffset = vect(0,0,0);
-		}
+		AdjustAlpha = FMin(AdjustLocationAlpha, DeltaTime);
+		MoveSmooth(AdjustLocationOffset * AdjustAlpha);
+		AdjustLocationAlpha -= AdjustAlpha;
 	}
 
 	if ( VSize(NewAccel) > 3072)
