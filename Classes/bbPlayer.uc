@@ -2168,10 +2168,12 @@ exec function Fire( optional float F )
 	if (!bNewNet || !xxWeaponIsNewNet()) {
 		if (xxCanFire())
 			Super.Fire(F);
-	} else if (Role < ROLE_Authority && Level.Game.bGameEnded == false)
-		Weapon.ClientFire(1);
-	else
+	} else if (Role < ROLE_Authority && Level.Game.bGameEnded == false) {
+		if (Weapon != none)
+			Weapon.ClientFire(1);
+	} else {
 		Super.Fire(F);
+	}
 	xxDisableCarcasses();
 }
 
