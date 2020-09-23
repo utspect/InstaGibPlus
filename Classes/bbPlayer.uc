@@ -231,6 +231,11 @@ var vector SavedLocation;
 var vector SavedVelocity;
 var vector SavedAcceleration;
 
+// Clientside smoothing of position adjustment.
+var vector IGPlus_PreAdjustLocation;
+var vector IGPlus_AdjustLocationOffset;
+var float IGPlus_AdjustLocationAlpha;
+
 // SSR Beam
 var float LastSSRBeamCreated;
 
@@ -1226,11 +1231,11 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 
 	// Higor: keep track of Position prior to adjustment
 	// and stop current smoothed adjustment (if in progress).
-	PreAdjustLocation = Location;
-	if ( AdjustLocationAlpha > 0 )
+	IGPlus_PreAdjustLocation = Location;
+	if ( IGPlus_AdjustLocationAlpha > 0 )
 	{
-		AdjustLocationAlpha = 0;
-		AdjustLocationOffset = vect(0,0,0);
+		IGPlus_AdjustLocationAlpha = 0;
+		IGPlus_AdjustLocationOffset = vect(0,0,0);
 	}
 
 	SetPhysics(newPhysics);
@@ -1301,15 +1306,15 @@ function IGPlus_ClientReplayMove(bbSavedMove M) {
 	local float dt;
 
 	SetRotation(M.Rotation);
-	ViewRotation = M.SavedViewRotation;
+	ViewRotation = M.IGPlus_SavedViewRotation;
 
-	dt = M.Delta / (M.MergeCount + 1);
-	for (i = M.MergeCount; i > 0; i -= 1)
+	dt = M.Delta / (M.IGPlus_MergeCount + 1);
+	for (i = M.IGPlus_MergeCount; i > 0; i -= 1)
 		MoveAutonomous(dt, M.bRun, M.bDuck, false, DODGE_None, M.Acceleration, rot(0,0,0));
 
 	MoveAutonomous(dt, M.bRun, M.bDuck, M.bPressedJump, M.DodgeMove, M.Acceleration, rot(0,0,0));
-	M.SavedLocation = Location;
-	M.SavedVelocity = Velocity;
+	M.IGPlus_SavedLocation = Location;
+	M.IGPlus_SavedVelocity = Velocity;
 }
 
 function ClientUpdatePosition()
@@ -1363,16 +1368,16 @@ function ClientUpdatePosition()
 		// - Discard it
 		// - Negate and process over a certain amount of time.
 		// - Keep adjustment as is (instant relocation)
-		AdjustLocationOffset = (Location - PreAdjustLocation);
-		AdjustDistance = VSize(AdjustLocationOffset);
-		AdjustLocationAlpha = 0;
-		if ((AdjustDistance < 50) && FastTrace(Location,PreAdjustLocation))
+		IGPlus_AdjustLocationOffset = (Location - IGPlus_PreAdjustLocation);
+		AdjustDistance = VSize(IGPlus_AdjustLocationOffset);
+		IGPlus_AdjustLocationAlpha = 0;
+		if ((AdjustDistance < 50) && FastTrace(Location,IGPlus_PreAdjustLocation))
 		{
 			// Undo adjustment and re-enact smoothly
 			PostAdjustLocation = Location;
-			MoveSmooth( -AdjustLocationOffset);
-			AdjustLocationAlpha = PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation;
-			AdjustLocationOffset = (PostAdjustLocation - Location) / AdjustLocationAlpha;
+			MoveSmooth( -IGPlus_AdjustLocationOffset);
+			IGPlus_AdjustLocationAlpha = PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation;
+			IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location) / IGPlus_AdjustLocationAlpha;
 		}
 	}
 	// Keep as is.
@@ -2519,11 +2524,11 @@ function xxReplicateMove(
 	local float AdjustAlpha;
 
 	// Higor: process smooth adjustment.
-	if (AdjustLocationAlpha > 0)
+	if (IGPlus_AdjustLocationAlpha > 0)
 	{
-		AdjustAlpha = FMin(AdjustLocationAlpha, DeltaTime);
-		MoveSmooth(AdjustLocationOffset * AdjustAlpha);
-		AdjustLocationAlpha -= AdjustAlpha;
+		AdjustAlpha = FMin(IGPlus_AdjustLocationAlpha, DeltaTime);
+		MoveSmooth(IGPlus_AdjustLocationOffset * AdjustAlpha);
+		IGPlus_AdjustLocationAlpha -= AdjustAlpha;
 	}
 
 	if ( VSize(NewAccel) > 3072)
@@ -2544,7 +2549,7 @@ function xxReplicateMove(
 			PendingMove.bRun == (bRun > 0) &&
 			PendingMove.bDuck == (bDuck > 0) &&
 			bForcePacketSplit == false &&
-			bbSavedMove(PendingMove).MergeCount < 31
+			bbSavedMove(PendingMove).IGPlus_MergeCount < 31
 		) {
 			//add this move to the pending move
 			PendingMove.TimeStamp = Level.TimeSeconds;
@@ -2558,7 +2563,7 @@ function xxReplicateMove(
 				PendingMove.DodgeMove = DodgeMove;
 			PendingMove.bPressedJump = bPressedJump || PendingMove.bPressedJump;
 			PendingMove.Delta = TotalTime;
-			bbSavedMove(PendingMove).MergeCount += 1;
+			bbSavedMove(PendingMove).IGPlus_MergeCount += 1;
 		} else {
 			SendSavedMove(bbSavedMove(PendingMove));
 
@@ -2627,9 +2632,9 @@ function xxReplicateMove(
 		NewMove = bbSavedMove(PendingMove);
 	}
 	NewMove.SetRotation( Rotation );
-	NewMove.SavedViewRotation = ViewRotation;
-	NewMove.SavedLocation = Location;
-	NewMove.SavedVelocity = Velocity;
+	NewMove.IGPlus_SavedViewRotation = ViewRotation;
+	NewMove.IGPlus_SavedLocation = Location;
+	NewMove.IGPlus_SavedVelocity = Velocity;
 
 	if ((PendingMove.Delta < NetMoveDelta - ClientUpdateTime) &&
 		(PendingMove.bPressedJump == false) &&
@@ -2663,7 +2668,7 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 		RelLoc = Location - Base.Location;
 
 	if (Level.Pauser != "") MiscData = MiscData | 0x01000000;
-	MiscData = MiscData | ((Move.MergeCount & 0x1F) << 19);
+	MiscData = MiscData | ((Move.IGPlus_MergeCount & 0x1F) << 19);
 	if (Move.bRun) MiscData = MiscData | 0x40000;
 	if (Move.bDuck) MiscData = MiscData | 0x20000;
 	if (bJumpStatus) MiscData = MiscData | 0x10000;

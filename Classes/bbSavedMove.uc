@@ -1,13 +1,14 @@
 class bbSavedMove extends SavedMove;
 
-function string ToString()
-{
-    return "[STAMP]"@TimeStamp@"[DELTA]"@Delta@"[DODGE]"@DodgeMove@"[LOC]"@SavedLocation@"[VEL]"@SavedVelocity@"("@VSize(SavedVelocity)@")"@"[ACCEL]"@Acceleration@"("@VSize(Acceleration)@")";
-}
+// Player attributes after applying this move
+var vector IGPlus_SavedLocation;
+var vector IGPlus_SavedVelocity;
+var rotator IGPlus_SavedViewRotation;
+var int IGPlus_MergeCount;
 
 function Clear2() {
     Clear();
-    MergeCount = 0;
+    IGPlus_MergeCount = 0;
 }
 
 defaultproperties
