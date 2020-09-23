@@ -12,7 +12,6 @@ simulated function NN_TraceFire()
 	local actor Other;
 	local bool zzbNN_Combo;
 	local bbPlayer bbP;
-	local Pawn P;
 	local bbPlayer zzbbP;
 	local actor zzOther;
 	local int oRadius,oHeight;

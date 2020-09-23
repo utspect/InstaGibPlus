@@ -6,13 +6,12 @@
 
 class ST_HumanBotPlus extends HumanBotPlus;
 
-function TakeDamage( int Damage, Pawn instigatedBy, Vector hitlocation, 
+function TakeDamage( int Damage, Pawn instigatedBy, Vector hitlocation,
 						Vector momentum, name damageType)
 {
 	local int actualDamage;
 	local bool bAlreadyDead;
 	local int ModifiedDamage1, ModifiedDamage2, RecentDamage;
-	local Pawn P;
 
 	if ( Role < ROLE_Authority )
 	{
@@ -20,7 +19,7 @@ function TakeDamage( int Damage, Pawn instigatedBy, Vector hitlocation,
 		return;
 	}
 
-	//log(self@"take damage in state"@GetStateName());	
+	//log(self@"take damage in state"@GetStateName());
 	bAlreadyDead = (Health <= 0);
 
 	if (Physics == PHYS_None)
@@ -47,8 +46,8 @@ function TakeDamage( int Damage, Pawn instigatedBy, Vector hitlocation,
 	}
 	else if ( (InstigatedBy != None) &&
 				(InstigatedBy.IsA(Class.Name) || self.IsA(InstigatedBy.Class.Name)) )
-		ActualDamage = ActualDamage * FMin(1 - ReducedDamagePct, 0.35); 
-	else if ( (ReducedDamageType == 'All') || 
+		ActualDamage = ActualDamage * FMin(1 - ReducedDamagePct, 0.35);
+	else if ( (ReducedDamageType == 'All') ||
 		((ReducedDamageType != '') && (ReducedDamageType == damageType)) )
 		actualDamage = float(actualDamage) * (1 - ReducedDamagePct);
 
@@ -62,7 +61,7 @@ function TakeDamage( int Damage, Pawn instigatedBy, Vector hitlocation,
 		PlayerPawn(instigatedBy).ReceiveLocalizedMessage(Class'PureHitSound', RecentDamage, PlayerReplicationInfo, instigatedBy.PlayerReplicationInfo);
 	}
 
-	AddVelocity( momentum ); 
+	AddVelocity( momentum );
 	Health -= actualDamage;
 	if (CarriedDecoration != None)
 		DropDecoration();
@@ -97,7 +96,7 @@ function TakeDamage( int Damage, Pawn instigatedBy, Vector hitlocation,
 		else
 			Destroy();
 	}
-	MakeNoise(1.0); 
+	MakeNoise(1.0);
 }
 
 simulated function String GetItemName( string FullName )	// Originally not Simulated .. wtf!
