@@ -522,7 +522,7 @@ simulated function InitSettings() {
 		}
 
 	if (Settings == none) {
-		ClientSettingsHelper = new(self, 'InstaGibPlus') class'Object'; // object name = INI file name
+		ClientSettingsHelper = new(none, 'InstaGibPlus') class'Object'; // object name = INI file name
 		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings'; // object name = Section name
 		Settings.CheckConfig();
 		Log("Loaded Settings!", 'IGPlus');
