@@ -43,7 +43,6 @@ var config PIDControllerSettings SmoothVRController;
 
 simulated function CheckConfig() {
 	local int i;
-	local int p;
 	local string PackageName;
 
 	PackageName = string(self.Class);

@@ -233,8 +233,6 @@ simulated function InitSettings() {
 
 event Possess()
 {
-	local Mover M;
-
 	InitSettings();
 
 	if ( Level.Netmode == NM_Client )
@@ -502,9 +500,7 @@ auto state CheatFlying
         local int realbRun, realbDuck;
         local bool bRealJump;
 
-        local float TotalTime, AdjPCol;
-        local pawn P;
-        local vector Dir;
+        local float TotalTime;
 
         bUpdatePosition = false;
         realbRun= bRun;

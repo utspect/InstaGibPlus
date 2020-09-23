@@ -18,7 +18,7 @@ pushd ..\System
 :: New package GUID, No doubts about staleness
 del %PACKAGE_NAME%.u
 
-ucc make -ini=%BUILD_DIR%make.ini
+ucc make -ini=%BUILD_DIR%make.ini -Silent
 
 :: dont do the post-process steps if compilation failed
 if ERRORLEVEL 1 goto cleanup

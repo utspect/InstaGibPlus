@@ -3,10 +3,10 @@ class NN_ut_FlameExplosionOwnerHidden extends ut_FlameExplosion;
 var bool bAlreadyHidden;
 
 simulated function Tick(float DeltaTime) {
-	
+
 	if ( Owner == None )
 		return;
-	
+
 	if (Level.NetMode == NM_Client && !bAlreadyHidden && Owner.IsA('bbPlayer') && bbPlayer(Owner).Player != None) {
 		LightType = LT_None;
 		Texture = None;
@@ -17,12 +17,10 @@ simulated function Tick(float DeltaTime) {
 
 simulated function PostBeginPlay()
 {
-	local actor a;
-
 	Super.PostBeginPlay();
 	if ( Level.NetMode != NM_DedicatedServer )
 	{
-		if (!Level.bHighDetailMode) 
+		if (!Level.bHighDetailMode)
 			Drawscale = 1.4;
 		else if (!bNetOwner)
 			Spawn(class'UT_ShortSmokeGen');
@@ -32,7 +30,7 @@ simulated function PostBeginPlay()
 
 function MakeSound()
 {
-	PlayOwnedSound (EffectSound1,,3.0);	
+	PlayOwnedSound (EffectSound1,,3.0);
 }
 
 defaultproperties

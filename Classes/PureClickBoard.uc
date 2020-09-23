@@ -98,7 +98,6 @@ local Actor zzA;
 
 event Timer()
 {
-local Pawn zzP;
 local bbPlayer zzbbP;
 local DeathMatchPlus zzDMP;
 

@@ -232,9 +232,9 @@ var vector SavedVelocity;
 var vector SavedAcceleration;
 
 // Clientside smoothing of position adjustment.
-var vector PreAdjustLocation;
-var vector AdjustLocationOffset;
-var float AdjustLocationAlpha;
+var vector IGPlus_PreAdjustLocation;
+var vector IGPlus_AdjustLocationOffset;
+var float IGPlus_AdjustLocationAlpha;
 
 // SSR Beam
 var float LastSSRBeamCreated;
@@ -469,12 +469,10 @@ simulated function bool xxNewMoveSmooth(vector NewLoc)
 
 simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeight, vector KLocation, int KRotationYaw, int KRotationPitch, int KRotationRoll, name KTag, name KEvent, float KKickVelocityX, float KKickVelocityY, float KKickVelocityZ, name KKickedClasses, bool KbKillVelocity, bool KbRandomize )
 {
-	local Actor A;
 	local Kicker K;
 	local AttachMover AM;
 	local rotator KRotation;
 	local vector KKickVelocity;
-	local int i;
 
 	if(Level.NetMode != NM_Client)
 		return;
@@ -578,11 +576,7 @@ simulated event PostNetBeginPlay()
 
 event Possess()
 {
-	local Mover M;
 	local Kicker K;
-	local Trigger T;
-	local int TimeLimitSeconds, clientFPS;
-	local bbPlayer zzPP;
 
 	InitSettings();
 
@@ -715,8 +709,6 @@ function xxClientReStart(EPhysics phys) {
 
 event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject )
 {
-	local Pawn P;
-
 	if (Message == class'CTFMessage2' && PureFlag(PlayerReplicationInfo.HasFlag) != None)
 		return;
 
@@ -1229,8 +1221,7 @@ function xxCAPWalkingWalking(float TimeStamp,
 simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics, vector NewLoc, vector NewVel, Actor NewBase)
 {
 	local Decoration Carried;
-	local vector OldLoc, DeltaLoc;
-	local bbPlayer bbP;
+	local vector OldLoc;
 	local bbSavedMove CurrentMove;
 	local NN_Kicker K;
 
@@ -1240,11 +1231,11 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 
 	// Higor: keep track of Position prior to adjustment
 	// and stop current smoothed adjustment (if in progress).
-	PreAdjustLocation = Location;
-	if ( AdjustLocationAlpha > 0 )
+	IGPlus_PreAdjustLocation = Location;
+	if ( IGPlus_AdjustLocationAlpha > 0 )
 	{
-		AdjustLocationAlpha = 0;
-		AdjustLocationOffset = vect(0,0,0);
+		IGPlus_AdjustLocationAlpha = 0;
+		IGPlus_AdjustLocationOffset = vect(0,0,0);
 	}
 
 	SetPhysics(newPhysics);
@@ -1310,20 +1301,20 @@ function xxFakeCAP(float TimeStamp)
 	bUpdatePosition = true;
 }
 
-function ClientReplayMove(bbSavedMove M) {
+function IGPlus_ClientReplayMove(bbSavedMove M) {
 	local int i;
 	local float dt;
 
 	SetRotation(M.Rotation);
-	ViewRotation = M.SavedViewRotation;
+	ViewRotation = M.IGPlus_SavedViewRotation;
 
-	dt = M.Delta / (M.MergeCount + 1);
-	for (i = M.MergeCount; i > 0; i -= 1)
+	dt = M.Delta / (M.IGPlus_MergeCount + 1);
+	for (i = M.IGPlus_MergeCount; i > 0; i -= 1)
 		MoveAutonomous(dt, M.bRun, M.bDuck, false, DODGE_None, M.Acceleration, rot(0,0,0));
 
 	MoveAutonomous(dt, M.bRun, M.bDuck, M.bPressedJump, M.DodgeMove, M.Acceleration, rot(0,0,0));
-	M.SavedLocation = Location;
-	M.SavedVelocity = Velocity;
+	M.IGPlus_SavedLocation = Location;
+	M.IGPlus_SavedVelocity = Velocity;
 }
 
 function ClientUpdatePosition()
@@ -1334,8 +1325,6 @@ function ClientUpdatePosition()
 	local rotator RealViewRotation, RealRotation;
 
 	local float TotalTime;
-	local Pawn P;
-	local vector Dir;
 	local float AdjustDistance;
 	local vector PostAdjustLocation;
 
@@ -1361,7 +1350,7 @@ function ClientUpdatePosition()
 		{
 			TotalTime += CurrentMove.Delta;
 			if (!zzbFakeUpdate) {
-				ClientReplayMove(CurrentMove);
+				IGPlus_ClientReplayMove(CurrentMove);
 			}
 			CurrentMove = bbSavedMove(CurrentMove.NextMove);
 		}
@@ -1371,7 +1360,7 @@ function ClientUpdatePosition()
 	// because the playerpawn position would be off constantly until the player
 	// stopped moving!
 	if (!zzbFakeUpdate && PendingMove != none) {
-		ClientReplayMove(bbSavedMove(PendingMove));
+		IGPlus_ClientReplayMove(bbSavedMove(PendingMove));
 	}
 
 	if (zzbFakeUpdate == false) {
@@ -1379,16 +1368,16 @@ function ClientUpdatePosition()
 		// - Discard it
 		// - Negate and process over a certain amount of time.
 		// - Keep adjustment as is (instant relocation)
-		AdjustLocationOffset = (Location - PreAdjustLocation);
-		AdjustDistance = VSize(AdjustLocationOffset);
-		AdjustLocationAlpha = 0;
-		if ((AdjustDistance < 50) && FastTrace(Location,PreAdjustLocation))
+		IGPlus_AdjustLocationOffset = (Location - IGPlus_PreAdjustLocation);
+		AdjustDistance = VSize(IGPlus_AdjustLocationOffset);
+		IGPlus_AdjustLocationAlpha = 0;
+		if ((AdjustDistance < 50) && FastTrace(Location,IGPlus_PreAdjustLocation))
 		{
 			// Undo adjustment and re-enact smoothly
 			PostAdjustLocation = Location;
-			MoveSmooth( -AdjustLocationOffset);
-			AdjustLocationAlpha = PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation;
-			AdjustLocationOffset = (PostAdjustLocation - Location) / AdjustLocationAlpha;
+			MoveSmooth( -IGPlus_AdjustLocationOffset);
+			IGPlus_AdjustLocationAlpha = PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation;
+			IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location) / IGPlus_AdjustLocationAlpha;
 		}
 	}
 	// Keep as is.
@@ -1573,7 +1562,7 @@ function EPhysics GetPhysics(int phys) {
 	return PHYS_None;
 }
 
-function OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData2) {
+function IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData2) {
 	local vector Accel;
 	local float OldTimeStamp;
 	local bool OldRun;
@@ -1613,8 +1602,6 @@ function xxServerMove(
 	optional int OldMoveData1,
 	optional int OldMoveData2
 ) {
-	local int i;
-
 	local float ServerDeltaTime;
 	local float DeltaTime;
 	local float SimStep;
@@ -1688,7 +1675,7 @@ function xxServerMove(
 		ClientLocAbs = ClientLoc + ClientBase.Location;
 
 	if ((OldMoveData1 & 0x3FF) != 0)
-		OldServerMove(TimeStamp, OldMoveData1, OldMoveData2);
+		IGPlus_OldServerMove(TimeStamp, OldMoveData1, OldMoveData2);
 
 	// View components
 	CompressedViewRotation = View;
@@ -2157,8 +2144,6 @@ simulated function xxDisableCarcasses()
 
 exec function Fire( optional float F )
 {
-	local bbPlayer bbP;
-
 	if (TournamentWeapon(Weapon) != none && TournamentWeapon(Weapon).FireAdjust != 1.0) {
 		xxServerCheater("FA");
 		TournamentWeapon(Weapon).FireAdjust = 1.0;
@@ -2180,7 +2165,6 @@ exec function Fire( optional float F )
 function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator ViewRot, optional actor HitActor, optional vector HitLoc, optional vector HitDiff, optional bool bSpecial, optional int ClientFRVI, optional float ClientAccuracy )
 {
 	local ImpactHammer IH;
-	local bbPlayer bbP;
 	local float TradeTimeMargin;
 
 	if (!bNewNet || !xxWeaponIsNewNet() || Role < ROLE_Authority)
@@ -2535,22 +2519,16 @@ function xxReplicateMove(
 	rotator DeltaRot
 ) {
 	local bbSavedMove NewMove, OldMove, LastMove;
-	local byte ClientRoll;
-	local float OldTimeDelta, TotalTime, NetMoveDelta;
-	local int OldAccel;
-	local vector BuildAccel, AccelNorm, Dir, RelLoc;
-	local Pawn P;
-	local vector Accel;
-	local int MiscData;
+	local float TotalTime, NetMoveDelta;
 	local EPhysics OldPhys;
 	local float AdjustAlpha;
 
 	// Higor: process smooth adjustment.
-	if (AdjustLocationAlpha > 0)
+	if (IGPlus_AdjustLocationAlpha > 0)
 	{
-		AdjustAlpha = FMin(AdjustLocationAlpha, DeltaTime);
-		MoveSmooth(AdjustLocationOffset * AdjustAlpha);
-		AdjustLocationAlpha -= AdjustAlpha;
+		AdjustAlpha = FMin(IGPlus_AdjustLocationAlpha, DeltaTime);
+		MoveSmooth(IGPlus_AdjustLocationOffset * AdjustAlpha);
+		IGPlus_AdjustLocationAlpha -= AdjustAlpha;
 	}
 
 	if ( VSize(NewAccel) > 3072)
@@ -2571,7 +2549,7 @@ function xxReplicateMove(
 			PendingMove.bRun == (bRun > 0) &&
 			PendingMove.bDuck == (bDuck > 0) &&
 			bForcePacketSplit == false &&
-			bbSavedMove(PendingMove).MergeCount < 31
+			bbSavedMove(PendingMove).IGPlus_MergeCount < 31
 		) {
 			//add this move to the pending move
 			PendingMove.TimeStamp = Level.TimeSeconds;
@@ -2585,7 +2563,7 @@ function xxReplicateMove(
 				PendingMove.DodgeMove = DodgeMove;
 			PendingMove.bPressedJump = bPressedJump || PendingMove.bPressedJump;
 			PendingMove.Delta = TotalTime;
-			bbSavedMove(PendingMove).MergeCount += 1;
+			bbSavedMove(PendingMove).IGPlus_MergeCount += 1;
 		} else {
 			SendSavedMove(bbSavedMove(PendingMove));
 
@@ -2654,9 +2632,9 @@ function xxReplicateMove(
 		NewMove = bbSavedMove(PendingMove);
 	}
 	NewMove.SetRotation( Rotation );
-	NewMove.SavedViewRotation = ViewRotation;
-	NewMove.SavedLocation = Location;
-	NewMove.SavedVelocity = Velocity;
+	NewMove.IGPlus_SavedViewRotation = ViewRotation;
+	NewMove.IGPlus_SavedLocation = Location;
+	NewMove.IGPlus_SavedVelocity = Velocity;
 
 	if ((PendingMove.Delta < NetMoveDelta - ClientUpdateTime) &&
 		(PendingMove.bPressedJump == false) &&
@@ -2690,7 +2668,7 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 		RelLoc = Location - Base.Location;
 
 	if (Level.Pauser != "") MiscData = MiscData | 0x01000000;
-	MiscData = MiscData | ((Move.MergeCount & 0x1F) << 19);
+	MiscData = MiscData | ((Move.IGPlus_MergeCount & 0x1F) << 19);
 	if (Move.bRun) MiscData = MiscData | 0x40000;
 	if (Move.bDuck) MiscData = MiscData | 0x20000;
 	if (bJumpStatus) MiscData = MiscData | 0x10000;
@@ -3223,7 +3201,6 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 
 simulated function bool HaveAppliedVelocity(float TimeStamp) {
 	local int i;
-	local bool equal;
 	local int greaterCount;
 	for(i = 0; i < NumLastAddVelocityTimeStamps; i += 1) {
 		if (LastAddVelocityTimeStamp[i] == TimeStamp)
@@ -3295,10 +3272,8 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 	local int actualDamage;
 	local bool bAlreadyDead;
 	local int ModifiedDamage1, ModifiedDamage2, RecentDamage;
-	local bool bPreventLockdown;		// Avoid the lockdown effect.
 	local Pawn P;
 	local Inventory Inv;
-	local Weapon W;
 
 	if ( Role < ROLE_Authority )
 	{
@@ -3669,9 +3644,6 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 {
 	local pawn OtherPawn;
 	local actor A;
-	local carcass carc;
-	local Weapon W;
-	local bbPlayer bbK;
 
 	// mutator hook to prevent deaths
 	// WARNING - don't prevent bot suicides - they suicide when really needed
@@ -3720,8 +3692,6 @@ simulated function PlayHitSound(int Dmg)
 	local Actor SoundPlayer;
 	local float Pitch;
 	local int HS;
-
-	local PlayerPawn PP;
 
 	if (Dmg > 0) {
 
@@ -4566,45 +4536,15 @@ function GiveMeWeapons()
 	local Weapon w, Best;
 	local float Current, Highest;
 	local DeathMatchPlus DMP;
-	local PureStatMutator PSM;
 	local string WeaponList[32], s;
 	local int WeapCnt, x;				// Grr, wish UT had dyn arrays :P
 	local bool bAlready;
-	local string PreFix;
 
 	DMP = DeathMatchPlus(Level.Game);
 	if (DMP == None) return;			// If DMP is none, I would never be here, so darnit really? :P
 
 	if (DMP.BaseMutator != None)			// Add the default weapon
 		WeaponList[WeapCnt++] = string(DMP.BaseMutator.MutatedDefaultWeapon());
-
-	/* if (bNewNet)
-	{
-		PreFix = "UN"$class'UTPure'.default.ThisVer$".";
-
-		WeaponList[WeapCnt++] = PreFix$"ST_enforcer";	// If it is instagib/other the enforcer will be removed upon spawn
-
-		if (DMP.bUseTranslocator)			// Sneak in translocator
-			WeaponList[WeapCnt++] = PreFix$"ST_Translocator";
-	}
-	else
-	{
-		PreFix = "Botpack.";
-
-		WeaponList[WeapCnt++] = "Botpack.Enforcer";	// If it is instagib/other the enforcer will be removed upon spawn
-
-		if (DMP.bUseTranslocator)			// Sneak in translocator
-			WeaponList[WeapCnt++] = "Botpack.Translocator";
-	}
-
-	for (x = 0; x < 8; x++)
-		if (zzUTPure.zzDefaultWeapons[x] != '')
-		{
-			if (zzUTPure.zzDefaultPackages[x] == "")
-				WeaponList[WeapCnt++] = PreFix$string(zzUTPure.zzDefaultWeapons[x]);
-			else
-				WeaponList[WeapCnt++] = zzUTPure.zzDefaultPackages[x]$"."$string(zzUTPure.zzDefaultWeapons[x]);
-		} */
 
 	ForEach AllActors(Class'Weapon', w)
 	{	// Find the rest of the weapons around the map.
@@ -4835,7 +4775,6 @@ state Dying
 
 	simulated function BeginState()
 	{
-		local bbPlayer bbP;
 		local float LKT;
 
 		bClientIsWalking = false;
@@ -5358,7 +5297,7 @@ function CalcAvgTick()
 
 function xxPlayerTickEvents()
 {
-	local float CurrentTime, ClosestDist, Dist;
+	local float CurrentTime;
 
 	CurrentTime = Level.TimeSeconds;
 
@@ -5594,12 +5533,10 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 
 event PreRender( canvas zzCanvas )
 {
-	local SpawnNotify zzOldSN;
 	local int i;
 	local PlayerReplicationInfo zzPRI;
 	local PlayerPawn zzPPOwner;
 	local canvas lmaoCanvas;
-	local string stringTest;
 	local int skin;
 
 	zzbDemoRecording = PureLevel != None && PureLevel.zzDemoRecDriver != None;
@@ -5686,8 +5623,6 @@ event PreRender( canvas zzCanvas )
 
 event PostRender( canvas zzCanvas )
 {
-	local SpawnNotify zzOldSN;
-
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas.Class != Class'Canvas');
 	if (zzbRenderHUD)
 	{
@@ -7122,7 +7057,6 @@ exec function bool SwitchToBestWeapon()
 {
 	local float rating;
 	local int usealt;
-	local Inventory inv;
 
 	if (Inventory == None)
 		return false;
@@ -7661,8 +7595,6 @@ exec function ShootDead()
 
 exec function SetDemoMask(optional string zzMask)
 {
-	local string zzS;
-
 	if (zzMask != "")
 	{
 		Settings.DemoMask = zzMask;

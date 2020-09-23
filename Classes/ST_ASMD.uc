@@ -99,9 +99,7 @@ simulated function NN_TraceFire()
 {
 	local vector HitLocation, HitDiff, HitNormal, StartTrace, EndTrace, X,Y,Z;
 	local actor Other;
-	local bool zzbNN_Combo;
 	local bbPlayer bbP;
-	local Pawn P;
 	local bbPlayer zzbbP;
 	local actor zzOther;
 	local int oRadius,oHeight;
@@ -161,10 +159,6 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	local vector SmokeLocation,DVector;
 	local rotator SmokeRotation;
 	local float NumPoints,Mult;
-	local int i;
-	local class<RingExplosion> rc;
-	local RingExplosion r;
-	local bool zzbNN_Combo;
 
 	if (Owner.IsA('Bot'))
 		return false;
@@ -184,32 +178,6 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	SmokeRotation = rotator(HitLocation-Owner.Location);
 	if (NumPoints>15) NumPoints=15;
 	if ( NumPoints>1.0 ) SpawnEffect2(DVector, NumPoints, SmokeRotation, SmokeLocation);
-
-	/* if ( TazerProjectile(Other)!=None )
-	{
-		AmmoType.UseAmmo(2);
-		TazerProjectile(Other).SuperExplosion();
-	} */
-
-
-	/* if ( ST_TazerProj(Other)!=None )
-	{
-		ST_TazerProj(Other).NN_SuperExplosion(Pawn(Owner));
-		zzbNN_Combo = true;
-	}
-	else
-	{
-		if (Mult>1.5)
-			rc = class'RingExplosion3';
-		else
-			rc = class'RingExplosion5';
-
-		r = Spawn(rc,,, HitLocation+HitNormal*8,rotator(HitNormal));
-
-		if ( r != None )
-			r.PlaySound(r.ExploSound,,6);
-	}
-	return zzbNN_Combo; */
 }
 
 function SpawnEffect2(Vector DVector, int NumPoints, rotator SmokeRotation, vector SmokeLocation)
@@ -661,7 +629,7 @@ simulated function DoRingExplosion5(PlayerPawn Pwner, vector HitLocation, vector
 
 function SpawnEffect(vector HitLocation, vector SmokeLocation)
 {
-	local ShockBeam Smoke,shock;
+	local ShockBeam Smoke;
 	local Vector DVector;
 	local int NumPoints;
 	local rotator SmokeRotation;

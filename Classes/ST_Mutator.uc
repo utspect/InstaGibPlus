@@ -149,7 +149,6 @@ function ReplaceWeapons()
 	local Arena ArenaMutator;
 	local NewNetArena PA;
 	local int i;
-	local ScriptedPawn SP;
 
 	WeaponDisplay = 1;
 
@@ -234,7 +233,6 @@ function SwitchWeaponsInventory(Pawn Other)
 	local int NewCount, x;
 	local name n;
 	local UTPure UTP;
-	local Weapon NewWeapon;
 
 	if (Other.Weapon != None)
 		n = Other.Weapon.Class.Name;

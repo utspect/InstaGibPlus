@@ -21,7 +21,7 @@ var float BeamDuration;
 var float ImpactSize;
 var float ImpactDuration;
 var float ImpactPitch;
-var name MyDamageType;
+var name ST_MyDamageType;
 var int clientDamage;
 var bool bHitTimer;
 var bbPlayer globalbbP;
@@ -246,13 +246,7 @@ simulated function NN_TraceFire()
 {
 	local vector HitLocation, HitDiff, HitNormal, StartTrace, EndTrace, X,Y,Z;
 	local actor Other;
-	local bool zzbNN_Combo;
 	local bbPlayer bbP;
-	local Pawn P;
-	local bbPlayer zzbbP;
-	local actor zzOther;
-	local int oRadius,oHeight;
-	local vector zzX,zzY,zzZ,zzStartTrace,zzEndTrace,zzHitLocation,zzHitNormal, HitOffset;
 
 	if (Owner.IsA('Bot'))
 		return;
@@ -288,14 +282,13 @@ simulated function NN_TraceFire()
 	NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(GV),Y,Z);
 	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, false);
 	if (Other == bbP.zzClientTTarget)
-		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(GV), MyDamageType);
+		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(GV), ST_MyDamageType);
 }
 
 simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
 
 	local bbPlayer bbP;
-	local NN_AlternateSuperShockBeamImpact impact;
 	local float is, f;
 	local actor a;
 	local vector Offset;
@@ -352,10 +345,7 @@ simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vect
 function TraceFire( float Accuracy )
 {
 	local bbPlayer bbP;
-	local bbPlayer bbPP;
 	local actor NN_Other;
-	local bool bShockCombo;
-	local NN_ShockProjOwnerHidden NNSP;
 	local vector NN_HitLoc, HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
 
 	if (Owner.IsA('Bot'))
@@ -441,7 +431,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 	if ( (Other != self) && (Other != Owner) && (Other != None) )
 	{
-		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
+		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, ST_MyDamageType);
 	}
 }
 
@@ -564,6 +554,6 @@ defaultproperties
      ImpactDuration=1.20
      ImpactPitch=1.25
 	 CustImpactSound=Sound'UnrealShare.General.Expla02'
-	 MyDamageType=jolted
+	 ST_MyDamageType=jolted
 	 bHitTimer=False
 }

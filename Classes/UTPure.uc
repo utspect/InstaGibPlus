@@ -120,9 +120,6 @@ native(1718) final function bool AddToPackageMap( optional string PkgName);
 
 function PreBeginPlay()
 {
-	local string AbsTime;
-	local GameInfo GI;
-	local string n;
 	local int XC_Version;
 
 	XC_Version = int(ConsoleCommand("get ini:engine.engine.gameengine XC_Version"));
@@ -619,7 +616,6 @@ function ModifyLogin(out class<playerpawn> SpawnClass, out string Portal, out st
 {
 	local class<playerpawn> origSC;
 	local class<Spectator>  specCls;
-	local bbPlayer PP;
 
 	// Someone claims that Engine.Pawn makes it here.
 
@@ -666,7 +662,6 @@ function ModifyLogin(out class<playerpawn> SpawnClass, out string Portal, out st
 function ModifyPlayer(Pawn Other)
 {
 	local bbPlayer zzP;
-	local PlayerPawn zzPP;
 
 	if (Other.IsA('TournamentPlayer') && bUTPureEnabled)
 	{
@@ -789,11 +784,9 @@ function Mutate(string MutateString, PlayerPawn Sender)
 	local bbPlayer zzbbPP;
 	local Pawn zzP;
 	local int zzi;
-	local float zzf;
 	local bool zzb;
 	local string zzS;
 	local PlayerReplicationInfo zzPRI;
-	local bbPlayer bbP;
 
 	if (MutateString ~= "CheatInfo")
 	{

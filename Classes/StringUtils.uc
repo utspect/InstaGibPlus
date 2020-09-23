@@ -22,7 +22,6 @@ static function string GetPackage() {
 
 static function string RepeatString(int Length, string S) {
 	local string result;
-	local string c;
 
 	if (Length <= 0 || Len(S) == 0) return "";
 
