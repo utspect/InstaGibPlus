@@ -1376,7 +1376,7 @@ function ClientUpdatePosition()
 			// Undo adjustment and re-enact smoothly
 			PostAdjustLocation = Location;
 			MoveSmooth( -IGPlus_AdjustLocationOffset);
-			IGPlus_AdjustLocationAlpha = PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation;
+			IGPlus_AdjustLocationAlpha = 0.35;
 			IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location) / IGPlus_AdjustLocationAlpha;
 		}
 	}
