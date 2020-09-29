@@ -224,6 +224,10 @@ var bool SetPendingWeapon;
 // Net Updates
 var float TimeBetweenNetUpdates;
 var bool bForcePacketSplit;
+var int PingAverage;
+var int PingCurrentAveragingSecond;
+var float PingRunningAverage;
+var int PingRunningAverageCount;
 var float FakeCAPInterval; // Send a FakeCAP after no CAP has been sent for this amount of time
 var float ExtrapolationDelta;
 var bool bExtrapolatedLastUpdate;
@@ -342,7 +346,8 @@ replication
 	unreliable if ( Role < ROLE_Authority )
 		bIsFinishedLoading, xxServerCheater, xxServerMove, xxServerMoveDead,
 		zzFalse, zzTrue, zzNetspeed, zzbBadConsole, zzbBadCanvas, zzbVRChanged,
-		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD;
+		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD,
+		PingAverage;
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
@@ -539,8 +544,6 @@ event PostBeginPlay()
 		zzWaitTime = 5.0;
 	}
 	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
-
-	PlayerReplicationInfo.NetUpdateFrequency = 10;
 }
 
 // called after PostBeginPlay on net client
@@ -1390,6 +1393,25 @@ function ClientUpdatePosition()
 	ViewRotation = RealViewRotation;
 	zzbFakeUpdate = true;
 	//log("Client adjusted "$self$" stamp "$CurrentTimeStamp$" location "$Location$" dodge "$DodgeDir);
+
+	UpdatePing();
+}
+
+function UpdatePing() {
+	local int CurrentSecond;
+
+	CurrentSecond = int(Level.TimeSeconds);
+
+	if (CurrentSecond != PingCurrentAveragingSecond) {
+		PingCurrentAveragingSecond = CurrentSecond;
+		PingAverage = int(1000 * PingRunningAverage / Level.TimeDilation);
+		PingRunningAverage = Level.TimeSeconds - CurrentTimeStamp;
+		PingRunningAverageCount = 1;
+	} else {
+		PingRunningAverage = (PingRunningAverage * PingRunningAverageCount) + (Level.TimeSeconds - CurrentTimeStamp);
+		PingRunningAverageCount++;
+		PingRunningAverage = PingRunningAverage / PingRunningAverageCount;
+	}
 }
 
 function xxServerReceiveStuff( vector TeleLoc, vector TeleVel )
@@ -7756,4 +7778,5 @@ defaultproperties
 	FakeCAPInterval=0.1
 	DodgeEndVelocity=0.2
 	JumpEndVelocity=1.0
+	PlayerReplicationInfoClass=Class'bbPlayerReplicationInfo'
 }
