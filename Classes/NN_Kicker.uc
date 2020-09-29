@@ -5,6 +5,7 @@ var float LastTimeStamp;
 
 simulated event Touch(Actor Other) {
 	local Actor A;
+	local vector D;
 
 	if (!Other.IsA(KickedClasses))
 		return;
@@ -12,8 +13,14 @@ simulated event Touch(Actor Other) {
 	if ((Level.NetMode == NM_Client) && !IGPlus_SimulateKick(Other))
 		return;
 
+	D = Other.Location - Location;
+	if (VSize(D * vect(1,1,0)) > Other.CollisionRadius + CollisionRadius)
+		return;
+	if (Abs(D.Z) > Other.CollisionHeight + CollisionHeight)
+		return;
+
 	if (Other.IsA('bbPlayer'))
-		bbPlayer(Other).ClientDebugMessage("["$bbPlayer(Other).FrameCount@Level.TimeSeconds$"] Kicker Touched");
+		bbPlayer(Other).ClientDebugMessage("Kicker Touched (client)");
 
 	PendingTouch = Other.PendingTouch;
 	Other.PendingTouch = self;
