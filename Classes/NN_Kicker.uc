@@ -19,8 +19,12 @@ simulated event Touch(Actor Other) {
 	if (Abs(D.Z) > Other.CollisionHeight + CollisionHeight)
 		return;
 
-	if (Other.IsA('bbPlayer'))
-		bbPlayer(Other).ClientDebugMessage("Kicker Touched (client)");
+	if (Other.IsA('bbPlayer')) {
+		if (Level.NetMode == NM_Client)
+			bbPlayer(Other).ClientDebugMessage("Kicker Touched (client)");
+		else
+			bbPlayer(Other).ClientDebugMessage("Kicker Touched (server)");
+	}
 
 	PendingTouch = Other.PendingTouch;
 	Other.PendingTouch = self;

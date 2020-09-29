@@ -438,10 +438,7 @@ simulated function Touch( actor Other )
 			ClientMessage(Package);
 		}
 
-		if (Other.IsA('Kicker'))
-			ClientDebugMessage("Kicker Touched (server)");
-
-		if ((Other.IsA('Kicker') && Other.Class.Name != 'Kicker') ||
+		if ((Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker') ||
 			(Other.Class.Name == 'swJumpPad')
 		) {
 			ClientDebugMessage("Touch forced updates");

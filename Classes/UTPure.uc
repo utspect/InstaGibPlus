@@ -289,6 +289,37 @@ function PostBeginPlay()
 			bExludeKickers = true;
 /////////////////////////////////////////////////////////////////////////
 	SaveConfig();
+
+	ReplaceKickers();
+}
+
+function ReplaceKickers() {
+	local Kicker K;
+	local NN_Kicker NK;
+	local AttachMover AM;
+
+	foreach AllActors(class'Kicker', K) {
+		if (K.Class.Name != 'Kicker')
+			continue;
+
+		NK = Spawn(class'NN_Kicker', Self, , K.Location, K.Rotation);
+		NK.SetCollisionSize(K.CollisionRadius, K.CollisionHeight);
+		NK.Tag = K.Tag;
+		NK.Event = K.Event;
+		NK.KickVelocity = K.KickVelocity;
+		NK.KickedClasses = K.KickedClasses;
+		NK.bKillVelocity = K.bKillVelocity;
+		NK.bRandomize = K.bRandomize;
+
+		if(NK.Tag != '')
+			foreach AllActors(class'AttachMover', AM)
+				if (AM.AttachTag == NK.Tag) {
+					NK.SetBase(AM);
+					break;
+				}
+
+		K.SetCollision(false, false, false);
+	}
 }
 
 // Necessary functions to let the "bExludeKickers" list work
