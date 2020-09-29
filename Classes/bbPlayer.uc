@@ -1919,7 +1919,7 @@ function xxServerMove(
 		zzLastClientErr = 0;
 	}
 
-	if (ServerTimeStamp - LastCAPTime > FakeCAPInterval) {
+	if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval) {
 		xxFakeCAP(TimeStamp);
 		LastCAPTime = ServerTimeStamp;
 	}
