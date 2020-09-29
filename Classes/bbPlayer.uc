@@ -438,8 +438,13 @@ simulated function Touch( actor Other )
 			ClientMessage(Package);
 		}
 
+		if (Other.IsA('Kicker'))
+			ClientDebugMessage("Kicker Touched (server)");
+
 		if ((Other.IsA('Kicker') && Other.Class.Name != 'Kicker') ||
-			(Other.Class.Name == 'swJumpPad')) {
+			(Other.Class.Name == 'swJumpPad')
+		) {
+			ClientDebugMessage("Touch forced updates");
 			zzForceUpdateUntil = Level.TimeSeconds + 0.15 + float(Other.GetPropertyText("ToggleTime"));
 			zzbForceUpdate = true;
 		}
@@ -804,8 +809,10 @@ event ClientMessage( coerce string zzS, optional Name zzType, optional bool zzbB
 }
 
 function ClientDebugMessage(coerce string S, optional name Type, optional bool bBeep) {
-	if (bDrawDebugData)
-		ClientMessage(S,Type,bBeep);
+	if (bDrawDebugData) {
+		if (Type == '') Type = 'IGPlus';
+		ClientMessage("["$FrameCount@Level.TimeSeconds$"] "$S,Type,bBeep);
+	}
 }
 
 simulated function xxCheckAce()
@@ -1270,7 +1277,7 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 		}
 	}
 
-	ClientDebugMessage("["$FrameCount@Level.TimeSeconds$"] CAP");
+	ClientDebugMessage("CAP");
 
 	foreach AllActors(class'NN_Kicker', K)
 		K.ForceReset();
