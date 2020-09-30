@@ -392,50 +392,13 @@ exec function Ghost()
 	Super.Ghost();
 }
 
-function string ParseDelimited(string Text, string Delimiter, int Count, optional bool bToEndOfLine)
-{
-	local string Result;
-	local int Found, i;
-	local string s;
-
-	Result = "";
-	Found = 1;
-
-	for(i=0;i<Len(Text);i++)
-	{
-		s = Mid(Text, i, 1);
-		if(InStr(Delimiter, s) != -1)
-		{
-			if(Found == Count)
-			{
-				if(bToEndOfLine)
-					return Result$Mid(Text, i);
-				else
-					return Result;
-			}
-
-			Found++;
-		}
-		else
-		{
-			if(Found >= Count)
-				Result = Result $ s;
-		}
-	}
-
-	return Result;
-}
-
 simulated function Touch( actor Other )
 {
-	local string Package;
-
 	if(Level.NetMode != NM_Client)
 	{
 		if (Class'UTPure'.Default.ShowTouchedPackage)
 		{
-			Package = ParseDelimited(string(Other.Class), ".", 1);
-			ClientMessage(Package);
+			ClientMessage(class'StringUtils'.static.PackageOfObject(Other));
 		}
 
 		if ((Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker') ||
