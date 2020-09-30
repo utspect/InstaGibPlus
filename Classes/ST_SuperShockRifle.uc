@@ -391,7 +391,7 @@ function TraceFire( float Accuracy )
 
 	if (bbP.zzNN_HitActor != None && (bbP.zzNN_HitActor.IsA('Pawn') || bbP.zzNN_HitActor.IsA('Projectile')) && FastTrace(bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff, StartTrace))
 	{
-		NN_HitLoc = bbP.zzNN_HitLoc;
+		NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
 	}
 	else
 	{
