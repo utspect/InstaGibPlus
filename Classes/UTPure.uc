@@ -295,12 +295,18 @@ function PostBeginPlay()
 
 function ReplaceKickers() {
 	local Kicker K;
+	local vector L;
 	local NN_Kicker NK;
 	local AttachMover AM;
 
 	foreach AllActors(class'Kicker', K) {
 		if (K.Class.Name != 'Kicker')
 			continue;
+
+		L.X = int(K.Location.X);
+		L.Y = int(K.Location.Y);
+		L.Z = int(K.Location.Z);
+		K.SetLocation(L);
 
 		NK = Spawn(class'NN_Kicker', Self, , K.Location, K.Rotation);
 		NK.SetCollisionSize(K.CollisionRadius, K.CollisionHeight);

@@ -582,7 +582,6 @@ simulated event PostNetBeginPlay()
 event Possess()
 {
 	local Kicker K;
-	local vector L;
 
 	InitSettings();
 
@@ -654,11 +653,6 @@ event Possess()
 			{
 				if (K.Class.Name != 'Kicker')
 					continue;
-
-				L.X = int(K.Location.X);
-				L.Y = int(K.Location.Y);
-				L.Z = int(K.Location.Z);
-				K.SetLocation(L);
 
 				xxClientKicker(K.CollisionRadius, K.CollisionHeight, K.Location, K.Rotation.Yaw, K.Rotation.Pitch, K.Rotation.Roll, K.Tag, K.Event, K.KickVelocity.X, K.KickVelocity.Y, K.KickVelocity.Z, K.KickedClasses, K.bKillVelocity, K.bRandomize );
 			}
