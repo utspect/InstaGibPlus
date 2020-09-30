@@ -331,6 +331,8 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 
 	if (bbPlayer(Owner) != None)
 		bbPlayer(Owner).xxClientDemoFix(None, class'ut_SuperRing2',HitLocation+HitNormal*8,,, rotator(HitNormal));
+
+	return false;
 }
 
 simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vector SmokeOffset, vector HitNormal)
