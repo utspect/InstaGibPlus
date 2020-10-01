@@ -2756,6 +2756,9 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	MiscData = MiscData | (int(Move.DodgeMove) << 8);
 	MiscData = MiscData | ((Rotation.Roll >> 8) & 0xFF);
 
+	if (Move.DodgeMove > DODGE_None && Move.DodgeMove < DODGE_Active)
+		ClientDebugMessage("Send Dodge"@Move.DodgeMove);
+
 	if (Move.JumpIndex > 0)  MiscData2 = MiscData2 | (Move.JumpIndex & 0x1F);
 	if (Move.DodgeIndex > 0) MiscData2 = MiscData2 | (Move.DodgeIndex & 0x1F) << 5;
 
