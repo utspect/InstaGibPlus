@@ -4160,7 +4160,7 @@ ignores SeePlayer, HearNoise, Bump;
 					DodgeMove = DodgeDir;
 			}
 
-			if ((DodgeDir != DODGE_None) && (DodgeDir != DODGE_Active))
+			if ((DodgeDir != DODGE_None) && (DodgeDir < DODGE_Active))
 			{
 				DodgeClickTimer -= DeltaTime;
 				if (DodgeClickTimer < 0)
