@@ -1696,6 +1696,27 @@ function xxServerMove(
 	NewbPressedJump = (bJumpStatus != NewbJumpStatus);
 	bJumpStatus = NewbJumpStatus;
 
+	// handle firing and alt-firing
+	if (bFired) {
+		if (bForceFire && (Weapon != None))
+			Weapon.ForceFire();
+		else if (bFire == 0)
+			Fire(0);
+		bFire = 1;
+	} else {
+		bFire = 0;
+	}
+
+	if (bAltFired) {
+		if (bForceAltFire && (Weapon != None))
+			Weapon.ForceAltFire();
+		else if (bAltFire == 0)
+			AltFire(0);
+		bAltFire = 1;
+	} else {
+		bAltFire = 0;
+	}
+
 	ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
 	if (ServerDeltaTime > 0.9)
 		ServerDeltaTime = FMin(ServerDeltaTime, MoveDeltaTime);
@@ -2592,6 +2613,10 @@ function xxReplicateMove(
 			if (PendingMove.bPressedJump == false && bPressedJump && bbSavedMove(PendingMove).JumpIndex < 0)
 				bbSavedMove(PendingMove).JumpIndex = bbSavedMove(PendingMove).IGPlus_MergeCount;
 			PendingMove.bPressedJump = bPressedJump || PendingMove.bPressedJump;
+			PendingMove.bFire = PendingMove.bFire || bJustFired || (bFire != 0);
+			PendingMove.bForceFire = PendingMove.bForceFire || bJustFired;
+			PendingMove.bAltFire = PendingMove.bAltFire || bJustAltFired || (bAltFire != 0);
+			PendingMove.bForceAltFire = PendingMove.bForceAltFire || bJustAltFired;
 			PendingMove.Delta = TotalTime;
 		} else {
 			SendSavedMove(bbSavedMove(PendingMove));
@@ -2637,6 +2662,10 @@ function xxReplicateMove(
 	NewMove.bPressedJump = bPressedJump;
 	if (bPressedJump)
 		bbSavedMove(PendingMove).JumpIndex = 0;
+	NewMove.bFire = (bJustFired || (bFire != 0));
+	NewMove.bAltFire = (bJustAltFired || (bAltFire != 0));
+	NewMove.bForceFire = bJustFired;
+	NewMove.bForceAltFire = bJustAltFired;
 	if ( Weapon != None ) // approximate pointing so don't have to replicate
 		Weapon.bPointing = ((bFire != 0) || (bAltFire != 0));
 	bJustFired = false;
@@ -2700,6 +2729,10 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	else
 		RelLoc = Location - Base.Location;
 
+	if (Move.bFire) MiscData = MiscData | 0x10000000;
+	if (Move.bAltFire) MiscData = MiscData | 0x08000000;
+	if (Move.bForceFire) MiscData = MiscData | 0x04000000;
+	if (Move.bForceAltFire) MiscData = MiscData | 0x02000000;
 	if (Level.Pauser != "") MiscData = MiscData | 0x01000000;
 	MiscData = MiscData | ((Move.IGPlus_MergeCount & 0x1F) << 19);
 	if (Move.bRun) MiscData = MiscData | 0x40000;
