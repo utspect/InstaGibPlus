@@ -1238,8 +1238,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 		}
 	}
 
-	ClientDebugMessage("CAP");
-
 	foreach AllActors(class'NN_Kicker', K)
 		K.ForceReset();
 
@@ -1561,7 +1559,9 @@ function IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData
 	local EDodgeDir DodgeMove;
 
 	OldTimeStamp = TimeStamp - (float(OldMoveData1 & 0x3FF) * 0.001);
-	if (CurrentTimeStamp >= OldTimeStamp) return;
+	if (CurrentTimeStamp + 0.001 >= OldTimeStamp) {
+		return;
+	}
 
 	OldJump   = (OldMoveData1 & 0x0400) != 0;
 	OldRun    = (OldMoveData1 & 0x0800) != 0;
@@ -1569,7 +1569,10 @@ function IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData
 	DodgeMove = GetDodgeDir((OldMoveData1 >> 13) & 7);
 	Accel.X   = (OldMoveData1 >> 16) * 0.1;
 	Accel.Y   = (OldMoveData2 << 16 >> 16) * 0.1;
-	Accel.Z = (OldMoveData2 >> 16) * 0.1;
+	Accel.Z   = (OldMoveData2 >> 16) * 0.1;
+
+	if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
+		ClientDebugMessage("Received Old Dodge"@DodgeMove@CurrentTimeStamp@OldTimeStamp);
 
 	UndoExtrapolation();
 	MoveAutonomous(OldTimeStamp - CurrentTimeStamp, OldRun, OldDuck, OldJump, DodgeMove, Accel, rot(0,0,0));
@@ -1677,6 +1680,9 @@ function xxServerMove(
 
 	DodgeIndex     = (MiscData2 & 0x03E0) >> 5;
 	JumpIndex      = (MiscData2 & 0x001F);
+
+	if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
+		ClientDebugMessage("Received Dodge"@DodgeMove@TimeStamp);
 
 	if (ClientBase == none)
 		ClientLocAbs = ClientLoc;
@@ -1897,6 +1903,8 @@ function xxServerMove(
 			xxCAPLevelBase(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
 		else
 			xxCAP(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+
+		ClientDebugMessage("Send CAP:"@TimeStamp@ClientLocErr@MaxPosError);
 
 		LastCAPTime = ServerTimeStamp;
 		LastRealCAPTime = ServerTimeStamp;
@@ -2555,6 +2563,17 @@ function bbSavedMove xxGetFreeMove() {
 	}
 }
 
+function bbSavedMove PickRedundantMove(bbSavedMove Old, bbSavedMove M, vector Accel, EDodgeDir DodgeMove) {
+	if (M.bPressedJump || (DodgeMove > DODGE_None && M.DodgeMove >= DODGE_Left && M.DodgeMove <= DODGE_Back)) {
+		return M;
+	}
+	if (VSize(Accel - M.Acceleration) > 0.125 * AccelRate) {
+		if (Old == none || (Old.bPressedJump == false && (Old.DodgeMove < DODGE_Left || Old.DodgeMove > DODGE_Back)))
+			return M;
+	}
+	return Old;
+}
+
 function xxReplicateMove(
 	float DeltaTime,
 	vector NewAccel,
@@ -2637,15 +2656,10 @@ function xxReplicateMove(
 	{
 		LastMove = bbSavedMove(SavedMoves);
 		while (LastMove.NextMove != none) {
-			if (LastMove.bPressedJump || (DodgeMove > DODGE_None && LastMove.DodgeMove >= DODGE_Left && LastMove.DodgeMove <= DODGE_Back)) {
-				OldMove = LastMove;
-			}
-			if (VSize(NewAccel - LastMove.Acceleration) > 0.125 * AccelRate) {
-				if (OldMove == none || (OldMove.bPressedJump == false && (OldMove.DodgeMove < DODGE_Left || OldMove.DodgeMove > DODGE_Back)))
-					OldMove = LastMove;
-			}
+			OldMove = PickRedundantMove(OldMove, LastMove, NewAccel, DodgeMove);
 			LastMove = bbSavedMove(LastMove.NextMove);
 		}
+		OldMove = PickRedundantMove(OldMove, LastMove, NewAccel, DodgeMove);
 	}
 
 	NewMove = xxGetFreeMove();
@@ -2655,13 +2669,13 @@ function xxReplicateMove(
 	// Set this move's data.
 	NewMove.DodgeMove = DodgeMove;
 	if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
-		bbSavedMove(PendingMove).DodgeIndex = 0;
+		NewMove.DodgeIndex = 0;
 	NewMove.TimeStamp = Level.TimeSeconds;
 	NewMove.bRun = (bRun > 0);
 	NewMove.bDuck = (bDuck > 0);
 	NewMove.bPressedJump = bPressedJump;
 	if (bPressedJump)
-		bbSavedMove(PendingMove).JumpIndex = 0;
+		NewMove.JumpIndex = 0;
 	NewMove.bFire = (bJustFired || (bFire != 0));
 	NewMove.bAltFire = (bJustAltFired || (bAltFire != 0));
 	NewMove.bForceFire = bJustFired;
@@ -4163,6 +4177,8 @@ ignores SeePlayer, HearNoise, Bump;
 		PlayDodge(DodgeMove);
 		DodgeDir = DODGE_Active;
 		SetPhysics(PHYS_Falling);
+		if (Level.NetMode == NM_Client)
+			ClientDebugMessage("Dodged"@DodgeMove);
 	}
 
 	function PlayerMove( float DeltaTime )
