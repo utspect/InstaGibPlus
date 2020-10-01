@@ -1560,15 +1560,15 @@ function IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData
 	local bool OldJump;
 	local EDodgeDir DodgeMove;
 
-	OldTimeStamp = TimeStamp - ((OldMoveData1 & 0x3FF) * 0.001);
+	OldTimeStamp = TimeStamp - (float(OldMoveData1 & 0x3FF) * 0.001);
 	if (CurrentTimeStamp >= OldTimeStamp) return;
 
-	OldJump = (OldMoveData1 & 0x0400) != 0;
-	OldRun = (OldMoveData1 & 0x0800) != 0;
-	OldDuck = (OldMoveData1 & 0x1000) != 0;
-	DodgeMove = GetDodgeDir((OldMoveData1 >>> 13) & 7);
-	Accel.X = (OldMoveData1 >> 16) * 0.1;
-	Accel.Y = (OldMoveData2 << 16 >> 16) * 0.1;
+	OldJump   = (OldMoveData1 & 0x0400) != 0;
+	OldRun    = (OldMoveData1 & 0x0800) != 0;
+	OldDuck   = (OldMoveData1 & 0x1000) != 0;
+	DodgeMove = GetDodgeDir((OldMoveData1 >> 13) & 7);
+	Accel.X   = (OldMoveData1 >> 16) * 0.1;
+	Accel.Y   = (OldMoveData2 << 16 >> 16) * 0.1;
 	Accel.Z = (OldMoveData2 >> 16) * 0.1;
 
 	UndoExtrapolation();
@@ -1587,6 +1587,7 @@ function xxServerMove(
 	float ClientLocZ,
 	vector ClientVel,
 	int MiscData,
+	int MiscData2,
 	int View,
 	Actor ClientBase,
 	optional int OldMoveData1,
@@ -1618,10 +1619,21 @@ function xxServerMove(
 	local bool NewbRun;
 	local bool NewbDuck;
 	local bool NewbJumpStatus;
+	local bool bFired;
+	local bool bAltFired;
+	local bool bForceFire;
+	local bool bForceAltFire;
 	local EDodgeDir DodgeMove;
 	local EPhysics ClientPhysics;
 	local byte ClientRoll;
 	local int MergeCount;
+	local int MoveIndex;
+	local int JumpIndex;
+	local int DodgeIndex;
+	local float JumpPos;
+	local float DodgePos;
+	local bool bDoJump;
+	local EDodgeDir DoDodge;
 	local bool bClientPaused;
 
 	if (bDeleteMe)
@@ -1650,14 +1662,21 @@ function xxServerMove(
 	ClientLoc.Y = ClientLocY;
 	ClientLoc.Z = ClientLocZ;
 
-	bClientPaused = (MiscData & 0x01000000) != 0;
-	MergeCount = (MiscData >> 19) & 0x1F;
-	NewbRun = (MiscData & 0x40000) != 0;
-	NewbDuck = (MiscData & 0x20000) != 0;
-	NewbJumpStatus = (MiscData & 0x10000) != 0;
-	DodgeMove = GetDodgeDir((MiscData >> 8) & 0xF);
-	ClientPhysics = GetPhysics((MiscData >> 12) & 0xF);
-	ClientRoll = (MiscData & 0xFF);
+	bFired         =             (MiscData & 0x10000000) != 0;
+	bAltFired      =             (MiscData & 0x08000000) != 0;
+	bForceFire     =             (MiscData & 0x04000000) != 0;
+	bForceAltFire  =             (MiscData & 0x02000000) != 0;
+	bClientPaused  =             (MiscData & 0x01000000) != 0;
+	MergeCount     =             (MiscData & 0x00F80000) >> 19;
+	NewbRun        =             (MiscData & 0x00040000) != 0;
+	NewbDuck       =             (MiscData & 0x00020000) != 0;
+	NewbJumpStatus =             (MiscData & 0x00010000) != 0;
+	ClientPhysics  =  GetPhysics((MiscData & 0x0000F000) >> 12);
+	DodgeMove      = GetDodgeDir((MiscData & 0x00000F00) >> 8);
+	ClientRoll     =             (MiscData & 0x000000FF);
+
+	DodgeIndex     = (MiscData2 & 0x03E0) >> 5;
+	JumpIndex      = (MiscData2 & 0x001F);
 
 	if (ClientBase == none)
 		ClientLocAbs = ClientLoc;
@@ -1725,20 +1744,33 @@ function xxServerMove(
 	if ((Level.Pauser == "") && bClientPaused == false && (DeltaTime > 0)) {
 		UndoExtrapolation();
 
-		SimStep = DeltaTime / float(MergeCount + 1);
+		MergeCount++;
+
+		SimStep = DeltaTime / float(MergeCount);
+		JumpPos = float(JumpIndex) / float(MergeCount);
+		DodgePos = float(DodgeIndex) / float(MergeCount);
 
 		if (SimStep < (1.0 / class'UTPure'.default.MaxNetUpdateRate)) {
-			MergeCount = int(DeltaTime * class'UTPure'.default.MaxNetUpdateRate * 0.5);
-			SimStep = DeltaTime / float(MergeCount + 1);
+			MergeCount = int(DeltaTime * class'UTPure'.default.MaxNetUpdateRate * 0.5) + 1;
+			SimStep = DeltaTime / float(MergeCount);
 		}
 
-		while ( MergeCount > 0 )
-		{
-			MoveAutonomous( SimStep, NewbRun, NewbDuck, false, DODGE_None, Accel, rot(0,0,0) );
-			MergeCount--;
+		JumpIndex = int(JumpPos * MergeCount);
+		DodgeIndex = int(DodgePos * MergeCount);
+
+		for (MoveIndex = 0; MoveIndex < MergeCount; MoveIndex++) {
+			if (MoveIndex == JumpIndex)
+				bDoJump = NewbPressedJump;
+			else
+				bDoJump = false;
+
+			if (MoveIndex == DodgeIndex)
+				DoDodge = DodgeMove;
+			else
+				DoDodge = DODGE_None;
+
+			MoveAutonomous(SimStep, NewbRun, NewbDuck, bDoJump, DoDodge, Accel, DeltaRot / MergeCount);
 		}
-		// Important input is usually the cause for buffer breakup, so it happens last on the client.
-		MoveAutonomous(SimStep, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, Accel, DeltaRot);
 
 		bWasPaused = false;
 	}
@@ -2541,19 +2573,26 @@ function xxReplicateMove(
 			bForcePacketSplit == false &&
 			bbSavedMove(PendingMove).IGPlus_MergeCount < 31
 		) {
+
 			//add this move to the pending move
 			PendingMove.TimeStamp = Level.TimeSeconds;
+			bbSavedMove(PendingMove).IGPlus_MergeCount += 1;
 
 			TotalTime = PendingMove.Delta + DeltaTime;
 			if (TotalTime != 0)
 				PendingMove.Acceleration = (DeltaTime * NewAccel + PendingMove.Delta * PendingMove.Acceleration)/TotalTime;
 
 			// Set this move's data.
-			if ( PendingMove.DodgeMove == DODGE_None )
+			if ( PendingMove.DodgeMove == DODGE_None ) {
 				PendingMove.DodgeMove = DodgeMove;
+				if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active && bbSavedMove(PendingMove).DodgeIndex < 0) {
+					bbSavedMove(PendingMove).DodgeIndex = bbSavedMove(PendingMove).IGPlus_MergeCount;
+				}
+			}
+			if (PendingMove.bPressedJump == false && bPressedJump && bbSavedMove(PendingMove).JumpIndex < 0)
+				bbSavedMove(PendingMove).JumpIndex = bbSavedMove(PendingMove).IGPlus_MergeCount;
 			PendingMove.bPressedJump = bPressedJump || PendingMove.bPressedJump;
 			PendingMove.Delta = TotalTime;
-			bbSavedMove(PendingMove).IGPlus_MergeCount += 1;
 		} else {
 			SendSavedMove(bbSavedMove(PendingMove));
 
@@ -2590,10 +2629,14 @@ function xxReplicateMove(
 
 	// Set this move's data.
 	NewMove.DodgeMove = DodgeMove;
+	if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
+		bbSavedMove(PendingMove).DodgeIndex = 0;
 	NewMove.TimeStamp = Level.TimeSeconds;
 	NewMove.bRun = (bRun > 0);
 	NewMove.bDuck = (bDuck > 0);
 	NewMove.bPressedJump = bPressedJump;
+	if (bPressedJump)
+		bbSavedMove(PendingMove).JumpIndex = 0;
 	if ( Weapon != None ) // approximate pointing so don't have to replicate
 		Weapon.bPointing = ((bFire != 0) || (bAltFire != 0));
 	bJustFired = false;
@@ -2643,7 +2686,7 @@ function xxReplicateMove(
 }
 
 function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
-	local int MiscData;
+	local int MiscData, MiscData2;
 	local vector RelLoc;
 	local vector Accel;
 	local int OldMoveData1, OldMoveData2;
@@ -2665,6 +2708,9 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	MiscData = MiscData | (int(Physics) << 12);
 	MiscData = MiscData | (int(Move.DodgeMove) << 8);
 	MiscData = MiscData | ((Rotation.Roll >> 8) & 0xFF);
+
+	if (Move.JumpIndex > 0)  MiscData2 = MiscData2 | (Move.JumpIndex & 0x1F);
+	if (Move.DodgeIndex > 0) MiscData2 = MiscData2 | (Move.DodgeIndex & 0x1F) << 5;
 
 	if (OldMove != none) {
 		OldMoveData1 = Min(0x3FF, int((Level.TimeSeconds - OldMove.TimeStamp) * 1000.0));
@@ -2688,6 +2734,7 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 		RelLoc.Z,
 		Velocity,
 		MiscData,
+		MiscData2,
 		((ViewRotation.Pitch & 0xFFFF) << 16) | (ViewRotation.Yaw & 0xFFFF),
 		Base,
 		OldMoveData1,
@@ -3789,6 +3836,7 @@ state FeigningDeath
 		float ClientLocZ,
 		vector ClientVel,
 		int MiscData,
+		int MiscData2,
 		int View,
 		Actor ClientBase,
 		optional int OldMoveData1,
@@ -3806,6 +3854,7 @@ state FeigningDeath
 			ClientLocZ,
 			ClientVel,
 			MiscData,
+			MiscData2,
 			((Rotation.Pitch & 0xFFFF) << 16) | (Rotation.Yaw & 0xFFFF),
 			ClientBase,
 			OldMoveData1,
@@ -4829,6 +4878,7 @@ state Dying
 		float ClientLocZ,
 		vector ClientVel,
 		int MiscData,
+		int MiscData2,
 		int View,
 		Actor ClientBase,
 		optional int OldMoveData1,
@@ -4846,6 +4896,7 @@ state Dying
 			ClientLocZ,
 			ClientVel,
 			MiscData & 0xFFFF,
+			MiscData2,
 			View,
 			ClientBase,
 			OldMoveData1,
@@ -4960,6 +5011,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 		float ClientLocZ,
 		vector ClientVel,
 		int MiscData,
+		int MiscData2,
 		int View,
 		Actor ClientBase,
 		optional int OldMoveData1,
@@ -4977,6 +5029,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 			ClientLocZ,
 			ClientVel,
 			MiscData,
+			MiscData2,
 			((ViewRotation.Pitch & 0xFFFF) << 16) | (ViewRotation.Yaw & 0xFFFF),
 			ClientBase,
 			OldMoveData1,
