@@ -1472,6 +1472,7 @@ function WarpCompensation(float DeltaTime) {
 				CurrentTimeStamp += TimeSinceLastUpdate;
 				ServerTimeStamp += TimeSinceLastUpdate;
 			}
+			ClientDebugMessage("JitterBounding"@CurrentTimeStamp@TimeSinceLastUpdate);
 		}
 
 		if (class'UTPure'.default.bEnableServerExtrapolation &&
@@ -1484,6 +1485,8 @@ function WarpCompensation(float DeltaTime) {
 			SavedAcceleration = Acceleration;
 
 			SimMoveAutonomous(ExtrapolationDelta);
+
+			ClientDebugMessage("Extrapolation"@ExtrapolationDelta);
 		}
 		ExtrapolationDelta *= Exp(-2.0 * DeltaTime);
 	} else {
