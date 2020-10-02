@@ -2208,6 +2208,7 @@ exec function Fire( optional float F )
 		if (xxCanFire())
 			Super.Fire(F);
 	} else if (Role < ROLE_Authority && Level.Game.bGameEnded == false) {
+		ClientDebugMessage("KlickFire");
 		if (Weapon != none)
 			Weapon.ClientFire(1);
 	} else {
