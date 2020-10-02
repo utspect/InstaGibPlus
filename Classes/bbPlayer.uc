@@ -4152,6 +4152,8 @@ ignores SeePlayer, HearNoise, Bump;
 		}
 
 		if (DodgeDir == DODGE_Active) {
+			if (Level.NetMode == NM_Client)
+				ClientDebugMessage("Landed");
 			DodgeDir = DODGE_Done;
 			DodgeClickTimer = 0.0;
 			Velocity *= DodgeEndVelocity;
