@@ -1553,7 +1553,7 @@ function EPhysics GetPhysics(int phys) {
 	return PHYS_None;
 }
 
-function IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData2) {
+function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData2) {
 	local vector Accel;
 	local float OldTimeStamp;
 	local bool OldRun;
@@ -1563,7 +1563,7 @@ function IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData
 
 	OldTimeStamp = TimeStamp - (float(OldMoveData1 & 0x3FF) * 0.001);
 	if (CurrentTimeStamp + 0.001 >= OldTimeStamp) {
-		return;
+		return false;
 	}
 
 	OldJump   = (OldMoveData1 & 0x0400) != 0;
@@ -1579,7 +1579,9 @@ function IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData
 
 	UndoExtrapolation();
 	MoveAutonomous(OldTimeStamp - CurrentTimeStamp, OldRun, OldDuck, OldJump, DodgeMove, Accel, rot(0,0,0));
-	CurrentTimeStamp = OldTimeStamp - 0.001;
+	CurrentTimeStamp = OldTimeStamp;
+
+	return true;
 }
 
 function xxServerMove(
@@ -1693,7 +1695,10 @@ function xxServerMove(
 		ClientLocAbs = ClientLoc + ClientBase.Location;
 
 	if ((OldMoveData1 & 0x3FF) != 0)
-		IGPlus_OldServerMove(TimeStamp, OldMoveData1, OldMoveData2);
+		if (IGPlus_OldServerMove(TimeStamp, OldMoveData1, OldMoveData2)) {
+			xxFakeCAP(CurrentTimeStamp);
+			LastCAPTime = Level.TimeSeconds;
+		}
 
 	// View components
 	CompressedViewRotation = View;
