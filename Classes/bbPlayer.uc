@@ -2660,9 +2660,11 @@ function xxReplicateMove(
 	{
 		LastMove = bbSavedMove(SavedMoves);
 		while (LastMove.NextMove != none) {
+			LastMove.Age += DeltaTime;
 			OldMove = PickRedundantMove(OldMove, LastMove, NewAccel, DodgeMove);
 			LastMove = bbSavedMove(LastMove.NextMove);
 		}
+		LastMove.Age += DeltaTime;
 		OldMove = PickRedundantMove(OldMove, LastMove, NewAccel, DodgeMove);
 	}
 
@@ -2767,7 +2769,7 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	if (Move.DodgeIndex > 0) MiscData2 = MiscData2 | (Move.DodgeIndex & 0x1F) << 5;
 
 	if (OldMove != none) {
-		OldMoveData1 = Min(0x3FF, int((Level.TimeSeconds - OldMove.TimeStamp) * 1000.0));
+		OldMoveData1 = Min(0x3FF, int(OldMove.Age * 1000.0));
 		if (OldMove.bPressedJump) OldMoveData1 = OldMoveData1 | 0x0400;
 		if (OldMove.bRun) OldMoveData1 = OldMoveData1 | 0x0800;
 		if (OldMove.bDuck) OldMoveData1 = OldMoveData1 | 0x1000;

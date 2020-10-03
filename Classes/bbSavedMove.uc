@@ -7,12 +7,14 @@ var rotator IGPlus_SavedViewRotation;
 var int IGPlus_MergeCount;
 var int JumpIndex;
 var int DodgeIndex;
+var float Age;
 
 function Clear2() {
     Clear();
     IGPlus_MergeCount = 0;
     JumpIndex = -1;
     DodgeIndex = -1;
+    Age = 0.0;
 }
 
 defaultproperties
