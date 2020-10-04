@@ -101,3 +101,21 @@ static simulated function AnimEnd (TournamentWeapon W)
 		}
 	} */
 }
+
+static function vector IGPlus_CalcDrawOffset(PlayerPawn P, Weapon W) {
+	local LevelInfo Level;
+
+	if (P == none) return vect(0,0,0);
+	if (W == none) return vect(0,0,0);
+
+	Level = P.Level;
+	if (Level == none) return vect(0,0,0);
+
+	if ((Level.NetMode == NM_DedicatedServer) ||
+		(P.RemoteRole == ROLE_AutonomousProxy)
+	) {
+		return (P.BaseEyeHeight * vect(0,0,1));
+	} else {
+		return (P.EyeHeight * vect(0,0,1)) + P.WalkBob;
+	}
+}

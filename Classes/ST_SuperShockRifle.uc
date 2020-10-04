@@ -37,28 +37,32 @@ simulated function RenderOverlays(Canvas Canvas)
 	bbP = bbPlayer(Owner);
 	if (bNewNet && Role < ROLE_Authority && bbP != None)
 	{
-		if (bbP.bFire != 0 && !IsInState('ClientFiring'))
+		if (bbP.bFire != 0 && !IsInState('ClientFiring')) {
 			ClientFire(1);
-		else if (bbP.bAltFire != 0 && !IsInState('ClientAltFiring'))
+		} else if (bbP.bAltFire != 0 && !IsInState('ClientAltFiring')) {
 			ClientAltFire(1);
+		}
 	}
 }
 
 simulated function yModInit()
 {
-	if (bbPlayer(Owner) != None && Owner.ROLE == ROLE_AutonomousProxy)
-		GV = bbPlayer(Owner).ViewRotation;
+	local bbPlayer P;
+	P = bbPlayer(Owner);
 
-	if (PlayerPawn(Owner) == None)
+	if (P != None && Owner.ROLE == ROLE_AutonomousProxy)
+		GV = P.ViewRotation;
+
+	if (P == None)
 		return;
 
-	yMod = PlayerPawn(Owner).Handedness;
+	yMod = P.Handedness;
 	if (yMod != 2.0)
 		yMod *= Default.FireOffset.Y;
 	else
 		yMod = 0;
 
-	CDO = CalcDrawOffset();
+	CDO = class'NN_WeaponFunctions'.static.IGPlus_CalcDrawOffset(P, self);
 }
 
 simulated function bool ClientFire(float Value)

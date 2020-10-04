@@ -47,7 +47,7 @@ simulated function yModInit()
 	else
 		yMod = 0;
 
-	CDO = CalcDrawOffset();
+	CDO = class'NN_WeaponFunctions'.static.IGPlus_CalcDrawOffset(PlayerPawn(Owner), self);
 }
 
 function inventory SpawnCopy( pawn Other )
