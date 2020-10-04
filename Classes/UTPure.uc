@@ -863,20 +863,19 @@ function Mutate(string MutateString, PlayerPawn Sender)
 	{
 		Sender.ClientMessage("InstaGib Plus Client Commands: (Type directly into console)");
 		Sender.ClientMessage("- PureLogo (Shows Logo and Version Information in lower left corner)");
-		if (ForceModels > 0)
-			Sender.ClientMessage("- ForceModels x (0 = Off, 1 = On. Default = 0) - The models will be forced to the model you select.");
+		Sender.ClientMessage("- ForceModels x (0 = Off, 1 = On. Default = 0) - The models will be forced to the model you select.");
 		if (ImprovedHUD == 2)
 			Sender.ClientMessage("- TeamInfo x (0 = Off, 1 = On, Default = 1)");
 		Sender.ClientMessage("- MyIGSettings (Displays your current IG+ settings)");
 		Sender.ClientMessage("- ShowNetSpeeds (Shows the netspeeds other players currently have)");
 		Sender.ClientMessage("- ShowTickrate (Shows the tickrate server is running on)");
-		Sender.ClientMessage("- SetForcedTeamSkins x (Set forced skins for your team mates. Range: 0-16, Default: 0)");
-		Sender.ClientMessage("- SetForcedSkins x (Set forced skins for your enemies. Range: 0-16, Default: 0)");
+		Sender.ClientMessage("- SetForcedTeamSkins maleSkin femaleSkin (Set forced skins for your team mates. Range: 1-18, Default: 0, 9)");
+		Sender.ClientMessage("- SetForcedSkins maleSkin femaleSkin (Set forced skins for your enemies. Range: 1-18, Default: 0, 9)");
 		Sender.ClientMessage("- EnableHitSounds x (Enables or disables hitsounds, 0 is disabled, 1 is enabled. Default: 1)");
 		Sender.ClientMessage("- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- ListSkins (Lists the available skins that can be forced)");
-		Sender.ClientMessage("- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam, 4 = instant beam) - Sets your Shock Rifle beam type.");
-		Sender.ClientMessage("- SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
+		Sender.ClientMessage("- SetShockBeam x (1 = Default, 2 = smithY's beam, 3 = No beam, 4 = instant beam) - Sets your Shock Rifle beam type.");
+		Sender.ClientMessage("- SetBeamScale x (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
 		Sender.ClientMessage("- SetNetUpdateRate x (Changes how often you update the server on your position, Default: 100)");
 		Sender.ClientMessage("- SetMouseSmoothing x (0/False disables smoothing, 1/True enables smoothing, Default: True)");
 		if (Sender.PlayerReplicationInfo.bAdmin)
@@ -890,7 +889,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 			Sender.ClientMessage("- ShowDemos (Will show who is recording demos)");
 		}
 		if (CHSpectator(Sender) != None)
-			Sender.ClientMessage("As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickrate)");
+			Sender.ClientMessage("As spectator, you may need to add 'mutate pure' + command (mutate pures howtickrate)");
 	}
 	else if (MutateString ~= "EnablePure")
 	{

@@ -93,7 +93,7 @@ simulated function bool ClientFire(float Value)
 			bCanClientFire = true;
 			if ( bRapidFire || (FiringSpeed > 0) )
 				Pawn(Owner).PlayRecoil(FiringSpeed);
-			bbP.ClientDebugMessage("NN_TraceFire");
+			bbP.ClientDebugMessage("NN_TraceFire"@bbP.ViewRotation.Yaw@bbP.ViewRotation.Pitch);
 			NN_TraceFire();
 			LastFiredTime = Level.TimeSeconds;
 		}
