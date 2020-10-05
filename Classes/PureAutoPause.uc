@@ -399,7 +399,7 @@ function SetProgressTeam(int Team, string Msg, int Index)
 	local Pawn P;
 
 	for (P = Level.PawnList; P != None; P = P.NextPawn)
-		if (P.PlayerReplicationInfo.Team == Team && P.IsA('PlayerPawn'))
+		if (P.PlayerReplicationInfo != none && P.PlayerReplicationInfo.Team == Team && P.IsA('PlayerPawn'))
 			PlayerPawn(P).SetProgressMessage(Msg, Index);
 }
 

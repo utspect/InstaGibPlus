@@ -152,7 +152,7 @@ local DeathMatchPlus zzDMP;
 	if (zzDMP != None && zzDMP.CountDown <= 0)
 	{
 		for (zzP = Level.PawnList; zzP != None; zzP = zzP.NextPawn)
-			if (zzP.PlayerReplicationInfo.HasFlag == zzFakeFlag)
+			if (zzP.PlayerReplicationInfo != none && zzP.PlayerReplicationInfo.HasFlag == zzFakeFlag)
 				zzP.PlayerReplicationInfo.HasFlag = None;
 
 		if (zzFakeFlag != None)
