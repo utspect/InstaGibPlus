@@ -4905,6 +4905,7 @@ state Dying
 		LastKillTime = LKT;
 		TimeDead = 0.0;
 		RealTimeDead = 0.0;
+		RotationRate = rot(0,0,0);
 	}
 
 	function PlayerMove(float DeltaTime)
@@ -5004,6 +5005,7 @@ state Dying
 
 	function EndState()
 	{
+		RotationRate = default.RotationRate;
 		SetPhysics(PHYS_None);
 		Super.EndState();
 		LastKillTime = 0;
