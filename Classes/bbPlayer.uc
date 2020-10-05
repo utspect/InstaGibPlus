@@ -849,7 +849,7 @@ event UpdateEyeHeight(float DeltaTime)
 		bForceZSmoothing = false;
 	} else if (bJustLanded) {
 		// Always smooth out landing, because you apparently are not considered
-		// to have landed until you penetrate the ground by at least 2uu.
+		// to have landed until you penetrate the ground by at least 1% of Velocity.Z.
 		bForceZSmoothing = true;
 	}
 
