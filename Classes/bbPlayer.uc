@@ -1271,17 +1271,29 @@ function xxFakeCAP(float TimeStamp)
 }
 
 function IGPlus_ClientReplayMove(bbSavedMove M) {
-	local int i;
+	local int MergeCount, MoveIndex;
 	local float dt;
+	local bool bDoJump;
+	local EDodgeDir DoDodge;
 
 	SetRotation(M.Rotation);
 	ViewRotation = M.IGPlus_SavedViewRotation;
+	MergeCount = M.IGPlus_MergeCount + 1;
+	dt = M.Delta / MergeCount;
+	for (MoveIndex = 0; MoveIndex < MergeCount; MoveIndex++) {
+		if (MoveIndex == M.JumpIndex)
+			bDoJump = M.bPressedJump;
+		else
+			bDoJump = false;
 
-	dt = M.Delta / (M.IGPlus_MergeCount + 1);
-	for (i = M.IGPlus_MergeCount; i > 0; i -= 1)
-		MoveAutonomous(dt, M.bRun, M.bDuck, false, DODGE_None, M.Acceleration, rot(0,0,0));
+		if (MoveIndex == M.DodgeIndex)
+			DoDodge = M.DodgeMove;
+		else
+			DoDodge = DODGE_None;
 
-	MoveAutonomous(dt, M.bRun, M.bDuck, M.bPressedJump, M.DodgeMove, M.Acceleration, rot(0,0,0));
+		MoveAutonomous(dt, M.bRun, M.bDuck, bDoJump, DoDodge, M.Acceleration, rot(0,0,0));
+	}
+
 	M.IGPlus_SavedLocation = Location;
 	M.IGPlus_SavedVelocity = Velocity;
 }
