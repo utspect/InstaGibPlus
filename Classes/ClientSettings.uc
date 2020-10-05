@@ -81,7 +81,7 @@ defaultproperties
 	BeamFadeCurve=4
 	BeamDuration=0.75
 	BeamOriginMode=0
-	DesiredNetUpdateRate=100.0
+	DesiredNetUpdateRate=250.0
 	bNoSmoothing=False
 	bNoOwnFootsteps=False
 	bLogClientMessages=True
