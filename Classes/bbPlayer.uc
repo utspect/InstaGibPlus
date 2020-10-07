@@ -390,6 +390,20 @@ exec function Ghost()
 	Super.Ghost();
 }
 
+// Return true to override Teleporter
+simulated event bool PreTeleport(Teleporter T) {
+	local vector D;
+	D = Location - T.Location;
+	if (VSize(D * vect(1,1,0)) > CollisionRadius + T.CollisionRadius ||
+		Abs(D.Z) > CollisionHeight + T.CollisionHeight
+	) {
+		// Were not touching the teleporter just yet.
+		// Do nothing and
+		return true;
+	}
+	return false;
+}
+
 simulated function Touch( actor Other )
 {
 	if(Level.NetMode != NM_Client)
