@@ -236,7 +236,7 @@ If `False`, your own footstep sounds will be played.
 
 ## DesiredNetUpdateRate
 **Type: float**  
-**Default: 100**  
+**Default: 250**  
 **Unit: Hz**  
 
 How often you want your client to update the server on your movement. The server places upper and lower limits on this (see [MinNetUpdateRate](#minnetupdaterate), [MaxNetUpdateRate](#maxnetupdaterate)), and the actual update rate will never exceed your netspeed divided by 100.
@@ -443,36 +443,49 @@ As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickra
 Server settings can be found inside InstaGibPlus.ini.
 
 ## HeadshotDamage
+
 **Type: float**  
 **Default: 100**  
 
 Controls how much damage a headshot with the sniper rifle deals.
+
 ## SniperSpeed
+
 **Type: float**  
 **Default: 1**  
 
 Controls sniper rifle reload time, higher values lead to less time between shots.
+
 ## SniperDamagePri
+
 **Type: float**  
 **Default: 60**  
 
 Controls damage of body hits by sniper rifle.
+
 ## SetPendingWeapon
+
 **Type: bool**  
 **Default: False**  
 
 ???
+
 ## NNAnnouncer
+
 **Type: bool**  
 **Default: False**  
 
 Whether to automatically add an announcer for multi-kills, or not.
+
 ## bUTPureEnabled
+
 **Type: bool**  
 **Default: True**  
 
 Big switch to enable/disable IG+.
+
 ## Advertise
+
 **Type: int**  
 **Default: 1**  
 
@@ -480,7 +493,9 @@ Controls whether to add a tag to the server's name.
 - `1` ➜ Add tag at the beginning of the server's name
 - `2` ➜ Add tag at the end of the server's name
 - anything else - Dont advertise
+
 ## AdvertiseMsg
+
 **Type: int**  
 **Default: 1**  
 
@@ -488,23 +503,31 @@ Controls the tag to add to the server's name
 - `0` ➜ `[CSHP]`
 - `1` ➜ `[IG+]`
 - anything else ➜ `[PWND]`
+
 ## bAllowCenterView
+
 **Type: bool**  
 **Default: False**  
 
 Whether to allow use of the bSnapLevel button or not.
+
 ## CenterViewDelay
+
 **Type: float**  
 **Default: 1**  
 **Unit: s**  
 
 If bAllowCenterView is True, controls how much time has to pass between uses of bSnapLevel.
+
 ## bAllowBehindView
+
 **Type: bool**  
 **Default: False**  
 
 Whether to allow 3rd Person perspective or not.
+
 ## TrackFOV
+
 **Type: int**  
 **Default: 0**  
 
@@ -512,28 +535,38 @@ Controls how strictly the FOV is checked.
 - `1` ➜ very strict, no zooming with sniper
 - `2` ➜ looser, zooming with sniper possible
 - anything else ➜ no restrictions
+
 ## bAllowMultiWeapon
+
 **Type: bool**  
 **Default: False**  
 
-Whether to allow the multi-weapon bug to be (ab)used
+Whether to allow the multi-weapon bug to be (ab)used.
+
 ## bFastTeams
+
 **Type: bool**  
 **Default: True**  
 
 Whether to allow the use of `mutate FixTeams`, `mutate NextTeam`, and `mutate ChangeTeam <Team>` or not. `True` enables the use of these commands, `False` disables.
+
 ## bUseClickboard
+
 **Type: bool**  
 **Default: True**  
 
 Enables a set of alternative scoreboards that show the ready-status for players before the match has started.
+
 ## MinClientRate
+
 **Type: int**  
 **Default: 10000**  
 **Unit: B/s**  
 
 The server will force clients to use at least this netspeed.
+
 ## bAdvancedTeamSay
+
 **Type: bool**  
 **Default: True**  
 
@@ -548,6 +581,7 @@ Advanced TeamSay allows showing game-information in your chat messages, by repla
 - `%P`, `%p` ➜ Current CTF objective
 
 ## ForceSettingsLevel
+
 **Type: int**  
 **Default: 2**  
 
@@ -559,6 +593,7 @@ When to check that default settings for all objects are correct client-side.
 - `3` and above ➜ in addition, once every 5000 server-ticks on average
 
 ## bNoLockdown
+
 **Type: bool**  
 **Default: True**  
 
@@ -568,21 +603,28 @@ Whether to have lockdown when players get hit by mini/pulse or not.
 - `False` ➜ allow lockdown
 
 ## bWarmup
+
 **Type: bool**  
 **Default: True**  
 
 Whether to allow warmup in tournament games or not.
+
 ### bCoaches
+
 **Type: bool**  
 **Default: False**  
 
 Whether to allow spectators to coach teams in tournament games or not.
+
 ## bAutoPause
+
 **Type: bool**  
 **Default: True**  
 
 Whether to automatically pause the game in tournament games or not.
+
 ### ForceModels
+
 **Type: int**  
 **Default: 1**  
 
@@ -593,6 +635,7 @@ Force models mode.
 - anything else ➜ Disabled
 
 ## ImprovedHUD
+
 **Type: int**  
 **Default: 1**  
 
@@ -600,94 +643,128 @@ Enable various HUD improvements. Depends on PureClickBoard mutator (set [bUseCli
 - `1` ➜ Show boots, Clock
 - `2` ➜ In addition, show enhanced team info
 - anything else ➜ dont show anything
+
 ## bDelayedPickupSpawn
+
 **Type: bool**  
 **Default: False**  
 
 Enable or disable delayed first pickup spawn.
+
 ## bTellSpectators
+
 **Type: bool**  
 **Default: False**  
 
 Enable or disable telling spectators of reason for kicks.
+
 ## PlayerPacks
+
 **Type: string\[8\]**  
 **Default: *empty***  
 
 Config list of supported player packs
+
 ## DefaultHitSound
+
 **Type: int**  
 **Default: 2**  
 
 HitSound for enemy damage to use when forcing clients (see [bForceDefaultHitSounds](#bforcedefaulthitsounds)).
+
 ## DefaultTeamHitSound
+
 **Type: int**  
 **Default: 3**  
 
 HitSound for friendly fire to use when forcing clients (see [bForceDefaultHitSounds](#bforcedefaulthitsounds)).
+
 ## bForceDefaultHitSounds
+
 **Type: bool**  
 **Default: False**  
 
 Force clients to use a specific HitSound.
+
 ## TeleRadius
+
 **Type: int**  
 **Default: 210**  
 **Unit: uu**  
 
 Radius within which to telefrag enemies using translocator.
+
 ## ThrowVelocity
+
 **Type: int**  
 **Default: 750**  
 **Unit: uu/s**  
 
 Horizontal speed with which to throw weapons.
+
 ## bForceDemo
+
 **Type: bool**  
 **Default: False**  
 
 Forces clients to do demos.
+
 ## MinPosError
+
 **Type: float**  
 **Default: 100**  
 **Unit: uu²**  
 
 Unused. Intended to be minimum squared distance error for updating clients.
+
 ## MaxPosError
+
 **Type: float**  
 **Default: 3000**  
 **Unit: uu²**
 
 Unused. Intended to be maximum squared distance error for updating clients.
+
 ## MaxHitError
+
 **Type: float**  
 **Default: 10000**  
 **Unit: uu**  
 
 Distance to any position over the last 500ms for hits to be counted.
+
 ## ShowTouchedPackage
+
 **Type: bool**  
 **Default: False**  
 
 Send package-names of touched actors to clients when those clients touch the actors.
+
 ## ExcludeMapsForKickers
+
 **Type: string\[128\]**  
 **Default: *empty***  
 
 List of map names (with or without .unr) for maps that should not have their Kickers replaced with NN_Kickers.
+
 ## MaxJitterTime
+
 **Type: float**  
 **Default: 0.1**  
 **Unit: s**  
 
 Maximum time between updates by clients that's tolerated by IG+. If a client exceeds this time and [bEnableJitterBounding](#benablejitterbounding) is `True` an update is generated for the client. Guideline setting is half the maximum supported ping.
+
 ## MinNetUpdateRate
+
 **Type: float**  
 **Default: 60**  
 **Unit: Hz**  
 
 Minimum frequency of client updates for server.
+
 ## MaxNetUpdateRate
+
 **Type: float**  
 **Default: 250**  
 **Unit: Hz**  
@@ -699,29 +776,39 @@ Maximum frequency of client updates for server.
 **Unit: B/s**  
 
 Maximum netspeed allowed for clients.
+
 ## MaxTradeTimeMargin
+
 **Type: float**  
 **Default: 0.1**  
 **Unit: s**  
 
 Maximum time after death (on server) that players can still fire their weapons.
+
 ## bEnableServerExtrapolation
+
 **Type: bool**  
 **Default: True**  
 
 If enabled the server will extrapolate client movement when the client's movement updates are too far behind the server's timepoint.
+
 ## bEnableJitterBounding
+
 **Type: bool**  
 **Default: True**  
 
 If enabled the server will generate movement updates for clients that havent sent updates in a while.
+
 ## KillCamDelay
+
 **Type: float**  
 **Default: 0**  
 **Unit: s**  
 
 KillCam can not start before a player has been dead for this long.
+
 ## KillCamDuration
+
 **Type: float**  
 **Default: 2**  
 **Unit: s**  
