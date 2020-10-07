@@ -178,9 +178,7 @@ var int		zzAntiTimerFlippedCount;
 var bool zzTrue,zzFalse;		// True & False
 var int zzNull;				// == 0
 
-// Avoiding spam:
-var string zzDelayedName;
-var int zzNameChanges;			// How many times has name been changed
+// Avoiding spam:		// How many times has name been changed
 var Class<ChallengeVoicePack> zzDelayedVoice;
 var float zzDelayedStartTime;
 var float zzLastSpeech;
@@ -5780,14 +5778,6 @@ event PostRender( canvas zzCanvas )
 	{
 		if (Level.TimeSeconds - zzDelayedStartTime > zzWaitTime)
 		{
-			if (zzDelayedName != "")
-			{
-				ChangeName(zzDelayedName);
-				UpdateURL("Name", zzDelayedName, true);
-				Settings.SaveConfig();
-				SaveConfig();
-				zzDelayedName = "";
-			}
 			if (zzDelayedVoice != None)
 			{
 				PlayerReplicationInfo.VoiceType = zzDelayedVoice;
@@ -6275,28 +6265,6 @@ function bool SetPause( BOOL bPause )
 	if (Level.Game != None)
 		return Level.Game.SetPause(bPause, self);
 	return false;
-}
-
-exec function SetName( coerce string S )
-{
-	if ( Len(S) > 28 )
-		S = left(S,28);
-	ReplaceText(S, " ", "_");
-	zzDelayedName = S;
-	zzDelayedStartTime = Level.TimeSeconds;
-}
-
-function ChangeName( coerce string S )
-{
-	if (Level.TimeSeconds - zzDelayedStartTime > 2.5)
-	{
-		if (zzNameChanges < 3)
-		{
-			Level.Game.ChangeName( self, S, false );
-			zzNameChanges++;
-		}
-	}
-	zzDelayedStartTime = Level.TimeSeconds;
 }
 
 function SetVoice(class<ChallengeVoicePack> V)
