@@ -633,8 +633,11 @@ event Possess()
 			}
 		}
 	}
+
 	Super.Possess();
-	SetPhysics(PHYS_None);
+
+	if (IsInState('PlayerWaiting'))
+		SetPhysics(PHYS_None);
 }
 
 function Timer() {
