@@ -414,7 +414,7 @@ simulated function Touch( actor Other )
 		}
 
 		if ((Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker') ||
-			(Other.Class.Name == 'swJumpPad')
+			((Other.Class.Name == 'swJumpPad') && (Teleporter(Other).URL != ""))
 		) {
 			ClientDebugMessage("Touch forced updates");
 			zzForceUpdateUntil = Level.TimeSeconds + 0.15 + float(Other.GetPropertyText("ToggleTime"));
