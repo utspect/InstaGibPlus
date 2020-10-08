@@ -51,7 +51,8 @@ var localized config bool bForceDefaultHitSounds;
 var localized config int TeleRadius;
 var localized config int ThrowVelocity;	// How far a player can throw weapons
 var localized config bool bForceDemo;		// Forces clients to do demos.
-var localized config float MaxTradeTimeMargin;
+var localized config bool bRestrictTrading;
+var localized config float MaxTradeTimeMargin; // Only relevant when bRestrictTrading is true
 var localized config float KillCamDelay;
 var localized config float KillCamDuration;
 var localized config bool bJumpingPreservesMomentum;
@@ -1393,6 +1394,7 @@ defaultproperties
 	MinNetUpdateRate=60.0
 	MaxNetUpdateRate=250.0
 	ShowTouchedPackage=False
+	bRestrictTrading=True
 	MaxTradeTimeMargin=0.1
 	bEnableServerExtrapolation=True
 	bEnableJitterBounding=True

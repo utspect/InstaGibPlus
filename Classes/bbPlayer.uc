@@ -2285,7 +2285,7 @@ function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator V
 	}
 	else if (xxCanFire())
 	{
-		if (IsInState('Dying')) {
+		if (class'UTPure'.default.bRestrictTrading && IsInState('Dying')) {
 			TradeTimeMargin = class'UTPure'.default.MaxTradeTimeMargin;
 			if (bbPlayer(LastKiller) != none) {
 				TradeTimeMargin = FMin(
