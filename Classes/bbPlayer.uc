@@ -5370,16 +5370,11 @@ function xxDoShot()
 simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode, optional bool bIgnoreFireTime)
 {
 	local bool bCant;
-	local float Diff;
 	local name WeapState;
 
-	Diff = Level.TimeSeconds - zzSpawnedTime;
-	if (Diff < 1)
+	if (Level.TimeSeconds - zzSpawnedTime <= 0.3)
 	{
-		if (Diff > 0.3)
-			return false;
-		else
-			return true;
+		bCant = true;
 	}
 	if (PendingWeapon != None)
 	{
@@ -5406,7 +5401,7 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 	{
 		bCant = true;
 	}
-	else if (!bCant)
+	if (!bCant)
 	{
 		bCant = (Player == None);
 	}
