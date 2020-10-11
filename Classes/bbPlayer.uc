@@ -290,7 +290,7 @@ replication
 {
 	//	Client->Demo
 	unreliable if ( bClientDemoRecording )
-		xxReplicateVRToDemo, xxClientDemoMessage, xxClientLogToDemo, xxDemoSpawnSSRBeam;
+		xxReplicateVRToDemo, ClientDemoMessage, xxClientLogToDemo, xxDemoSpawnSSRBeam;
 
 	reliable if (bClientDemoRecording && !bClientDemoNetFunc)
 		xxClientDemoFix, xxClientDemoBolt;
@@ -767,17 +767,17 @@ event PlayerTick( float Time )
 	zzTick = Time;
 }
 
-simulated function xxClientDemoMessage(string zzS)
+simulated function ClientDemoMessage(coerce string S, optional name Type, optional bool bBeep)
 {
-	if (zzS == zzPrevClientMessage)
+	if (S == zzPrevClientMessage)
 		return;
-	ClientMessage(zzS);
+	ClientMessage(S, Type, bBeep);
 }
 
-event ClientMessage( coerce string zzS, optional Name zzType, optional bool zzbBeep )
+event ClientMessage(coerce string zzS, optional Name zzType, optional bool zzbBeep)
 {
 	zzPrevClientMessage = zzS;
-	xxClientDemoMessage(zzS);
+	//ClientDemoMessage(zzS);
 	Super.ClientMessage(zzS, zzType, zzbBeep);
 	zzPrevClientMessage = "";
 	if (Settings.bLogClientMessages)
@@ -785,9 +785,18 @@ event ClientMessage( coerce string zzS, optional Name zzType, optional bool zzbB
 }
 
 function ClientDebugMessage(coerce string S, optional name Type, optional bool bBeep) {
+	if (Level.NetMode == NM_DedicatedServer || Role < ROLE_AutonomousProxy)
+		return;
+
+	if (Type == '')
+		Type = 'IGPlus';
+
 	if (bDrawDebugData) {
-		if (Type == '') Type = 'IGPlus';
-		ClientMessage("["$FrameCount@Level.TimeSeconds$"] "$S,Type,bBeep);
+		ClientMessage("["$Role@FrameCount@Level.TimeSeconds$"] "$S, Type, bBeep);
+	} else {
+		zzPrevClientMessage = "["$Role@FrameCount@Level.TimeSeconds$"] "$S;
+		ClientDemoMessage(zzPrevClientMessage, Type, bBeep);
+		zzPrevClientMessage = "";
 	}
 }
 
@@ -2240,7 +2249,7 @@ exec function Fire( optional float F )
 		if (xxCanFire())
 			Super.Fire(F);
 	} else if (Role < ROLE_Authority && (Level.Game == none || Level.Game.bGameEnded == false)) {
-		ClientDebugMessage("KlickFire");
+		ClientDebugMessage("Fire"@ViewRotation.Yaw@ViewRotation.Pitch);
 		if (Weapon != none)
 			Weapon.ClientFire(1);
 	} else {
@@ -2793,9 +2802,6 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	MiscData = MiscData | (int(Physics) << 12);
 	MiscData = MiscData | (int(Move.DodgeMove) << 8);
 	MiscData = MiscData | ((Rotation.Roll >> 8) & 0xFF);
-
-	if (Move.DodgeMove > DODGE_None && Move.DodgeMove < DODGE_Active)
-		ClientDebugMessage("Send Dodge"@Move.DodgeMove);
 
 	if (Move.JumpIndex > 0)  MiscData2 = MiscData2 | (Move.JumpIndex & 0x1F);
 	if (Move.DodgeIndex > 0) MiscData2 = MiscData2 | (Move.DodgeIndex & 0x1F) << 5;

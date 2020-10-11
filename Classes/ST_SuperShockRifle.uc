@@ -93,7 +93,6 @@ simulated function bool ClientFire(float Value)
 			bCanClientFire = true;
 			if ( bRapidFire || (FiringSpeed > 0) )
 				Pawn(Owner).PlayRecoil(FiringSpeed);
-			bbP.ClientDebugMessage("NN_TraceFire"@bbP.ViewRotation.Yaw@bbP.ViewRotation.Pitch);
 			NN_TraceFire();
 			LastFiredTime = Level.TimeSeconds;
 		}
@@ -187,24 +186,27 @@ function AltFire( float Value )
 
 state ClientFiring
 {
-    simulated function bool ClientFire(float Value) {
-        if (Owner.IsA('Bot'))
-            return Super.ClientFire(Value);
+	simulated function bool ClientFire(float Value) {
+		if (Owner.IsA('Bot'))
+			return Super.ClientFire(Value);
 
-        return false;
-    }
+		return false;
+	}
 
-    simulated function bool ClientAltFire(float Value) {
-        if (Owner.IsA('Bot'))
-            return Super.ClientAltFire(Value);
+	simulated function bool ClientAltFire(float Value) {
+		if (Owner.IsA('Bot'))
+			return Super.ClientAltFire(Value);
 
-        return false;
-    }
+		return false;
+	}
 
-    simulated function AnimEnd() {
-    	bbPlayer(Owner).ClientDebugMessage("SSR ClientFiring AnimEnd");
-    	super.AnimEnd();
-    }
+	simulated function AnimEnd() {
+		local bbPlayer O;
+		O = bbPlayer(Owner);
+		if (O != none)
+			O.ClientDebugMessage("SSR AnimEnd"@O.ViewRotation.Yaw@O.ViewRotation.Pitch);
+		super.AnimEnd();
+	}
 }
 
 State ClientActive
