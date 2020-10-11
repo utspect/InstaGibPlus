@@ -1,5 +1,5 @@
 # InstaGib+
-A competitive Unreal Tournament GOTY InstaGib fork of TimTim's NewNet.
+An InstaGib focussed fork of TimTim's NewNet mutator for Unreal Tournament.
 
 1. [Features](#features)
 2. [Client Settings](#client-settings)
@@ -306,6 +306,36 @@ Types for parameters:
 
 Parameters marked `optional` do not have to be supplied.
 
+1. [EnableDebugData](#enabledebugdata)
+2. [EnableHitSounds](#enablehitsounds)
+3. [SetHitSound](#sethitsound)
+4. [ForceModels](#forcemodels)
+5. [ListSkins](#listskins)
+6. [SetForcedSkins](#setforcedskins)
+7. [SetForcedTeamSkins](#setforcedteamskins)
+8. [SetShockBeam](#setshockbeam)
+9. [SetBeamScale](#setbeamscale)
+10. [MyIgSettings](#myigsettings)
+11. [SetNetUpdateRate](#setnetupdaterate)
+12. [SetMouseSmoothing](#setmousesmoothing)
+13. [SetKillCamEnabled](#setkillcamenabled)
+14. [DropFlag](#dropflag)
+15. [PureLogo](#purelogo)
+16. [HitSounds](#hitsounds)
+17. [TeamHitSounds](#teamhitsounds)
+18. [DisableForceHitSounds](#disableforcehitsounds)
+19. [MyHitsounds](#myhitsounds)
+20. [TeamInfo](#teaminfo)
+21. [SetMinDodgeClickTime](#setmindodgeclicktime)
+22. [mdct](#mdct)
+23. [EndShot](#endshot)
+24. [Hold](#hold)
+25. [Go](#go)
+26. [AutoDemo](#autodemo)
+27. [ShootDead](#shootdead)
+28. [SetDemoMask](#setdemomask)
+29. [DemoStart](#demostart)
+
 ## EnableDebugData
 **Parameters: (bool b)**  
 
@@ -388,6 +418,8 @@ Overrides (Team)HitSound choice of the server, even if the server forces its (Te
 Changes [MinDodgeClickTime setting](#mindodgeclicktime).
 ## mdct
 **Parameters: (float f)**
+
+Changes [MinDodgeClickTime setting](#mindodgeclicktime).
 ## EndShot
 **Parameters: (optional bool b)**
 
@@ -442,6 +474,56 @@ As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickra
 # Server Settings
 Server settings can be found inside InstaGibPlus.ini.
 
+1. [HeadshotDamage](#headshotdamage)
+2. [SniperSpeed](#sniperspeed)
+3. [SniperDamagePri](#sniperdamagepri)
+4. [SetPendingWeapon](#setpendingweapon)
+5. [NNAnnouncer](#nnannouncer)
+6. [bUTPureEnabled](#butpureenabled)
+7. [Advertise](#advertise)
+8. [AdvertiseMsg](#advertisemsg)
+9. [bAllowCenterView](#ballowcenterview)
+10. [CenterViewDelay](#centerviewdelay)
+11. [bAllowBehindView](#ballowbehindview)
+12. [TrackFOV](#trackfov)
+13. [bAllowMultiWeapon](#ballowmultiweapon)
+14. [bFastTeams](#bfastteams)
+15. [bUseClickboard](#buseclickboard)
+16. [MinClientRate](#minclientrate)
+17. [MaxClientRate](#maxclientrate)
+18. [bAdvancedTeamSay](#badvancedteamsay)
+19. [ForceSettingsLevel](#forcesettingslevel)
+20. [bNoLockdown](#bnolockdown)
+21. [bWarmup](#bwarmup)
+22. [bCoaches](#bcoaches)
+23. [bAutoPause](#bautopause)
+24. [ForceModels](#forcemodels)
+25. [ImprovedHUD](#improvedhud)
+26. [bDelayedPickupSpawn](#bdelayedpickupspawn)
+27. [bTellSpectators](#btellspectators)
+28. [PlayerPacks](#playerpacks)
+29. [DefaultHitSound](#defaulthitsound)
+30. [DefaultTeamHitSound](#defaultteamhitsound)
+31. [bForceDefaultHitSounds](#bforcedefaulthitsounds)
+32. [TeleRadius](#teleradius)
+33. [ThrowVelocity](#throwvelocity)
+34. [bForceDemo](#bforcedemo)
+35. [bRestrictTrading](#brestricttrading)
+36. [MaxTradeTimeMargin](#maxtradetimemargin)
+37. [KillCamDelay](#killcamdelay)
+38. [KillCamDuration](#killcamduration)
+39. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
+40. [MinPosError](#minposerror)
+41. [MaxPosError](#maxposerror)
+42. [MaxHitError](#maxhiterror)
+43. [MaxJitterTime](#maxjittertime)
+44. [MinNetUpdateRate](#minnetupdaterate)
+45. [MaxNetUpdateRate](#maxnetupdaterate)
+46. [bEnableServerExtrapolation](#benableserverextrapolation)
+47. [bEnableJitterBounding](#benablejitterbounding)
+48. [ShowTouchedPackage](#showtouchedpackage)
+49. [ExcludeMapsForKickers](#excludemapsforkickers)
+
 ## HeadshotDamage
 
 **Type: float**  
@@ -490,6 +572,7 @@ Big switch to enable/disable IG+.
 **Default: 1**  
 
 Controls whether to add a tag to the server's name.
+
 - `1` ➜ Add tag at the beginning of the server's name
 - `2` ➜ Add tag at the end of the server's name
 - anything else - Dont advertise
@@ -500,6 +583,7 @@ Controls whether to add a tag to the server's name.
 **Default: 1**  
 
 Controls the tag to add to the server's name
+
 - `0` ➜ `[CSHP]`
 - `1` ➜ `[IG+]`
 - anything else ➜ `[PWND]`
@@ -532,6 +616,7 @@ Whether to allow 3rd Person perspective or not.
 **Default: 0**  
 
 Controls how strictly the FOV is checked.
+
 - `1` ➜ very strict, no zooming with sniper
 - `2` ➜ looser, zooming with sniper possible
 - anything else ➜ no restrictions
@@ -564,6 +649,14 @@ Enables a set of alternative scoreboards that show the ready-status for players 
 **Unit: B/s**  
 
 The server will force clients to use at least this netspeed.
+
+## MaxClientRate
+
+**Type: int**  
+**Default: 25000**  
+**Unit: B/s**  
+
+Maximum netspeed allowed for clients.
 
 ## bAdvancedTeamSay
 
@@ -640,6 +733,7 @@ Force models mode.
 **Default: 1**  
 
 Enable various HUD improvements. Depends on PureClickBoard mutator (set [bUseClickboard](#buseclickboard) to `True`, or add mutator through configuration).
+
 - `1` ➜ Show boots, Clock
 - `2` ➜ In addition, show enhanced team info
 - anything else ➜ dont show anything
@@ -770,12 +864,15 @@ Minimum frequency of client updates for server.
 **Unit: Hz**  
 
 Maximum frequency of client updates for server.
-## MaxClientRate
-**Type: int**  
-**Default: 25000**  
-**Unit: B/s**  
 
-Maximum netspeed allowed for clients.
+## bRestrictTrading
+
+**Type: bool**  
+**Default: True**  
+
+If True, the server tries to determine who shot first, and prevents shots from players that are already dead and fired their last shot after their killer by in-game time from causing a trade.
+
+If False, any shot made while alive on your client counts.
 
 ## MaxTradeTimeMargin
 
@@ -783,7 +880,7 @@ Maximum netspeed allowed for clients.
 **Default: 0.1**  
 **Unit: s**  
 
-Maximum time after death (on server) that players can still fire their weapons.
+Maximum time after death (on server) that players can still fire their weapons. Only applies if [bRestrictTrading](#bRestrictTrading) is True.
 
 ## bEnableServerExtrapolation
 
@@ -815,6 +912,13 @@ KillCam can not start before a player has been dead for this long.
 
 KillCam follows the killing player for this long after its start.
 
+## bJumpingPreservesMomentum
+
+**Type: bool**  
+**Default: False**  
+
+If False, players will be slowed down to ground speed upon landing, which prevents Bunny Hopping. If True, landing works like before.
+
 # Building
 
 1. Go to the installation directory of UT99 in a command shell
@@ -827,6 +931,7 @@ KillCam follows the killing player for this long after its start.
 
 **TimTim** - Original NewNet.  
 **Deepu** - Ultimate NewNet.  
-**Deaod** - For the support and pointers when I got stuck, without him I don't think I could've finished this so fast.  
+**spect** - Starting this project.
+**Deaod** - Maintenance.  
 **UT99 Community** - For their endless patience, support and help testing and reporting bugs.  
 **Epic** - For not open sourcing a 20 year old game running on their 20 year old engine.
