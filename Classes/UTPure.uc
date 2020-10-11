@@ -51,7 +51,11 @@ var localized config bool bForceDefaultHitSounds;
 var localized config int TeleRadius;
 var localized config int ThrowVelocity;	// How far a player can throw weapons
 var localized config bool bForceDemo;		// Forces clients to do demos.
-var localized config float MaxTradeTimeMargin;
+var localized config bool bRestrictTrading;
+var localized config float MaxTradeTimeMargin; // Only relevant when bRestrictTrading is true
+var localized config float KillCamDelay;
+var localized config float KillCamDuration;
+var localized config bool bJumpingPreservesMomentum;
 var string MapName;
 
 
@@ -94,11 +98,6 @@ var PureAutoPause	zzAutoPauser;
 // What server info is used
 var Class<ServerInfo> zzSI;
 
-// MD5 Stuff
-var string zzPurePackageName;
-var string zzMD5KeyInit;
-var string zzPureMD5;
-
 var bbPlayer PlayerOwner;
 
 //Add the maplist where kickers will work using normal network
@@ -122,9 +121,6 @@ native(1718) final function bool AddToPackageMap( optional string PkgName);
 
 function PreBeginPlay()
 {
-	local string AbsTime;
-	local GameInfo GI;
-	local string n;
 	local int XC_Version;
 
 	XC_Version = int(ConsoleCommand("get ini:engine.engine.gameengine XC_Version"));
@@ -160,6 +156,18 @@ function PreBeginPlay()
 
 }
 
+function PrintVersionInfo() {
+	local string LongStr;
+	LongStr = VersionStr@LongVersion$NiceVer;
+
+	if (Len(LongStr) > 20) {
+		xxLog("#"$class'StringUtils'.static.CenteredString(VersionStr, 29, " ")$"#");
+		LongStr = LongVersion$NiceVer;
+	}
+
+	xxLog("#"$class'StringUtils'.static.CenteredString(LongStr, 29, " ")$"#");
+}
+
 function PostBeginPlay()
 {
 	local int i;
@@ -167,14 +175,13 @@ function PostBeginPlay()
 	local ModifyLoginHandler        MLH;
 	local int	ppCnt;
 	local string	ServPacks, curMLHPack, sTag, fullpack;
-	local string zzMD5Values;
 	local int XC_Version;
 
 	Super.PostBeginPlay();
 
 	xxLog("");
 	xxLog("###############################");
-	xxLog("#        "$VersionStr$"       #");
+	PrintVersionInfo();
 	if (zzDMP == None)
 	{
 		xxLog("#          ERROR!             #");
@@ -187,14 +194,9 @@ function PostBeginPlay()
 	}
 	else
 	{
-		sTag = "#           "$LongVersion$NiceVer;
-		while (Len(sTag) < 30)
-			sTag = sTag$" ";
-		sTag = sTag$"#";
-		xxLog(sTag);
 		xxLog("###############################");
 	}
-	xxLog("");
+	xxLog("#");
 
 	if (AdvertiseMsg == 0)
 		sTag = "[CSHP]";
@@ -257,9 +259,9 @@ function PostBeginPlay()
 			xxLog("You need to add 'ServerPackages="$curMLHPack$"' for PlayerPack["$i$"] to load");
 	}
 	zzDMP.RegisterMessageMutator(self);
-	xxLog("");
-	xxLog(" Protection is Active!");
-	xxLog("");
+	xxLog("#");
+	xxLog("# Protection is Active!");
+	xxLog("#");
 	xxLog("###############################");
 
 	// Tell each ModifyLoginHandler They've been accepted
@@ -267,9 +269,6 @@ function PostBeginPlay()
 		MLH.Accepted();
 
 	xxBuildAntiTimerList();
-
-	zzMD5Values = "0123456789abcdef";
-	zzPurePackageName = Default.VersionStr$Default.ThisVer;
 
 	//Log("bAutoPause:"@bAutoPause@"bTeamGame:"@zzDMP.bTeamGame@"bTournament:"@zzDMP.bTournament);
 	if (bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
@@ -291,6 +290,43 @@ function PostBeginPlay()
 			bExludeKickers = true;
 /////////////////////////////////////////////////////////////////////////
 	SaveConfig();
+
+	ReplaceKickers();
+}
+
+function ReplaceKickers() {
+	local Kicker K;
+	local vector L;
+	local NN_Kicker NK;
+	local AttachMover AM;
+
+	foreach AllActors(class'Kicker', K) {
+		if (K.Class.Name != 'Kicker')
+			continue;
+
+		L.X = int(K.Location.X);
+		L.Y = int(K.Location.Y);
+		L.Z = int(K.Location.Z);
+		K.SetLocation(L);
+
+		NK = Spawn(class'NN_Kicker', Self, , K.Location, K.Rotation);
+		NK.SetCollisionSize(K.CollisionRadius, K.CollisionHeight);
+		NK.Tag = K.Tag;
+		NK.Event = K.Event;
+		NK.KickVelocity = K.KickVelocity;
+		NK.KickedClasses = K.KickedClasses;
+		NK.bKillVelocity = K.bKillVelocity;
+		NK.bRandomize = K.bRandomize;
+
+		if(NK.Tag != '')
+			foreach AllActors(class'AttachMover', AM)
+				if (AM.AttachTag == NK.Tag) {
+					NK.SetBase(AM);
+					break;
+				}
+
+		K.SetCollision(false, false, false);
+	}
 }
 
 // Necessary functions to let the "bExludeKickers" list work
@@ -312,42 +348,13 @@ function bool GetCurrentMapName (out string MapName)
 function bool IsMapExcluded (string MapName)
 {
     local int index;
-    local string MapNameUNR;
 
-    MapNameUNR = MapName$".unr";
-
-	while (index < arrayCount(ExcludeMapsForKickers))
-    {
-        if ((trim(ExcludeMapsForKickers[index]) ~= MapName) || (trim(ExcludeMapsForKickers[index]) ~= MapNameUNR))
+	while (index < arrayCount(ExcludeMapsForKickers)) {
+        if ((Left(ExcludeMapsForKickers[index], Len(MapName)) ~= MapName))
             return true;
         ++index;
 	}
 	return false;
-}
-
-function string trim(string source)
-{
-	local int index;
-	local string result;
-
-	// Remove leading spaces.
-	result = source;
-	while (index < len(result) && mid(result, index, 1) == " ")
-        {
-		index++;
-	}
-	result = mid(result, index);
-
-	// Remove trailing spaces.
-	index = len(result) - 1;
-	while (index >= 0 && mid(result, index, 1) == " ")
-        {
-		index--;
-	}
-	result = left(result, index + 1);
-
-	// Return new string.
-	return result;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -394,17 +401,6 @@ function xxReplaceTeamInfo()
 		zzTGP.Teams[zzi].TeamIndex = zzi;
 		TournamentGameReplicationInfo(zzTGP.GameReplicationInfo).Teams[zzi] = zzTGP.Teams[zzi];
 	}
-}
-
-// Helpfunction
-static final function string xxGetPackage(string str)
-{
-	local int pos;
-
-	pos = Instr(str, ".");
-	if (pos == -1)
-		return str;
-	return Left(str, pos);
 }
 
 // TICK!!! And it's not the bug kind. Sorta :/
@@ -658,7 +654,6 @@ function ModifyLogin(out class<playerpawn> SpawnClass, out string Portal, out st
 {
 	local class<playerpawn> origSC;
 	local class<Spectator>  specCls;
-	local bbPlayer PP;
 
 	// Someone claims that Engine.Pawn makes it here.
 
@@ -705,7 +700,6 @@ function ModifyLogin(out class<playerpawn> SpawnClass, out string Portal, out st
 function ModifyPlayer(Pawn Other)
 {
 	local bbPlayer zzP;
-	local PlayerPawn zzPP;
 
 	if (Other.IsA('TournamentPlayer') && bUTPureEnabled)
 	{
@@ -727,6 +721,9 @@ function ModifyPlayer(Pawn Other)
 			zzP.zzbForceDemo = bForceDemo;
 			zzP.zzbGameStarted = True;
 			zzP.zzbUsingTranslocator = DeathMatchPlus(Level.Game).bUseTranslocator;
+			zzP.KillCamDelay = FMax(0.0, KillCamDelay);
+			zzP.KillCamDuration = KillCamDuration;
+			zzP.bJumpingPreservesMomentum = bJumpingPreservesMomentum;
 		}
 	}
 	Super.ModifyPlayer(Other);
@@ -825,15 +822,13 @@ function Mutate(string MutateString, PlayerPawn Sender)
 	local bbPlayer zzbbPP;
 	local Pawn zzP;
 	local int zzi;
-	local float zzf;
 	local bool zzb;
 	local string zzS;
 	local PlayerReplicationInfo zzPRI;
-	local bbPlayer bbP;
 
 	if (MutateString ~= "CheatInfo")
 	{
-		Sender.ClientMessage("This server is running "$VersionStr$NiceVer);
+		Sender.ClientMessage("This server is running "$VersionStr@NiceVer);
 		if (bUTPureEnabled)
 		{
 			Sender.ClientMessage("UTPure settings:");
@@ -869,20 +864,19 @@ function Mutate(string MutateString, PlayerPawn Sender)
 	{
 		Sender.ClientMessage("InstaGib Plus Client Commands: (Type directly into console)");
 		Sender.ClientMessage("- PureLogo (Shows Logo and Version Information in lower left corner)");
-		if (ForceModels > 0)
-			Sender.ClientMessage("- ForceModels x (0 = Off, 1 = On. Default = 0) - The models will be forced to the model you select.");
+		Sender.ClientMessage("- ForceModels x (0 = Off, 1 = On. Default = 0) - The models will be forced to the model you select.");
 		if (ImprovedHUD == 2)
 			Sender.ClientMessage("- TeamInfo x (0 = Off, 1 = On, Default = 1)");
 		Sender.ClientMessage("- MyIGSettings (Displays your current IG+ settings)");
 		Sender.ClientMessage("- ShowNetSpeeds (Shows the netspeeds other players currently have)");
 		Sender.ClientMessage("- ShowTickrate (Shows the tickrate server is running on)");
-		Sender.ClientMessage("- SetForcedTeamSkins x (Set forced skins for your team mates. Range: 0-16, Default: 0)");
-		Sender.ClientMessage("- SetForcedSkins x (Set forced skins for your enemies. Range: 0-16, Default: 0)");
+		Sender.ClientMessage("- SetForcedTeamSkins maleSkin femaleSkin (Set forced skins for your team mates. Range: 1-18, Default: 0, 9)");
+		Sender.ClientMessage("- SetForcedSkins maleSkin femaleSkin (Set forced skins for your enemies. Range: 1-18, Default: 0, 9)");
 		Sender.ClientMessage("- EnableHitSounds x (Enables or disables hitsounds, 0 is disabled, 1 is enabled. Default: 1)");
 		Sender.ClientMessage("- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- ListSkins (Lists the available skins that can be forced)");
-		Sender.ClientMessage("- SetShockBeam (1 = Default, 2 = smithY's beam, 3 = No beam, 4 = instant beam) - Sets your Shock Rifle beam type.");
-		Sender.ClientMessage("- SetBeamScale (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
+		Sender.ClientMessage("- SetShockBeam x (1 = Default, 2 = smithY's beam, 3 = No beam, 4 = instant beam) - Sets your Shock Rifle beam type.");
+		Sender.ClientMessage("- SetBeamScale x (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
 		Sender.ClientMessage("- SetNetUpdateRate x (Changes how often you update the server on your position, Default: 100)");
 		Sender.ClientMessage("- SetMouseSmoothing x (0/False disables smoothing, 1/True enables smoothing, Default: True)");
 		if (Sender.PlayerReplicationInfo.bAdmin)
@@ -896,7 +890,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 			Sender.ClientMessage("- ShowDemos (Will show who is recording demos)");
 		}
 		if (CHSpectator(Sender) != None)
-			Sender.ClientMessage("As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickrate)");
+			Sender.ClientMessage("As spectator, you may need to add 'mutate pure' + command (mutate pures howtickrate)");
 	}
 	else if (MutateString ~= "EnablePure")
 	{
@@ -1386,10 +1380,10 @@ defaultproperties
 	DefaultTeamHitSound=3
 	TeleRadius=210
 	ThrowVelocity=750
-	VersionStr="IG+ "
+	VersionStr="IG+"
 	LongVersion=""
-	ThisVer="4"
-	NiceVer="4"
+	ThisVer="5"
+	NiceVer="5"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
@@ -1400,7 +1394,11 @@ defaultproperties
 	MinNetUpdateRate=60.0
 	MaxNetUpdateRate=250.0
 	ShowTouchedPackage=False
+	bRestrictTrading=True
 	MaxTradeTimeMargin=0.1
 	bEnableServerExtrapolation=True
 	bEnableJitterBounding=True
+	KillCamDelay=0.0
+	KillCamDuration=2.0
+	bJumpingPreservesMomentum=False
 }

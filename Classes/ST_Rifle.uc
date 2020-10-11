@@ -455,10 +455,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local vector realLoc;
 	local Pawn PawnOwner, POther;
 	local PlayerPawn PPOther;
-	local vector HeadHitLocation, HeadHitNormal;
-	local actor Head;
-	local int ArmorAmount;
-	local inventory inv;
 	local bbPlayer bbP;
 
 	if (Owner.IsA('Bot'))

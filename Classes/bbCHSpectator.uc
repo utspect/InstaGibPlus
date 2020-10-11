@@ -224,7 +224,7 @@ simulated function InitSettings() {
 		}
 
 	if (Settings == none) {
-		ClientSettingsHelper = new(self, 'InstaGibPlus') class'Object';
+		ClientSettingsHelper = new(none, 'InstaGibPlus') class'Object';
 		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings';
 		Settings.CheckConfig();
 		Log("Loaded Settings!", 'IGPlus');
@@ -233,12 +233,11 @@ simulated function InitSettings() {
 
 event Possess()
 {
-	local Mover M;
-
 	InitSettings();
 
 	if ( Level.Netmode == NM_Client )
 	{	// Only do this for clients.
+		ClientSetMusic( Level.Song, Level.SongSection, Level.CdTrack, MTRAN_Fade );
 	}
 	else
 	{
@@ -501,9 +500,7 @@ auto state CheatFlying
         local int realbRun, realbDuck;
         local bool bRealJump;
 
-        local float TotalTime, AdjPCol;
-        local pawn P;
-        local vector Dir;
+        local float TotalTime;
 
         bUpdatePosition = false;
         realbRun= bRun;

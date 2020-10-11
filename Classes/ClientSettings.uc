@@ -43,7 +43,6 @@ var config PIDControllerSettings SmoothVRController;
 
 simulated function CheckConfig() {
 	local int i;
-	local int p;
 	local string PackageName;
 
 	PackageName = string(self.Class);
@@ -75,14 +74,14 @@ defaultproperties
 	DesiredTeamSkinFemale=0
 	bEnableHitSounds=True
 	selectedHitSound=0
-	sHitSound(0)="InstaGibPlus4.HitSound"
+	sHitSound(0)="InstaGibPlus5.HitSound"
 	sHitSound(1)="UnrealShare.StingerFire"
 	cShockBeam=1
 	BeamScale=0.45
 	BeamFadeCurve=4
 	BeamDuration=0.75
 	BeamOriginMode=0
-	DesiredNetUpdateRate=100.0
+	DesiredNetUpdateRate=250.0
 	bNoSmoothing=False
 	bNoOwnFootsteps=False
 	bLogClientMessages=True

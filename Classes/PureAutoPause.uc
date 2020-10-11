@@ -136,7 +136,7 @@ state PlayingGame
 		{
 			GotoState('EndedGame');			// Game ended, no more need for pausing.
 			return;
-		}		
+		}
 		if (Level.Pauser != "")
 		{
 			GotoState('PausedGame');		// Something external paused the game.
@@ -158,7 +158,7 @@ state PlayingGame
 // This state is used when something else than AutoPause paused the game, to avoid AutoPause messing things up.
 // Should only be reachable via admins, so no GO/HOLD functionality.
 state PausedGame
-{	
+{
 	function Tick(float deltaTime)
 	{
 		if (Level.Pauser == "")
@@ -348,7 +348,7 @@ state UnpauseCountdown
 
 state EndedGame
 {	// Nice empty state to do nothing at all in
-	
+
 }
 
 // Formats time in a nicer way
@@ -361,7 +361,7 @@ function string NiceTime(int Time)
 	Seconds = Time % 60;
 
 	Result = string(Minutes)$":";
-	
+
 	if (Seconds < 10)
 		Result = Result$"0";
 	return Result$string(Seconds);
@@ -399,7 +399,7 @@ function SetProgressTeam(int Team, string Msg, int Index)
 	local Pawn P;
 
 	for (P = Level.PawnList; P != None; P = P.NextPawn)
-		if (P.PlayerReplicationInfo.Team == Team && P.IsA('PlayerPawn'))
+		if (P.PlayerReplicationInfo != none && P.PlayerReplicationInfo.Team == Team && P.IsA('PlayerPawn'))
 			PlayerPawn(P).SetProgressMessage(Msg, Index);
 }
 

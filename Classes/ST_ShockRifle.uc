@@ -46,7 +46,7 @@ simulated function yModInit()
 	else
 		yMod = 0;
 
-	CDO = CalcDrawOffset();
+	CDO = class'NN_WeaponFunctions'.static.IGPlus_CalcDrawOffset(PlayerPawn(Owner), self);
 }
 
 simulated function bool ClientFire(float Value)
@@ -87,7 +87,6 @@ simulated function NN_TraceFire()
 	local actor Other;
 	local bool zzbNN_Combo;
 	local bbPlayer bbP;
-	local Pawn P;
 	local bbPlayer zzbbP;
 	local actor zzOther;
 	local int oRadius,oHeight;
@@ -173,7 +172,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 
 simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vector HitNormal)
 {
-	local ShockBeam Smoke,shock;
+	local ShockBeam Smoke;
 	local Vector DVector;
 	local int NumPoints;
 	local rotator SmokeRotation;
@@ -614,7 +613,7 @@ simulated function DoRingExplosion5(PlayerPawn Pwner, vector HitLocation, vector
 
 function SpawnEffect(vector HitLocation, vector SmokeLocation)
 {
-	local ShockBeam Smoke,shock;
+	local ShockBeam Smoke;
 	local Vector DVector;
 	local int NumPoints;
 	local rotator SmokeRotation;

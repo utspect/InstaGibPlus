@@ -47,7 +47,7 @@ simulated function yModInit()
 	else
 		yMod = 0;
 
-	CDO = CalcDrawOffset();
+	CDO = class'NN_WeaponFunctions'.static.IGPlus_CalcDrawOffset(PlayerPawn(Owner), self);
 }
 
 simulated function bool ClientFire(float Value)
@@ -264,7 +264,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 				return false; // disable crouching headshot
 			}
 
-			HitLocation += Normal(X+Y+Z) * (Other.CollisionRadius * 0.5);
+			HitLocation += (X * Other.CollisionRadius * 0.5);
 			if (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight)
 				return true;
 		}
@@ -280,10 +280,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local vector realLoc;
 	local Pawn PawnOwner, POther;
 	local PlayerPawn PPOther;
-	local vector HeadHitLocation, HeadHitNormal;
-	local actor Head;
-	local int ArmorAmount;
-	local inventory inv;
 	local bbPlayer bbP;
 
 	if (Owner.IsA('Bot'))
@@ -347,8 +343,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 simulated function DoShellCase(PlayerPawn Pwner, vector HitLoc, Vector X, Vector Y, Vector Z)
 {
-	local PlayerPawn P;
-	local Actor CR;
 	local UT_Shellcase s;
 
 	if (Owner.IsA('Bot'))
@@ -428,8 +422,6 @@ simulated function AnimEnd ()
 
 simulated function PlayFiring()
 {
-	local int r;
-
 	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*3.0);
 	if (SniperSpeed > 0)
 		PlayAnim(FireAnims[Rand(5)], 0.5 * SniperSpeed + 0.5 * FireAdjust, 0.05);

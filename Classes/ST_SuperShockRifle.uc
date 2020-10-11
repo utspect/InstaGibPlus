@@ -21,7 +21,7 @@ var float BeamDuration;
 var float ImpactSize;
 var float ImpactDuration;
 var float ImpactPitch;
-var name MyDamageType;
+var name ST_MyDamageType;
 var int clientDamage;
 var bool bHitTimer;
 var bbPlayer globalbbP;
@@ -37,28 +37,32 @@ simulated function RenderOverlays(Canvas Canvas)
 	bbP = bbPlayer(Owner);
 	if (bNewNet && Role < ROLE_Authority && bbP != None)
 	{
-		if (bbP.bFire != 0 && !IsInState('ClientFiring'))
+		if (bbP.bFire != 0 && !IsInState('ClientFiring')) {
 			ClientFire(1);
-		else if (bbP.bAltFire != 0 && !IsInState('ClientAltFiring'))
+		} else if (bbP.bAltFire != 0 && !IsInState('ClientAltFiring')) {
 			ClientAltFire(1);
+		}
 	}
 }
 
 simulated function yModInit()
 {
-	if (bbPlayer(Owner) != None && Owner.ROLE == ROLE_AutonomousProxy)
-		GV = bbPlayer(Owner).ViewRotation;
+	local bbPlayer P;
+	P = bbPlayer(Owner);
 
-	if (PlayerPawn(Owner) == None)
+	if (P != None && Owner.ROLE == ROLE_AutonomousProxy)
+		GV = P.ViewRotation;
+
+	if (P == None)
 		return;
 
-	yMod = PlayerPawn(Owner).Handedness;
+	yMod = P.Handedness;
 	if (yMod != 2.0)
 		yMod *= Default.FireOffset.Y;
 	else
 		yMod = 0;
 
-	CDO = CalcDrawOffset();
+	CDO = class'NN_WeaponFunctions'.static.IGPlus_CalcDrawOffset(P, self);
 }
 
 simulated function bool ClientFire(float Value)
@@ -182,19 +186,27 @@ function AltFire( float Value )
 
 state ClientFiring
 {
-    simulated function bool ClientFire(float Value) {
-        if (Owner.IsA('Bot'))
-            return Super.ClientFire(Value);
+	simulated function bool ClientFire(float Value) {
+		if (Owner.IsA('Bot'))
+			return Super.ClientFire(Value);
 
-        return false;
-    }
+		return false;
+	}
 
-    simulated function bool ClientAltFire(float Value) {
-        if (Owner.IsA('Bot'))
-            return Super.ClientAltFire(Value);
+	simulated function bool ClientAltFire(float Value) {
+		if (Owner.IsA('Bot'))
+			return Super.ClientAltFire(Value);
 
-        return false;
-    }
+		return false;
+	}
+
+	simulated function AnimEnd() {
+		local bbPlayer O;
+		O = bbPlayer(Owner);
+		if (O != none)
+			O.ClientDebugMessage("SSR AnimEnd"@O.ViewRotation.Yaw@O.ViewRotation.Pitch);
+		super.AnimEnd();
+	}
 }
 
 State ClientActive
@@ -246,13 +258,7 @@ simulated function NN_TraceFire()
 {
 	local vector HitLocation, HitDiff, HitNormal, StartTrace, EndTrace, X,Y,Z;
 	local actor Other;
-	local bool zzbNN_Combo;
 	local bbPlayer bbP;
-	local Pawn P;
-	local bbPlayer zzbbP;
-	local actor zzOther;
-	local int oRadius,oHeight;
-	local vector zzX,zzY,zzZ,zzStartTrace,zzEndTrace,zzHitLocation,zzHitNormal, HitOffset;
 
 	if (Owner.IsA('Bot'))
 		return;
@@ -288,14 +294,13 @@ simulated function NN_TraceFire()
 	NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(GV),Y,Z);
 	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, false);
 	if (Other == bbP.zzClientTTarget)
-		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(GV), MyDamageType);
+		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(GV), ST_MyDamageType);
 }
 
 simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
 
 	local bbPlayer bbP;
-	local NN_AlternateSuperShockBeamImpact impact;
 	local float is, f;
 	local actor a;
 	local vector Offset;
@@ -338,6 +343,8 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 
 	if (bbPlayer(Owner) != None)
 		bbPlayer(Owner).xxClientDemoFix(None, class'ut_SuperRing2',HitLocation+HitNormal*8,,, rotator(HitNormal));
+
+	return false;
 }
 
 simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vector SmokeOffset, vector HitNormal)
@@ -352,10 +359,7 @@ simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vect
 function TraceFire( float Accuracy )
 {
 	local bbPlayer bbP;
-	local bbPlayer bbPP;
 	local actor NN_Other;
-	local bool bShockCombo;
-	local NN_ShockProjOwnerHidden NNSP;
 	local vector NN_HitLoc, HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
 
 	if (Owner.IsA('Bot'))
@@ -399,7 +403,7 @@ function TraceFire( float Accuracy )
 
 	if (bbP.zzNN_HitActor != None && (bbP.zzNN_HitActor.IsA('Pawn') || bbP.zzNN_HitActor.IsA('Projectile')) && FastTrace(bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff, StartTrace))
 	{
-		NN_HitLoc = bbP.zzNN_HitLoc;
+		NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
 	}
 	else
 	{
@@ -441,7 +445,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 	if ( (Other != self) && (Other != Owner) && (Other != None) )
 	{
-		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
+		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, ST_MyDamageType);
 	}
 }
 
@@ -564,6 +568,6 @@ defaultproperties
      ImpactDuration=1.20
      ImpactPitch=1.25
 	 CustImpactSound=Sound'UnrealShare.General.Expla02'
-	 MyDamageType=jolted
+	 ST_MyDamageType=jolted
 	 bHitTimer=False
 }
