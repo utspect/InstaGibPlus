@@ -110,7 +110,7 @@ var float zzAceCheckedTime;
 var bool bForceDefaultHitSounds, zzbAceFinish, zzbAceChecked, zzbNN_Tracing;
 var vector zzExpectedVelocity;
 var PlayerStart zzDisabledPS[64];
-var int zzNumDisabledPS, zzDisabledPlayerCollision;
+var int zzNumDisabledPS;
 var Weapon zzPendingWeapon;
 var NavigationPoint zzNextStartSpot;
 var string zzKeys[1024], zzAliases[1024], zzActorNames[2048];
@@ -1886,12 +1886,6 @@ function xxServerMove(
 			if (PendingWeapon != None && PendingWeapon.Owner == Self && Weapon != None && !Weapon.IsInState('DownWeapon'))
 				Weapon.GotoState('DownWeapon');
 		}
-	}
-
-	if (zzDisabledPlayerCollision > 0) {
-		zzDisabledPlayerCollision--;
-		if (zzDisabledPlayerCollision == 0)
-			SetCollision(bCollideActors, bBlockActors, true);
 	}
 
 	bOnMover = Mover(Base) != None;
@@ -5379,7 +5373,7 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 	{
 		bCant = true;
 	}
-	if (PendingWeapon != None)
+	else if (PendingWeapon != None)
 	{
 		PendingWeapon.bChangeWeapon = false;
 		bCant = true;
@@ -5392,7 +5386,7 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 	{
 		bCant = true;
 	}
-	if (!Weapon.bWeaponUp)
+	else if (!Weapon.bWeaponUp)
 	{
 		WeapState = Weapon.GetStateName();
 		if (WeapState == 'ClientFiring' || WeapState == 'ClientAltFiring' || WeapState == 'Idle' || WeapState == '' || WeapState == Weapon.Class.Name || Weapon.AnimSequence == 'Still')
@@ -5400,17 +5394,18 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 		else
 			bCant = true;
 	}
-	if (IsInState('Dying'))
+	else if (IsInState('Dying'))
 	{
 		bCant = true;
 	}
-	if (!bCant)
+	else if (Player == None)
 	{
-		bCant = (Player == None);
+		bCant = true;
 	}
-	else if (!bCant && (Weapon != None) && Weapon.IsInState('ClientActive'))
+	else if ((Weapon != None) && Weapon.IsInState('ClientActive'))
 	{
 		Weapon.GotoState('');
+		Weapon.TweenAnim('Still', 0);
 	}
 	return bCant;
 }
