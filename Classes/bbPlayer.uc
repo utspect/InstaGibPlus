@@ -4310,14 +4310,14 @@ ignores SeePlayer, HearNoise, Bump;
 		}
 
 		if (bPressedDodge && DodgeDir < DODGE_Active && DodgeMove == DODGE_None) {
-			if (bWasForward)
-				DodgeMove = DODGE_Forward;
-			else if (bWasBack)
-				DodgeMove = DODGE_Back;
-			else if (bWasLeft)
+			if (aStrafe > 1)
 				DodgeMove = DODGE_Left;
-			else if (bWasRight)
+			else if (aStrafe < -1)
 				DodgeMove = DODGE_Right;
+			else if (aForward > 1)
+				DodgeMove = DODGE_Forward;
+			else if (aForward < -1)
+				DodgeMove = DODGE_Back;
 		}
 
 		if (DodgeDir == DODGE_Done || DodgeDir == DODGE_Active && Base != None)
