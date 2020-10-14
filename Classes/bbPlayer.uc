@@ -4187,9 +4187,8 @@ ignores SeePlayer, HearNoise, Bump;
 				Vel = VSize(Velocity) * DodgeEndVelocity;
 			else
 				Vel = VSize(Velocity) * JumpEndVelocity;
-			Vel = FMin(Vel, GroundSpeed);
 
-			Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * Vel;
+			Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * Vel = FMin(Vel, GroundSpeed);;
 		} else if (DodgeDir == DODGE_Active) {
 			Velocity *= DodgeEndVelocity;
 		} else {
@@ -7866,7 +7865,7 @@ defaultproperties
 	bDrawDebugData=False
 	TimeBetweenNetUpdates=0.01
 	FakeCAPInterval=0.1
-	DodgeEndVelocity=0.2
+	DodgeEndVelocity=0.1
 	JumpEndVelocity=1.0
 	PlayerReplicationInfoClass=Class'bbPlayerReplicationInfo'
 }
