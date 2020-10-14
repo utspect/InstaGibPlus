@@ -4176,11 +4176,24 @@ state PlayerWalking
 ignores SeePlayer, HearNoise, Bump;
 	event Landed(vector HitNormal)
 	{
+		local float Vel;
+
 		Global.Landed(HitNormal);
 
-		if (bJumpingPreservesMomentum == false || DodgeDir == DODGE_Active) {
+		if (bJumpingPreservesMomentum == false)
 			Velocity *= vect(1,1,0);
-			Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * FMin(VSize(Velocity), GroundSpeed);
+
+			if (DodgeDir == DODGE_Active)
+				Vel = VSize(Velocity) * DodgeEndVelocity;
+			else
+				Vel = VSize(Velocity) * JumpEndVelocity;
+			Vel = FMin(Vel, GroundSpeed);
+
+			Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * Vel;
+		} else if (DodgeDir == DODGE_Active) {
+			Velocity *= DodgeEndVelocity;
+		} else {
+			Velocity *= JumpEndVelocity;
 		}
 
 		if (DodgeDir == DODGE_Active) {
@@ -4188,10 +4201,8 @@ ignores SeePlayer, HearNoise, Bump;
 				ClientDebugMessage("Landed");
 			DodgeDir = DODGE_Done;
 			DodgeClickTimer = 0.0;
-			Velocity *= DodgeEndVelocity;
 		} else {
 			DodgeDir = DODGE_None;
-			Velocity *= JumpEndVelocity;
 		}
 	}
 
