@@ -4180,7 +4180,7 @@ ignores SeePlayer, HearNoise, Bump;
 
 		Global.Landed(HitNormal);
 
-		if (bJumpingPreservesMomentum == false)
+		if (bJumpingPreservesMomentum == false) {
 			Velocity *= vect(1,1,0);
 
 			if (DodgeDir == DODGE_Active)
@@ -4188,7 +4188,7 @@ ignores SeePlayer, HearNoise, Bump;
 			else
 				Vel = VSize(Velocity) * JumpEndVelocity;
 
-			Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * Vel = FMin(Vel, GroundSpeed);;
+			Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * FMin(Vel, GroundSpeed);
 		} else if (DodgeDir == DODGE_Active) {
 			Velocity *= DodgeEndVelocity;
 		} else {
