@@ -285,6 +285,7 @@ var Object ClientSettingsHelper;
 var ClientSettings Settings;
 
 var int FrameCount;
+var float AverageClientDeltaTime;
 
 replication
 {
@@ -760,6 +761,7 @@ function xxSendSpreeToSpecs(optional int Sw, optional PlayerReplicationInfo Rela
 
 event PlayerTick( float Time )
 {
+	AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + Time) / 1000.0;
 	xxPlayerTickEvents();
 	zzTick = Time;
 }
@@ -3974,6 +3976,7 @@ state FeigningDeath
 
 	event PlayerTick( float DeltaTime )
 	{
+		AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + DeltaTime) / 1000.0;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4036,6 +4039,7 @@ state PlayerSwimming
 
 	event PlayerTick( float DeltaTime )
 	{
+		AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + DeltaTime) / 1000.0;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4110,6 +4114,7 @@ state PlayerFlying
 {
 	event PlayerTick( float DeltaTime )
 	{
+		AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + DeltaTime) / 1000.0;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4143,6 +4148,7 @@ state CheatFlying
 {
 	event PlayerTick( float DeltaTime )
 	{
+		AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + DeltaTime) / 1000.0;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4399,6 +4405,7 @@ ignores SeePlayer, HearNoise, Bump;
 
 	event PlayerTick( float DeltaTime )
 	{
+		AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + DeltaTime) / 1000.0;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4439,6 +4446,7 @@ state PlayerWaiting
 {
 	event PlayerTick( float DeltaTime )
 	{
+		AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + DeltaTime) / 1000.0;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4777,6 +4785,7 @@ state PlayerSpectating
 {
 	event PlayerTick( float DeltaTime )
 	{
+		AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + DeltaTime) / 1000.0;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4811,6 +4820,7 @@ state PlayerWaking
 
 	event PlayerTick( float DeltaTime )
 	{
+		AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + DeltaTime) / 1000.0;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -4897,6 +4907,7 @@ state Dying
 		if (Level.Pauser == "")
 			TimeDead += DeltaTime;
 
+		AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + DeltaTime) / 1000.0;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -5060,6 +5071,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 
 	event PlayerTick( float DeltaTime )
 	{
+		AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + DeltaTime) / 1000.0;
 		xxPlayerTickEvents();
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
@@ -6045,6 +6057,8 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.DrawText("ExtrapolationDelta:"@ExtrapolationDelta);
 	zzC.SetPos(zzx, zzY + 520);
 	zzC.DrawText("EyeHeight:"@EyeHeight);
+	zzC.SetPos(zzx, zzY + 540);
+	zzC.DrawText("FPS:"@(Level.TimeDilation/AverageClientDeltaTime));
 
 	zzC.Style = ERenderStyle.STY_Normal;
 }
