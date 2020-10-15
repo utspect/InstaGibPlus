@@ -722,10 +722,6 @@ function ModifyPlayer(Pawn Other)
 			zzP.zzbForceDemo = bForceDemo;
 			zzP.zzbGameStarted = True;
 			zzP.zzbUsingTranslocator = DeathMatchPlus(Level.Game).bUseTranslocator;
-			zzP.KillCamDelay = FMax(0.0, KillCamDelay);
-			zzP.KillCamDuration = KillCamDuration;
-			zzP.bJumpingPreservesMomentum = bJumpingPreservesMomentum;
-			zzP.bEnableSingleButtonDodge = bEnableSingleButtonDodge;
 		}
 	}
 	Super.ModifyPlayer(Other);

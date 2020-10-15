@@ -624,6 +624,11 @@ event Possess()
 		GameReplicationInfo.ElapsedTime = DeathMatchPlus(Level.Game).ElapsedTime;
 		xxSetTimes(GameReplicationInfo.RemainingTime, GameReplicationInfo.ElapsedTime);
 
+		KillCamDelay = FMax(0.0, class'UTPure'.default.KillCamDelay);
+		KillCamDuration = class'UTPure'.default.KillCamDuration;
+		bJumpingPreservesMomentum = class'UTPure'.default.bJumpingPreservesMomentum;
+		bEnableSingleButtonDodge = class'UTPure'.default.bEnableSingleButtonDodge;
+
 		if(!zzUTPure.bExludeKickers)
 		{
 			ForEach AllActors(class'Kicker', K)
