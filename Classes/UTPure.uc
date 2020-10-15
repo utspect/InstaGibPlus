@@ -56,6 +56,7 @@ var localized config float MaxTradeTimeMargin; // Only relevant when bRestrictTr
 var localized config float KillCamDelay;
 var localized config float KillCamDuration;
 var localized config bool bJumpingPreservesMomentum;
+var localized config bool bEnableSingleButtonDodge;
 var string MapName;
 
 
@@ -724,6 +725,7 @@ function ModifyPlayer(Pawn Other)
 			zzP.KillCamDelay = FMax(0.0, KillCamDelay);
 			zzP.KillCamDuration = KillCamDuration;
 			zzP.bJumpingPreservesMomentum = bJumpingPreservesMomentum;
+			zzP.bEnableSingleButtonDodge = bEnableSingleButtonDodge;
 		}
 	}
 	Super.ModifyPlayer(Other);
@@ -1401,4 +1403,5 @@ defaultproperties
 	KillCamDelay=0.0
 	KillCamDuration=2.0
 	bJumpingPreservesMomentum=False
+	bEnableSingleButtonDodge=True
 }
