@@ -6030,7 +6030,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.SetPos(zzx, zzY + 360);
 	zzC.DrawText("finishedLoading?:"@bIsFinishedLoading);
 	zzC.SetPos(zzx, zzY + 380);
-	zzC.DrawText("NetUpdateRate:"@Settings.DesiredNetUpdateRate);
+	zzC.DrawText("NetUpdateRate:"@Settings.DesiredNetUpdateRate@TimeBetweenNetUpdates);
 	zzC.SetPos(zzx, zzY + 400);
 	zzC.DrawText("UpdatedPosition:"@clientForcedPosition);
 	zzC.SetPos(zzx+20, zzY + 420);
