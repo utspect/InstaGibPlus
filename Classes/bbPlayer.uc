@@ -263,6 +263,7 @@ var float OldShakeVert;
 var float OldBaseEyeHeight;
 var float EyeHeightOffset;
 
+var bool bEnableSingleButtonDodge;
 var input byte bDodge;
 var byte bOldDodge;
 var bool bPressedDodge;
@@ -303,7 +304,7 @@ replication
 	unreliable if ( bNetOwner && Role == ROLE_Authority )
 		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed, zzMaximumNetspeed,
 		zzWaitTime,zzAntiTimerList,zzAntiTimerListCount,zzAntiTimerListState,
-		zzStat, LastKiller, KillCamDelay, KillCamDuration;
+		zzStat, LastKiller, KillCamDelay, KillCamDuration, bEnableSingleButtonDodge;
 
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
@@ -4325,7 +4326,7 @@ ignores SeePlayer, HearNoise, Bump;
 			}
 		}
 
-		if (bPressedDodge && DodgeDir < DODGE_Active && DodgeMove == DODGE_None) {
+		if (bEnableSingleButtonDodge && bPressedDodge && DodgeDir < DODGE_Active && DodgeMove == DODGE_None) {
 			if (aStrafe > 1)
 				DodgeMove = DODGE_Left;
 			else if (aStrafe < -1)
@@ -4336,7 +4337,7 @@ ignores SeePlayer, HearNoise, Bump;
 				DodgeMove = DODGE_Back;
 		}
 
-		if (DodgeDir == DODGE_Done || DodgeDir == DODGE_Active && Base != None)
+		if (DodgeDir == DODGE_Done || (DodgeDir == DODGE_Active && Base != None))
 		{
 			DodgeClickTimer -= DeltaTime;
 			if (DodgeClickTimer < -0.35)
