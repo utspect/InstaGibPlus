@@ -1860,6 +1860,7 @@ function xxServerMove(
 	} else {
 		bWasDodging = bWasDodging || DodgeDir == DODGE_Active;
 		if (bWasDodging && DodgeMove == DODGE_None) {
+			bWasDodging = false;
 			SetPhysics(PHYS_Walking);
 			Landed(vect(0,0,1));
 		}
@@ -1942,7 +1943,7 @@ function xxServerMove(
 		else
 			xxCAP(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
 
-		ClientDebugMessage("Send CAP:"@TimeStamp@ClientLocErr@MaxPosError);
+		ClientDebugMessage("Send CAP:"@TimeStamp@Physics@ClientPhysics@ClientLocErr@MaxPosError);
 
 		LastCAPTime = ServerTimeStamp;
 		LastRealCAPTime = ServerTimeStamp;
