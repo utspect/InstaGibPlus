@@ -7782,7 +7782,7 @@ exec function DropFlag() {
 				zzbbP.carriedFlag = zzbbP.PlayerReplicationInfo.HasFlag;
 				zzbbP.PlayerReplicationInfo.HasFlag = None;
 				zzbbP.carriedFlag.Drop(Velocity + 10 * VRand());
-				carriedFlag.SetLocation(zzbbP.Location + vect(0, 60, 0));
+				carriedFlag.SetLocation(zzbbP.Location + Normal(Velocity) * -60.0);
 			}
 		}
 	}
