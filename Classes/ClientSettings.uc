@@ -41,16 +41,53 @@ var config float  MinDodgeClickTime; // Minimum time between two presses of the 
 var config bool   bUseOldMouseInput;
 var config PIDControllerSettings SmoothVRController;
 
+struct CrosshairLayerDescr {
+	var() config int     OffsetX, OffsetY;
+	var() config float   ScaleX, ScaleY;
+	var() config color   Color;
+	var() config bool    bSmooth;
+	var() config bool    bUse;
+};
+var config bool bUseCrosshairFactory;
+var config CrosshairLayerDescr CrosshairLayers[10];
+var CrosshairLayer BottomLayer;
+var CrosshairLayer TopLayer;
+
+simulated function AppendLayer(CrosshairLayer L) {
+	if (BottomLayer == none) {
+		BottomLayer = L;
+		TopLayer = L;
+	} else {
+		TopLayer.Next = L;
+		TopLayer = L;
+	}
+}
+
 simulated function CheckConfig() {
 	local int i;
 	local string PackageName;
+	local CrosshairLayer L;
 
-	PackageName = string(self.Class);
-	PackageName = Left(PackageName, InStr(PackageName, "."));
+	PackageName = class'StringUtils'.static.GetPackage();
 
-	for (i = 0; i < 16; i += 1)
+	for (i = 0; i < arraycount(sHitSound); i += 1)
 		if (Left(sHitSound[i], 12) ~= "InstaGibPlus")
 			sHitSound[i] = PackageName$Mid(sHitSound[i], InStr(sHitSound[i], "."));
+
+	for (i = 0; i < arraycount(CrosshairLayers); i++) {
+		if (CrosshairLayers[i].bUse) {
+			L = new class'CrosshairLayer';
+			if (CrosshairLayers[i].Texture != "")
+				L.Texture = Texture(DynamicLoadObject(CrosshairLayers[i].Texture, class'Texture'));
+			L.OffsetX = CrosshairLayers[i].OffsetX;
+			L.OffsetY = CrosshairLayers[i].OffsetY;
+			L.ScaleX = CrosshairLayers[i].ScaleX;
+			L.ScaleY = CrosshairLayers[i].ScaleY;
+			L.Color = CrosshairLayers[i].Color;
+			L.bSmooth = CrosshairLayers[i].bSmooth;
+			AppendLayer(L);
+		}
+	}
 
 	SaveConfig();
 }
@@ -90,4 +127,5 @@ defaultproperties
 	MinDodgeClickTime=0
 	bUseOldMouseInput=False
 	SmoothVRController=(p=0.09,i=0.05,d=0.00)
+	bUseCrosshairFactory=False
 }

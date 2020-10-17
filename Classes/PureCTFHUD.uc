@@ -38,12 +38,11 @@ simulated function DrawStatus(Canvas Canvas)
 			bJumpBoots = true;
 			BootCharges = Inv.Charge;
 		}
-		else
-		{
-			i++;
-			if ( i > 100 )
-				break; // can occasionally get temporary loops in netplay
-		}
+
+		// avoid infinite loops in netplay
+		// assumes no player will have more than 100 items in their inventory
+		i++;
+		if (i > 100) break;
 	}
 
 	if ( !bHideStatus )
@@ -278,4 +277,40 @@ function Timer()
 		Super(ChallengeTeamHUD).Timer();
 	else
 		Super.Timer();
+}
+
+simulated function DrawCrossHair(Canvas C, int X, int Y) {
+	local bbPlayer P;
+	local float XLength, YLength;
+	local byte Style;
+	local ClientSettings S;
+	local CrosshairLayer L;
+	P = bbPlayer(PlayerOwner);
+
+	if (P == none || P.Settings.bUseCrosshairFactory == false) {
+		super.DrawCrossHair(C, X, Y);
+		return;
+	}
+
+	X = C.ClipX / 2;
+	Y = C.ClipY / 2;
+	S = P.Settings;
+
+	Style = C.Style;
+	C.Style = ERenderStyle.STY_Normal;
+
+	for (L = S.BottomLayer; L != none; L = L.Next) {
+		XLength = L.ScaleX * L.Texture.USize;
+		YLength = L.ScaleY * L.Texture.VSize;
+
+		C.bNoSmooth = (L.bSmooth == false);
+		C.SetPos(
+			X - 0.5 * XLength + L.OffsetX,
+			Y - 0.5 * YLength + L.OffsetY);
+		C.DrawColor = L.Color;
+		C.DrawTile(L.Texture, XLength, YLength, 0, 0, L.Texture.USize, L.Texture.VSize);
+	}
+
+	C.bNoSmooth = True;
+	C.Style = Style;
 }
