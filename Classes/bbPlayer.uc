@@ -416,6 +416,10 @@ simulated function Touch( actor Other )
 		}
 
 		if ((Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker') ||
+			// A note about swJumpPad:
+			// It deliberately doesnt work client-side. I dont know why, and i dont care much why.
+			// The result of this is that we have to forcibly update clients when they touch a swJumpPad.
+			// This makes swJumpPads horrible with high ping (not much different from base game).
 			((Other.Class.Name == 'swJumpPad') && (Teleporter(Other).URL != ""))
 		) {
 			ClientDebugMessage("Touch forced updates");
