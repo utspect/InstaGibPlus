@@ -951,7 +951,7 @@ If False, players will be slowed down to ground speed upon landing, which preven
 **TimTim** - Original NewNet.  
 **Deepu** - Ultimate NewNet.  
 **AnthraX** - Lots and lots of help with debugging tricky problems.  
-**spect** - Starting this project.
+**spect** - Starting this project.  
 **Deaod** - Maintenance.  
 **UT99 Community** - For their endless patience, support and help testing and reporting bugs.  
 **Epic** - For not open sourcing a 20 year old game running on their 20 year old engine.
