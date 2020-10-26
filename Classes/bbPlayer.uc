@@ -3117,17 +3117,19 @@ exec function listSkins() {
 	ClientMessage("18 - Class: Boss, Skin: Boss, Face: Xan");
 }
 
-exec function myIgSettings() {
-	ClientMessage("Your IG+ client settings:");
-	ClientMessage("Hitsounds:"@Settings.bEnableHitSounds);
-	ClientMessage("Forced Models:"@zzbForceModels);
-	ClientMessage("Current Enemy Forced Model:"@forcedModelToString(Settings.desiredSkin));
-	ClientMessage("Current Enemy Female Forced Model:"@forcedModelToString(Settings.desiredSkinFemale));
-	ClientMessage("Current Team Forced Model:"@forcedModelToString(Settings.desiredTeamSkin));
-	ClientMessage("Current Team Female Forced Model:"@forcedModelToString(Settings.desiredTeamSkinFemale));
-	ClientMessage("Current selected hit sound:"@playedHitSound);
-	ClientMessage("Current Shock Beam:"@Settings.cShockBeam);
-	ClientMessage("Current Beam Scale:"@Settings.BeamScale);
+exec function MyIGSettings() {
+	local string Dump;
+	local int lf;
+	Dump = Settings.DumpSettings();
+
+	lf = InStr(Dump, Chr(10));
+	while(lf >= 0) {
+		ClientMessage(Left(Dump, lf), 'IGPlus');
+		Dump = Mid(Dump, lf+1, Len(Dump));
+		lf = InStr(Dump, Chr(10));
+	}
+
+	ClientMessage(Dump, 'IGPlus');
 }
 
 function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation, float Dist)

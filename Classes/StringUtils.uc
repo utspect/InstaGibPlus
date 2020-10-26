@@ -78,3 +78,15 @@ static function string Trim(string source)
 	// Return new string.
 	return result;
 }
+
+static function string FormatFloat(float F, optional int Decimals) {
+	local string Result;
+	if (Decimals <= 0) return string(int(F));
+	Result = int(F) $ ".";
+	F -= int(F);
+	while(Decimals > 0) {
+		F *= 10;
+		Decimals--;
+	}
+	return Result $ int(F);
+}

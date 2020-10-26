@@ -9,13 +9,10 @@ struct PIDControllerSettings {
 };
 
 var config bool   bForceModels; // if Client wishes models forced to his own. (default false)
-var config int    HitSound;     // if Client wishes hitsounds (default 2, must be enabled on server)
-var config int    TeamHitSound; // if Client wishes team hitsounds (default 3, must be enabled on server)
-var config bool   bDisableForceHitSounds;
 var config bool   bTeamInfo;    // if Client wants extra team info.
+var config bool   bShootDead;
 var config bool   bDoEndShot;   // if Client wants Screenshot at end of match.
 var config bool   bAutoDemo;    // if Client wants demo or not.
-var config bool   bShootDead;
 var config string DemoMask; // The options for creating demo filename.
 var config string DemoPath; // The path for creating the demo.
 var config string DemoChar; // Character to use instead of illegal ones.
@@ -23,6 +20,9 @@ var config int    DesiredSkin;
 var config int    DesiredSkinFemale;
 var config int    DesiredTeamSkin;
 var config int    DesiredTeamSkinFemale;
+var config int    HitSound;     // if Client wishes hitsounds (default 2, must be enabled on server)
+var config int    TeamHitSound; // if Client wishes team hitsounds (default 3, must be enabled on server)
+var config bool   bDisableForceHitSounds;
 var config bool   bEnableHitSounds;
 var config int    selectedHitSound;
 var config string sHitSound[16];
@@ -94,6 +94,81 @@ simulated function CheckConfig() {
 	SaveConfig();
 }
 
+simulated function string GetSetting(string Name) {
+	return Name$":"@GetPropertyText(Name)$Chr(10);
+}
+
+simulated function string DumpHitSounds() {
+	local int i;
+	local string Result;
+
+	Result = "";
+	for (i = 0; i < arraycount(sHitSound); i++)
+		if (sHitSound[i] != "")
+			Result = Result$"sHitSound["$i$"]:"@sHitSound[i]$Chr(10);
+
+	return Result;
+}
+
+simulated function string DumpColor(out Color C) {
+	return "(R="$C.R$",G="$C.G$",B="$C.B$",A="$C.A$")";
+}
+
+simulated function string DumpCrosshairLayer(out CrosshairLayerDescr L) {
+	return "(Texture="$L.Texture$",OffsetX="$L.OffsetX$",OffsetY="$L.OffsetY$",ScaleX="$L.ScaleX$",ScaleY="$L.ScaleY$",Color="$DumpColor(L.Color)$",bSmooth="$L.bSmooth$",bUse="$L.bUse$")";
+}
+
+simulated function string DumpCrosshairLayers() {
+	local int i;
+	local string Result;
+
+	Result = "";
+	for (i = 0; i < arraycount(CrosshairLayers); i++)
+		if (CrosshairLayers[i].bUse)
+			Result = Result$"CrosshairLayers["$i$"]:"@DumpCrosshairLayer(CrosshairLayers[i])$Chr(10);
+
+	return Result;
+}
+
+simulated function string DumpSettings() {
+	return "IG+ Client Settings:"$Chr(10)$
+		GetSetting("bForceModels")$
+		GetSetting("bTeamInfo")$
+		GetSetting("bShootDead")$
+		GetSetting("bDoEndShot")$
+		GetSetting("bAutoDemo")$
+		GetSetting("DemoMask")$
+		GetSetting("DemoPath")$
+		GetSetting("DemoChar")$
+		GetSetting("DesiredSkin")$
+		GetSetting("DesiredSkinFemale")$
+		GetSetting("DesiredTeamSkin")$
+		GetSetting("DesiredTeamSkinFemale")$
+		GetSetting("HitSound")$
+		GetSetting("TeamHitSound")$
+		GetSetting("bDisableForceHitSounds")$
+		GetSetting("bEnableHitSounds")$
+		GetSetting("selectedHitSound")$
+		DumpHitSounds()$
+		GetSetting("cShockBeam")$
+		GetSetting("BeamScale")$
+		GetSetting("BeamFadeCurve")$
+		GetSetting("BeamDuration")$
+		GetSetting("BeamOriginMode")$
+		GetSetting("DesiredNetUpdateRate")$
+		GetSetting("bNoSmoothing")$
+		GetSetting("bNoOwnFootsteps")$
+		GetSetting("bLogClientMessages")$
+		GetSetting("bEnableKillCam")$
+		GetSetting("FakeCAPInterval")$
+		GetSetting("MinDodgeClickTime")$
+		GetSetting("bUseOldMouseInput")$
+		GetSetting("SmoothVRController")$
+		GetSetting("bShowFPS")$
+		GetSetting("bUseCrosshairFactory")$
+		DumpCrosshairLayers();
+}
+
 defaultproperties
 {
 	bForceModels=False
@@ -129,5 +204,6 @@ defaultproperties
 	MinDodgeClickTime=0
 	bUseOldMouseInput=False
 	SmoothVRController=(p=0.09,i=0.05,d=0.00)
+	bShowFPS=False;
 	bUseCrosshairFactory=False
 }
