@@ -6654,7 +6654,7 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 
 	if (Settings.BeamOriginMode == 1) {
 		// Show beam originating from its Owner
-		OriginLocation = Owner.Location + SmokeOffset;
+		OriginLocation = Location + SmokeOffset;
 	} else {
 		// Show beam originating from where it was shot
 		OriginLocation = SmokeLocation;
