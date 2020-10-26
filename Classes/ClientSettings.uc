@@ -42,11 +42,12 @@ var config bool   bUseOldMouseInput;
 var config PIDControllerSettings SmoothVRController;
 
 struct CrosshairLayerDescr {
-	var() config int     OffsetX, OffsetY;
-	var() config float   ScaleX, ScaleY;
-	var() config color   Color;
-	var() config bool    bSmooth;
-	var() config bool    bUse;
+	var() config string Texture;
+	var() config int    OffsetX, OffsetY;
+	var() config float  ScaleX, ScaleY;
+	var() config color  Color;
+	var() config bool   bSmooth;
+	var() config bool   bUse;
 };
 var config bool bUseCrosshairFactory;
 var config CrosshairLayerDescr CrosshairLayers[10];
@@ -76,7 +77,7 @@ simulated function CheckConfig() {
 
 	for (i = 0; i < arraycount(CrosshairLayers); i++) {
 		if (CrosshairLayers[i].bUse) {
-			L = new class'CrosshairLayer';
+			L = new(none) class'CrosshairLayer';
 			if (CrosshairLayers[i].Texture != "")
 				L.Texture = Texture(DynamicLoadObject(CrosshairLayers[i].Texture, class'Texture'));
 			L.OffsetX = CrosshairLayers[i].OffsetX;
