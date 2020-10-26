@@ -1857,8 +1857,6 @@ function xxServerMove(
 			MoveAutonomous(SimStep, bRunActual, bDuckActual, bDoJump, DoDodge, Accel, DeltaRot / MergeCount);
 		}
 
-		debugIsCrouching = bIsCrouching;
-		debugDodgeDir = DodgeDir;
 		bWasPaused = false;
 	}
 
