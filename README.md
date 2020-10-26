@@ -58,6 +58,7 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 30. [MinDodgeClickTime](#mindodgeclicktime)
 31. [bUseOldMouseInput](#buseoldmouseinput)
 32. [SmoothVRController](#smoothvrcontroller)
+33. [bShowFPS](#bshowfps)
 
 ## bForceModels
 **Type: bool**  
@@ -294,6 +295,12 @@ If `False`, two successive inputs of 1.5° change in yaw result in a 3° turn.
 
 This holds the PID settings for the controller thats smoothing the view of players youre spectating as a spectator (see [PID controller](https://en.wikipedia.org/wiki/PID_controller)).
 
+## bShowFPS
+**Type: bool**  
+**Default: False**  
+
+If `True`, show averaged FPS information in top right corner. If `False`, show nothing.
+
 # Client Commands
 The following commands are additions by IG+ to the standard set of commands.
 
@@ -335,6 +342,7 @@ Parameters marked `optional` do not have to be supplied.
 27. [ShootDead](#shootdead)
 28. [SetDemoMask](#setdemomask)
 29. [DemoStart](#demostart)
+30. [ShowFPS](#showfps)
 
 ## EnableDebugData
 **Parameters: (bool b)**  
@@ -441,6 +449,9 @@ Changes [DemoMask setting](#demomask).
 ## DemoStart
 Starts recording a demo with the [DemoPath](#demopath) and [DemoMask](#demomask) that are currently configured.
 
+## ShowFPS
+Toggles displaying FPS information in the top right corner. See [bShowFPS](#bshowfps).
+
 # Server Installation
 
 Extract the zipped files to your system folder.  
@@ -510,19 +521,20 @@ Server settings can be found inside InstaGibPlus.ini.
 34. [bForceDemo](#bforcedemo)
 35. [bRestrictTrading](#brestricttrading)
 36. [MaxTradeTimeMargin](#maxtradetimemargin)
-37. [KillCamDelay](#killcamdelay)
-38. [KillCamDuration](#killcamduration)
-39. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
-40. [MinPosError](#minposerror)
-41. [MaxPosError](#maxposerror)
-42. [MaxHitError](#maxhiterror)
-43. [MaxJitterTime](#maxjittertime)
-44. [MinNetUpdateRate](#minnetupdaterate)
-45. [MaxNetUpdateRate](#maxnetupdaterate)
-46. [bEnableServerExtrapolation](#benableserverextrapolation)
-47. [bEnableJitterBounding](#benablejitterbounding)
-48. [ShowTouchedPackage](#showtouchedpackage)
-49. [ExcludeMapsForKickers](#excludemapsforkickers)
+37. [TradePingMargin](#tradepingmargin)
+38. [KillCamDelay](#killcamdelay)
+39. [KillCamDuration](#killcamduration)
+40. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
+41. [MinPosError](#minposerror)
+42. [MaxPosError](#maxposerror)
+43. [MaxHitError](#maxhiterror)
+44. [MaxJitterTime](#maxjittertime)
+45. [MinNetUpdateRate](#minnetupdaterate)
+46. [MaxNetUpdateRate](#maxnetupdaterate)
+47. [bEnableServerExtrapolation](#benableserverextrapolation)
+48. [bEnableJitterBounding](#benablejitterbounding)
+49. [ShowTouchedPackage](#showtouchedpackage)
+50. [ExcludeMapsForKickers](#excludemapsforkickers)
 
 ## HeadshotDamage
 
@@ -880,7 +892,14 @@ If False, any shot made while alive on your client counts.
 **Default: 0.1**  
 **Unit: s**  
 
-Maximum time after death (on server) that players can still fire their weapons. Only applies if [bRestrictTrading](#bRestrictTrading) is True.
+Maximum time after death (on server) that players can still fire their weapons. Only applies if [bRestrictTrading](#brestricttrading) is True.
+
+## TradePingMargin
+
+**Type: float**  
+**Default: 0.2**  
+
+Trade uncertainty relative to shooters ping. Reasonable values range from 0 to 1. Higher values lead to more trades.
 
 ## bEnableServerExtrapolation
 
@@ -931,6 +950,7 @@ If False, players will be slowed down to ground speed upon landing, which preven
 
 **TimTim** - Original NewNet.  
 **Deepu** - Ultimate NewNet.  
+**AnthraX** - Lots and lots of help with debugging tricky problems.  
 **spect** - Starting this project.
 **Deaod** - Maintenance.  
 **UT99 Community** - For their endless patience, support and help testing and reporting bugs.  

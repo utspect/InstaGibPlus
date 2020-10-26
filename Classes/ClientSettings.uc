@@ -40,6 +40,7 @@ var config float  FakeCAPInterval; // Send a FakeCAP after no CAP has been sent 
 var config float  MinDodgeClickTime; // Minimum time between two presses of the same direction for them to count as a dodge
 var config bool   bUseOldMouseInput;
 var config PIDControllerSettings SmoothVRController;
+var config bool   bShowFPS;
 
 struct CrosshairLayerDescr {
 	var() config string Texture;

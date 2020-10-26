@@ -5876,6 +5876,10 @@ event PostRender( canvas zzCanvas )
 		xxDrawDebugData(zzCanvas, 10, 120);
 	}
 
+	if (Settings.bShowFPS) {
+		DrawFPS(zzCanvas);
+	}
+
 	FrameCount += 1;
 }
 
@@ -6021,6 +6025,28 @@ simulated function xxDrawAlphaWarning(canvas zzC, float zzx, float zzY) {
 	zzC.setPos(zzx, zzY + 20);
 	zzC.DrawText("FOR TESTING ONLY!");
 	zzC.Style = ERenderStyle.STY_Normal;
+}
+
+exec function ShowFPS() {
+	Settings.bShowFPS = !Settings.bShowFPS;
+	Settings.SaveConfig();
+	if (Settings.bShowFPS)
+		ClientMessage("FPS shown!", 'IGPlus');
+	else
+		ClientMessage("FPS hidden!", 'IGPlus');
+}
+
+simulated function DrawFPS(Canvas C) {
+	local string FPS;
+	local float X,Y;
+
+	FPS = class'StringUtils'.static.FormatFloat(Level.TimeDilation/AverageClientDeltaTime, 1);
+	C.Style = ERenderStyle.STY_Translucent;
+	C.DrawColor = ChallengeHud(MyHud).WhiteColor;
+	C.Font = ChallengeHud(MyHud).MyFonts.GetSmallFont(C.ClipX);
+	C.TextSize(FPS, X, Y);
+	C.SetPos(C.ClipX - X, 0);
+	C.DrawText(FPS);
 }
 
 simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
