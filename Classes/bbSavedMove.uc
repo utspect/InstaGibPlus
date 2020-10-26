@@ -7,6 +7,8 @@ var rotator IGPlus_SavedViewRotation;
 var int IGPlus_MergeCount;
 var int JumpIndex;
 var int DodgeIndex;
+var int RunChangeIndex;
+var int DuckChangeIndex;
 var float Age;
 
 function Clear2() {
@@ -14,6 +16,8 @@ function Clear2() {
     IGPlus_MergeCount = 0;
     JumpIndex = -1;
     DodgeIndex = -1;
+    RunChangeIndex = -1;
+    DuckChangeIndex = -1;
     Age = 0.0;
 }
 
@@ -23,4 +27,6 @@ defaultproperties
      RemoteRole=ROLE_None
      JumpIndex=-1
      DodgeIndex=-1
+     RunChangeIndex=-1
+     DuckChangeIndex=-1
 }
