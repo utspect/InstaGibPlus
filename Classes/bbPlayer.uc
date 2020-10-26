@@ -101,17 +101,14 @@ var int zzPositionIndex;
 var float zzNextPositionTime;
 var bool zzbInitialized;
 var int DefaultHitSound, DefaultTeamHitSound;
-var float zzAceCheckedTime;
-var bool bForceDefaultHitSounds, zzbAceFinish, zzbAceChecked, zzbNN_Tracing;
+var bool bForceDefaultHitSounds;
+var bool zzbNN_Tracing;
 var Weapon zzPendingWeapon;
-var NavigationPoint zzNextStartSpot;
 var bool bIsAlpha;
 var bool bIsPatch469;
-var bool bClientIsWalking;
 var bool bJustRespawned;
 var float LastCAPTime; // ServerTime when last CAP was sent
 var float LastRealCAPTime;
-var vector oldClientLoc;
 var decoration carriedFlag;
 
 // HUD stuff
@@ -274,7 +271,7 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		zzbForceModels, bIsAlive, bClientIsWalking, zzbIsWarmingUp,
+		zzbForceModels, bIsAlive, zzbIsWarmingUp,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
 		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
@@ -613,38 +610,35 @@ function Timer() {
 
 	bIsFinishedLoading = true;
 	zzbRenderHUD = True;
-	Self.ClientMessage("[IG+] To view available commands type 'mutate playerhelp' in the console");
+	ClientMessage("[IG+] To view available commands type 'mutate playerhelp' in the console");
 }
 
 function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 {
-	local SavedMove M;
+	local bbSavedMove M;
+	local int Pitch;
 
+	zzNewRotation.Roll = 0;
+	Pitch = Clamp(zzNewRotation.Pitch << 16 >> 16, -16384, 16383);
+	zzNewRotation.Pitch = 0xFFFF & Pitch;
 	ViewRotation = zzNewRotation;
-	If ( (ViewRotation.Pitch > RotationRate.Pitch) && (ViewRotation.Pitch < 65536 - RotationRate.Pitch) )
-	{
-		If (ViewRotation.Pitch < 32768)
-			zzNewRotation.Pitch = RotationRate.Pitch;
-		else
-			zzNewRotation.Pitch = 65536 - RotationRate.Pitch;
-	}
-	zzNewRotation.Roll  = 0;
+	zzNewRotation.Pitch = 0xFFFF & Clamp(Pitch, -RotationRate.Pitch, RotationRate.Pitch);
 	SetRotation( zzNewRotation );
 	SetLocation( zzNewLocation );
 
 	// Clean up moves
 	if (PendingMove != none) {
 		PendingMove.NextMove = FreeMoves;
-		PendingMove.Clear();
+		bbSavedMove(PendingMove).Clear2();
 		FreeMoves = PendingMove;
 		PendingMove = none;
 	}
 
 	while(SavedMoves != none) {
-		M = SavedMoves;
+		M = bbSavedMove(SavedMoves);
 		SavedMoves = M.NextMove;
 		M.NextMove = FreeMoves;
-		M.Clear();
+		M.Clear2();
 		FreeMoves = M;
 	}
 }
@@ -761,53 +755,6 @@ function ClientDebugMessage(coerce string S, optional name Type, optional bool b
 		zzPrevClientMessage = "["$Role@FrameCount@Level.TimeSeconds$"] "$S;
 		ClientDemoMessage(zzPrevClientMessage, Type, bBeep);
 		zzPrevClientMessage = "";
-	}
-}
-
-simulated function xxCheckAce()
-{
-	local float Now;
-	local Actor A;
-
-	Now = Level.TimeSeconds;
-	if (zzbAceChecked || Now - zzAceCheckedTime < 15 || Level.NetMode != NM_Client)
-		return;
-
-	if (Now < 60)
-	{
-		ForEach AllActors(class'Actor', A)
-		{
-			if (Caps(string(A.Class.Name)) == "ACEREPLICATIONINFO")
-			{
-				zzAceCheckedTime = Now;
-				zzbAceFinish = true;
-				ConsoleCommand("mutate ace highperftoggle");
-			}
-		}
-	}
-	else
-	{
-		zzbAceChecked = true;
-	}
-}
-
-simulated function xxFinishAce( string zzS )
-{
-	if (!zzbAceFinish || Level.NetMode != NM_Client)
-		return;
-
-	zzbAceFinish = false;
-	zzS = Caps(zzS);
-	if (zzS == "ACE PERFORMANCE MODE IS NOW TOGGLED ON.")
-	{
-		ConsoleCommand("disconnect");
-		ConsoleCommand("reconnect");
-		zzbAceChecked = true;
-	}
-	else if (zzS == "ACE PERFORMANCE MODE IS NOW TOGGLED OFF.")
-	{
-		ConsoleCommand("mutate ace highperftoggle");
-		zzbAceChecked = true;
 	}
 }
 
@@ -4911,7 +4858,6 @@ state Dying
 	{
 		local float LKT;
 
-		bClientIsWalking = false;
 		bJumpStatus = false;
 		bIsAlive = false;
 		zzIgnoreUpdateUntil = 0;
