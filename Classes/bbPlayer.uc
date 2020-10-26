@@ -213,7 +213,6 @@ var int CompressedViewRotation; // Compressed Pitch/Yaw
 var bool bWasDodging;
 var bool bWasPaused;
 
-const NumLastAddVelocityTimeStamps=4;
 var float LastAddVelocityTimeStamp[4];
 var int LastAddVelocityIndex;
 
@@ -2097,7 +2096,7 @@ function xxRememberPosition()
 
 	zzLast10Positions[zzPositionIndex] = Location;
 	zzPositionIndex++;
-	if (zzPositionIndex > 9)
+	if (zzPositionIndex >= arraycount(zzLast10Positions))
 		zzPositionIndex = 0;
 	zzNextPositionTime = Now + 0.05;
 
@@ -3314,21 +3313,19 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 simulated function bool HaveAppliedVelocity(float TimeStamp) {
 	local int i;
 	local int greaterCount;
-	for(i = 0; i < NumLastAddVelocityTimeStamps; i += 1) {
+	for(i = 0; i < arraycount(LastAddVelocityTimeStamp); i += 1) {
 		if (LastAddVelocityTimeStamp[i] == TimeStamp)
 			return true;
 		if (LastAddVelocityTimeStamp[i] > TimeStamp)
 			greaterCount += 1;
 	}
 
-	if (greaterCount == NumLastAddVelocityTimeStamps) return true;
-
-	return false;
+	return (greaterCount == arraycount(LastAddVelocityTimeStamp));
 }
 
 simulated function AddAppliedVelocity(float TimeStamp) {
 	LastAddVelocityTimeStamp[LastAddVelocityIndex] = TimeStamp;
-	LastAddVelocityIndex = (LastAddVelocityIndex + 1) % NumLastAddVelocityTimeStamps;
+	LastAddVelocityIndex = (LastAddVelocityIndex + 1) % arraycount(LastAddVelocityTimeStamp);
 }
 
 simulated function AddVelocity( vector NewVelocity )
