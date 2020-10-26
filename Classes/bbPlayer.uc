@@ -7762,16 +7762,11 @@ function xxExplodeOther(Projectile Other)
 }
 
 exec function DropFlag() {
-	local bbPlayer zzbbP;
-	ForEach AllActors(class'bbPlayer', zzbbP) {
-		if (zzbbP == Self) {
-			if (zzbbP.PlayerReplicationInfo.HasFlag != None) {
-				zzbbP.carriedFlag = zzbbP.PlayerReplicationInfo.HasFlag;
-				zzbbP.PlayerReplicationInfo.HasFlag = None;
-				zzbbP.carriedFlag.Drop(Velocity + 10 * VRand());
-				carriedFlag.SetLocation(zzbbP.Location + Normal(Velocity) * -60.0);
-			}
-		}
+	local Decoration Flag;
+	if (PlayerReplicationInfo.HasFlag != none) {
+		Flag = PlayerReplicationInfo.HasFlag;
+		Flag.Drop(Velocity + 10 * VRand());
+		Flag.SetLocation(Location + Normal(Velocity) * -60.0);
 	}
 }
 
