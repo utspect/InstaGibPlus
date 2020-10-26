@@ -97,6 +97,7 @@ var float zzGrappleTime;
 var Weapon zzKilledWithWeapon;
 var Pawn zzLastKilled;
 var vector zzLast10Positions[10];	// every 50ms for half a second of backtracking
+var bbOldMovementInfo OldestMI, NewestMI;
 var int zzPositionIndex;
 var float zzNextPositionTime;
 var bool zzbInitialized;
@@ -469,6 +470,7 @@ simulated function InitSettings() {
 
 event PostBeginPlay()
 {
+	local int TickRate;
 	Super.PostBeginPlay();
 	InitSettings();
 
@@ -479,6 +481,20 @@ event PostBeginPlay()
 		zzWaitTime = 5.0;
 	}
 	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
+
+	TickRate = int(ConsoleCommand("get ini:Engine.Engine.NetworkDevice NetServerMaxTickRate"));
+	TickRate = ++TickRate / 2;
+	while(TickRate > 0) {
+		if (OldestMI == none) {
+			OldestMI = new(none) class'bbOldMovementInfo';
+			NewestMI = OldestMI;
+		} else {
+			NewestMI.Next = new(none) class'bbOldMovementInfo';
+			NewestMI = NewestMI.Next;
+		}
+		NewestMI.Save(self);
+		TickRate--;
+	}
 }
 
 // called after PostBeginPlay on net client
@@ -2037,6 +2053,13 @@ function xxRememberPosition()
 {
 	local float Now;
 
+	NewestMI.Next = OldestMI;
+	OldestMI = OldestMI.Next;
+	NewestMI = NewestMI.Next;
+	NewestMI.Next = none;
+
+	NewestMI.Save(self);
+
 	Now = Level.TimeSeconds;
 	if (Now < zzNextPositionTime)
 		return;
@@ -2053,6 +2076,7 @@ function bool xxCloseEnough(vector HitLoc, optional int HitRadius)
 {
 	local int i, MaxHitError;
 	local vector Loc;
+	local bbOldMovementInfo MI;
 
 	MaxHitError = zzUTPure.default.MaxHitError + HitRadius;
 
@@ -2064,6 +2088,13 @@ function bool xxCloseEnough(vector HitLoc, optional int HitRadius)
 		Loc = zzLast10Positions[i];
 		if (VSize(HitLoc - Loc) < MaxHitError)
 			return true;
+	}
+
+	MI = OldestMI
+	while (MI != none) {
+		if (VSize(HitLoc - MI.Loc) < MaxHitError)
+			return true;
+		MI = MI.Next;
 	}
 
 	return false;
