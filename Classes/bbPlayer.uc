@@ -16,17 +16,12 @@ var Sound playedHitSound;
 var(Sounds) Sound cHitSound[16];
 
 // Replicated settings Client -> Server
-//	var bool	zzbConsoleInvalid;	// Should always be false on server.
-var bool	zzbStoppingTraceBot;	// True while stopping Trace Bot
 var int		zzNetspeed;		// The netspeed this client is using
 var bool	zzbForcedTick;		// True on server if Tick was forced (Called more than once)
 var bool	zzbBadCanvas;		// True on server if Canvas is NOT engine.canvas
 var bool	zzbVRChanged;		// True on server if client changed viewrotation at wrong time.
 var bool	zzbDemoRecording;	// True if client is recording demos.
-var bool	zzbBadLighting;		// True if Lighting is not good on client (HAX!)
 var float	zzClientTD;		// Client TimeDilation (Should always be same as server or HAX!)
-var string defaultSkin;
-var string defaultFace;
 var bool bIsFinishedLoading;
 
 // Replicated settings Server -> Client
@@ -234,7 +229,7 @@ var bool bEnableSingleButtonDodge;
 var input byte bDodge;
 var byte bOldDodge;
 var bool bPressedDodge;
-var transient float zzLastTimeForward, zzLastTimeBack, zzLastTimeLeft, zzLastTimeRight;
+var transient float LastTimeForward, LastTimeBack, LastTimeLeft, LastTimeRight;
 var transient float TurnFractionalPart, LookUpFractionalPart;
 
 var float AverageServerDeltaTime;
@@ -313,7 +308,7 @@ replication
 	unreliable if ( Role < ROLE_Authority )
 		bIsFinishedLoading, xxServerCheater, xxServerMove, xxServerMoveDead,
 		zzFalse, zzTrue, zzNetspeed, zzbBadCanvas, zzbVRChanged,
-		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD,
+		zzbForcedTick, zzbDemoRecording, zzClientTD,
 		PingAverage;
 
 	// Client->Server
@@ -4272,30 +4267,30 @@ ignores SeePlayer, HearNoise, Bump;
 
 				if (bEdgeForward && bWasForward)
 				{
-					if (Now - zzLastTimeForward > Settings.MinDodgeClickTime) {
+					if (Now - LastTimeForward > Settings.MinDodgeClickTime) {
 						DodgeDir = DODGE_Forward;
-						zzLastTimeForward = Now;
+						LastTimeForward = Now;
 					}
 				}
 				else if (bEdgeBack && bWasBack)
 				{
-					if (Now - zzLastTimeBack > Settings.MinDodgeClickTime) {
+					if (Now - LastTimeBack > Settings.MinDodgeClickTime) {
 						DodgeDir = DODGE_Back;
-						zzLastTimeBack = Now;
+						LastTimeBack = Now;
 					}
 				}
 				else if (bEdgeLeft && bWasLeft)
 				{
-					if (Now - zzLastTimeLeft > Settings.MinDodgeClickTime) {
+					if (Now - LastTimeLeft > Settings.MinDodgeClickTime) {
 						DodgeDir = DODGE_Left;
-						zzLastTimeLeft = Now;
+						LastTimeLeft = Now;
 					}
 				}
 				else if (bEdgeRight && bWasRight)
 				{
-					if (Now - zzLastTimeRight > Settings.MinDodgeClickTime) {
+					if (Now - LastTimeRight > Settings.MinDodgeClickTime) {
 						DodgeDir = DODGE_Right;
-						zzLastTimeRight = Now;
+						LastTimeRight = Now;
 					}
 				}
 
