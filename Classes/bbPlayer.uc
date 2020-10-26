@@ -6105,7 +6105,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	foreach AllActors(class'Pawn', P) {
 		if (P.PlayerReplicationInfo == none) continue;
 		zzC.SetPos(zzx+500, y);
-		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"State:"@GetStateName()@"Physics:"@P.Physics@"Anim:"@P.AnimSequence);
+		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"State:"@GetStateName()@"Physics:"@P.Physics@"Anim:"@P.AnimSequence@"AnimFrame:"@P.AnimFrame);
 		y += 20;
 	}
 	zzC.SetPos(zzx+20, zzY + 460);
