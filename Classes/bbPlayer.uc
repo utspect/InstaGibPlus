@@ -108,14 +108,8 @@ var bool zzbInitialized;
 var int DefaultHitSound, DefaultTeamHitSound;
 var float zzAceCheckedTime;
 var bool bForceDefaultHitSounds, zzbAceFinish, zzbAceChecked, zzbNN_Tracing;
-var vector zzExpectedVelocity;
-var PlayerStart zzDisabledPS[64];
-var int zzNumDisabledPS;
 var Weapon zzPendingWeapon;
 var NavigationPoint zzNextStartSpot;
-var string zzKeys[1024], zzAliases[1024], zzActorNames[2048];
-var int zzNumActorNames;
-var byte zzPressing[1024];
 var bool bIsAlpha;
 var bool bIsPatch469;
 var bool bClientIsWalking;
@@ -124,23 +118,6 @@ var float LastCAPTime; // ServerTime when last CAP was sent
 var float LastRealCAPTime;
 var vector oldClientLoc;
 var decoration carriedFlag;
-
-
-struct MoveInfo {
-	var float Delta;
-	var bool bRun;
-	var bool bDuck;
-	var bool bPressedJump;
-	var EDodgeDir DodgeMove;
-	var vector Acceleration;
-	var rotator DeltaRot;
-};
-
-struct BetterVector {
-	var int X;
-	var int Y;
-	var int Z;
-};
 
 // HUD stuff
 var Mutator	zzHudMutes[50];		// Accepted Hud Mutators
@@ -158,7 +135,6 @@ var float	zzLogoStart;		// Start of logo display
 var int		zzSMCnt;		// ServerMove Count
 var bool	bMenuFixed;		// Fixed Menu item
 var float	zzCVTO;			// CenterView Time out.
-//var bool	zzbCanCSL;		// Console sets this to true if they are allowed to CSL
 
 // Anti Timing Variables
 var Inventory	zzAntiTimerList[32];
@@ -2508,24 +2484,6 @@ simulated function xxNN_ClientProjExplode( int ProjIndex, optional vector HitLoc
 		}
 	}
 	xxDisableCarcasses();
-}
-
-simulated function BetterVector GetBetterVector( vector SomeVector )
-{
-	local BetterVector Vec;
-	Vec.X = SomeVector.X;
-	Vec.Y = SomeVector.Y;
-	Vec.Z = SomeVector.Z;
-	return Vec;
-}
-
-simulated function vector GetVector( BetterVector SomeVector )
-{
-	local vector Vec;
-	Vec.X = SomeVector.X;
-	Vec.Y = SomeVector.Y;
-	Vec.Z = SomeVector.Z;
-	return Vec;
 }
 
 // Think about what you're doing.  Look at the bigger picture of it all, if you're able to.  This is a 15+ year old video game.
