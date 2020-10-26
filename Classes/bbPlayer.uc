@@ -2314,19 +2314,25 @@ function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator V
 	else if (xxCanFire())
 	{
 		if (class'UTPure'.default.bRestrictTrading && IsInState('Dying')) {
-			TradeTimeMargin = class'UTPure'.default.MaxTradeTimeMargin;
-			if (bbPlayer(LastKiller) != none) {
+			if (bbPlayer(LastKiller) != none)
 				TradeTimeMargin = FMin(
-					TradeTimeMargin,
-					(AverageServerDeltaTime/Level.TimeDilation +
+					class'UTPure'.default.MaxTradeTimeMargin,
+					((AverageServerDeltaTime + TimeBetweenNetUpdates)/Level.TimeDilation +
+					0.0005 * PlayerReplicationInfo.Ping * class'UTPure'.default.TradePingMargin +
 					0.0005 * (PlayerReplicationInfo.Ping - bbPlayer(LastKiller).PlayerReplicationInfo.Ping))
 				);
-			}
+			else
+				TradeTimeMargin = class'UTPure'.default.MaxTradeTimeMargin;
+
 			if (RealTimeDead < TradeTimeMargin) {
 				Log("["$Level.TimeSeconds$"] Traded! TradeTimeMargin="$TradeTimeMargin@"RealTimeDead="$RealTimeDead, 'IGPlus');
 				Super.Fire(1);
+			} else {
+				Log("["$Level.TimeSeconds$"] Rejected Trade! TradeTimeMargin="$TradeTimeMargin@"RealTimeDead="$RealTimeDead, 'IGPlus');
 			}
 		} else {
+			if (IsInState('Dying'))
+				Log("["$Level.TimeSeconds$"] Traded! RealTimeDead="$RealTimeDead, 'IGPlus');
 			Super.Fire(1);
 		}
 	}

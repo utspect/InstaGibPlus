@@ -53,6 +53,7 @@ var localized config int ThrowVelocity;	// How far a player can throw weapons
 var localized config bool bForceDemo;		// Forces clients to do demos.
 var localized config bool bRestrictTrading;
 var localized config float MaxTradeTimeMargin; // Only relevant when bRestrictTrading is true
+var localized config float TradePingMargin;
 var localized config float KillCamDelay;
 var localized config float KillCamDuration;
 var localized config bool bJumpingPreservesMomentum;
@@ -1394,6 +1395,7 @@ defaultproperties
 	ShowTouchedPackage=False
 	bRestrictTrading=True
 	MaxTradeTimeMargin=0.1
+	TradePingMargin=0.2
 	bEnableServerExtrapolation=True
 	bEnableJitterBounding=True
 	KillCamDelay=0.0
