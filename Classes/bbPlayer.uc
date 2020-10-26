@@ -363,7 +363,7 @@ replication
 		xxNN_ReleaseFire, xxNN_ReleaseAltFire, xxNN_MoveTTarget;
 
 	// Server->Client
-	unreliable if (Role == ROLE_Authority && bViewTarget)
+	unreliable if (Role == ROLE_Authority && RemoteRole < ROLE_AutonomousProxy && bViewTarget)
 		CompressedViewRotation;
 }
 
