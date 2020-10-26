@@ -3314,21 +3314,22 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 
 	TraceDir = Normal(TraceDir);
 
-	if ( (GetAnimGroup(AnimSequence) == 'Ducking') && (AnimFrame > -0.03) )
+	if ( (Physics == PHYS_Walking) && (GetAnimGroup(AnimSequence) == 'Ducking') && (AnimFrame > -0.03) )
 	{
-		maxZ = Location.Z + 0.3 * CollisionHeight; // default value is 0.3
-		if ( HitLocation.Z > maxZ )
-		{
-			if ( TraceDir.Z >= 0 )
-				return false;
-			adjZ = (maxZ - HitLocation.Z)/TraceDir.Z;
-			HitLocation.Z = maxZ;
-			HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
-			HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
-			delta = (HitLocation - Location) * vect(1,1,0);
-			if (delta dot delta > CollisionRadius * CollisionRadius)
-				return false;
-		}
+		maxZ = Location.Z + 0.3 * CollisionHeight; // default game is 0.25
+		if ( HitLocation.Z <= maxZ )
+			return true;
+
+		if ( TraceDir.Z >= 0 )
+			return false;
+
+		adjZ = (maxZ - HitLocation.Z)/TraceDir.Z;
+		HitLocation.Z = maxZ;
+		HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
+		HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
+		delta = (HitLocation - Location) * vect(1,1,0);
+		if (delta dot delta > CollisionRadius * CollisionRadius)
+			return false;
 	}
 	return true;
 }
