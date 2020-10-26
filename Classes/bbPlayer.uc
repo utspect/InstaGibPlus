@@ -160,14 +160,6 @@ var bool	bMenuFixed;		// Fixed Menu item
 var float	zzCVTO;			// CenterView Time out.
 //var bool	zzbCanCSL;		// Console sets this to true if they are allowed to CSL
 
-// Consoles & Canvas
-//var Console	zzOldConsole;
-//var PureSuperDuperUberConsole	zzMyConsole;
-var bool	zzbBadConsole;
-// var Canvas zzCannibal;			// Old console
-// var font zzCanOldFont;			// Canvas messing checks
-// var byte zzCanOldStyle;			// And more
-
 // Anti Timing Variables
 var Inventory	zzAntiTimerList[32];
 var int		zzAntiTimerListState;
@@ -344,7 +336,7 @@ replication
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
 		bIsFinishedLoading, xxServerCheater, xxServerMove, xxServerMoveDead,
-		zzFalse, zzTrue, zzNetspeed, zzbBadConsole, zzbBadCanvas, zzbVRChanged,
+		zzFalse, zzTrue, zzNetspeed, zzbBadCanvas, zzbVRChanged,
 		zzbStoppingTraceBot, zzbForcedTick, zzbDemoRecording, zzbBadLighting, zzClientTD,
 		PingAverage;
 
@@ -3149,7 +3141,6 @@ function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation,
 event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator CameraRotation )
 {
 	local Pawn PTarget;
-	local bbPlayer bbTarg;
 
 	if (zzInfoThing != None)
 			zzInfoThing.zzPlayerCalcViewCalls--;
@@ -3160,17 +3151,12 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 		CameraLocation = ViewTarget.Location;
 		CameraRotation = ViewTarget.Rotation;
 		PTarget = Pawn(ViewTarget);
-		bbTarg = bbPlayer(ViewTarget);
 		if ( PTarget != None )
 		{
 			if ( Level.NetMode == NM_Client )
 			{
 				if ( PTarget.bIsPlayer )
-				{
-					if (bbTarg != None)
-						bbTarg.ViewRotation = TargetViewRotation;
 					PTarget.ViewRotation = TargetViewRotation;
-				}
 				PTarget.EyeHeight = TargetEyeHeight;
 				if ( PTarget.Weapon != None )
 					PTarget.Weapon.PlayerViewOffset = TargetWeaponViewOffset;

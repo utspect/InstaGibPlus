@@ -21,7 +21,6 @@ var int DefaultHitSound, DefaultTeamHitSound;
 var bool bForceDefaultHitSounds;
 var bool zzbInitialized;
 
-var bool	zzbBadConsole;
 var bool zzTrue,zzFalse;		// True & False
 
 // Smooth ViewRotation when spectating in 1st person
