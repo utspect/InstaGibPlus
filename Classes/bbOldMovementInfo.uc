@@ -10,8 +10,3 @@ function Save(bbPlayer P) {
 	Loc = P.Location;
 	Vel = P.Velocity;
 }
-
-defaultproperties
-{
-	RemoteRole=ROLE_None
-}

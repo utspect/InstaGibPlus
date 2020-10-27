@@ -2090,7 +2090,7 @@ function bool xxCloseEnough(vector HitLoc, optional int HitRadius)
 			return true;
 	}
 
-	MI = OldestMI
+	MI = OldestMI;
 	while (MI != none) {
 		if (VSize(HitLoc - MI.Loc) < MaxHitError)
 			return true;
