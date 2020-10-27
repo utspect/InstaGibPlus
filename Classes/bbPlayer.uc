@@ -182,6 +182,7 @@ var bool SetPendingWeapon;
 
 // Net Updates
 var float TimeBetweenNetUpdates;
+var bool bForcePacketSplit;
 var int PingAverage;
 var int PingCurrentAveragingSecond;
 var float PingRunningAverage;
@@ -382,6 +383,8 @@ simulated function Touch( actor Other )
 			zzbForceUpdate = true;
 		}
 	}
+	if (Other.IsA('Kicker'))
+		bForcePacketSplit = true;
 	if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0)
 		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
 	if (Other.IsA('Teleporter'))
@@ -1599,23 +1602,12 @@ function xxServerMove(
 	local byte ClientRoll;
 	local int MergeCount;
 	local int MoveIndex;
-
 	local int JumpIndex;
-	local float JumpPos;
-	local bool bDoJump;
-
 	local int DodgeIndex;
+	local float JumpPos;
 	local float DodgePos;
+	local bool bDoJump;
 	local EDodgeDir DoDodge;
-
-	local int RunChangeIndex;
-	local float RunChangePos;
-	local bool bRunActual;
-
-	local int DuckChangeIndex;
-	local float DuckChangePos;
-	local bool bDuckActual;
-
 	local bool bClientPaused;
 
 	if (bDeleteMe)
@@ -1657,10 +1649,8 @@ function xxServerMove(
 	DodgeMove      = GetDodgeDir((MiscData & 0x00000F00) >> 8);
 	ClientRoll     =             (MiscData & 0x000000FF);
 
-	DuckChangeIndex = (MiscData2 & 0x000F8000) >> 15;
-	RunChangeIndex  = (MiscData2 & 0x00007C00) >> 10;
-	DodgeIndex      = (MiscData2 & 0x000003E0) >> 5;
-	JumpIndex       = (MiscData2 & 0x0000001F);
+	DodgeIndex     = (MiscData2 & 0x03E0) >> 5;
+	JumpIndex      = (MiscData2 & 0x001F);
 
 	if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
 		ClientDebugMessage("Received Dodge"@DodgeMove@TimeStamp);
@@ -1760,8 +1750,6 @@ function xxServerMove(
 		SimStep = DeltaTime / float(MergeCount);
 		JumpPos = float(JumpIndex) / float(MergeCount);
 		DodgePos = float(DodgeIndex) / float(MergeCount);
-		RunChangePos = float(RunChangeIndex) / float(MergeCount);
-		DuckChangePos = float(DuckChangeIndex) / float(MergeCount);
 
 		if (SimStep < (1.0 / class'UTPure'.default.MaxNetUpdateRate)) {
 			MergeCount = int(DeltaTime * class'UTPure'.default.MaxNetUpdateRate * 0.5) + 1;
@@ -1770,8 +1758,6 @@ function xxServerMove(
 
 		JumpIndex = int(JumpPos * MergeCount);
 		DodgeIndex = int(DodgePos * MergeCount);
-		RunChangeIndex = int(RunChangePos * MergeCount);
-		DuckChangeIndex = int(DuckChangePos * MergeCount);
 
 		for (MoveIndex = 0; MoveIndex < MergeCount; MoveIndex++) {
 			if (MoveIndex == JumpIndex)
@@ -1784,10 +1770,7 @@ function xxServerMove(
 			else
 				DoDodge = DODGE_None;
 
-			bRunActual = (MoveIndex < RunChangeIndex) ^^ NewbRun;
-			bDuckActual = (MoveIndex < DuckChangeIndex) ^^ NewbDuck;
-
-			MoveAutonomous(SimStep, bRunActual, bDuckActual, bDoJump, DoDodge, Accel, DeltaRot / MergeCount);
+			MoveAutonomous(SimStep, NewbRun, NewbDuck, bDoJump, DoDodge, Accel, DeltaRot / MergeCount);
 		}
 
 		bWasPaused = false;
@@ -2570,7 +2553,7 @@ function xxReplicateMove(
 	eDodgeDir DodgeMove,
 	rotator DeltaRot
 ) {
-	local bbSavedMove NewMove, OldMove, LastMove, PendMove;
+	local bbSavedMove NewMove, OldMove, LastMove;
 	local float TotalTime, NetMoveDelta;
 	local EPhysics OldPhys;
 	local float AdjustAlpha;
@@ -2597,53 +2580,36 @@ function xxReplicateMove(
 	// Get a SavedMove actor to store the movement in.
 	if ( PendingMove != None )
 	{
-		if (//VSize(NewAccel - PendingMove.Acceleration) < 0.125 * AccelRate &&
+		if (VSize(NewAccel - PendingMove.Acceleration) < 0.125 * AccelRate &&
+			PendingMove.bRun == (bRun > 0) &&
+			PendingMove.bDuck == (bDuck > 0) &&
+			bForcePacketSplit == false &&
 			bbSavedMove(PendingMove).IGPlus_MergeCount < 31
 		) {
-			PendMove = bbSavedMove(PendingMove);
-			//add this move to the pending move
-			PendMove.TimeStamp = Level.TimeSeconds;
-			PendMove.IGPlus_MergeCount += 1;
 
-			TotalTime = PendMove.Delta + DeltaTime;
+			//add this move to the pending move
+			PendingMove.TimeStamp = Level.TimeSeconds;
+			bbSavedMove(PendingMove).IGPlus_MergeCount += 1;
+
+			TotalTime = PendingMove.Delta + DeltaTime;
 			if (TotalTime != 0)
-				PendMove.Acceleration = (DeltaTime * NewAccel + PendMove.Delta * PendMove.Acceleration)/TotalTime;
+				PendingMove.Acceleration = (DeltaTime * NewAccel + PendingMove.Delta * PendingMove.Acceleration)/TotalTime;
 
 			// Set this move's data.
-			if ( PendMove.DodgeMove == DODGE_None ) {
-				PendMove.DodgeMove = DodgeMove;
-				if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active && PendMove.DodgeIndex < 0) {
-					PendMove.DodgeIndex = PendMove.IGPlus_MergeCount;
+			if ( PendingMove.DodgeMove == DODGE_None ) {
+				PendingMove.DodgeMove = DodgeMove;
+				if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active && bbSavedMove(PendingMove).DodgeIndex < 0) {
+					bbSavedMove(PendingMove).DodgeIndex = bbSavedMove(PendingMove).IGPlus_MergeCount;
 				}
 			}
-
-			if (PendMove.bPressedJump == false && bPressedJump && PendMove.JumpIndex < 0)
-				PendMove.JumpIndex = PendMove.IGPlus_MergeCount;
-			PendMove.bPressedJump = bPressedJump || PendMove.bPressedJump;
-
-			if ((bRun > 0) != PendMove.bRun) {
-				if (PendMove.RunChangeIndex < 0)
-					PendMove.RunChangeIndex = PendMove.IGPlus_MergeCount;
-				else
-					// if we changed bRun before, ignore running/walking for a very short time
-					PendMove.RunChangeIndex = -1;
-			}
-			PendMove.bRun = (bRun > 0);
-
-			if ((bDuck > 0) != PendMove.bDuck) {
-				if (PendMove.DuckChangeIndex < 0)
-					PendMove.DuckChangeIndex = PendMove.IGPlus_MergeCount;
-				else
-					// if we changed bDuck before, ignore ducking/standing for a very short time
-					PendMove.DuckChangeIndex = -1;
-			}
-			PendMove.bDuck = (bDuck > 0);
-
-			PendMove.bFire = PendMove.bFire || bJustFired || (bFire != 0);
-			PendMove.bForceFire = PendMove.bForceFire || bJustFired;
-			PendMove.bAltFire = PendMove.bAltFire || bJustAltFired || (bAltFire != 0);
-			PendMove.bForceAltFire = PendMove.bForceAltFire || bJustAltFired;
-			PendMove.Delta = TotalTime;
+			if (PendingMove.bPressedJump == false && bPressedJump && bbSavedMove(PendingMove).JumpIndex < 0)
+				bbSavedMove(PendingMove).JumpIndex = bbSavedMove(PendingMove).IGPlus_MergeCount;
+			PendingMove.bPressedJump = bPressedJump || PendingMove.bPressedJump;
+			PendingMove.bFire = PendingMove.bFire || bJustFired || (bFire != 0);
+			PendingMove.bForceFire = PendingMove.bForceFire || bJustFired;
+			PendingMove.bAltFire = PendingMove.bAltFire || bJustAltFired || (bAltFire != 0);
+			PendingMove.bForceAltFire = PendingMove.bForceAltFire || bJustAltFired;
+			PendingMove.Delta = TotalTime;
 		} else {
 			SendSavedMove(bbSavedMove(PendingMove));
 
@@ -2721,9 +2687,12 @@ function xxReplicateMove(
 	NewMove.IGPlus_SavedLocation = Location;
 	NewMove.IGPlus_SavedVelocity = Velocity;
 
-	if (PendingMove.Delta < NetMoveDelta - ClientUpdateTime)
+	if ((PendingMove.Delta < NetMoveDelta - ClientUpdateTime) &&
+		(PendingMove.bPressedJump == false) &&
+		(bForcePacketSplit == false))
 		return;
 
+	bForcePacketSplit = false;
 	ClientUpdateTime = PendingMove.Delta - NetMoveDelta;
 	if ( SavedMoves == None )
 		SavedMoves = PendingMove;
@@ -2762,10 +2731,8 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	MiscData = MiscData | (int(Move.DodgeMove) << 8);
 	MiscData = MiscData | ((Rotation.Roll >> 8) & 0xFF);
 
-	if (Move.JumpIndex > 0)       MiscData2 = MiscData2 | (Move.JumpIndex & 0x1F);
-	if (Move.DodgeIndex > 0)      MiscData2 = MiscData2 | (Move.DodgeIndex & 0x1F) << 5;
-	if (Move.RunChangeIndex > 0)  MiscData2 = MiscData2 | (Move.RunChangeIndex & 0x1F) << 10;
-	if (Move.DuckChangeIndex > 0) MiscData2 = MiscData2 | (Move.DuckChangeIndex & 0x1F) << 15;
+	if (Move.JumpIndex > 0)  MiscData2 = MiscData2 | (Move.JumpIndex & 0x1F);
+	if (Move.DodgeIndex > 0) MiscData2 = MiscData2 | (Move.DodgeIndex & 0x1F) << 5;
 
 	if (OldMove != none) {
 		OldMoveData1 = Min(0x3FF, int(OldMove.Age * 1000.0));
