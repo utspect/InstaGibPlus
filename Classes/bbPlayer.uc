@@ -487,6 +487,7 @@ event PostBeginPlay()
 
 	TickRate = int(ConsoleCommand("get ini:Engine.Engine.NetworkDevice NetServerMaxTickRate"));
 	TickRate = ++TickRate / 2;
+	Log("Creating"@TickRate@"MovementInfo blocks", 'IGPlus');
 	while(TickRate > 0) {
 		if (OldestMI == none) {
 			OldestMI = new(none) class'bbOldMovementInfo';
