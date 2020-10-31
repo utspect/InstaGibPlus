@@ -403,12 +403,7 @@ simulated function bool xxNewSetLocation(vector NewLoc, vector NewVel)
 
 simulated function bool xxNewMoveSmooth(vector NewLoc)
 {
-	local vector Delta;
-
-	Delta = (NewLoc - Location);
-	if (MoveSmooth(Delta))
-		return true;
-	return Move(Delta);
+	return MoveSmooth(NewLoc - Location);
 }
 
 simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeight, vector KLocation, int KRotationYaw, int KRotationPitch, int KRotationRoll, name KTag, name KEvent, float KKickVelocityX, float KKickVelocityY, float KKickVelocityZ, name KKickedClasses, bool KbKillVelocity, bool KbRandomize )
