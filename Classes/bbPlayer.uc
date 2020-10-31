@@ -1888,7 +1888,6 @@ function xxServerMove(
 
 	debugClientForceUpdate = false;
 
-	PlayerReplicationInfo.Ping = int(ConsoleCommand("GETPING"));
 	if (SetPendingWeapon) {
 		xxSetPendingWeapon(PendingWeapon);
 		zzPendingWeapon = PendingWeapon;
