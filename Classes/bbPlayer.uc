@@ -109,7 +109,7 @@ var bool bIsAlpha;
 var bool bIsPatch469;
 var bool bJustRespawned;
 var float LastCAPTime; // ServerTime when last CAP was sent
-var float LastRealCAPTime;
+var float NextRealCAPTime;
 var decoration carriedFlag;
 
 // HUD stuff
@@ -1839,7 +1839,7 @@ function xxServerMove(
 			zzForceUpdateUntil = 0;
 	}
 
-	if (ServerTimeStamp < LastRealCAPTime + PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation + AverageServerDeltaTime)
+	if (ServerTimeStamp < NextRealCAPTime)
 		return;
 
 	if (zzbForceUpdate)
@@ -1871,7 +1871,7 @@ function xxServerMove(
 		ClientDebugMessage("Send CAP:"@TimeStamp@Physics@ClientPhysics@ClientLocErr@MaxPosError);
 
 		LastCAPTime = ServerTimeStamp;
-		LastRealCAPTime = ServerTimeStamp;
+		NextRealCAPTime = ServerTimeStamp + PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation + AverageServerDeltaTime;
 		zzLastClientErr = 0;
 		return;
 	}
