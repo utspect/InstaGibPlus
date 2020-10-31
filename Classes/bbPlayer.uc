@@ -406,8 +406,22 @@ simulated function bool xxNewMoveSmooth(vector NewLoc)
 	return MoveSmooth(NewLoc - Location);
 }
 
-simulated function xxClientKicker( float KCollisionRadius, float KCollisionHeight, vector KLocation, int KRotationYaw, int KRotationPitch, int KRotationRoll, name KTag, name KEvent, float KKickVelocityX, float KKickVelocityY, float KKickVelocityZ, name KKickedClasses, bool KbKillVelocity, bool KbRandomize )
-{
+simulated function xxClientKicker(
+	float KCollisionRadius,
+	float KCollisionHeight,
+	vector KLocation,
+	int KRotationYaw,
+	int KRotationPitch,
+	int KRotationRoll,
+	name KTag,
+	name KEvent,
+	float KKickVelocityX,
+	float KKickVelocityY,
+	float KKickVelocityZ,
+	name KKickedClasses,
+	bool KbKillVelocity,
+	bool KbRandomize
+) {
 	local Kicker K;
 	local AttachMover AM;
 	local rotator KRotation;
