@@ -3109,7 +3109,7 @@ function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation,
 event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator CameraRotation )
 {
 	local Pawn PTarget;
-	local bbPlayer bbTarg;
+	local bbPlayer bbP;
 
 	if (zzInfoThing != None)
 			zzInfoThing.zzPlayerCalcViewCalls--;
@@ -3120,16 +3120,19 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 		CameraLocation = ViewTarget.Location;
 		CameraRotation = ViewTarget.Rotation;
 		PTarget = Pawn(ViewTarget);
-		bbTarg = bbPlayer(ViewTarget);
 		if ( PTarget != None )
 		{
 			if ( Level.NetMode == NM_Client )
 			{
-				if ( PTarget.bIsPlayer )
-				{
-					if (bbTarg != None)
-						bbTarg.ViewRotation = TargetViewRotation;
-					PTarget.ViewRotation = TargetViewRotation;
+				if ( PTarget.bIsPlayer ) {
+					bbP = bbPlayer(PTarget);
+					if (bbp != none) {
+						PTarget.ViewRotation.Pitch = bbP.CompressedViewRotation >>> 16;
+						PTarget.ViewRotation.Yaw = bbP.CompressedViewRotation & 0xFFFF;
+						PTarget.ViewRotation.Roll = 0;
+					} else {
+						PTarget.ViewRotation = TargetViewRotation;
+					}
 				}
 				PTarget.EyeHeight = TargetEyeHeight;
 				if ( PTarget.Weapon != None )
@@ -3159,8 +3162,6 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 			CameraRotation.Roll = 0;
 			EyeHeight = zzRepVREye;
 		}
-		else if (zzInfoThing != None && zzInfoThing.zzPlayerCalcViewCalls == zzNull)
-			CameraRotation = ViewRotation;
 		else
 			CameraRotation = ViewRotation;
 		CameraLocation.Z += EyeHeight;
