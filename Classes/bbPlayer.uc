@@ -2738,7 +2738,7 @@ function xxReplicateMove(
 	if (PendingMove.Delta < NetMoveDelta - ClientUpdateTime)
 		return;
 
-	ClientUpdateTime = PendingMove.Delta - NetMoveDelta;
+	ClientUpdateTime = FMin(NetMoveDelta, PendingMove.Delta - NetMoveDelta + ClientUpdateTime);
 	if ( SavedMoves == None )
 		SavedMoves = PendingMove;
 	else
