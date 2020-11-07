@@ -294,6 +294,7 @@ function PostBeginPlay()
 	SaveConfig();
 
 	ReplaceKickers();
+	ReplaceSwJumpPads();
 }
 
 function ReplaceKickers() {
@@ -328,6 +329,21 @@ function ReplaceKickers() {
 				}
 
 		K.SetCollision(false, false, false);
+	}
+}
+
+function ReplaceSwJumpPads() {
+	local Teleporter T;
+	local vector L;
+
+	foreach AllActors(class'Teleporter', T) {
+		if (T.Class.Name != 'swJumpPad')
+			continue;
+
+		L.X = int(T.Location.X);
+		L.Y = int(T.Location.Y);
+		L.Z = int(T.Location.Z);
+		T.SetLocation(L);
 	}
 }
 

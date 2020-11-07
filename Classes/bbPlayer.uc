@@ -275,7 +275,7 @@ replication
 		zzbForceModels, bIsAlive, zzbIsWarmingUp,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
-		xxClientKicker, TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
+		xxClientKicker, xxClientSwJumpPad, TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
 		bJumpingPreservesMomentum;
 
 	// Client->Server
@@ -451,6 +451,119 @@ simulated function xxClientKicker(
 			}
 }
 
+function xxClientSwJumpPad(
+	name TTag,
+	name TEvent,
+	vector TLocation,
+	vector TRotation,
+	vector TCollJA,
+	string TURL,
+	int MiscData,
+	vector MiscData2,
+	vector TTargetRand,
+	string JumpEffect,
+	string JumpPlayerEffect,
+	string JumpEvent,
+	string JumpSound
+) {
+	local NN_swJumpPad J;
+	local AttachMover AM;
+	local rotator TRot;
+
+	if (Level.NetMode != NM_Client)
+		return;
+
+	TRot.Pitch = int(TRotation.X) & 0xFFFF;
+	TRot.Yaw = int(TRotation.Y) & 0xFFFF;
+	TRot.Roll = int(TRotation.Z) & 0xFFFF;
+	J = Spawn(class'NN_swJumpPad', Self, TTag, TLocation, TRot);
+	J.SetCollisionSize(TCollJA.X / 10.0, TCollJA.Y / 10.0);
+	J.Event = TEvent;
+	J.URL = TURL;
+	J.JumpAngle = TCollJA.Z / 256.0;
+	J.TeamNumber = MiscData & 0xFF;
+	J.bTeamOnly = (MiscData & 0x100) != 0;
+	J.TargetZOffset = MiscData2.X;
+	J.TargetRand = TTargetRand;
+	J.bTraceGround = (MiscData & 0x200) != 0;
+	J.bDisabled = (MiscData & 0x400) != 0;
+	J.AngleRand = MiscData2.Y / 256.0;
+	J.SetPropertyText("AngleRandMode", string((MiscData >> 12) & 3));
+	J.SetPropertyText("JumpEffect", JumpEffect);
+	J.SetPropertyText("JumpPlayerEffect", JumpPlayerEffect);
+	J.SetPropertyText("JumpEvent", JumpEvent);
+	J.SetPropertyText("JumpSound", JumpSound);
+	J.bClientSideEffects = false;
+	J.JumpWait = MiscData2.Z / 50.0;
+
+	if(J.Tag != '')
+		foreach AllActors(class'AttachMover', AM)
+			if(AM.AttachTag == J.Tag) {
+				J.SetBase(AM);
+				break;
+			}
+}
+
+function vector ParseVector(string s) {
+	local vector V;
+
+	s = Mid(s, InStr(s, "=")+1, Len(s));
+	V.X = float(s);
+	s = Mid(s, InStr(s, "=")+1, Len(s));
+	V.Y = float(s);
+	s = Mid(s, InStr(s, "=")+1, Len(s));
+	V.Z = float(s);
+	
+	return V;
+}
+
+function ReplicateSwJumpPad(Teleporter T) {
+	local vector RotV;
+	local vector CollJA;
+	local int MiscData;
+	local vector MiscData2;
+
+	RotV.X = T.Rotation.Pitch << 16 >> 16;
+	RotV.Y = T.Rotation.Yaw << 16 >> 16;
+	RotV.Z = T.Rotation.Roll << 16 >> 16;
+	
+	CollJA.X = T.CollisionRadius * 10;
+	CollJA.Y = T.CollisionHeight * 10;
+	
+	CollJA.Z = float(T.GetPropertyText("JumpAngle")) * 256;
+	
+	MiscData = MiscData | (int(T.GetPropertyText("TeamNumber")) & 0xFF);
+	if (T.GetPropertyText("bTeamOnly") ~= "true")
+		MiscData = MiscData | 0x100;
+	if (T.GetPropertyText("bTraceGround") ~= "true")
+		MiscData = MiscData | 0x200;
+	if (T.GetPropertyText("bDisabled") ~= "true")
+		MiscData = MiscData | 0x400;
+	if (T.GetPropertyText("bClientSideEffects") ~= "true")
+		MiscData = MiscData | 0x800;
+	MiscData = MiscData | (int(T.GetPropertyText("AngleRandMode")) << 12);
+
+	MiscData2.X = float(T.GetPropertyText("TargetZOffset"));
+	MiscData2.Y = float(T.GetPropertyText("AngleRand")) * 256.0;
+	MiscData2.Z = float(T.GetPropertyText("JumpWait")) * 50.0;
+
+	xxClientSwJumpPad(
+		T.Tag,
+		T.Event,
+		T.Location,
+		RotV,
+		CollJA,
+		T.URL,
+		MiscData,
+		MiscData2,
+		ParseVector(T.GetPropertyText("TargetRand")),
+		T.GetPropertyText("JumpEffect"),
+		T.GetPropertyText("JumpPlayerEffect"),
+		T.GetPropertyText("JumpEvent"),
+		T.GetPropertyText("JumpSound")
+	);
+}
+
 simulated function InitSettings() {
 	local bbPlayer P;
 	local bbCHSpectator S;
@@ -541,6 +654,8 @@ simulated event PostNetBeginPlay()
 event Possess()
 {
 	local Kicker K;
+	local Teleporter T;
+	
 
 	InitSettings();
 
@@ -618,7 +733,23 @@ event Possess()
 				if (K.Class.Name != 'Kicker')
 					continue;
 
-				xxClientKicker(K.CollisionRadius, K.CollisionHeight, K.Location, K.Rotation.Yaw, K.Rotation.Pitch, K.Rotation.Roll, K.Tag, K.Event, K.KickVelocity.X, K.KickVelocity.Y, K.KickVelocity.Z, K.KickedClasses, K.bKillVelocity, K.bRandomize );
+				xxClientKicker(
+					K.CollisionRadius, K.CollisionHeight,
+					K.Location,
+					K.Rotation.Yaw, K.Rotation.Pitch, K.Rotation.Roll,
+					K.Tag, K.Event,
+					K.KickVelocity.X, K.KickVelocity.Y, K.KickVelocity.Z,
+					K.KickedClasses,
+					K.bKillVelocity,
+					K.bRandomize
+				);
+			}
+
+			foreach AllActors(class'Teleporter', T) {
+				if (K.Class.Name != 'swJumpPad')
+					continue;
+
+				ReplicateSwJumpPad(T);
 			}
 		}
 	}
