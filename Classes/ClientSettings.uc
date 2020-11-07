@@ -72,7 +72,7 @@ simulated function CheckConfig() {
 
 	PackageName = class'StringUtils'.static.GetPackage();
 
-	for (i = 0; i < arraycount(sHitSound); i += 1)
+	for (i = 0; i < arraycount(sHitSound); i++)
 		if (Left(sHitSound[i], 12) ~= "InstaGibPlus")
 			sHitSound[i] = PackageName$Mid(sHitSound[i], InStr(sHitSound[i], "."));
 

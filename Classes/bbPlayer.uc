@@ -5758,6 +5758,8 @@ event PreRender( canvas zzCanvas )
 
 event PostRender( canvas zzCanvas )
 {
+	local int CH;
+
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas.Class != Class'Canvas');
 	if (zzbRenderHUD)
 	{
@@ -5776,7 +5778,25 @@ event PostRender( canvas zzCanvas )
 			if ( Weapon != None )
 				Weapon.RenderOverlays(zzCanvas);
 		}
+
+		if (Settings.bUseCrosshairFactory) {
+			CH = MyHud.Crosshair;
+			MyHud.Crosshair = ChallengeHUD(MyHud).CrosshairCount;
+		}
 		Super.PostRender(zzCanvas);
+		if (Settings.bUseCrosshairFactory) {
+			if (bShowInfo == false &&
+				bShowScores == false &&
+				ChallengeHUD(MyHud).bForceScores == false &&
+				bBehindView == false &&
+				Level.LevelAction == LEVACT_None &&
+				Weapon != none &&
+				Weapon.bOwnsCrossHair == false
+			) {
+					xxDrawCrossHair(zzCanvas, 0, 0);
+			}
+			MyHud.Crosshair = CH;
+		}
 	}
 
 	// Render our UTPure Logo
@@ -5815,6 +5835,35 @@ event PostRender( canvas zzCanvas )
 	}
 
 	FrameCount += 1;
+}
+
+simulated function xxDrawCrossHair(Canvas C, int X, int Y) {
+	local float XLength, YLength;
+	local byte Style;
+	local ClientSettings S;
+	local CrosshairLayer L;
+
+	X = C.ClipX / 2;
+	Y = C.ClipY / 2;
+	S = Settings;
+
+	Style = C.Style;
+	C.Style = ERenderStyle.STY_Normal;
+
+	for (L = S.BottomLayer; L != none; L = L.Next) {
+		XLength = L.ScaleX * L.Texture.USize;
+		YLength = L.ScaleY * L.Texture.VSize;
+
+		C.bNoSmooth = (L.bSmooth == false);
+		C.SetPos(
+			X - 0.5 * XLength + L.OffsetX,
+			Y - 0.5 * YLength + L.OffsetY);
+		C.DrawColor = L.Color;
+		C.DrawTile(L.Texture, XLength, YLength, 0, 0, L.Texture.USize, L.Texture.VSize);
+	}
+
+	C.bNoSmooth = True;
+	C.Style = Style;
 }
 
 exec simulated Function TellConsole()
