@@ -444,7 +444,7 @@ simulated function JumpEffects( Pawn Other )
 function JumpSounds( Pawn Other )
 {
     // Make noise
-    if( JumpSound != None )
+    if( JumpSound != None && Level.NetMode != NM_Client )
     {
         PlaySound(JumpSound);
         MakeNoise(1.0);

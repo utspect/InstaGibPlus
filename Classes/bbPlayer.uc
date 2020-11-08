@@ -247,6 +247,8 @@ var ClientSettings Settings;
 var int FrameCount;
 var float AverageClientDeltaTime;
 
+var NavigationPoint DelayedNavPoint;
+
 replication
 {
 	//	Client->Demo
@@ -374,9 +376,7 @@ simulated function Touch( actor Other )
 			ClientMessage(class'StringUtils'.static.PackageOfObject(Other));
 		}
 
-		if ((Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker') ||
-			((Other.Class.Name == 'swJumpPad') && (Teleporter(Other).URL != ""))
-		) {
+		if ((Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker')) {
 			ClientDebugMessage("Touch forced updates");
 			zzForceUpdateUntil = Level.TimeSeconds + 0.15 + float(Other.GetPropertyText("ToggleTime"));
 			zzbForceUpdate = true;
@@ -513,7 +513,7 @@ function vector ParseVector(string s) {
 	V.Y = float(s);
 	s = Mid(s, InStr(s, "=")+1, Len(s));
 	V.Z = float(s);
-	
+
 	return V;
 }
 
@@ -526,12 +526,12 @@ function ReplicateSwJumpPad(Teleporter T) {
 	RotV.X = T.Rotation.Pitch << 16 >> 16;
 	RotV.Y = T.Rotation.Yaw << 16 >> 16;
 	RotV.Z = T.Rotation.Roll << 16 >> 16;
-	
+
 	CollJA.X = T.CollisionRadius * 10;
 	CollJA.Y = T.CollisionHeight * 10;
-	
+
 	CollJA.Z = float(T.GetPropertyText("JumpAngle")) * 256;
-	
+
 	MiscData = MiscData | (int(T.GetPropertyText("TeamNumber")) & 0xFF);
 	if (T.GetPropertyText("bTeamOnly") ~= "true")
 		MiscData = MiscData | 0x100;
@@ -654,8 +654,6 @@ simulated event PostNetBeginPlay()
 event Possess()
 {
 	local Kicker K;
-	local Teleporter T;
-	
 
 	InitSettings();
 
@@ -745,12 +743,7 @@ event Possess()
 				);
 			}
 
-			foreach AllActors(class'Teleporter', T) {
-				if (K.Class.Name != 'swJumpPad')
-					continue;
-
-				ReplicateSwJumpPad(T);
-			}
+			DelayedNavPoint = Level.NavigationPointList;
 		}
 	}
 
@@ -4016,6 +4009,13 @@ simulated function CheckHitSound()
 event ServerTick(float DeltaTime) {
 	AverageServerDeltaTime = (AverageServerDeltaTime*99 + DeltaTime) * 0.01;
 	xxRememberPosition();
+
+	if (DelayedNavPoint != none) {
+		if (DelayedNavPoint.Class.Name == 'swJumpPad')
+			ReplicateSwJumpPad(Teleporter(DelayedNavPoint));
+
+		DelayedNavPoint = DelayedNavPoint.NextNavigationPoint;
+	}
 }
 
 /** STATES
@@ -5916,7 +5916,7 @@ event PostRender( canvas zzCanvas )
 		}
 		Super.PostRender(zzCanvas);
 		if (Settings.bUseCrosshairFactory) {
-			if (bShowInfo == false &&
+			if (ChallengeHUD(MyHud).bShowInfo == false &&
 				bShowScores == false &&
 				ChallengeHUD(MyHud).bForceScores == false &&
 				bBehindView == false &&
