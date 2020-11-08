@@ -5971,19 +5971,17 @@ event PostRender( canvas zzCanvas )
 simulated function xxDrawCrossHair(Canvas C, int X, int Y) {
 	local float XLength, YLength;
 	local byte Style;
-	local ClientSettings S;
 	local CrosshairLayer L;
 
 	X = C.ClipX / 2;
 	Y = C.ClipY / 2;
-	S = Settings;
 
 	Style = C.Style;
-	C.Style = ERenderStyle.STY_Normal;
 
-	for (L = S.BottomLayer; L != none; L = L.Next) {
+	for (L = Settings.BottomLayer; L != none; L = L.Next) {
 		XLength = L.ScaleX * L.Texture.USize;
 		YLength = L.ScaleY * L.Texture.VSize;
+		C.Style = L.Style;
 
 		C.bNoSmooth = (L.bSmooth == false);
 		C.SetPos(

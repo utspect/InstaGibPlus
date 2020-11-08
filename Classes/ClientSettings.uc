@@ -47,6 +47,7 @@ struct CrosshairLayerDescr {
 	var() config int    OffsetX, OffsetY;
 	var() config float  ScaleX, ScaleY;
 	var() config color  Color;
+	var() config byte   Style;
 	var() config bool   bSmooth;
 	var() config bool   bUse;
 };
@@ -86,6 +87,7 @@ simulated function CheckConfig() {
 			L.ScaleX = CrosshairLayers[i].ScaleX;
 			L.ScaleY = CrosshairLayers[i].ScaleY;
 			L.Color = CrosshairLayers[i].Color;
+			L.Style = Max(1, CrosshairLayers[i].Style);
 			L.bSmooth = CrosshairLayers[i].bSmooth;
 			AppendLayer(L);
 		}
@@ -115,7 +117,7 @@ simulated function string DumpColor(out Color C) {
 }
 
 simulated function string DumpCrosshairLayer(out CrosshairLayerDescr L) {
-	return "(Texture="$L.Texture$",OffsetX="$L.OffsetX$",OffsetY="$L.OffsetY$",ScaleX="$L.ScaleX$",ScaleY="$L.ScaleY$",Color="$DumpColor(L.Color)$",bSmooth="$L.bSmooth$",bUse="$L.bUse$")";
+	return "(Texture="$L.Texture$",OffsetX="$L.OffsetX$",OffsetY="$L.OffsetY$",ScaleX="$L.ScaleX$",ScaleY="$L.ScaleY$",Color="$DumpColor(L.Color)$",Style="$L.Style$",bSmooth="$L.bSmooth$",bUse="$L.bUse$")";
 }
 
 simulated function string DumpCrosshairLayers() {
