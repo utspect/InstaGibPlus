@@ -411,6 +411,20 @@ event PostRender( canvas Canvas )
 	}
 }
 
+function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation, float Dist)
+{
+	local vector View,HitLocation,HitNormal;
+	local float ViewDist;
+
+	CameraRotation = ViewRotation;
+	View = vect(1,0,0) >> CameraRotation;
+	if( Trace( HitLocation, HitNormal, CameraLocation - (Dist + 30) * vector(CameraRotation), CameraLocation ) != None )
+		ViewDist = FMin( (CameraLocation - HitLocation) Dot View, Dist );
+	else
+		ViewDist = Dist;
+	CameraLocation -= (ViewDist - 30) * View;
+}
+
 // Fix the "roll" (upside/sideway view) bug.
 event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator CameraRotation )
 {
@@ -443,26 +457,24 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 			}
 			if ( PTarget.bIsPlayer )
 				CameraRotation = PTarget.ViewRotation;
-			if ( !bBehindView )
-				CameraLocation.Z += PTarget.EyeHeight;
+			CameraLocation.Z += PTarget.EyeHeight;
 		}
 		CameraRotation.Roll = 0;
 
 		if ( bBehindView )
-			CalcBehindView(CameraLocation, CameraRotation, 180);
+			xxCalcBehindView(CameraLocation, CameraRotation, 180);
 		return;
 	}
 
 	ViewActor = Self;
 	CameraLocation = Location;
+	CameraLocation.Z += EyeHeight;
 
-	if( bBehindView ) //up and behind
-		CalcBehindView(CameraLocation, CameraRotation, 150);
-	else
-	{
+	if( bBehindView ) { //up and behind
+		xxCalcBehindView(CameraLocation, CameraRotation, 150);
+	} else {
 		// First-person view.
 		CameraRotation = ViewRotation;
-		CameraLocation.Z += EyeHeight;
 		CameraLocation += WalkBob;
 	}
 }

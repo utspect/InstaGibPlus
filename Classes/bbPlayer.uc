@@ -3140,8 +3140,7 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 			}
 			if ( PTarget.bIsPlayer )
 				CameraRotation = PTarget.ViewRotation;
-			if ( !bBehindView )
-				CameraLocation.Z += PTarget.EyeHeight;
+			CameraLocation.Z += PTarget.EyeHeight;
 		}
 		if ( bBehindView )
 			xxCalcBehindView(CameraLocation, CameraRotation, 180);
@@ -3150,21 +3149,20 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 
 	ViewActor = Self;
 	CameraLocation = Location;
+	CameraLocation.Z += EyeHeight;
 
-	if( bBehindView ) //up and behind
+	if( bBehindView ) { //up and behind
 		xxCalcBehindView(CameraLocation, CameraRotation, 150);
-	else
-	{
-		if (zzbRepVRData)
-		{	// Received data through demo replication.
+	} else {
+		if (zzbRepVRData) {
+			// Received data through demo replication.
 			CameraRotation.Yaw = zzRepVRYaw;
 			CameraRotation.Pitch = zzRepVRPitch;
 			CameraRotation.Roll = 0;
 			EyeHeight = zzRepVREye;
-		}
-		else
+		} else {
 			CameraRotation = ViewRotation;
-		CameraLocation.Z += EyeHeight;
+		}
 		CameraLocation += WalkBob;
 	}
 }
