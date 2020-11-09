@@ -228,6 +228,8 @@ var byte bOldDodge;
 var bool bPressedDodge;
 var transient float LastTimeForward, LastTimeBack, LastTimeLeft, LastTimeRight;
 var transient float TurnFractionalPart, LookUpFractionalPart;
+var float DuckFraction; // 0 = Not Ducking, 1 = Ducking
+var float DuckTransitionTime; // Time to go from ducking to not-ducking
 
 var float AverageServerDeltaTime;
 var float TimeDead;
@@ -278,7 +280,7 @@ replication
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
 		xxClientKicker, xxClientSwJumpPad, TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
-		bJumpingPreservesMomentum;
+		bJumpingPreservesMomentum, DuckFraction;
 
 	// Client->Server
 	reliable if ( Role == ROLE_AutonomousProxy )
@@ -3411,26 +3413,21 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	local float adjZ, maxZ;
 	local vector delta;
 
+	maxZ = Location.Z + (1.0 - 0.7 * DuckFraction) * CollisionHeight; // default game is 0.25
+	if ( HitLocation.Z <= maxZ )
+		return true;
+
+	if ( TraceDir.Z >= 0 )
+		return false;
+
 	TraceDir = Normal(TraceDir);
-
-	if ( (Physics == PHYS_Walking) && (GetAnimGroup(AnimSequence) == 'Ducking') && (AnimFrame > -0.03) )
-	{
-		maxZ = Location.Z + 0.3 * CollisionHeight; // default game is 0.25
-		if ( HitLocation.Z <= maxZ )
-			return true;
-
-		if ( TraceDir.Z >= 0 )
-			return false;
-
-		adjZ = (maxZ - HitLocation.Z)/TraceDir.Z;
-		HitLocation.Z = maxZ;
-		HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
-		HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
-		delta = (HitLocation - Location) * vect(1,1,0);
-		if (delta dot delta > CollisionRadius * CollisionRadius)
-			return false;
-	}
-	return true;
+	adjZ = (maxZ - HitLocation.Z)/TraceDir.Z;
+	HitLocation.Z = maxZ;
+	HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
+	HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
+	delta = (HitLocation - Location) * vect(1,1,0);
+	if (delta dot delta > CollisionRadius * CollisionRadius)
+		return false;
 }
 
 simulated function bool HaveAppliedVelocity(float TimeStamp) {
@@ -4015,6 +4012,12 @@ event ServerTick(float DeltaTime) {
 			ReplicateSwJumpPad(Teleporter(DelayedNavPoint));
 
 		DelayedNavPoint = DelayedNavPoint.NextNavigationPoint;
+	}
+
+	if (bIsCrouching) {
+		DuckFraction = FClamp(DuckFraction + DeltaTime/DuckTransitionTime, 0.0, 1.0);
+	} else {
+		DuckFraction = FClamp(DuckFraction - DeltaTime/DuckTransitionTime, 0.0, 1.0);
 	}
 }
 
@@ -6229,7 +6232,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	foreach AllActors(class'Pawn', P) {
 		if (P.PlayerReplicationInfo == none) continue;
 		zzC.SetPos(zzx+500, y);
-		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"State:"@GetStateName()@"Physics:"@P.Physics@"Anim:"@P.AnimSequence@"AnimFrame:"@P.AnimFrame);
+		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"State:"@GetStateName()@"Physics:"@P.Physics@"Anim:"@P.AnimSequence@"DuckFraction:"@bbPlayer(P).DuckFraction);
 		y += 20;
 	}
 	zzC.SetPos(zzx+20, zzY + 460);
@@ -8063,5 +8066,6 @@ defaultproperties
 	FakeCAPInterval=0.1
 	DodgeEndVelocity=0.1
 	JumpEndVelocity=1.0
+	DuckTransitionTime=0.25
 	PlayerReplicationInfoClass=Class'bbPlayerReplicationInfo'
 }
