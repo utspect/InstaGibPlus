@@ -3006,11 +3006,11 @@ exec function setForcedSkins(int maleSkin, int femaleSkin) {
 
 exec function setForcedTeamSkins(int maleSkin, int femaleSkin) {
 	local bool error;
-	if (maleSkin < 0 || maleSkin > 17) {
+	if (maleSkin < 0 || maleSkin > 18) {
 		ClientMessage("Invalid maleSkin, please input a value between 1 and 18");
 		error = true;
 	}
-	if (femaleSkin < 0 || femaleSkin > 17) {
+	if (femaleSkin < 0 || femaleSkin > 18) {
 		ClientMessage("Invalid femaleSkin, please input a value between 1 and 18");
 		error = true;
 	}
