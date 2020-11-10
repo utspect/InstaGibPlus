@@ -59,6 +59,8 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 31. [bUseOldMouseInput](#buseoldmouseinput)
 32. [SmoothVRController](#smoothvrcontroller)
 33. [bShowFPS](#bshowfps)
+34. [bUseCrosshairFactory](#busecrosshairfactory)
+35. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -88,6 +90,8 @@ Note that these numbers only apply when editing INI settings
 15. Class: Male Soldier, Skin: Soldier, Face: Brock
 16. Class: Male Soldier, Skin: War Machine, Face: Matrix
 17. Class: Boss, Skin: Boss, Face: Xan
+
+Any value below zero disables forcing models. For example, if you set [DesiredSkin](#desiredskin) to `-1`, enemy players that have selected male skins will not be forced to another skin.
 
 ## DesiredSkin
 **Type: int**  
@@ -300,6 +304,44 @@ This holds the PID settings for the controller thats smoothing the view of playe
 **Default: False**  
 
 If `True`, show averaged FPS information in top right corner. If `False`, show nothing.
+
+## bUseCrosshairFactory
+**Type: bool**  
+**Default: False**  
+
+If `True`, override default crosshair drawing with custom one, as described by [CrosshairLayers](#crosshairlayers).
+
+## CrosshairLayers
+**Type: CrosshairLayerDescr\[10\]**  
+**Default: `(Texture="",OffsetX=0,OffsetY=0,ScaleX=0.000000,ScaleY=0.000000,Color=(R=0,G=0,B=0,A=0),Style=0,bSmooth=False,bUse=False)`**  
+
+The type `CrosshairLayerDescr` is defined like this:
+```unrealscript
+struct CrosshairLayerDescr {
+    var() config string Texture;
+    var() config int    OffsetX, OffsetY;
+    var() config float  ScaleX, ScaleY;
+    var() config color  Color;
+    var() config byte   Style;
+    var() config bool   bSmooth;
+    var() config bool   bUse;
+};
+```
+
+A crosshair is made up of individual images that are drawn in a specific order potentially on top of each other, which are called layers. The current factory supports up to 10 layers for a single crosshair.
+
+* `Texture` refers to the image to draw. If left empty, a 1x1 white pixel will be used.
+* `OffsetX` and `OffsetY` is the offset from the center of the screen in pixels where the image should be drawn
+* `ScaleX` and `ScaleY` represent how large the image should be
+* `Color` is the color in RGB that should be used to draw the image
+* `Style` is the drawing style to use for the image, one of
+    * 0 (`STY_None`) - equivalent to 1 (`STY_Normal`) for our purposes here
+    * 1 (`STY_Normal`) - RGB image (no transparency)
+    * 2 (`STY_Masked`) - Paletted image, first color in palette is transparent (?)
+    * 3 (`STY_Translucent`) - Greyscale image, brightness is opacity, used for default crosshairs
+    * 4 (`STY_Modulated`) - ?
+* `bSmooth` controls whether sharp edges should be smoothed out when `ScaleX` or `ScaleY` are greater than 1
+* `bUse` controls whether this layer should be drawn, `True` to draw, `False` to ignore
 
 # Client Commands
 The following commands are additions by IG+ to the standard set of commands.

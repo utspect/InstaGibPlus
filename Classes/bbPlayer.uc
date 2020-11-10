@@ -3157,6 +3157,7 @@ exec function setBeamScale(float bs) {
 exec function listSkins() {
 	ClientMessage("Skin List:");
 	ClientMessage("Input the desired number with the SetForcedSkins command");
+	ClientMessage("-1 - Dont force this type of skin");
 	ClientMessage("1 - Class: Female Commando, Skin: Aphex, Face: Idina");
 	ClientMessage("2 - Class: Female Commando, Skin: Commando, Face: Anna");
 	ClientMessage("3 - Class: Female Commando, Skin: Mercenary, Face: Jayce");
