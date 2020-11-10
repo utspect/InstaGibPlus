@@ -2984,12 +2984,12 @@ exec function enableHitSounds(bool b) {
 
 exec function setForcedSkins(int maleSkin, int femaleSkin) {
 	local bool error;
-	if (maleSkin <= 0 || maleSkin > 18) {
-		ClientMessage("Invalid maleSkin, please input a value between 1 and 18");
+	if (maleSkin < -1 || maleSkin == 0 || maleSkin > 18) {
+		ClientMessage("Invalid maleSkin, please input a value between 1 and 18, or -1 to disable");
 		error = true;
 	}
-	if (femaleSkin <= 0 || femaleSkin > 18) {
-		ClientMessage("Invalid femaleSkin, please input a value between 1 and 18");
+	if (femaleSkin < -1 || femaleSkin == 0 || femaleSkin > 18) {
+		ClientMessage("Invalid femaleSkin, please input a value between 1 and 18, or -1 to disable");
 		error = true;
 	}
 
@@ -3006,12 +3006,12 @@ exec function setForcedSkins(int maleSkin, int femaleSkin) {
 
 exec function setForcedTeamSkins(int maleSkin, int femaleSkin) {
 	local bool error;
-	if (maleSkin < 0 || maleSkin > 18) {
-		ClientMessage("Invalid maleSkin, please input a value between 1 and 18");
+	if (maleSkin < -1 || maleSkin == 0 || maleSkin > 18) {
+		ClientMessage("Invalid maleSkin, please input a value between 1 and 18, or -1 to disable");
 		error = true;
 	}
-	if (femaleSkin < 0 || femaleSkin > 18) {
-		ClientMessage("Invalid femaleSkin, please input a value between 1 and 18");
+	if (femaleSkin < -1 || femaleSkin == 0 || femaleSkin > 18) {
+		ClientMessage("Invalid femaleSkin, please input a value between 1 and 18, or -1 to disable");
 		error = true;
 	}
 
