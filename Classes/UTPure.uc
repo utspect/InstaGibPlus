@@ -1412,7 +1412,7 @@ defaultproperties
 	ShowTouchedPackage=False
 	bRestrictTrading=True
 	MaxTradeTimeMargin=0.1
-	TradePingMargin=0.2
+	TradePingMargin=0.5
 	bEnableServerExtrapolation=True
 	bEnableJitterBounding=True
 	KillCamDelay=0.0
