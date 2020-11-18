@@ -56,6 +56,8 @@ var int debugNumOfForcedUpdates;
 var int debugNumOfIgnoredForceUpdates;
 var int debugClientPing;
 var float clientLastUpdateTime;
+var int debugServerMoveCallsSent;
+var int debugServerMoveCallsReceived;
 
 // Control stuff
 var byte	zzbFire;		// Retain last fire value
@@ -290,7 +292,7 @@ replication
 	unreliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
 		clientLastUpdateTime, clientForcedPosition, debugClientPing, debugNumOfForcedUpdates,
 		debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError,
-		ExtrapolationDelta, ClientDebugMessage;
+		ExtrapolationDelta, debugServerMoveCallsReceived, ClientDebugMessage;
 
 	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( RemoteRole == ROLE_AutonomousProxy && !bDemoRecording )
@@ -902,9 +904,9 @@ function ClientDebugMessage(coerce string S, optional name Type, optional bool b
 		Type = 'IGPlus';
 
 	if (bDrawDebugData) {
-		ClientMessage("["$Role@FrameCount@Level.TimeSeconds$"] "$S, Type, bBeep);
+		ClientMessage("["$FrameCount@Level.TimeSeconds$"] "$S, Type, bBeep);
 	} else {
-		zzPrevClientMessage = "["$Role@FrameCount@Level.TimeSeconds$"] "$S;
+		zzPrevClientMessage = "["$FrameCount@Level.TimeSeconds$"] "$S;
 		ClientDemoMessage(zzPrevClientMessage, Type, bBeep);
 		zzPrevClientMessage = "";
 	}
@@ -1759,8 +1761,12 @@ function xxServerMove(
 
 	local bool bClientPaused;
 
-	if (bDeleteMe)
+	debugServerMoveCallsReceived += 1;
+
+	if (bDeleteMe) {
+		ClientDebugMessage("Reject Irrelevant Move");
 		return;
+	}
 
 	if (Role < ROLE_Authority) {
 		zzbLogoDone = True;
@@ -1775,8 +1781,10 @@ function xxServerMove(
 	if (TimeStamp > Level.TimeSeconds)
 		TimeStamp = Level.TimeSeconds;
 
-	if ( CurrentTimeStamp >= TimeStamp )
+	if ( CurrentTimeStamp >= TimeStamp ) {
+		ClientDebugMessage("Reject Outdated Move:"@CurrentTimeStamp@TimeStamp);
 		return;
+	}
 
 	InAccel.X = AccelX;
 	InAccel.Y = AccelY;
@@ -2935,6 +2943,9 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 		OldMoveData1,
 		OldMoveData2
 	);
+
+	debugServerMoveCallsSent += 1;
+
 	if ( (Weapon != None) && !Weapon.IsAnimating() )
 	{
 		if ( (Weapon == ClientPending) || (Weapon != OldClientWeapon) )
@@ -6247,7 +6258,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.SetPos(zzx, zzY + 520);
 	zzC.DrawText("EyeHeight:"@EyeHeight);
 	zzC.SetPos(zzx, zzY + 540);
-	zzC.DrawText("FPS:"@(Level.TimeDilation/AverageClientDeltaTime));
+	zzC.DrawText("ServerMove calls"@debugServerMoveCallsSent@debugServerMoveCallsReceived);
 
 	zzC.Style = ERenderStyle.STY_Normal;
 }
