@@ -428,8 +428,7 @@ simulated event PostTouch( Actor Other )
 
 simulated function JumpEffects( Pawn Other )
 {
-    if((bClientSideEffects && Level.NetMode != NM_DedicatedServer)
-    ||(!bClientSideEffects && Role == ROLE_Authority))
+    if (bClientSideEffects && Level.NetMode != NM_DedicatedServer)
     {
         // Spawn JumpPad effect
         if( JumpEffect != None )
