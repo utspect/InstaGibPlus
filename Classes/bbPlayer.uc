@@ -2770,6 +2770,7 @@ function xxReplicateMove(
 			(
 				bIs469ServerAndClient == false ||
 				(
+					bForcePacketSplit == false &&
 					VSize(NewAccel - PendingMove.Acceleration) < 0.125 * AccelRate
 				)
 			)
