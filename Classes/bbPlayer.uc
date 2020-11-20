@@ -184,6 +184,7 @@ var bool SetPendingWeapon;
 
 // Net Updates
 var float TimeBetweenNetUpdates;
+var bool bForcePacketSplit;
 var int PingAverage;
 var int PingCurrentAveragingSecond;
 var float PingRunningAverage;
@@ -194,6 +195,7 @@ var bool bExtrapolatedLastUpdate;
 var vector SavedLocation;
 var vector SavedVelocity;
 var vector SavedAcceleration;
+var bool bIs469ServerAndClient;
 
 // Clientside smoothing of position adjustment.
 var vector IGPlus_PreAdjustLocation;
@@ -368,6 +370,8 @@ simulated event bool PreTeleport(Teleporter T) {
 		// Do nothing and
 		return true;
 	}
+
+	bForcePacketSplit = true;
 	return false;
 }
 
@@ -386,6 +390,8 @@ simulated function Touch( actor Other )
 			zzbForceUpdate = true;
 		}
 	}
+	if (Other.IsA('Kicker') || Other.IsA('NN_swJumpPad'))
+		bForcePacketSplit = true;
 	if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0)
 		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
 	if (Other.IsA('Teleporter'))
@@ -635,6 +641,8 @@ simulated event PostNetBeginPlay()
 	}
 
 	zzbValidFire = zzTrue;
+
+	bIs469ServerAndClient = GetServerMoveVersion() >= 2;
 
 	if ( bIsMultiSkinned )
 	{
@@ -2712,6 +2720,19 @@ function bbSavedMove PickRedundantMove(bbSavedMove Old, bbSavedMove M, vector Ac
 	return Old;
 }
 
+simulated function int GetServerMoveVersion() {
+	local string Version;
+	local ENetRole OldRole;
+
+	OldRole = Level.Role;
+	Level.Role = ROLE_Authority;
+	Version = Level.GetPropertyText("ServerMoveVersion");
+	Level.Role = OldRole;
+
+	if (Version == "") return 0;
+	return int(Version);
+}
+
 function xxReplicateMove(
 	float DeltaTime,
 	vector NewAccel,
@@ -2745,8 +2766,13 @@ function xxReplicateMove(
 	// Get a SavedMove actor to store the movement in.
 	if ( PendingMove != None )
 	{
-		if (//VSize(NewAccel - PendingMove.Acceleration) < 0.125 * AccelRate &&
-			bbSavedMove(PendingMove).IGPlus_MergeCount < 31
+		if (bbSavedMove(PendingMove).IGPlus_MergeCount < 31 &&
+			(
+				bIs469ServerAndClient == false ||
+				(
+					VSize(NewAccel - PendingMove.Acceleration) < 0.125 * AccelRate
+				)
+			)
 		) {
 			PendMove = bbSavedMove(PendingMove);
 			//add this move to the pending move
@@ -2869,9 +2895,11 @@ function xxReplicateMove(
 	NewMove.IGPlus_SavedLocation = Location;
 	NewMove.IGPlus_SavedVelocity = Velocity;
 
-	if (PendingMove.Delta < NetMoveDelta - ClientUpdateTime)
+	if ((PendingMove.Delta < NetMoveDelta - ClientUpdateTime) &&
+		(bIs469ServerAndClient == false || bForcePacketSplit == false))
 		return;
 
+	bForcePacketSplit = false;
 	ClientUpdateTime = FMin(NetMoveDelta, PendingMove.Delta - NetMoveDelta + ClientUpdateTime);
 	if ( SavedMoves == None )
 		SavedMoves = PendingMove;
