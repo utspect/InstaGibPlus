@@ -8107,5 +8107,4 @@ defaultproperties
 	JumpEndVelocity=1.0
 	DuckTransitionTime=0.25
 	PlayerReplicationInfoClass=Class'bbPlayerReplicationInfo'
-	CollisionRadius=19
 }
