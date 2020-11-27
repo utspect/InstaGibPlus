@@ -1,5 +1,13 @@
 class bbPlayerReplicationInfo extends PlayerReplicationInfo;
 
+var string SkinName;
+var string FaceName;
+
+replication {
+    reliable if (Role == ROLE_Authority)
+        SkinName, FaceName;
+}
+
 function PostBeginPlay()
 {
     StartTime = Level.TimeSeconds;

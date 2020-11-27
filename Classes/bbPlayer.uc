@@ -663,6 +663,21 @@ simulated event PostNetBeginPlay()
 		PlayerReplicationInfo.SetOwner(self);
 }
 
+static function SetMultiSkin(Actor SkinActor, string SkinName, string FaceName, byte TeamNum) {
+	local PlayerPawn P;
+	local bbPlayerReplicationInfo bbPRI;
+	P = PlayerPawn(SkinActor);
+	if (P != none) {
+		bbPRI = bbPlayerReplicationInfo(P.PlayerReplicationInfo);
+		if (P.Role == ROLE_Authority && bbPRI != none) {
+
+			bbPRI.SkinName = SkinName;
+			bbPRI.FaceName = FaceName;
+		}
+	}
+	super.SetMultiSkin(SkinActor, SkinName, FaceName, TeamNum);
+}
+
 event Possess()
 {
 	local Kicker K;
@@ -5835,6 +5850,12 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			// Set the face (Xan has different head colours? Makes sense, he's a robot.)
 			SetSkinElement(SkinActor, 3, "BossSkins.Boss4"$suffix, "BossSkins.Boss");
 			SkinActor.Mesh = class'bbTBoss'.Default.Mesh;
+			break;
+		default:
+			P = bbPlayer(SkinActor);
+			PRI = bbPlayerReplicationInfo(P.PlayerReplicationInfo);
+			SetMultiSkin(SkinActor, PRI.SkinName, PRI.FaceName, TeamNum);
+			SkinActor.Mesh = SkinActor.default.Mesh;
 			break;
 	}
 }
