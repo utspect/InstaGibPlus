@@ -5688,6 +5688,8 @@ simulated function xxCheckForKickers()
 
 static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
 	local string suffix;
+	local bbPlayer P;
+	local bbPlayerReplicationInfo PRI;
 	/**
 	* @Author: spect
 	* @Date: 2020-02-21 01:17:00
