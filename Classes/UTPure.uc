@@ -1399,5 +1399,5 @@ defaultproperties
 	KillCamDelay=0.0
 	KillCamDuration=2.0
 	bJumpingPreservesMomentum=False
-	bEnableSingleButtonDodge=True
+	bEnableSingleButtonDodge=False
 }
