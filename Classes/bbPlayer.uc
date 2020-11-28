@@ -5467,6 +5467,8 @@ function xxPlayerTickEvents()
 
 	if (Level.NetMode == NM_Client)
 	{
+		// SmoothMaskedTextures makes certain textures see-through
+		// --> force it off
 		ConsoleCommand("set ini:engine.engine.gamerenderdevice SmoothMaskedTextures False");
 
 		if (!zzbInitialized)
