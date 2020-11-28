@@ -246,6 +246,7 @@ var float KillCamDuration;
 var bool bJumpingPreservesMomentum;
 var float DodgeEndVelocity;
 var float JumpEndVelocity;
+var bool bUseFlipAnimation;
 
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
@@ -284,7 +285,7 @@ replication
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
 		xxClientKicker, xxClientSwJumpPad, TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
-		bJumpingPreservesMomentum, DuckFraction;
+		bJumpingPreservesMomentum, DuckFraction, bUseFlipAnimation;
 
 	// Client->Server
 	reliable if ( Role == ROLE_AutonomousProxy )
@@ -750,6 +751,7 @@ event Possess()
 		KillCamDuration = class'UTPure'.default.KillCamDuration;
 		bJumpingPreservesMomentum = class'UTPure'.default.bJumpingPreservesMomentum;
 		bEnableSingleButtonDodge = class'UTPure'.default.bEnableSingleButtonDodge;
+		bUseFlipAnimation = class'UTPure'.default.bUseFlipAnimation;
 
 		if(!zzUTPure.bExludeKickers)
 		{
@@ -4743,13 +4745,14 @@ simulated function PlayDodge(eDodgeDir DodgeMove)
 {
 	if ( DodgeMove == DODGE_Left )
 		TweenAnim('DodgeL', 0.1);
-	else if ( DodgeMove == DODGE_Right )
+	else if (DodgeMove == DODGE_Right )
 		TweenAnim('DodgeR', 0.1);
-	else if ( DodgeMove == DODGE_Back )
+	else if (DodgeMove == DODGE_Back )
 		TweenAnim('DodgeB', 0.1);
-	else {
+	else if (bUseFlipAnimation == false)
+		TweenAnim('DodgeF', 0.1);
+	else
 		PlayAnim('Flip', 1.35 * FMax(0.35, Region.Zone.ZoneGravity.Z/Region.Zone.Default.ZoneGravity.Z), 0.065);
-	}
 }
 
 simulated function TweenToRunning(float tweentime)

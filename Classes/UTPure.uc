@@ -58,6 +58,7 @@ var localized config float KillCamDelay;
 var localized config float KillCamDuration;
 var localized config bool bJumpingPreservesMomentum;
 var localized config bool bEnableSingleButtonDodge;
+var localized config bool bUseFlipAnimation;
 var string MapName;
 
 
