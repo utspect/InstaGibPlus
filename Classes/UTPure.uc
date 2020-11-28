@@ -1395,7 +1395,7 @@ defaultproperties
 	bRestrictTrading=True
 	MaxTradeTimeMargin=0.1
 	bEnableServerExtrapolation=True
-	bEnableJitterBounding=True
+	bEnableJitterBounding=False
 	KillCamDelay=0.0
 	KillCamDuration=2.0
 	bJumpingPreservesMomentum=False
