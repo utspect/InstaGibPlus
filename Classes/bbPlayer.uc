@@ -192,9 +192,15 @@ var int PingRunningAverageCount;
 var float FakeCAPInterval; // Send a FakeCAP after no CAP has been sent for this amount of time
 var float ExtrapolationDelta;
 var bool bExtrapolatedLastUpdate;
-var vector SavedLocation;
-var vector SavedVelocity;
-var vector SavedAcceleration;
+struct SavedData {
+	var() vector Location;
+	var() vector Velocity;
+	var() vector Acceleration;
+	var() name State;
+	var() EPhysics Physics;
+	var() EDodgeDir DodgeDir;
+};
+var SavedData Saved;
 var bool bIs469ServerAndClient;
 
 // Clientside smoothing of position adjustment.
@@ -1581,6 +1587,44 @@ function SimMoveAutonomous(float DeltaTime) {
 	}
 }
 
+function ExtrapolationSaveData() {
+	Saved.Location = Location;
+	Saved.Velocity = Velocity;
+	Saved.Acceleration = Acceleration;
+	Saved.State = GetStateName();
+	Saved.Physics = Physics;
+	Saved.DodgeDir = DodgeDir;
+}
+
+function ExtrapolationRestoreData() {
+	local vector OldLoc;
+	local Decoration Carried;
+
+	if (FastTrace(Saved.Location)) {
+		xxNewMoveSmooth(Saved.Location);
+	} else {
+		Carried = CarriedDecoration;
+		OldLoc = Location;
+
+		bCanTeleport = false;
+		xxNewSetLocation(Saved.Location, Saved.Velocity);
+		bCanTeleport = true;
+
+		if (Carried != None) {
+			CarriedDecoration = Carried;
+			CarriedDecoration.SetLocation(Saved.Location + CarriedDecoration.Location - OldLoc);
+			CarriedDecoration.SetPhysics(PHYS_None);
+			CarriedDecoration.SetBase(self);
+		}
+	}
+	Velocity = Saved.Velocity;
+	Acceleration = Saved.Acceleration;
+	if (Saved.State == GetStateName()) {
+		SetPhysics(Saved.Physics);
+		DodgeDir = Saved.DodgeDir;
+	}
+}
+
 function WarpCompensation(float DeltaTime) {
 	local float TimeSinceLastUpdate;
 	local float ProcessTime;
@@ -1610,13 +1654,8 @@ function WarpCompensation(float DeltaTime) {
 			bExtrapolatedLastUpdate == false && ExtrapolationDelta > AverageServerDeltaTime
 		) {
 			bExtrapolatedLastUpdate = true;
-
-			SavedLocation = Location;
-			SavedVelocity = Velocity;
-			SavedAcceleration = Acceleration;
-
+			ExtrapolationSaveData();
 			SimMoveAutonomous(ExtrapolationDelta);
-
 			ClientDebugMessage("Extrapolation"@ExtrapolationDelta);
 		}
 		ExtrapolationDelta *= Exp(-2.0 * DeltaTime);
@@ -1626,30 +1665,10 @@ function WarpCompensation(float DeltaTime) {
 }
 
 function UndoExtrapolation() {
-	local vector OldLoc;
-	local Decoration Carried;
 	if (bExtrapolatedLastUpdate) {
 		bExtrapolatedLastUpdate = false;
 
-		if (FastTrace(SavedLocation)) {
-			xxNewMoveSmooth(SavedLocation);
-		} else {
-			Carried = CarriedDecoration;
-			OldLoc = Location;
-
-			bCanTeleport = false;
-			xxNewSetLocation(SavedLocation, SavedVelocity);
-			bCanTeleport = true;
-
-			if (Carried != None) {
-				CarriedDecoration = Carried;
-				CarriedDecoration.SetLocation(SavedLocation + CarriedDecoration.Location - OldLoc);
-				CarriedDecoration.SetPhysics(PHYS_None);
-				CarriedDecoration.SetBase(self);
-			}
-		}
-		Velocity = SavedVelocity;
-		Acceleration = SavedAcceleration;
+		ExtrapolationRestoreData();
 	}
 }
 
@@ -1928,6 +1947,11 @@ function xxServerMove(
 	// Predict new position
 	if ((Level.Pauser == "") && bClientPaused == false && (DeltaTime > 0)) {
 		UndoExtrapolation();
+
+		// HACK
+		// See below for explanation. Undoing extrapolation can trigger this as well.
+		if (Physics == PHYS_Falling)
+			bWasDodging = bWasDodging || DodgeDir == DODGE_Active;
 
 		MergeCount++;
 
