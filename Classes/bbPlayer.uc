@@ -5771,12 +5771,12 @@ event PreRender( canvas zzCanvas )
 					if (GameReplicationInfo.bTeamGame && PlayerReplicationInfo.Team == zzPRI.Team) {
 						if (Settings.DesiredTeamSkinFemale > 8 && zzPRI.bIsFemale)
 							zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-						else if (Settings.DesiredTeamSkin <= 8 && zzPRI.bIsFemale == false)
+						else if (Settings.DesiredTeamSkin >= 0 && Settings.DesiredTeamSkin <= 8 && zzPRI.bIsFemale == false)
 							zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
 					} else {
 						if (Settings.DesiredSkinFemale > 8 && zzPRI.bIsFemale)
 							zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-						else if (Settings.DesiredSkin <= 8 && zzPRI.bIsFemale == false)
+						else if (Settings.DesiredSkin >= 0 && Settings.DesiredSkin <= 8 && zzPRI.bIsFemale == false)
 							zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
 					}
 				}
