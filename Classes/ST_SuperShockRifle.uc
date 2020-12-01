@@ -156,15 +156,18 @@ simulated function PlayFiring()
 {
 	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*4.0);
 	if (Level.NetMode == NM_Client)
-		LoopAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
+		PlayAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
 	else
-		LoopAnim('Fire1', 0.22 + 0.22 * FireAdjust,0.05);
+		PlayAnim('Fire1', 0.22 + 0.22 * FireAdjust,0.05);
 }
 
 simulated function PlayAltFiring()
 {
 	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*4.0);
-	LoopAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
+	if (Level.NetMode == NM_Client)
+		PlayAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
+	else
+		PlayAnim('Fire1', 0.22 + 0.22 * FireAdjust,0.05);
 }
 
 function AltFire( float Value )

@@ -1380,8 +1380,8 @@ defaultproperties
 	ThrowVelocity=750
 	VersionStr="IG+"
 	LongVersion=""
-	ThisVer="5B"
-	NiceVer="5B"
+	ThisVer="5C"
+	NiceVer="5C"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
@@ -1395,9 +1395,9 @@ defaultproperties
 	bRestrictTrading=True
 	MaxTradeTimeMargin=0.1
 	bEnableServerExtrapolation=True
-	bEnableJitterBounding=True
+	bEnableJitterBounding=False
 	KillCamDelay=0.0
 	KillCamDuration=2.0
 	bJumpingPreservesMomentum=False
-	bEnableSingleButtonDodge=True
+	bEnableSingleButtonDodge=False
 }

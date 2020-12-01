@@ -74,7 +74,7 @@ defaultproperties
 	DesiredTeamSkinFemale=0
 	bEnableHitSounds=True
 	selectedHitSound=0
-	sHitSound(0)="InstaGibPlus5B.HitSound"
+	sHitSound(0)="InstaGibPlus5C.HitSound"
 	sHitSound(1)="UnrealShare.StingerFire"
 	cShockBeam=1
 	BeamScale=0.45

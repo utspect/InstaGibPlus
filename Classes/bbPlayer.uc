@@ -1888,7 +1888,6 @@ function xxServerMove(
 
 	debugClientForceUpdate = false;
 
-	PlayerReplicationInfo.Ping = int(ConsoleCommand("GETPING"));
 	if (SetPendingWeapon) {
 		xxSetPendingWeapon(PendingWeapon);
 		zzPendingWeapon = PendingWeapon;
@@ -2985,12 +2984,12 @@ exec function enableHitSounds(bool b) {
 
 exec function setForcedSkins(int maleSkin, int femaleSkin) {
 	local bool error;
-	if (maleSkin <= 0 || maleSkin > 18) {
-		ClientMessage("Invalid maleSkin, please input a value between 1 and 18");
+	if (maleSkin < -1 || maleSkin == 0 || maleSkin > 18) {
+		ClientMessage("Invalid maleSkin, please input a value between 1 and 18, or -1 to disable");
 		error = true;
 	}
-	if (femaleSkin <= 0 || femaleSkin > 18) {
-		ClientMessage("Invalid femaleSkin, please input a value between 1 and 18");
+	if (femaleSkin < -1 || femaleSkin == 0 || femaleSkin > 18) {
+		ClientMessage("Invalid femaleSkin, please input a value between 1 and 18, or -1 to disable");
 		error = true;
 	}
 
@@ -3007,12 +3006,12 @@ exec function setForcedSkins(int maleSkin, int femaleSkin) {
 
 exec function setForcedTeamSkins(int maleSkin, int femaleSkin) {
 	local bool error;
-	if (maleSkin < 0 || maleSkin > 17) {
-		ClientMessage("Invalid maleSkin, please input a value between 1 and 18");
+	if (maleSkin < -1 || maleSkin == 0 || maleSkin > 18) {
+		ClientMessage("Invalid maleSkin, please input a value between 1 and 18, or -1 to disable");
 		error = true;
 	}
-	if (femaleSkin < 0 || femaleSkin > 17) {
-		ClientMessage("Invalid femaleSkin, please input a value between 1 and 18");
+	if (femaleSkin < -1 || femaleSkin == 0 || femaleSkin > 18) {
+		ClientMessage("Invalid femaleSkin, please input a value between 1 and 18, or -1 to disable");
 		error = true;
 	}
 
@@ -3110,7 +3109,7 @@ function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation,
 event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator CameraRotation )
 {
 	local Pawn PTarget;
-	local bbPlayer bbTarg;
+	local bbPlayer bbP;
 
 	if (zzInfoThing != None)
 			zzInfoThing.zzPlayerCalcViewCalls--;
@@ -3121,16 +3120,19 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 		CameraLocation = ViewTarget.Location;
 		CameraRotation = ViewTarget.Rotation;
 		PTarget = Pawn(ViewTarget);
-		bbTarg = bbPlayer(ViewTarget);
 		if ( PTarget != None )
 		{
 			if ( Level.NetMode == NM_Client )
 			{
-				if ( PTarget.bIsPlayer )
-				{
-					if (bbTarg != None)
-						bbTarg.ViewRotation = TargetViewRotation;
-					PTarget.ViewRotation = TargetViewRotation;
+				if ( PTarget.bIsPlayer ) {
+					bbP = bbPlayer(PTarget);
+					if (bbp != none) {
+						PTarget.ViewRotation.Pitch = bbP.CompressedViewRotation >>> 16;
+						PTarget.ViewRotation.Yaw = bbP.CompressedViewRotation & 0xFFFF;
+						PTarget.ViewRotation.Roll = 0;
+					} else {
+						PTarget.ViewRotation = TargetViewRotation;
+					}
 				}
 				PTarget.EyeHeight = TargetEyeHeight;
 				if ( PTarget.Weapon != None )
@@ -3138,8 +3140,7 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 			}
 			if ( PTarget.bIsPlayer )
 				CameraRotation = PTarget.ViewRotation;
-			if ( !bBehindView )
-				CameraLocation.Z += PTarget.EyeHeight;
+			CameraLocation.Z += PTarget.EyeHeight;
 		}
 		if ( bBehindView )
 			xxCalcBehindView(CameraLocation, CameraRotation, 180);
@@ -3148,23 +3149,20 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 
 	ViewActor = Self;
 	CameraLocation = Location;
+	CameraLocation.Z += EyeHeight;
 
-	if( bBehindView ) //up and behind
+	if( bBehindView ) { //up and behind
 		xxCalcBehindView(CameraLocation, CameraRotation, 150);
-	else
-	{
-		if (zzbRepVRData)
-		{	// Received data through demo replication.
+	} else {
+		if (zzbRepVRData) {
+			// Received data through demo replication.
 			CameraRotation.Yaw = zzRepVRYaw;
 			CameraRotation.Pitch = zzRepVRPitch;
 			CameraRotation.Roll = 0;
 			EyeHeight = zzRepVREye;
+		} else {
+			CameraRotation = ViewRotation;
 		}
-		else if (zzInfoThing != None && zzInfoThing.zzPlayerCalcViewCalls == zzNull)
-			CameraRotation = ViewRotation;
-		else
-			CameraRotation = ViewRotation;
-		CameraLocation.Z += EyeHeight;
 		CameraLocation += WalkBob;
 	}
 }
@@ -3315,21 +3313,22 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 
 	TraceDir = Normal(TraceDir);
 
-	if ( (GetAnimGroup(AnimSequence) == 'Ducking') && (AnimFrame > -0.03) )
+	if ( (Physics == PHYS_Walking) && (GetAnimGroup(AnimSequence) == 'Ducking') && (AnimFrame > -0.03) )
 	{
-		maxZ = Location.Z + 0.3 * CollisionHeight; // default value is 0.3
-		if ( HitLocation.Z > maxZ )
-		{
-			if ( TraceDir.Z >= 0 )
-				return false;
-			adjZ = (maxZ - HitLocation.Z)/TraceDir.Z;
-			HitLocation.Z = maxZ;
-			HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
-			HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
-			delta = (HitLocation - Location) * vect(1,1,0);
-			if (delta dot delta > CollisionRadius * CollisionRadius)
-				return false;
-		}
+		maxZ = Location.Z + 0.3 * CollisionHeight; // default game is 0.25
+		if ( HitLocation.Z <= maxZ )
+			return true;
+
+		if ( TraceDir.Z >= 0 )
+			return false;
+
+		adjZ = (maxZ - HitLocation.Z)/TraceDir.Z;
+		HitLocation.Z = maxZ;
+		HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
+		HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
+		delta = (HitLocation - Location) * vect(1,1,0);
+		if (delta dot delta > CollisionRadius * CollisionRadius)
+			return false;
 	}
 	return true;
 }
@@ -5468,6 +5467,12 @@ function xxPlayerTickEvents()
 
 	if (Level.NetMode == NM_Client)
 	{
+		if (ConsoleCommand("get ini:engine.engine.gamerenderdevice SmoothMaskedTextures") ~= "true") {
+			// SmoothMaskedTextures makes certain textures see-through
+			// --> force it off
+			ConsoleCommand("set ini:engine.engine.gamerenderdevice SmoothMaskedTextures False");
+		}
+
 		if (!zzbInitialized)
 		{
 			zzbInitialized = true;
@@ -5768,12 +5773,12 @@ event PreRender( canvas zzCanvas )
 					if (GameReplicationInfo.bTeamGame && PlayerReplicationInfo.Team == zzPRI.Team) {
 						if (Settings.DesiredTeamSkinFemale > 8 && zzPRI.bIsFemale)
 							zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-						else if (Settings.DesiredTeamSkin <= 8 && zzPRI.bIsFemale == false)
+						else if (Settings.DesiredTeamSkin >= 0 && Settings.DesiredTeamSkin <= 8 && zzPRI.bIsFemale == false)
 							zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
 					} else {
 						if (Settings.DesiredSkinFemale > 8 && zzPRI.bIsFemale)
 							zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-						else if (Settings.DesiredSkin <= 8 && zzPRI.bIsFemale == false)
+						else if (Settings.DesiredSkin >= 0 && Settings.DesiredSkin <= 8 && zzPRI.bIsFemale == false)
 							zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
 					}
 				}
@@ -6654,7 +6659,7 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 
 	if (Settings.BeamOriginMode == 1) {
 		// Show beam originating from its Owner
-		OriginLocation = Owner.Location + SmokeOffset;
+		OriginLocation = O.Location + SmokeOffset;
 	} else {
 		// Show beam originating from where it was shot
 		OriginLocation = SmokeLocation;
