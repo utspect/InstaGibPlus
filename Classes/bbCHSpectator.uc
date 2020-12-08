@@ -428,7 +428,6 @@ function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation,
 event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator CameraRotation )
 {
 	local Pawn PTarget;
-	local bbPlayer bbP;
 
 	if ( ViewTarget != None )
 	{
@@ -441,14 +440,7 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 			if ( Level.NetMode == NM_Client )
 			{
 				if ( PTarget.bIsPlayer ) {
-					bbP = bbPlayer(PTarget);
-					if (bbP != none) {
-						PTarget.ViewRotation.Pitch = bbP.CompressedViewRotation >>> 16;
-						PTarget.ViewRotation.Yaw = bbP.CompressedViewRotation & 0xFFFF;
-						PTarget.ViewRotation.Roll = 0;
-					} else {
-						PTarget.ViewRotation = TargetViewRotation;
-					}
+					PTarget.ViewRotation = TargetViewRotation;
 				}
 				PTarget.EyeHeight = TargetEyeHeight;
 				if ( PTarget.Weapon != None )
