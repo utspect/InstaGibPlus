@@ -5897,7 +5897,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 
 event PreRender( canvas zzCanvas )
 {
-	local int i;
 	local PlayerReplicationInfo zzPRI;
 	local PlayerPawn zzPPOwner;
 	local canvas lmaoCanvas;
@@ -5926,10 +5925,7 @@ event PreRender( canvas zzCanvas )
 	// Set all other players' health to 0 (unless it's a teamgame and he's on your team)
 	// also set location to something dumb ;)
 	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
-		for (i = 0; i < 32; i++) {
-			zzPRI = GameReplicationInfo.PRIArray[i];
-			if (zzPRI == None) continue;
-
+		foreach AllActors(class'PlayerReplicationInfo', zzPRI) {
 			if (zzPRI != PlayerReplicationInfo &&
 				(!GameReplicationInfo.bTeamGame || zzPRI.Team != PlayerReplicationInfo.Team)
 			) {
