@@ -6940,6 +6940,10 @@ simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector Smoke
 	SmokeRotation.roll = Rand(65535);
 
 	if (Settings.cShockBeam == 3) return;
+	if (Settings.bHideOwnBeam &&
+		(O == self || O == ViewTarget) &&
+		bBehindView == false)
+		return;
 
 	Smoke = Spawn(class'ClientSuperShockBeam',O,, OriginLocation, SmokeRotation);
 	if (Smoke == none) return;

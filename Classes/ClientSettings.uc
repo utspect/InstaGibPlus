@@ -28,6 +28,7 @@ var config bool   bEnableHitSounds;
 var config int    selectedHitSound;
 var config string sHitSound[16];
 var config int    cShockBeam;
+var config bool   bHideOwnBeam;
 var config float  BeamScale;
 var config float  BeamFadeCurve;
 var config float  BeamDuration;
@@ -155,6 +156,7 @@ simulated function string DumpSettings() {
 		GetSetting("selectedHitSound")$
 		DumpHitSounds()$
 		GetSetting("cShockBeam")$
+		GetSetting("bHideOwnBeam")$
 		GetSetting("BeamScale")$
 		GetSetting("BeamFadeCurve")$
 		GetSetting("BeamDuration")$
@@ -196,6 +198,7 @@ defaultproperties
 	sHitSound(0)="InstaGibPlus6.HitSound"
 	sHitSound(1)="UnrealShare.StingerFire"
 	cShockBeam=1
+	bHideOwnBeam=False
 	BeamScale=0.45
 	BeamFadeCurve=4
 	BeamDuration=0.75

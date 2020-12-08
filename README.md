@@ -46,22 +46,23 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 18. [bTeamInfo](#bteaminfo)
 19. [bShootDead](#bshootdead)
 20. [cShockBeam](#cshockbeam)
-21. [BeamScale](#beamscale)
-22. [BeamFadeCurve](#beamfadecurve)
-23. [BeamDuration](#beamduration)
-24. [BeamOriginMode](#beamoriginmode)
-25. [bNoOwnFootsteps](#bnoownfootsteps)
-26. [DesiredNetUpdateRate](#desirednetupdaterate)
-27. [FakeCAPInterval](#fakecapinterval)
-28. [bNoSmoothing](#bnosmoothing)
-29. [bLogClientMessages](#blogclientmessages)
-30. [bEnableKillCam](#benablekillcam)
-31. [MinDodgeClickTime](#mindodgeclicktime)
-32. [bUseOldMouseInput](#buseoldmouseinput)
-33. [SmoothVRController](#smoothvrcontroller)
-34. [bShowFPS](#bshowfps)
-35. [bUseCrosshairFactory](#busecrosshairfactory)
-36. [CrosshairLayers](#crosshairlayers)
+21. [bHideOwnBeam](#bhideownbeam)
+22. [BeamScale](#beamscale)
+23. [BeamFadeCurve](#beamfadecurve)
+24. [BeamDuration](#beamduration)
+25. [BeamOriginMode](#beamoriginmode)
+26. [bNoOwnFootsteps](#bnoownfootsteps)
+27. [DesiredNetUpdateRate](#desirednetupdaterate)
+28. [FakeCAPInterval](#fakecapinterval)
+29. [bNoSmoothing](#bnosmoothing)
+30. [bLogClientMessages](#blogclientmessages)
+31. [bEnableKillCam](#benablekillcam)
+32. [MinDodgeClickTime](#mindodgeclicktime)
+33. [bUseOldMouseInput](#buseoldmouseinput)
+34. [SmoothVRController](#smoothvrcontroller)
+35. [bShowFPS](#bshowfps)
+36. [bUseCrosshairFactory](#busecrosshairfactory)
+37. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -214,6 +215,12 @@ The style of beam to use for the SuperShockRifle.
 2. Team colored beam that looks like a projectile
 3. No beam at all
 4. Team colored, instant beam
+
+## bHideOwnBeam
+**Type: bool**  
+**Default: False**  
+
+If `True`, hides your own beam, no matter the value of [cShockBeam](#cshockbeam).
 
 ## BeamScale
 **Type: float**  
