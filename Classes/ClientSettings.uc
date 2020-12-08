@@ -20,6 +20,7 @@ var config int    DesiredSkin;
 var config int    DesiredSkinFemale;
 var config int    DesiredTeamSkin;
 var config int    DesiredTeamSkinFemale;
+var config bool   bUnlitSkins;
 var config int    HitSound;     // if Client wishes hitsounds (default 2, must be enabled on server)
 var config int    TeamHitSound; // if Client wishes team hitsounds (default 3, must be enabled on server)
 var config bool   bDisableForceHitSounds;
@@ -146,6 +147,7 @@ simulated function string DumpSettings() {
 		GetSetting("DesiredSkinFemale")$
 		GetSetting("DesiredTeamSkin")$
 		GetSetting("DesiredTeamSkinFemale")$
+		GetSetting("bUnlitSkins")$
 		GetSetting("HitSound")$
 		GetSetting("TeamHitSound")$
 		GetSetting("bDisableForceHitSounds")$
@@ -188,6 +190,7 @@ defaultproperties
 	DesiredSkinFemale=0
 	DesiredTeamSkin=9
 	DesiredTeamSkinFemale=0
+	bUnlitSkins=True
 	bEnableHitSounds=True
 	selectedHitSound=0
 	sHitSound(0)="InstaGibPlus6.HitSound"

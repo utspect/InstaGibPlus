@@ -5979,6 +5979,9 @@ event PreRender( canvas zzCanvas )
 					}
 				}
 			}
+
+			if (Settings.bUnlitSkins)
+				zzPRI.Owner.bUnlit = true;
 		}
 	}
 
