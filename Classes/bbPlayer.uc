@@ -8149,6 +8149,15 @@ function PlayInAir() {
 		TweenAnim('JumpLGFR', TweenTime);
 }
 
+exec function ShowOwnBeam() {
+	Settings.bHideOwnBeam = !Settings.bHideOwnBeam;
+	Settings.SaveConfig();
+	if (Settings.bHideOwnBeam)
+		ClientMessage("Own beam hidden!", 'IGPlus');
+	else
+		ClientMessage("Own beam shown!", 'IGPlus');
+}
+
 defaultproperties
 {
 	bAlwaysRelevant=True

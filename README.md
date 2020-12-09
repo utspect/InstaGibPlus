@@ -220,7 +220,7 @@ The style of beam to use for the SuperShockRifle.
 **Type: bool**  
 **Default: False**  
 
-If `True`, hides your own beam, no matter the value of [cShockBeam](#cshockbeam).
+If `True`, hides your own SuperShockRifle beams, no matter the value of [cShockBeam](#cshockbeam). 
 
 ## BeamScale
 **Type: float**  
@@ -398,6 +398,7 @@ Parameters marked `optional` do not have to be supplied.
 28. [SetDemoMask](#setdemomask)
 29. [DemoStart](#demostart)
 30. [ShowFPS](#showfps)
+31. [ShowOwnBeam](#showownbeam)
 
 ## EnableDebugData
 **Parameters: (bool b)**  
@@ -506,6 +507,9 @@ Starts recording a demo with the [DemoPath](#demopath) and [DemoMask](#demomask)
 
 ## ShowFPS
 Toggles displaying FPS information in the top right corner. See [bShowFPS](#bshowfps).
+
+## ShowOwnBeam
+Toggles showing your own beam when firing the SuperShockRifle. See [bHideOwnBeam](#bhideownbeam).
 
 # Server Installation
 
