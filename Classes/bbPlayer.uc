@@ -5717,7 +5717,7 @@ simulated function xxCheckForKickers()
 }
 
 
-static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
+static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
 	local string suffix;
 	local bbPlayer P;
 	local bbPlayerReplicationInfo PRI;
@@ -5893,76 +5893,81 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 	}
 }
 
+function int GetForcedSkinForPlayer(PlayerReplicationInfo PRI) {
+	if (GameReplicationInfo.bTeamGame && PRI.Team == PlayerReplicationInfo.Team) {
+		if (PRI.bIsFemale) {
+			return Settings.DesiredTeamSkinFemale;
+		} else {
+			return Settings.DesiredTeamSkin;
+		}
+	} else {
+		if (PRI.bIsFemale) {
+			return Settings.DesiredSkinFemale;
+		} else {
+			return Settings.DesiredSkin;
+		}
+	}
+	return -1;
+}
+
+function bool IsForcedSkinFemale(int Skin) {
+	return Skin >= 0 && Skin <= 8;
+}
+
+function bool IsForcedSkinMale(int Skin) {
+	return Skin > 8 && Skin <= 17;
+}
+
+function FixFlipAnimation(PlayerReplicationInfo PRI, int Skin) {
+	if (PRI.Owner.AnimSequence == 'Flip') {
+		if (PRI.bIsFemale) {
+			if (IsForcedSkinMale(Skin))
+				PRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, PRI.Owner.Region.Zone.ZoneGravity.Z/PRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+		} else {
+			if (IsForcedSkinFemale(Skin))
+				PRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, PRI.Owner.Region.Zone.ZoneGravity.Z/PRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+		}
+	}
+}
+
+function ApplyForcedSkins(PlayerReplicationInfo PRI) {
+	local int Skin;
+
+	/**
+	 * @Author: spect
+	 * @Date: 2020-02-18 02:20:22
+	 * @Desc: Applies the forced skin client side if force models is enabled.
+	 */
+
+	if (zzbForceModels) {
+		Skin = GetForcedSkinForPlayer(PRI);
+		SetForcedSkin(PRI.Owner, Skin, GameReplicationInfo.bTeamGame, PRI.Team);
+		FixFlipAnimation(PRI, Skin);
+	}
+}
+
+function ApplyBrightskins(PlayerReplicationInfo PRI) {
+	if (Settings.bUnlitSkins)
+		PRI.Owner.bUnlit = true;
+}
+
 event PreRender( canvas zzCanvas )
 {
 	local PlayerReplicationInfo zzPRI;
-	local canvas lmaoCanvas;
-	local int skin;
 
 	zzbDemoRecording = PureLevel != None && PureLevel.zzDemoRecDriver != None;
-
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas != None && zzCanvas.Class != Class'Canvas');
-
 	zzLastVR = ViewRotation;
 
 	Super.PreRender(zzCanvas);
 
-	// Set all other players' health to 0 (unless it's a teamgame and he's on your team)
-	// also set location to something dumb ;)
 	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
 		foreach AllActors(class'PlayerReplicationInfo', zzPRI) {
-			if (zzPRI != PlayerReplicationInfo &&
-				(!GameReplicationInfo.bTeamGame || zzPRI.Team != PlayerReplicationInfo.Team)
-			) {
-				zzPRI.PlayerLocation = PlayerReplicationInfo.PlayerLocation;
-				zzPRI.PlayerZone = None;
-			}
+			if (zzPRI.Owner == none) continue;
+			if (zzPRI.bIsSpectator) continue;
 
-			/**
-			 * @Author: spect
-			 * @Date: 2020-02-18 02:20:22
-			 * @Desc: Applies the forced skin client side if force models is enabled.
-			 */
-
-			if (   zzbForceModels
-				&& zzPRI.bIsSpectator == false
-				&& zzPRI.Owner != None
-				&& zzPRI.Owner != Self
-			) {
-				// force skins
-				if (GameReplicationInfo.bTeamGame && zzPRI.Team == Self.PlayerReplicationInfo.Team) {
-					if (zzPRI.bIsFemale) {
-						skin = Settings.desiredTeamSkinFemale;
-					} else {
-						skin = Settings.desiredTeamSkin;
-					}
-				} else {
-					if (zzPRI.bIsFemale) {
-						skin = Settings.desiredSkinFemale;
-					} else {
-						skin = Settings.desiredSkin;
-					}
-				}
-				setForcedSkin(zzPRI.Owner, skin, GameReplicationInfo.bTeamGame, zzPRI.Team);
-
-				// fix up Flip animation
-				if (zzPRI.Owner.AnimSequence == 'Flip') {
-					if (GameReplicationInfo.bTeamGame && PlayerReplicationInfo.Team == zzPRI.Team) {
-						if (Settings.DesiredTeamSkinFemale > 8 && zzPRI.bIsFemale)
-							zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-						else if (Settings.DesiredTeamSkin >= 0 && Settings.DesiredTeamSkin <= 8 && zzPRI.bIsFemale == false)
-							zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-					} else {
-						if (Settings.DesiredSkinFemale > 8 && zzPRI.bIsFemale)
-							zzPRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-						else if (Settings.DesiredSkin >= 0 && Settings.DesiredSkin <= 8 && zzPRI.bIsFemale == false)
-							zzPRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, zzPRI.Owner.Region.Zone.ZoneGravity.Z/zzPRI.Owner.Region.Zone.Default.ZoneGravity.Z);
-					}
-				}
-			}
-
-			if (Settings.bUnlitSkins)
-				zzPRI.Owner.bUnlit = true;
+			ApplyForcedSkins(zzPRI);
+			ApplyBrightskins(zzPRI);
 		}
 	}
 
