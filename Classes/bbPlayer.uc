@@ -121,7 +121,6 @@ var float	zzWMCheck[50];		// Key value
 var int		zzFailedMutes;		// How many denied Mutes have been tried to add
 var int		zzHMCnt;		// Counts of HudMutes and WaitMutes
 var int		zzHUDWarnings;		// Counts the # of times the HUD has been changed
-var bool	zzbRenderHUD;		// Do not start rendering HUD until logo has been displayed for a while
 
 // Logo Display
 var bool	zzbLogoDone;		// Are we done with the logo ?
@@ -794,7 +793,6 @@ function Timer() {
 	}
 
 	bIsFinishedLoading = true;
-	zzbRenderHUD = True;
 	ClientMessage("[IG+] To view available commands type 'mutate playerhelp' in the console");
 }
 
@@ -5898,7 +5896,6 @@ static function setForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 event PreRender( canvas zzCanvas )
 {
 	local PlayerReplicationInfo zzPRI;
-	local PlayerPawn zzPPOwner;
 	local canvas lmaoCanvas;
 	local int skin;
 
@@ -5908,19 +5905,7 @@ event PreRender( canvas zzCanvas )
 
 	zzLastVR = ViewRotation;
 
-	if (Role < ROLE_Authority)
-		if (!zzbRenderHUD)
-			Super.PreRender(lmaoCanvas);
-
-	if (zzbRenderHUD)
-	{
-		lmaoCanvas = None;
-		Super.PreRender(zzCanvas);
-	}
-
-	zzPPOwner = GetLocalPlayer();
-	if (zzPPOwner == none) return;
-	if (zzPPOwner != self) return;
+	Super.PreRender(zzCanvas);
 
 	// Set all other players' health to 0 (unless it's a teamgame and he's on your team)
 	// also set location to something dumb ;)
@@ -5989,42 +5974,40 @@ event PostRender( canvas zzCanvas )
 	local int CH;
 
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas.Class != Class'Canvas');
-	if (zzbRenderHUD)
+
+	if (zzbRepVRData)
+	{	// Received data through demo replication.
+		ViewRotation.Yaw = zzRepVRYaw;
+		ViewRotation.Pitch = zzRepVRPitch;
+		ViewRotation.Roll = 0;
+		EyeHeight = zzRepVREye;
+	}
+
+	xxHideItems();
+
+	if ( bBehindView )
 	{
-		if (zzbRepVRData)
-		{	// Received data through demo replication.
-			ViewRotation.Yaw = zzRepVRYaw;
-			ViewRotation.Pitch = zzRepVRPitch;
-			ViewRotation.Roll = 0;
-			EyeHeight = zzRepVREye;
-		}
+		if ( Weapon != None )
+			Weapon.RenderOverlays(zzCanvas);
+	}
 
-		xxHideItems();
-
-		if ( bBehindView )
-		{
-			if ( Weapon != None )
-				Weapon.RenderOverlays(zzCanvas);
+	if (Settings.bUseCrosshairFactory) {
+		CH = MyHud.Crosshair;
+		MyHud.Crosshair = ChallengeHUD(MyHud).CrosshairCount;
+	}
+	Super.PostRender(zzCanvas);
+	if (Settings.bUseCrosshairFactory) {
+		if (ChallengeHUD(MyHud).bShowInfo == false &&
+			bShowScores == false &&
+			ChallengeHUD(MyHud).bForceScores == false &&
+			bBehindView == false &&
+			Level.LevelAction == LEVACT_None &&
+			Weapon != none &&
+			Weapon.bOwnsCrossHair == false
+		) {
+			xxDrawCrossHair(zzCanvas, 0, 0);
 		}
-
-		if (Settings.bUseCrosshairFactory) {
-			CH = MyHud.Crosshair;
-			MyHud.Crosshair = ChallengeHUD(MyHud).CrosshairCount;
-		}
-		Super.PostRender(zzCanvas);
-		if (Settings.bUseCrosshairFactory) {
-			if (ChallengeHUD(MyHud).bShowInfo == false &&
-				bShowScores == false &&
-				ChallengeHUD(MyHud).bForceScores == false &&
-				bBehindView == false &&
-				Level.LevelAction == LEVACT_None &&
-				Weapon != none &&
-				Weapon.bOwnsCrossHair == false
-			) {
-					xxDrawCrossHair(zzCanvas, 0, 0);
-			}
-			MyHud.Crosshair = CH;
-		}
+		MyHud.Crosshair = CH;
 	}
 
 	// Render our UTPure Logo
