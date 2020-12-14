@@ -43,6 +43,7 @@ var config float  MinDodgeClickTime; // Minimum time between two presses of the 
 var config bool   bUseOldMouseInput;
 var config PIDControllerSettings SmoothVRController;
 var config bool   bShowFPS;
+var config float  KillCamMinDelay;
 
 struct CrosshairLayerDescr {
 	var() config string Texture;
@@ -171,6 +172,7 @@ simulated function string DumpSettings() {
 		GetSetting("bUseOldMouseInput")$
 		GetSetting("SmoothVRController")$
 		GetSetting("bShowFPS")$
+		GetSetting("KillCamMinDelay")$
 		GetSetting("bUseCrosshairFactory")$
 		DumpCrosshairLayers();
 }
@@ -212,6 +214,7 @@ defaultproperties
 	MinDodgeClickTime=0
 	bUseOldMouseInput=False
 	SmoothVRController=(p=0.09,i=0.05,d=0.00)
-	bShowFPS=False;
+	bShowFPS=False
+	KillCamMinDelay=0.0
 	bUseCrosshairFactory=False
 }

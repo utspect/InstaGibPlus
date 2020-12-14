@@ -5110,7 +5110,7 @@ state Dying
 		Super.PlayerTick(DeltaTime);
 
 		if ((Settings.bEnableKillCam && LastKiller != none) &&
-			(TimeDead >= KillCamDelay && TimeDead < KillCamDelay + KillCamDuration)
+			(TimeDead >= FMax(KillCamDelay, Settings.KillCamMinDelay) && TimeDead < KillCamDelay + KillCamDuration)
 		) {
 			if (FastTrace(LastKiller.Location, Location))
 				KillCamTargetRotation = rotator(LastKiller.Location - Location);
