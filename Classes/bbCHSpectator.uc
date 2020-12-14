@@ -503,8 +503,17 @@ auto state CheatFlying
 {
 	ignores Speech,ShowInventory,ShowPath,Profile,ServerTaunt;
 
+	function ForceOldServerMove() {
+		local ENetRole R;
+		R = Level.Role;
+		Level.Role = ROLE_Authority;
+		Level.SetPropertyText("ServerMoveVersion", "0");
+		Level.Role = R;
+	}
+
 	event PlayerTick( float DeltaTime )
 	{
+		ForceOldServerMove();
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
