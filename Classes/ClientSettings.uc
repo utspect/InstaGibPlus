@@ -45,6 +45,7 @@ var config bool   bUseOldMouseInput;
 var config PIDControllerSettings SmoothVRController;
 var config bool   bShowFPS;
 var config float  KillCamMinDelay;
+var config bool   bAllowWeaponShake;
 
 struct CrosshairLayerDescr {
 	var() config string Texture;
@@ -219,5 +220,6 @@ defaultproperties
 	SmoothVRController=(p=0.09,i=0.05,d=0.00)
 	bShowFPS=False
 	KillCamMinDelay=0.0
+	bAllowWeaponShake=True
 	bUseCrosshairFactory=False
 }

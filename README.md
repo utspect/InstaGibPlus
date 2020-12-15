@@ -62,6 +62,8 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 34. [bUseOldMouseInput](#buseoldmouseinput)
 35. [SmoothVRController](#smoothvrcontroller)
 36. [bShowFPS](#bshowfps)
+37. [KillCamMinDelay](#killcammindelay)
+38. [bAllowWeaponShake](#ballowweaponshake)
 37. [bUseCrosshairFactory](#busecrosshairfactory)
 38. [CrosshairLayers](#crosshairlayers)
 
@@ -325,6 +327,19 @@ This holds the PID settings for the controller thats smoothing the view of playe
 **Default: False**  
 
 If `True`, show averaged FPS information in top right corner. If `False`, show nothing.
+
+## KillCamMinDelay
+**Type: float**  
+**Default: 0.0**  
+**Unit: seconds**  
+
+Minimum time between death and when KillCam starts rotating towards killer.
+
+## bAllowWeaponShake
+**Type: bool**  
+**Default: True**  
+
+If `True`, weapons can shake view. If `False` weapons can't shake view.
 
 ## bUseCrosshairFactory
 **Type: bool**  

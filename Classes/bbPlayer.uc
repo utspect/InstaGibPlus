@@ -8102,6 +8102,11 @@ exec function ShowOwnBeam() {
 		ClientMessage("Own beam shown!", 'IGPlus');
 }
 
+function ClientShake(vector shake) {
+	if (Settings.bAllowWeaponShake)
+		super.ClientShake(shake);
+}
+
 defaultproperties
 {
 	bAlwaysRelevant=True
@@ -8118,5 +8123,6 @@ defaultproperties
 	DodgeEndVelocity=0.1
 	JumpEndVelocity=1.0
 	DuckTransitionTime=0.25
+	LastWeaponEffectCreated=-1
 	PlayerReplicationInfoClass=Class'bbPlayerReplicationInfo'
 }
