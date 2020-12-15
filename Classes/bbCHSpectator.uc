@@ -50,79 +50,36 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		xxSetHitSounds, xxSetTimes, xxReceivePosition, xxClientSpawnSSRBeam; //, xxClientActivateMover;
+		xxSetHitSounds, xxSetTimes, xxReceivePosition; //, xxClientActivateMover;
+
+	reliable if ( (!bDemoRecording || (bClientDemoRecording && bClientDemoNetFunc) || (Level.NetMode==NM_Standalone)) && Role == ROLE_Authority )
+		ReceiveWeaponEffect;
 }
 
-simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
-	local ClientSuperShockBeam Smoke;
-	local Vector DVector;
-	local int NumPoints;
-	local rotator SmokeRotation;
-	local vector MoveAmount;
-
-	if (Level.NetMode == NM_DedicatedServer) return;
-
-	DVector = HitLocation - SmokeLocation;
-	NumPoints = VSize(DVector) / 135.0;
-	if ( NumPoints < 1 )
-		return;
-	SmokeRotation = rotator(DVector);
-	SmokeRotation.roll = Rand(65535);
-
-	if (Settings.cShockBeam == 3) return;
-	if (Settings.bHideOwnBeam &&
-		(O == self || O == ViewTarget) &&
-		bBehindView == false)
-		return;
-
-	Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
-	if (Smoke == none) return;
-	MoveAmount = DVector / NumPoints;
-
-	if (Settings.cShockBeam == 1) {
-		Smoke.SetProperties(
-			-1,
-			1,
-			1,
-			0.27,
-			MoveAmount,
-			NumPoints - 1);
-
-	} else if (Settings.cShockBeam == 2) {
-		Smoke.SetProperties(
-			PlayerPawn(O).PlayerReplicationInfo.Team,
-			Settings.BeamScale,
-			Settings.BeamFadeCurve,
-			Settings.BeamDuration,
-			MoveAmount,
-			NumPoints - 1);
-
-	} else if (Settings.cShockBeam == 4) {
-		Smoke.SetProperties(
-			PlayerPawn(O).PlayerReplicationInfo.Team,
-			Settings.BeamScale,
-			Settings.BeamFadeCurve,
-			Settings.BeamDuration,
-			MoveAmount,
-			0);
-
-		for (NumPoints = NumPoints - 1; NumPoints > 0; NumPoints--) {
-			SmokeLocation += MoveAmount;
-			Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
-			if (Smoke == None) break;
-			Smoke.SetProperties(
-				PlayerPawn(O).PlayerReplicationInfo.Team,
-				Settings.BeamScale,
-				Settings.BeamFadeCurve,
-				Settings.BeamDuration,
-				MoveAmount,
-				0);
-		}
-	}
+function ReceiveWeaponEffect(
+	class<WeaponEffect> Effect,
+	Actor Source,
+	vector SourceLocation,
+	vector SourceOffset,
+	Actor Target,
+	vector TargetLocation,
+	vector TargetOffset,
+	vector HitNormal
+) {
+	Effect.static.Play(self, Settings, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
 }
 
-simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
-	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
+function SendWeaponEffect(
+	class<WeaponEffect> Effect,
+	Actor Source,
+	vector SourceLocation,
+	vector SourceOffset,
+	Actor Target,
+	vector TargetLocation,
+	vector TargetOffset,
+	vector HitNormal
+) {
+	ReceiveWeaponEffect(Effect, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
 }
 
 simulated function xxReceivePosition( bbPlayer Other, vector Loc, vector Vel, bool bSet )

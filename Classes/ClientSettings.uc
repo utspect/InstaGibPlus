@@ -33,6 +33,7 @@ var config float  BeamScale;
 var config float  BeamFadeCurve;
 var config float  BeamDuration;
 var config int    BeamOriginMode;
+var config int    BeamDestinationMode;
 var config float  DesiredNetUpdateRate;
 var config bool   bNoSmoothing;
 var config bool   bNoOwnFootsteps;
@@ -162,6 +163,7 @@ simulated function string DumpSettings() {
 		GetSetting("BeamFadeCurve")$
 		GetSetting("BeamDuration")$
 		GetSetting("BeamOriginMode")$
+		GetSetting("BeamDestinationMode")$
 		GetSetting("DesiredNetUpdateRate")$
 		GetSetting("bNoSmoothing")$
 		GetSetting("bNoOwnFootsteps")$
@@ -205,6 +207,7 @@ defaultproperties
 	BeamFadeCurve=4
 	BeamDuration=0.75
 	BeamOriginMode=0
+	BeamDestinationMode=0
 	DesiredNetUpdateRate=250.0
 	bNoSmoothing=False
 	bNoOwnFootsteps=False

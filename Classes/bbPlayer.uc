@@ -208,7 +208,7 @@ var vector IGPlus_AdjustLocationOffset;
 var float IGPlus_AdjustLocationAlpha;
 
 // SSR Beam
-var float LastSSRBeamCreated;
+var float LastWeaponEffectCreated;
 
 //
 var int CompressedViewRotation; // Compressed Pitch/Yaw
@@ -265,7 +265,7 @@ replication
 {
 	//	Client->Demo
 	unreliable if ( bClientDemoRecording )
-		xxReplicateVRToDemo, ClientDemoMessage, xxClientLogToDemo, xxDemoSpawnSSRBeam;
+		xxReplicateVRToDemo, ClientDemoMessage, xxClientLogToDemo;
 
 	reliable if (bClientDemoRecording && !bClientDemoNetFunc)
 		xxClientDemoFix, xxClientDemoBolt;
@@ -289,7 +289,7 @@ replication
 		zzbForceModels, bIsAlive, zzbIsWarmingUp,
 		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
 		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
-		xxClientKicker, xxClientSwJumpPad, TimeBetweenNetUpdates, xxClientSpawnSSRBeam,
+		xxClientKicker, xxClientSwJumpPad, TimeBetweenNetUpdates,
 		bJumpingPreservesMomentum, DuckFraction, bUseFlipAnimation;
 
 	// Client->Server
@@ -338,10 +338,57 @@ replication
 	// Server->Client
 	unreliable if (Role == ROLE_Authority && RemoteRole < ROLE_AutonomousProxy && bViewTarget)
 		CompressedViewRotation;
+
+	reliable if ( (!bDemoRecording || (bClientDemoRecording && bClientDemoNetFunc) || (Level.NetMode==NM_Standalone)) && Role == ROLE_Authority )
+		ReceiveWeaponEffect;
+	reliable if (bClientDemoRecording)
+		DemoReceiveWeaponEffect;
 }
 
 //XC_Engine interface
 native(1719) final function bool IsInPackageMap( optional string PkgName, optional bool bServerPackagesOnly);
+
+function ReceiveWeaponEffect(
+	class<WeaponEffect> Effect,
+	Actor Source,
+	vector SourceLocation,
+	vector SourceOffset,
+	Actor Target,
+	vector TargetLocation,
+	vector TargetOffset,
+	vector HitNormal
+) {
+	Effect.static.Play(self, Settings, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
+}
+
+simulated function DemoReceiveWeaponEffect(
+	class<WeaponEffect> Effect,
+	Actor Source,
+	vector SourceLocation,
+	vector SourceOffset,
+	Actor Target,
+	vector TargetLocation,
+	vector TargetOffset,
+	vector HitNormal
+) {
+	if (LastWeaponEffectCreated >= 0) return;
+	Effect.static.Play(self, Settings, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
+}
+
+function SendWeaponEffect(
+	class<WeaponEffect> Effect,
+	Actor Source,
+	vector SourceLocation,
+	vector SourceOffset,
+	Actor Target,
+	vector TargetLocation,
+	vector TargetOffset,
+	vector HitNormal
+) {
+	ReceiveWeaponEffect(Effect, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
+	LastWeaponEffectCreated = Level.TimeSeconds;
+	DemoReceiveWeaponEffect(Effect, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
+}
 
 /* More crash fix bs */
 simulated function bool xxGarbageLocation(actor Other)
@@ -6899,97 +6946,6 @@ exec function SetMouseSmoothing(bool b)
 	Settings.SaveConfig();
 	if (b) ClientMessage("Mouse Smoothing enabled!");
 	else   ClientMessage("Mouse Smoothing disabled!");
-}
-
-simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
-	local ClientSuperShockBeam Smoke;
-	local Vector DVector;
-	local int NumPoints;
-	local rotator SmokeRotation;
-	local vector MoveAmount;
-	local vector OriginLocation;
-
-	LastSSRBeamCreated = Level.TimeSeconds;
-
-	if (Level.NetMode == NM_DedicatedServer) return;
-
-	if (Settings.BeamOriginMode == 1) {
-		// Show beam originating from its Owner
-		OriginLocation = O.Location + SmokeOffset;
-	} else {
-		// Show beam originating from where it was shot
-		OriginLocation = SmokeLocation;
-	}
-	DVector = HitLocation - OriginLocation;
-	NumPoints = VSize(DVector) / 135.0;
-	if ( NumPoints < 1 )
-		return;
-	SmokeRotation = rotator(DVector);
-	SmokeRotation.roll = Rand(65535);
-
-	if (Settings.cShockBeam == 3) return;
-	if (Settings.bHideOwnBeam &&
-		(O == self || O == ViewTarget) &&
-		bBehindView == false)
-		return;
-
-	Smoke = Spawn(class'ClientSuperShockBeam',O,, OriginLocation, SmokeRotation);
-	if (Smoke == none) return;
-	MoveAmount = DVector / NumPoints;
-
-	if (Settings.cShockBeam == 1) {
-		Smoke.SetProperties(
-			-1,
-			1,
-			1,
-			0.27,
-			MoveAmount,
-			NumPoints - 1);
-
-	} else if (Settings.cShockBeam == 2) {
-		Smoke.SetProperties(
-			PlayerPawn(O).PlayerReplicationInfo.Team,
-			Settings.BeamScale,
-			Settings.BeamFadeCurve,
-			Settings.BeamDuration,
-			MoveAmount,
-			NumPoints - 1);
-
-	} else if (Settings.cShockBeam == 4) {
-		Smoke.SetProperties(
-			PlayerPawn(O).PlayerReplicationInfo.Team,
-			Settings.BeamScale,
-			Settings.BeamFadeCurve,
-			Settings.BeamDuration,
-			MoveAmount,
-			0);
-
-		for (NumPoints = NumPoints - 1; NumPoints > 0; NumPoints--) {
-			OriginLocation += MoveAmount;
-			Smoke = Spawn(class'ClientSuperShockBeam',O,, OriginLocation, SmokeRotation);
-			if (Smoke == None) break;
-			Smoke.SetProperties(
-				PlayerPawn(O).PlayerReplicationInfo.Team,
-				Settings.BeamScale,
-				Settings.BeamFadeCurve,
-				Settings.BeamDuration,
-				MoveAmount,
-				0);
-		}
-	}
-}
-
-simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
-	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
-	LastSSRBeamCreated = -1.0;
-}
-
-simulated function xxDemoSpawnSSRBeam(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
-	if (LastSSRBeamCreated == Level.TimeSeconds) {
-		LastSSRBeamCreated = -1.0;
-		return;
-	}
-	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
 }
 
 function xxServerSetForceModels(bool b)

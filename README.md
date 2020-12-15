@@ -51,18 +51,19 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 23. [BeamFadeCurve](#beamfadecurve)
 24. [BeamDuration](#beamduration)
 25. [BeamOriginMode](#beamoriginmode)
-26. [bNoOwnFootsteps](#bnoownfootsteps)
-27. [DesiredNetUpdateRate](#desirednetupdaterate)
-28. [FakeCAPInterval](#fakecapinterval)
-29. [bNoSmoothing](#bnosmoothing)
-30. [bLogClientMessages](#blogclientmessages)
-31. [bEnableKillCam](#benablekillcam)
-32. [MinDodgeClickTime](#mindodgeclicktime)
-33. [bUseOldMouseInput](#buseoldmouseinput)
-34. [SmoothVRController](#smoothvrcontroller)
-35. [bShowFPS](#bshowfps)
-36. [bUseCrosshairFactory](#busecrosshairfactory)
-37. [CrosshairLayers](#crosshairlayers)
+26. [BeamDestinationMode](#beamdestinationmode)
+27. [bNoOwnFootsteps](#bnoownfootsteps)
+28. [DesiredNetUpdateRate](#desirednetupdaterate)
+29. [FakeCAPInterval](#fakecapinterval)
+30. [bNoSmoothing](#bnosmoothing)
+31. [bLogClientMessages](#blogclientmessages)
+32. [bEnableKillCam](#benablekillcam)
+33. [MinDodgeClickTime](#mindodgeclicktime)
+34. [bUseOldMouseInput](#buseoldmouseinput)
+35. [SmoothVRController](#smoothvrcontroller)
+36. [bShowFPS](#bshowfps)
+37. [bUseCrosshairFactory](#busecrosshairfactory)
+38. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -244,6 +245,13 @@ The time the beam's visuals decay over.
 
 0. Originates where the player was when the shot was fired
 1. Originates at an offset from where the player is on your screen.
+
+## BeamDestinationMode
+**Type: int**  
+**Default: 0**  
+
+0. Beam ends where it ended on server
+1. Beam ends on target
 
 ## bNoOwnFootsteps
 **Type: bool**  
