@@ -265,76 +265,159 @@ replication
 {
 	//	Client->Demo
 	unreliable if ( bClientDemoRecording )
-		xxReplicateVRToDemo, ClientDemoMessage, xxClientLogToDemo;
+		ClientDemoMessage,
+		xxClientLogToDemo,
+		xxReplicateVRToDemo;
 
 	reliable if (bClientDemoRecording && !bClientDemoNetFunc)
-		xxClientDemoFix, xxClientDemoBolt;
+		xxClientDemoFix,
+		xxClientDemoBolt;
 
 	reliable if ((Role == ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ClientProjExplode;
 
 	// Server->Client
 	unreliable if ( bNetOwner && Role == ROLE_Authority )
-		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed, zzMaximumNetspeed,
-		zzWaitTime,zzAntiTimerList,zzAntiTimerListCount,zzAntiTimerListState,
-		zzStat, LastKiller, KillCamDelay, KillCamDuration, bEnableSingleButtonDodge,
-		bIs469Server;
+		bEnableSingleButtonDodge,
+		bIs469Server,
+		KillCamDelay,
+		KillCamDuration,
+		LastKiller,
+		zzAntiTimerList,
+		zzAntiTimerListCount,
+		zzAntiTimerListState,
+		zzCVDelay,
+		zzCVDeny,
+		zzMaximumNetspeed,
+		zzMinimumNetspeed,
+		zzStat,
+		zzTrackFOV,
+		zzWaitTime;
 
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
-		xxClientAcceptMutator, zzForceSettingsLevel,
-		zzbForceDemo, zzbGameStarted, zzbUsingTranslocator, HUDInfo;
+		HUDInfo,
+		xxClientAcceptMutator,
+		zzbForceDemo,
+		zzbGameStarted,
+		zzbUsingTranslocator,
+		zzForceSettingsLevel;
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		zzbForceModels, bIsAlive, zzbIsWarmingUp,
-		xxNN_MoveClientTTarget, xxSetPendingWeapon, SetPendingWeapon,
-		xxSetTeleRadius, xxSetDefaultWeapon, xxSetSniperSpeed, xxSetHitSounds, xxSetTimes,
-		xxClientKicker, xxClientSwJumpPad, TimeBetweenNetUpdates,
-		bJumpingPreservesMomentum, DuckFraction, bUseFlipAnimation;
+		bIsAlive,
+		bJumpingPreservesMomentum,
+		bUseFlipAnimation,
+		DuckFraction,
+		SetPendingWeapon,
+		TimeBetweenNetUpdates,
+		xxClientKicker,
+		xxClientSwJumpPad,
+		xxNN_MoveClientTTarget,
+		xxSetDefaultWeapon,
+		xxSetHitSounds,
+		xxSetPendingWeapon,
+		xxSetSniperSpeed,
+		xxSetTeleRadius,
+		xxSetTimes,
+		zzbForceModels,
+		zzbIsWarmingUp;
 
 	// Client->Server
 	reliable if ( Role == ROLE_AutonomousProxy )
-		bDrawDebugData, FakeCAPInterval;
+		bDrawDebugData,
+		FakeCAPInterval;
 
 	// Server->Client debug data
 	unreliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
-		clientLastUpdateTime, clientForcedPosition, debugClientPing, debugNumOfForcedUpdates,
-		debugPlayerServerLocation, debugClientbMoveSmooth, debugClientForceUpdate, debugClientLocError,
-		ExtrapolationDelta, debugServerMoveCallsReceived, ClientDebugMessage;
+		ClientDebugMessage,
+		clientForcedPosition,
+		clientLastUpdateTime,
+		debugClientbMoveSmooth,
+		debugClientForceUpdate,
+		debugClientLocError,
+		debugClientPing,
+		debugNumOfForcedUpdates,
+		debugPlayerServerLocation,
+		debugServerMoveCallsReceived,
+		ExtrapolationDelta;
 
-	//Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
+	// Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( RemoteRole == ROLE_AutonomousProxy && !bDemoRecording )
-		xxCheatFound,xxClientSet,xxClientDoScreenshot,xxClientDoEndShot,xxClientConsole,
-		xxClientKeys, xxClientReadINT;
+		xxCheatFound,
+		xxClientConsole,
+		xxClientDoEndShot,
+		xxClientDoScreenshot,
+		xxClientKeys,
+		xxClientReadINT,
+		xxClientSet;
 
 	// Server->Client function.
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
-		xxCAP, xxCAPLevelBase, xxCAPWalking, xxCAPWalkingWalkingLevelBase, xxCAPWalkingWalking, xxFakeCAP,
-		xxClientResetPlayer, xxClientAddVelocity, ClientAddMomentum;
+		ClientAddMomentum,
+		xxCAP,
+		xxCAPLevelBase,
+		xxCAPWalking,
+		xxCAPWalkingWalking,
+		xxCAPWalkingWalkingLevelBase,
+		xxClientAddVelocity,
+		xxClientResetPlayer,
+		xxFakeCAP;
 
 	reliable if (RemoteRole == ROLE_AutonomousProxy)
 		xxClientReStart;
 
 	// Client->Server
 	unreliable if ( Role < ROLE_Authority )
-		bIsFinishedLoading, xxServerCheater, xxServerMove, xxServerMoveDead,
-		zzFalse, zzTrue, zzNetspeed, zzbBadCanvas, zzbVRChanged,
-		zzbForcedTick, zzbDemoRecording, zzClientTD,
-		PingAverage;
+		bIsFinishedLoading,
+		PingAverage,
+		xxServerCheater,
+		xxServerMove,
+		xxServerMoveDead,
+		zzbBadCanvas,
+		zzbDemoRecording,
+		zzbForcedTick,
+		zzbVRChanged,
+		zzClientTD,
+		zzFalse,
+		zzNetspeed,
+		zzTrue;
 
 	// Client->Server
 	reliable if ( Role < ROLE_Authority )
-		xxServerCheckMutator, xxSet,
-		xxServerReceiveMenuItems, xxServerSetReadyToPlay, Hold, Go,
-		xxServerSetForceModels, xxServerSetMinDodgeClickTime, xxServerSetTeamInfo, ShowStats,
-		xxServerAckScreenshot, xxServerReceiveConsole, xxServerReceiveKeys, xxServerReceiveINT, xxServerReceiveStuff,
-		xxSendHeadshotToSpecs, xxSendDeathMessageToSpecs, xxSendMultiKillToSpecs, xxSendSpreeToSpecs, xxServerDemoReply,
-		xxExplodeOther, xxSetNetUpdateRate, xxServerAddVelocity, xxNN_Fire, xxNN_AltFire, DropFlag;
+		DropFlag,
+		Go,
+		Hold,
+		ShowStats,
+		xxExplodeOther,
+		xxNN_AltFire,
+		xxNN_Fire,
+		xxSendDeathMessageToSpecs,
+		xxSendHeadshotToSpecs,
+		xxSendMultiKillToSpecs,
+		xxSendSpreeToSpecs,
+		xxServerAckScreenshot,
+		xxServerAddVelocity,
+		xxServerCheckMutator,
+		xxServerDemoReply,
+		xxServerReceiveConsole,
+		xxServerReceiveINT,
+		xxServerReceiveKeys,
+		xxServerReceiveMenuItems,
+		xxServerReceiveStuff,
+		xxServerSetForceModels,
+		xxServerSetMinDodgeClickTime,
+		xxServerSetReadyToPlay,
+		xxServerSetTeamInfo,
+		xxSet,
+		xxSetNetUpdateRate;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
-		xxNN_ProjExplode, xxNN_TransFrag,
-		xxNN_ReleaseFire, xxNN_ReleaseAltFire, xxNN_MoveTTarget;
+		xxNN_MoveTTarget,
+		xxNN_ProjExplode,
+		xxNN_ReleaseAltFire,
+		xxNN_ReleaseFire,
+		xxNN_TransFrag;
 
 	// Server->Client
 	unreliable if (Role == ROLE_Authority && RemoteRole < ROLE_AutonomousProxy && bViewTarget)
