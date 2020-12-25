@@ -1359,7 +1359,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 	local Decoration Carried;
 	local vector OldLoc;
 	local bbSavedMove CurrentMove;
-	local NN_Kicker K;
 
 	if ( CurrentTimeStamp > TimeStamp )
 		return;
@@ -1403,8 +1402,7 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 		}
 	}
 
-	foreach AllActors(class'NN_Kicker', K)
-		K.ForceReset();
+	ResetKickers();
 
 	Carried = CarriedDecoration;
 	OldLoc = Location;
@@ -1779,6 +1777,13 @@ function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMov
 	return true;
 }
 
+function ResetKickers() {
+	local NN_Kicker K;
+	foreach AllActors(class'NN_Kicker', K)
+		if (K.Last == self)
+			K.ForceReset();
+}
+
 function xxServerMove(
 	float TimeStamp,
 	float MoveDeltaTime,
@@ -2133,6 +2138,8 @@ function xxServerMove(
 			xxCAP(TimeStamp, zzMyState, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
 
 		ClientDebugMessage("Send CAP:"@TimeStamp@Physics@ClientPhysics@ClientLocErr@MaxPosError);
+
+		ResetKickers();
 
 		LastCAPTime = ServerTimeStamp;
 		NextRealCAPTime = ServerTimeStamp + PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation + AverageServerDeltaTime;
