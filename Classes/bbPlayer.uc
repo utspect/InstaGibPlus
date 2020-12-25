@@ -108,7 +108,6 @@ var bool bForceDefaultHitSounds;
 var bool zzbNN_Tracing;
 var Weapon zzPendingWeapon;
 var bool bIsAlpha;
-var bool bIsPatch469;
 var bool bJustRespawned;
 var float LastCAPTime; // ServerTime when last CAP was sent
 var float NextRealCAPTime;
@@ -200,7 +199,8 @@ struct SavedData {
 	var() EDodgeDir DodgeDir;
 };
 var SavedData Saved;
-var bool bIs469ServerAndClient;
+var bool bIs469Server;
+var bool bIs469Client;
 
 // Clientside smoothing of position adjustment.
 var vector IGPlus_PreAdjustLocation;
@@ -277,7 +277,8 @@ replication
 	unreliable if ( bNetOwner && Role == ROLE_Authority )
 		zzTrackFOV, zzCVDeny, zzCVDelay, zzMinimumNetspeed, zzMaximumNetspeed,
 		zzWaitTime,zzAntiTimerList,zzAntiTimerListCount,zzAntiTimerListState,
-		zzStat, LastKiller, KillCamDelay, KillCamDuration, bEnableSingleButtonDodge;
+		zzStat, LastKiller, KillCamDelay, KillCamDuration, bEnableSingleButtonDodge,
+		bIs469Server;
 
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
@@ -343,6 +344,9 @@ replication
 		ReceiveWeaponEffect;
 	reliable if (bClientDemoRecording)
 		DemoReceiveWeaponEffect;
+
+	reliable if (Role == ROLE_AutonomousProxy || RemoteRole == ROLE_SimulatedProxy)
+		bIs469Client;
 }
 
 //XC_Engine interface
@@ -695,8 +699,6 @@ simulated event PostNetBeginPlay()
 
 	zzbValidFire = zzTrue;
 
-	bIs469ServerAndClient = GetServerMoveVersion() >= 2;
-
 	if ( bIsMultiSkinned )
 	{
 		if ( MultiSkins[1] == None )
@@ -780,6 +782,8 @@ event Possess()
 		SetPropertyText("PureLevel", GetPropertyText("xLevel"));
 		FakeCAPInterval = Settings.FakeCAPInterval;
 		ClientSetMusic( Level.Song, Level.SongSection, Level.CdTrack, MTRAN_Fade );
+
+		bIs469Client = int(Level.EngineVersion) >= 469;
 	}
 	else
 	{
@@ -826,6 +830,10 @@ event Possess()
 
 			DelayedNavPoint = Level.NavigationPointList;
 		}
+
+		bIs469Server = int(Level.EngineVersion) >= 469;
+		if (RemoteRole != ROLE_AutonomousProxy)
+			bIs469Client = bIs469Server;
 	}
 
 	Super.Possess();
@@ -2861,7 +2869,7 @@ function xxReplicateMove(
 	{
 		if (bbSavedMove(PendingMove).IGPlus_MergeCount < 31 &&
 			(
-				bIs469ServerAndClient == false ||
+				bIs469Server == false || bIs469Client == false ||
 				(
 					bForcePacketSplit == false &&
 					VSize(NewAccel - PendingMove.Acceleration) < 0.125 * AccelRate
@@ -2990,7 +2998,7 @@ function xxReplicateMove(
 	NewMove.IGPlus_SavedVelocity = Velocity;
 
 	if ((PendingMove.Delta < NetMoveDelta - ClientUpdateTime) &&
-		(bIs469ServerAndClient == false || bForcePacketSplit == false))
+		(bIs469Server == false || bIs469Client == false || bForcePacketSplit == false))
 		return;
 
 	bForcePacketSplit = false;
@@ -8122,7 +8130,6 @@ defaultproperties
 	TeleRadius=210
 	NN_ProjLength=256
 	bIsAlpha=False
-	bIsPatch469=False
 	bIsFinishedLoading=False
 	bDrawDebugData=False
 	TimeBetweenNetUpdates=0.01
