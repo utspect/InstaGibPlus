@@ -34,15 +34,11 @@ simulated event Touch(Actor Other) {
 }
 
 simulated event PostTouch(Actor Other) {
-	if ((Other != Last) || (Level.TimeSeconds >= (LastTimeStamp + 0.2))) {
-		if (Other.IsA('bbPlayer'))
-			bbPlayer(Other).ClientDebugMessage("Kick");
-		super.PostTouch(Other);
-		Last = Other;
-		LastTimeStamp = Level.TimeSeconds;
-	} else if (Other.IsA('bbPlayer')) {
-		bbPlayer(Other).ClientDebugMessage("Kick discarded");
-	}
+	if (Other.IsA('bbPlayer'))
+		bbPlayer(Other).ClientDebugMessage("Kick");
+	super.PostTouch(Other);
+	Last = Other;
+	LastTimeStamp = Level.TimeSeconds;
 }
 
 simulated function ForceReset() {
