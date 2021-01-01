@@ -1,8 +1,5 @@
 class NN_Kicker expands Botpack.Kicker;
 
-var Actor Last;
-var float LastTimeStamp;
-
 simulated event Touch(Actor Other) {
 	local Actor A;
 	local vector D;
@@ -37,13 +34,6 @@ simulated event PostTouch(Actor Other) {
 	if (Other.IsA('bbPlayer'))
 		bbPlayer(Other).ClientDebugMessage("Kick");
 	super.PostTouch(Other);
-	Last = Other;
-	LastTimeStamp = Level.TimeSeconds;
-}
-
-simulated function ForceReset() {
-	Last = none;
-	LastTimeStamp = -1;
 }
 
 static function bool IGPlus_SimulateKick( Actor Other)

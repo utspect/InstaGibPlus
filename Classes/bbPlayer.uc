@@ -1413,8 +1413,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 		}
 	}
 
-	ResetKickers();
-
 	Carried = CarriedDecoration;
 	OldLoc = Location;
 
@@ -1819,8 +1817,6 @@ function IGPlus_CheckClientError() {
 
 		ClientDebugMessage("Send CAP:"@CurrentTimeStamp@Physics@ClientPhysics@ClientLocError@MaxLocError);
 
-		ResetKickers();
-
 		LastCAPTime = ServerTimeStamp;
 		NextRealCAPTime = ServerTimeStamp + PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation + AverageServerDeltaTime;
 		zzLastClientErr = 0;
@@ -1930,13 +1926,6 @@ function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMov
 	CurrentTimeStamp = OldTimeStamp;
 
 	return true;
-}
-
-function ResetKickers() {
-	local NN_Kicker K;
-	foreach AllActors(class'NN_Kicker', K)
-		if (K.Last == self)
-			K.ForceReset();
 }
 
 function xxServerMove(
