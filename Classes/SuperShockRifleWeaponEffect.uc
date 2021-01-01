@@ -114,13 +114,25 @@ static function PlayRing(
 	vector HitNormal
 ) {
 	local Actor A;
-	if (Settings.cShockBeam >= 2 && PlayerPawn(Source).PlayerReplicationInfo.Team == 1) {
-		A = Player.Spawn(class'NN_UT_RingExplosion',,, HitLocation+HitNormal*8,rotator(HitNormal));
-		A.RemoteRole = ROLE_None;
-		A = Player.Spawn(class'EnergyImpact');
-		if (A != none) A.RemoteRole = ROLE_None;
-	} else {
-		A = Player.Spawn(class'UT_Superring2',,, HitLocation+HitNormal*8,rotator(HitNormal));
-		A.RemoteRole = ROLE_None;
+
+	switch(Settings.SSRRingType) {
+		case 0:
+			// nothing
+			break;
+		case 1:
+			A = Player.Spawn(class'UT_Superring2',,, HitLocation+HitNormal*8,rotator(HitNormal));
+			A.RemoteRole = ROLE_None;
+			break;
+		case 2:
+			if (PlayerPawn(Source).PlayerReplicationInfo.Team == 1) {
+				A = Player.Spawn(class'NN_UT_RingExplosion',,, HitLocation+HitNormal*8,rotator(HitNormal));
+				A.RemoteRole = ROLE_None;
+				A = Player.Spawn(class'EnergyImpact');
+				if (A != none) A.RemoteRole = ROLE_None;
+			} else {
+				A = Player.Spawn(class'UT_Superring2',,, HitLocation+HitNormal*8,rotator(HitNormal));
+				A.RemoteRole = ROLE_None;
+			}
+			breaK;
 	}
 }

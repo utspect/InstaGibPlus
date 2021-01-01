@@ -34,6 +34,7 @@ var config float  BeamFadeCurve;
 var config float  BeamDuration;
 var config int    BeamOriginMode;
 var config int    BeamDestinationMode;
+var config int    SSRRingType;
 var config float  DesiredNetUpdateRate;
 var config bool   bNoSmoothing;
 var config bool   bNoOwnFootsteps;
@@ -209,6 +210,7 @@ defaultproperties
 	BeamDuration=0.75
 	BeamOriginMode=0
 	BeamDestinationMode=0
+	SSRRingType=1
 	DesiredNetUpdateRate=250.0
 	bNoSmoothing=False
 	bNoOwnFootsteps=False
