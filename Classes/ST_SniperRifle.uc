@@ -260,10 +260,6 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	{
 		if ( Other.bIsPawn )
 		{
-			if ((Other.GetAnimGroup(Other.AnimSequence) == 'Ducking') && (Other.AnimFrame > -0.03)) {
-				return false; // disable crouching headshot
-			}
-
 			HitLocation += (X * Other.CollisionRadius * 0.5);
 			if (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight)
 				return true;
@@ -314,10 +310,9 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		if ( Other.bIsPawn )
 			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
 
-		if ( (bbP.zzbNN_Special || !bNewNet &&
+		if ((bbP.zzbNN_Special || !bNewNet &&
 			Other.bIsPawn && (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight)
-			&& (instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice)) )
-			&& !PPOther.bIsCrouching && PPOther.GetAnimGroup(PPOther.AnimSequence) != 'Ducking' )
+			&& (instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice))))
 		{
 			if (HeadDamage > 0)
 				Other.TakeDamage(HeadDamage, PawnOwner, HitLocation, 35000 * X, AltDamageType); // was 100 (150) dmg
