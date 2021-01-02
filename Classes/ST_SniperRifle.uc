@@ -261,7 +261,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		if ( Other.bIsPawn )
 		{
 			HitLocation += (X * Other.CollisionRadius * 0.5);
-			if (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight)
+			if (HitLocation.Z - Other.Location.Z > GetMinHeadshotZ(Pawn(Other)))
 				return true;
 		}
 
@@ -269,6 +269,17 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}
 	return false;
+}
+
+simulated function float GetMinHeadshotZ(Pawn Other) {
+	local bbPlayer P;
+
+	P = bbPlayer(Other);
+	if (P != none)
+		return (BodyHeight - 0.70 * P.DuckFraction) * P.CollisionHeight;
+
+
+	return BodyHeight * Other.CollisionHeight;
 }
 
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
