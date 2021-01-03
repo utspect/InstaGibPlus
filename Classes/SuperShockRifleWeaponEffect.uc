@@ -117,7 +117,11 @@ static function PlayRing(
 
 	switch(Settings.SSRRingType) {
 		case 0:
-			// nothing
+			A = Player.Spawn(class'EnergyImpact',,, HitLocation,rotator(HitNormal));
+			if (A != none) {
+				A.RemoteRole = ROLE_None;
+				A.PlayOwnedSound(Sound'UnrealShare.General.Explo1',,12.0,,2200);
+			}
 			break;
 		case 1:
 			A = Player.Spawn(class'UT_Superring2',,, HitLocation+HitNormal*8,rotator(HitNormal));
@@ -127,7 +131,7 @@ static function PlayRing(
 			if (PlayerPawn(Source).PlayerReplicationInfo.Team == 1) {
 				A = Player.Spawn(class'NN_UT_RingExplosion',,, HitLocation+HitNormal*8,rotator(HitNormal));
 				A.RemoteRole = ROLE_None;
-				A = Player.Spawn(class'EnergyImpact');
+				A = Player.Spawn(class'EnergyImpact',,, HitLocation,rotator(HitNormal));
 				if (A != none) A.RemoteRole = ROLE_None;
 			} else {
 				A = Player.Spawn(class'UT_Superring2',,, HitLocation+HitNormal*8,rotator(HitNormal));
