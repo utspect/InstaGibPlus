@@ -195,6 +195,17 @@ state NormalFire
 	}
 }
 
+state ClientFiring
+{
+	simulated function AnimEnd() {
+		local bbPlayer O;
+		O = bbPlayer(Owner);
+		if (O != none)
+			O.ClientDebugMessage("Sniper AnimEnd"@O.ViewRotation.Yaw@O.ViewRotation.Pitch);
+		super.AnimEnd();
+	}
+}
+
 simulated function NN_TraceFire()
 {
 	local vector HitLocation, HitDiff, HitNormal, StartTrace, EndTrace, X,Y,Z;
