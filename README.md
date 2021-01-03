@@ -63,7 +63,7 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 35. [bUseOldMouseInput](#buseoldmouseinput)
 36. [SmoothVRController](#smoothvrcontroller)
 37. [bShowFPS](#bshowfps)
-38. [FPSSmoothingStrength](#fpssmoothingstrength)
+38. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
 39. [KillCamMinDelay](#killcammindelay)
 40. [bAllowWeaponShake](#ballowweaponshake)
 41. [bUseCrosshairFactory](#busecrosshairfactory)
@@ -338,7 +338,7 @@ This holds the PID settings for the controller thats smoothing the view of playe
 
 If `True`, show averaged FPS information in top right corner. If `False`, show nothing.
 
-## FPSSmoothingStrength
+## FPSCounterSmoothingStrength
 **Type: int**  
 **Default: 1000**  
 
