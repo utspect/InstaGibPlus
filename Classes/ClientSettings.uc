@@ -45,6 +45,7 @@ var config float  MinDodgeClickTime; // Minimum time between two presses of the 
 var config bool   bUseOldMouseInput;
 var config PIDControllerSettings SmoothVRController;
 var config bool   bShowFPS;
+var config int    FPSSmoothingStrength;
 var config float  KillCamMinDelay;
 var config bool   bAllowWeaponShake;
 
@@ -166,6 +167,7 @@ simulated function string DumpSettings() {
 		GetSetting("BeamDuration")$
 		GetSetting("BeamOriginMode")$
 		GetSetting("BeamDestinationMode")$
+		GetSetting("SSRRingType")$
 		GetSetting("DesiredNetUpdateRate")$
 		GetSetting("bNoSmoothing")$
 		GetSetting("bNoOwnFootsteps")$
@@ -176,6 +178,7 @@ simulated function string DumpSettings() {
 		GetSetting("bUseOldMouseInput")$
 		GetSetting("SmoothVRController")$
 		GetSetting("bShowFPS")$
+		GetSetting("FPSSmoothingStrength")$
 		GetSetting("KillCamMinDelay")$
 		GetSetting("bUseCrosshairFactory")$
 		DumpCrosshairLayers();
@@ -221,6 +224,7 @@ defaultproperties
 	bUseOldMouseInput=False
 	SmoothVRController=(p=0.09,i=0.05,d=0.00)
 	bShowFPS=False
+	FPSSmoothingStrength=1000
 	KillCamMinDelay=0.0
 	bAllowWeaponShake=True
 	bUseCrosshairFactory=False

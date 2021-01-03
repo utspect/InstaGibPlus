@@ -1045,7 +1045,11 @@ function xxSendSpreeToSpecs(optional int Sw, optional PlayerReplicationInfo Rela
 
 event PlayerTick( float Time )
 {
-	AverageClientDeltaTime = (AverageClientDeltaTime*999.0 + Time) / 1000.0;
+	if (Settings.FPSSmoothingStrength <= 0) {
+		Settings.FPSSmoothingStrength = 1;
+		Settings.SaveConfig();
+	}
+	AverageClientDeltaTime = (AverageClientDeltaTime * float(Settings.FPSSmoothingStrength - 1) + Time) / float(Settings.FPSSmoothingStrength);
 	xxPlayerTickEvents();
 	zzTick = Time;
 }

@@ -52,20 +52,22 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 24. [BeamDuration](#beamduration)
 25. [BeamOriginMode](#beamoriginmode)
 26. [BeamDestinationMode](#beamdestinationmode)
-27. [bNoOwnFootsteps](#bnoownfootsteps)
-28. [DesiredNetUpdateRate](#desirednetupdaterate)
-29. [FakeCAPInterval](#fakecapinterval)
-30. [bNoSmoothing](#bnosmoothing)
-31. [bLogClientMessages](#blogclientmessages)
-32. [bEnableKillCam](#benablekillcam)
-33. [MinDodgeClickTime](#mindodgeclicktime)
-34. [bUseOldMouseInput](#buseoldmouseinput)
-35. [SmoothVRController](#smoothvrcontroller)
-36. [bShowFPS](#bshowfps)
-37. [KillCamMinDelay](#killcammindelay)
-38. [bAllowWeaponShake](#ballowweaponshake)
-37. [bUseCrosshairFactory](#busecrosshairfactory)
-38. [CrosshairLayers](#crosshairlayers)
+27. [SSRRingType](#ssrringtype)
+28. [bNoOwnFootsteps](#bnoownfootsteps)
+29. [DesiredNetUpdateRate](#desirednetupdaterate)
+30. [FakeCAPInterval](#fakecapinterval)
+31. [bNoSmoothing](#bnosmoothing)
+32. [bLogClientMessages](#blogclientmessages)
+33. [bEnableKillCam](#benablekillcam)
+34. [MinDodgeClickTime](#mindodgeclicktime)
+35. [bUseOldMouseInput](#buseoldmouseinput)
+36. [SmoothVRController](#smoothvrcontroller)
+37. [bShowFPS](#bshowfps)
+38. [FPSSmoothingStrength](#fpssmoothingstrength)
+39. [KillCamMinDelay](#killcammindelay)
+40. [bAllowWeaponShake](#ballowweaponshake)
+41. [bUseCrosshairFactory](#busecrosshairfactory)
+42. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -255,6 +257,14 @@ The time the beam's visuals decay over.
 0. Beam ends where it ended on server
 1. Beam ends on target
 
+## SSRRingType
+**Type: int**  
+**Default: 1**  
+
+0. No Ring
+1. Default Ring
+2. Team-colored Ring
+
 ## bNoOwnFootsteps
 **Type: bool**  
 **Default: False**  
@@ -327,6 +337,12 @@ This holds the PID settings for the controller thats smoothing the view of playe
 **Default: False**  
 
 If `True`, show averaged FPS information in top right corner. If `False`, show nothing.
+
+## FPSSmoothingStrength
+**Type: int**  
+**Default: 1000**  
+
+How many samples to average FPS over.
 
 ## KillCamMinDelay
 **Type: float**  
