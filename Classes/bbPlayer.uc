@@ -1,11 +1,3 @@
-/**
- * @Author: TimTim
- * @Extended by: spect
- * @Class: bbPlayer
- * @Date: 2020-02-16 01:54:19
- * @Desc: The bread and butter of UT99 NewNet
- */
-
 class bbPlayer extends TournamentPlayer
 	config(User) abstract;
 
@@ -234,6 +226,7 @@ var bool bWasPaused;
 var float LastAddVelocityTimeStamp[4];
 var int LastAddVelocityIndex;
 
+// EyeHeight related variables
 var bool bForceZSmoothing;
 var int IgnoreZChangeTicks;
 var EPhysics OldPhysics;
@@ -1067,7 +1060,6 @@ simulated function ClientDemoMessage(coerce string S, optional name Type, option
 event ClientMessage(coerce string zzS, optional Name zzType, optional bool zzbBeep)
 {
 	zzPrevClientMessage = zzS;
-	//ClientDemoMessage(zzS);
 	Super.ClientMessage(zzS, zzType, zzbBeep);
 	zzPrevClientMessage = "";
 	if (Settings.bLogClientMessages)
@@ -2938,19 +2930,6 @@ function bbSavedMove PickRedundantMove(bbSavedMove Old, bbSavedMove M, vector Ac
 	return Old;
 }
 
-simulated function int GetServerMoveVersion() {
-	local string Version;
-	local ENetRole OldRole;
-
-	OldRole = Level.Role;
-	Level.Role = ROLE_Authority;
-	Version = Level.GetPropertyText("ServerMoveVersion");
-	Level.Role = OldRole;
-
-	if (Version == "") return 0;
-	return int(Version);
-}
-
 function xxReplicateMove(
 	float DeltaTime,
 	vector NewAccel,
@@ -3304,17 +3283,6 @@ function string forcedModelToString(int fm) {
 		case 17:
 			return "Class: Boss, Skin: Boss, Face: Xan";
 	}
-}
-
-simulated function setClientNetspeed() {
-
-	/**
-	 * @Author: spect
-	 * @Date: 2020-02-23 15:05:21
-	 * @Desc: Force client netspeed, gets set on every connect request, for now it remains at 20000
-	 */
-
-	ConsoleCommand("netspeed 20000");
 }
 
 exec function enableDebugData(bool b) {
