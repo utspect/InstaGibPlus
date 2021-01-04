@@ -13,6 +13,15 @@ var KillerInfo Killers[64];	// 32 should be enough...
 
 event PostBeginPlay()
 {
+	local Mutator M;
+	M = Level.Game.BaseMutator;
+	while (M != none) {
+		if (M.IsA('NNAnnouncer')) {
+			Destroy();
+			return;
+		}
+		M = M.NextMutator;
+	}
 	Super.PostBeginPlay();
 	mut = Level.Spawn(class'NNAnnouncer');
 	mut.NextMutator = Level.Game.BaseMutator;
