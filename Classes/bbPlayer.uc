@@ -2934,6 +2934,16 @@ function bbSavedMove PickRedundantMove(bbSavedMove Old, bbSavedMove M, vector Ac
 	return Old;
 }
 
+function bool CanMergeMove(bbSavedMove Pending, vector Accel) {
+	if (Pending.IGPlus_MergeCount >= 31)
+		return false;
+
+	if (bIs469Server || Pending.Delta >= 0.005)
+		return bForcePacketSplit == false && VSize(Accel - Pending.Acceleration) < 0.125 * AccelRate;
+
+	return true;
+}
+
 function xxReplicateMove(
 	float DeltaTime,
 	vector NewAccel,
@@ -2967,16 +2977,8 @@ function xxReplicateMove(
 	// Get a SavedMove actor to store the movement in.
 	if ( PendingMove != None )
 	{
-		if (bbSavedMove(PendingMove).IGPlus_MergeCount < 31 &&
-			(
-				bIs469Server == false || bIs469Client == false ||
-				(
-					bForcePacketSplit == false &&
-					VSize(NewAccel - PendingMove.Acceleration) < 0.125 * AccelRate
-				)
-			)
-		) {
-			PendMove = bbSavedMove(PendingMove);
+		PendMove = bbSavedMove(PendingMove);
+		if (CanMergeMove(PendMove, NewAccel)) {
 			//add this move to the pending move
 			PendMove.TimeStamp = Level.TimeSeconds;
 			PendMove.IGPlus_MergeCount += 1;
@@ -3021,7 +3023,7 @@ function xxReplicateMove(
 			PendMove.bForceAltFire = PendMove.bForceAltFire || bJustAltFired;
 			PendMove.Delta = TotalTime;
 		} else {
-			SendSavedMove(bbSavedMove(PendingMove));
+			SendSavedMove(PendMove);
 
 			if (SavedMoves == none) {
 				SavedMoves = PendingMove;
@@ -3097,8 +3099,10 @@ function xxReplicateMove(
 	NewMove.IGPlus_SavedLocation = Location;
 	NewMove.IGPlus_SavedVelocity = Velocity;
 
-	if ((PendingMove.Delta < NetMoveDelta - ClientUpdateTime) &&
-		(bIs469Server == false || bIs469Client == false || bForcePacketSplit == false))
+	if (PendingMove.Delta < NetMoveDelta - ClientUpdateTime && bForcePacketSplit == false)
+		return;
+
+	if (bIs469Server == false && PendingMove.Delta < 0.005) // pre-469 servers dont like updates for <5ms
 		return;
 
 	bForcePacketSplit = false;
