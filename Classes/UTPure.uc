@@ -37,6 +37,7 @@ var localized config bool bAdvancedTeamSay;	// Enable or disable Advanced TeamSa
 var localized config byte ForceSettingsLevel;	// 0 = off, 1 = PostNetBeginPlay, 2 = SpawnNotify, 3 = Intervalled
 var localized config bool bNoLockdown;		// Enable or disable to have Lockdown when players get hit by mini/pulse
 var localized config bool bWarmup;		// Enable or disable warmup. (bTournament only)
+var localized config int WarmupTimeLimit; // Warmup lasts at most this long
 var localized config bool bCoaches;		// Enable or disable coaching. (bTournament only)
 var localized config bool bAutoPause;		// Enable or disable autopause. (bTournament only)
 var localized config byte ForceModels;		// 0 = Disallow, 1 = Client Selectable, 2 = Forced
@@ -101,11 +102,11 @@ var bool bExludeKickers;
 replication
 {
 	unreliable if (Role == ROLE_Authority)
-		bExludeKickers;
+		bExludeKickers,
 		MaxPosError,
 		MinPosError,
 		NNAnnouncer,
-		zzAutoPauser,
+		zzAutoPauser;
 }
 
 //XC_Engine interface

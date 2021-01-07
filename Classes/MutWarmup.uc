@@ -4,7 +4,7 @@ var UTPure Pure;
 var int GameTimeLimit;
 var int GameFragLimit;
 var StatLog GameLocalLog;
-var StatLog GameWorldLog
+var StatLog GameWorldLog;
 
 const MaxWeapons = 32;
 var int WeaponCount;
@@ -108,9 +108,12 @@ function Reset() {
 
 function ResetGame(DeathMatchPlus G) {
 	local Pawn P;
+	local PlayerPawn PP;
 	foreach AllActors(class'Pawn', P) {
-		P.Health = 0;
-		P.Died(self, 'Suicided', P.Location);
+		if (P.IsA('Bot') || (P.IsA('PlayerPawn') && P.IsA('Spectator') == false)) {
+			P.Health = 0;
+			P.Died(P, 'Suicided', P.Location);
+		}
 	}
 
 	G.bOvertime = false;
@@ -121,7 +124,7 @@ function ResetGame(DeathMatchPlus G) {
 	G.LocalLog = GameLocalLog;
 	G.WorldLog = GameWorldLog;
 
-	foreach AllActors(class'PlayerPawn', P) {
+	foreach AllActors(class'PlayerPawn', PP) {
 		if (G.LocalLog != none)
 			G.LocalLog.LogPlayerConnect(P);
 		if (G.WorldLog != none)
