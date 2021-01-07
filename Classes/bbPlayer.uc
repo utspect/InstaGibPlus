@@ -2951,6 +2951,7 @@ function xxReplicateMove(
 	local float TotalTime, NetMoveDelta;
 	local EPhysics OldPhys;
 	local float AdjustAlpha;
+	local float RealDelta;
 
 	// Higor: process smooth adjustment.
 	if (IGPlus_AdjustLocationAlpha > 0)
@@ -3096,14 +3097,16 @@ function xxReplicateMove(
 	NewMove.IGPlus_SavedLocation = Location;
 	NewMove.IGPlus_SavedVelocity = Velocity;
 
-	if (PendingMove.Delta < NetMoveDelta - ClientUpdateTime && bForcePacketSplit == false)
+	RealDelta = PendingMove.Delta / Level.TimeDilation;
+
+	if (RealDelta < NetMoveDelta - ClientUpdateTime && bForcePacketSplit == false)
 		return;
 
 	if (bIs469Server == false && PendingMove.Delta < 0.005) // pre-469 servers dont like updates for <5ms
 		return;
 
 	bForcePacketSplit = false;
-	ClientUpdateTime = FMin(NetMoveDelta, PendingMove.Delta - NetMoveDelta + ClientUpdateTime);
+	ClientUpdateTime = FMin(NetMoveDelta, RealDelta - NetMoveDelta + ClientUpdateTime);
 	if ( SavedMoves == None )
 		SavedMoves = PendingMove;
 	else
