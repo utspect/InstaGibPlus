@@ -2,6 +2,7 @@ class bbPlayerReplicationInfo extends PlayerReplicationInfo;
 
 var string SkinName;
 var string FaceName;
+var string OriginalName;
 
 replication {
     reliable if (Role == ROLE_Authority)
