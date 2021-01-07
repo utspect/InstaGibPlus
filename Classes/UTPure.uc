@@ -15,7 +15,6 @@ var localized config float SniperDamagePri;
 
 var localized config bool SetPendingWeapon;
 var localized config bool NNAnnouncer;
-var bool DisablePortals;
 
 // Enable or disable.
 var localized config bool bUTPureEnabled;	// Possible to enable/disable UTPure without changing ini's
@@ -43,7 +42,6 @@ var localized config bool bAutoPause;		// Enable or disable autopause. (bTournam
 var localized config byte ForceModels;		// 0 = Disallow, 1 = Client Selectable, 2 = Forced
 var localized config byte ImprovedHUD;		// 0 = Disabled, 1 = Boots/Clock, 2 = Enhanced Team Info
 var localized config bool bDelayedPickupSpawn;	// Enable or disable delayed first pickup spawn.
-//var localized config bool bNoOvertime;		// Set to True to disable overtime.
 var localized config bool bTellSpectators;	// Enable or disable telling spectators of reason for kicks.
 var localized config string PlayerPacks[8];	// Config list of supported player packs
 var localized config int DefaultHitSound, DefaultTeamHitSound;
@@ -59,8 +57,6 @@ var localized config float KillCamDuration;
 var localized config bool bJumpingPreservesMomentum;
 var localized config bool bEnableSingleButtonDodge;
 var localized config bool bUseFlipAnimation;
-var string MapName;
-
 
 // Nice variables.
 var float zzTeamChangeTime;			// This would be to Prevent Team Change Spamming
@@ -98,25 +94,18 @@ var string zzDefaultPackages[8];
 // Auto Pause Handler
 var PureAutoPause	zzAutoPauser;
 
-// What server info is used
-var Class<ServerInfo> zzSI;
-
-var bbPlayer PlayerOwner;
-
 //Add the maplist where kickers will work using normal network
 var localized config string ExcludeMapsForKickers[128];
 var bool bExludeKickers;
 
 replication
 {
-	unreliable if (Role < ROLE_Authority)
-		zzbWarmupPlayers;
-
 	unreliable if (Role == ROLE_Authority)
-		MinPosError, MaxPosError, zzAutoPauser;
-
-	reliable if( Role==ROLE_Authority )
-		NNAnnouncer, bExludeKickers, getErrorDetails;
+		bExludeKickers;
+		MaxPosError,
+		MinPosError,
+		NNAnnouncer,
+		zzAutoPauser,
 }
 
 //XC_Engine interface
@@ -154,9 +143,6 @@ function PreBeginPlay()
 		zzDMP.HUDType = Class'PureTDMHUD';
 	else if (zzDMP.HUDType == Class'ChallengeHUD')
 		zzDMP.HUDType = Class'PureDMHUD';
-
-	zzSI = Class<ChallengeHUD>(zzDMP.HUDType).Default.ServerInfoClass;
-
 }
 
 function PrintVersionInfo() {
@@ -179,6 +165,7 @@ function PostBeginPlay()
 	local int	ppCnt;
 	local string	ServPacks, curMLHPack, sTag, fullpack;
 	local int XC_Version;
+	local string MapName;
 
 	Super.PostBeginPlay();
 
@@ -377,10 +364,6 @@ function bool IsMapExcluded (string MapName)
 }
 
 /////////////////////////////////////////////////////////////////////////
-
-function int getErrorDetails() {
-	return MinPosError;
-}
 
 function SetupClickBoard()
 {
@@ -731,7 +714,6 @@ function ModifyPlayer(Pawn Other)
 		}
 		else if (zzP != None)
 		{
-			zzP.ViewRotation = Other.ViewRotation;
 			zzP.zzTrackFOV = TrackFOV;
 			zzP.zzCVDelay = CenterViewDelay;
 			zzP.zzCVDeny = !bAllowCenterView;

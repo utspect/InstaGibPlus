@@ -210,7 +210,6 @@ simulated function NN_TraceFire()
 {
 	local vector HitLocation, HitDiff, HitNormal, StartTrace, EndTrace, X,Y,Z;
 	local actor Other;
-	local Pawn PawnOwner;
 	local bbPlayer bbP;
 	local bool bHeadshot;
 
@@ -219,16 +218,15 @@ simulated function NN_TraceFire()
 
 	yModInit();
 
-	PawnOwner = Pawn(Owner);
 	bbP = bbPlayer(Owner);
 	if (bbP == None)
 		return;
 
 	GetAxes(GV,X,Y,Z);
-	StartTrace = Owner.Location + bbP.Eyeheight * vect(0,0,1);
+	StartTrace = Owner.Location + bbP.EyeHeight * vect(0,0,1);
 	EndTrace = StartTrace + (100000 * vector(GV));
 
-	Other = bbP.NN_TraceShot(HitLocation,HitNormal,EndTrace,StartTrace,PawnOwner);
+	Other = bbP.NN_TraceShot(HitLocation,HitNormal,EndTrace,StartTrace,bbP);
 	if (Other.IsA('Pawn'))
 		HitDiff = HitLocation - Other.Location;
 

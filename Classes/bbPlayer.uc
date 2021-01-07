@@ -11,7 +11,6 @@ var(Sounds) Sound cHitSound[16];
 var int		zzNetspeed;		// The netspeed this client is using
 var bool	zzbForcedTick;		// True on server if Tick was forced (Called more than once)
 var bool	zzbBadCanvas;		// True on server if Canvas is NOT engine.canvas
-var bool	zzbVRChanged;		// True on server if client changed viewrotation at wrong time.
 var bool	zzbDemoRecording;	// True if client is recording demos.
 var float	zzClientTD;		// Client TimeDilation (Should always be same as server or HAX!)
 var bool bIsFinishedLoading;
@@ -66,7 +65,6 @@ var bbClientDemoSN zzDemoPlaybackSN;
 var bool bIsAlive;
 
 // Stuff
-var rotator	zzLastVR;		// The rotation after previous input.
 var float	zzDesiredFOV;		// Needed ?
 var float	zzOrigFOV;		// Original FOV for TrackFOV = 1
 var string	FakeClass;		// Class that the model replaces
@@ -381,7 +379,6 @@ replication
 		zzbBadCanvas,
 		zzbDemoRecording,
 		zzbForcedTick,
-		zzbVRChanged,
 		zzClientTD,
 		zzFalse,
 		zzNetspeed,
@@ -4840,12 +4837,7 @@ state PlayerWaiting
 
 	exec function AltFire(optional float F)
 	{
-		if (!bIsFinishedLoading) {
-			GoToState('PlayerWaiting');
-			return;
-		}
-		bReadyToPlay = true;
-		xxServerSetReadyToPlay();
+		Fire(F);
 	}
 
 }
@@ -6128,7 +6120,6 @@ event PreRender( canvas zzCanvas )
 
 	zzbDemoRecording = PureLevel != None && PureLevel.zzDemoRecDriver != None;
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas != None && zzCanvas.Class != Class'Canvas');
-	zzLastVR = ViewRotation;
 
 	Super.PreRender(zzCanvas);
 
@@ -6210,8 +6201,6 @@ event PostRender( canvas zzCanvas )
 			zzDelayedStartTime = 0.0;
 		}
 	}
-
-	zzbVRChanged = zzbVRChanged || (ViewRotation != zzLastVR);
 
 	if (bDrawDebugData) {
 		xxDrawDebugData(zzCanvas, 10, 120);
