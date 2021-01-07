@@ -5275,10 +5275,12 @@ state Dying
 		if ((Settings.bEnableKillCam && LastKiller != none) &&
 			(TimeDead >= FMax(KillCamDelay, Settings.KillCamMinDelay) && TimeDead < KillCamDelay + KillCamDuration)
 		) {
-			if (FastTrace(LastKiller.Location, Location))
-				KillCamTargetRotation = rotator(LastKiller.Location - Location);
-			DeltaRotation = Normalize(KillCamTargetRotation - ViewRotation);
-			ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-3.0 * DeltaTime)));
+			if (LastKiller != self) {
+				if (FastTrace(LastKiller.Location, Location))
+					KillCamTargetRotation = rotator(LastKiller.Location - Location);
+				DeltaRotation = Normalize(KillCamTargetRotation - ViewRotation);
+				ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-3.0 * DeltaTime)));
+			}
 		}
 	}
 
