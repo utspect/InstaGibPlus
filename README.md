@@ -55,19 +55,20 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 27. [SSRRingType](#ssrringtype)
 28. [bNoOwnFootsteps](#bnoownfootsteps)
 29. [DesiredNetUpdateRate](#desirednetupdaterate)
-30. [FakeCAPInterval](#fakecapinterval)
-31. [bNoSmoothing](#bnosmoothing)
-32. [bLogClientMessages](#blogclientmessages)
-33. [bEnableKillCam](#benablekillcam)
-34. [MinDodgeClickTime](#mindodgeclicktime)
-35. [bUseOldMouseInput](#buseoldmouseinput)
-36. [SmoothVRController](#smoothvrcontroller)
-37. [bShowFPS](#bshowfps)
-38. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
-39. [KillCamMinDelay](#killcammindelay)
-40. [bAllowWeaponShake](#ballowweaponshake)
-41. [bUseCrosshairFactory](#busecrosshairfactory)
-42. [CrosshairLayers](#crosshairlayers)
+30. [DesiredNetspeed](#desirednetspeed)
+31. [FakeCAPInterval](#fakecapinterval)
+32. [bNoSmoothing](#bnosmoothing)
+33. [bLogClientMessages](#blogclientmessages)
+34. [bEnableKillCam](#benablekillcam)
+35. [MinDodgeClickTime](#mindodgeclicktime)
+36. [bUseOldMouseInput](#buseoldmouseinput)
+37. [SmoothVRController](#smoothvrcontroller)
+38. [bShowFPS](#bshowfps)
+39. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
+40. [KillCamMinDelay](#killcammindelay)
+41. [bAllowWeaponShake](#ballowweaponshake)
+42. [bUseCrosshairFactory](#busecrosshairfactory)
+43. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -282,6 +283,13 @@ How often you want your client to update the server on your movement. The server
 This is here to provide players with constrained upload bandwidth a way to reduce the required upload bandwidth at the expense of greater susceptibility to packet loss, and glitches arising from it.
 
 Players with high upload bandwidth can set this to a high value to lessen the impact of packet loss.
+
+## DesiredNetspeed
+**Type: int**  
+**Default: 25000**  
+**Unit: B/s**  
+
+Always tries to keep your netspeed at the value of this variable, unless the server prevents this.
 
 ## FakeCAPInterval
 **Type: float**  

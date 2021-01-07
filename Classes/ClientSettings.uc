@@ -36,6 +36,7 @@ var config int    BeamOriginMode;
 var config int    BeamDestinationMode;
 var config int    SSRRingType;
 var config float  DesiredNetUpdateRate;
+var config int    DesiredNetspeed;
 var config bool   bNoSmoothing;
 var config bool   bNoOwnFootsteps;
 var config bool   bLogClientMessages;
@@ -215,6 +216,7 @@ defaultproperties
 	BeamDestinationMode=0
 	SSRRingType=1
 	DesiredNetUpdateRate=250.0
+	DesiredNetspeed=25000
 	bNoSmoothing=False
 	bNoOwnFootsteps=False
 	bLogClientMessages=True

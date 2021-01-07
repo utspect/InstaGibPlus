@@ -6144,6 +6144,7 @@ event PreRender( canvas zzCanvas )
 event PostRender( canvas zzCanvas )
 {
 	local int CH;
+	local int NetspeedTarget;
 
 	zzbBadCanvas = zzbBadCanvas || (zzCanvas.Class != Class'Canvas');
 
@@ -6186,11 +6187,17 @@ event PostRender( canvas zzCanvas )
 	xxRenderLogo(zzCanvas);
 	xxCleanAvars();
 
+	NetspeedTarget = Settings.DesiredNetspeed;
+	if (zzMinimumNetspeed != 0 && NetspeedTarget < zzMinimumNetspeed)
+		NetspeedTarget = zzMinimumNetspeed;
+	if (zzMaximumNetspeed != 0 && NetspeedTarget > zzMaximumNetspeed)
+		NetspeedTarget = zzMaximumNetspeed;
+
 	zzNetspeed = Player.CurrentNetspeed;
-	if (zzMinimumNetspeed != 0 && zzNetspeed < zzMinimumNetspeed)
-		ConsoleCommand("Netspeed"@zzMinimumNetspeed);
-	if (zzMaximumNetspeed != 0 && zzNetspeed > zzMaximumNetspeed)
-		ConsoleCommand("Netspeed"@zzMaximumNetspeed);
+	if (zzNetspeed != NetspeedTarget) {
+		ConsoleCommand("Netspeed"@NetspeedTarget);
+		zzNetspeed = NetspeedTarget;
+	}
 
 	if (zzDelayedStartTime != 0.0)
 	{
