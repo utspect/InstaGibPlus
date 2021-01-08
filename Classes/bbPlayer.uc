@@ -5311,9 +5311,9 @@ state Dying
 		ViewShake(DeltaTime);
 		ViewFlash(DeltaTime);
 
-		ClientUpdateTime -= DeltaTime;
-		if (ClientUpdateTime < 0) {
-			ClientUpdateTime += TimeBetweenNetUpdates;
+		ClientUpdateTime += DeltaTime;
+		if (ClientUpdateTime > TimeBetweenNetUpdates) {
+			ClientUpdateTime = 0;
 			xxServerMoveDead(Level.TimeSeconds, DeltaTime);
 		}
 	}
