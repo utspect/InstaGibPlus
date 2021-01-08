@@ -1762,30 +1762,7 @@ function ExtrapolationRestoreData() {
 }
 
 function WarpCompensation(float DeltaTime) {
-	local float TimeSinceLastUpdate;
-	local float ProcessTime;
-
 	if (Level.Pauser == "" && !bWasPaused) {
-		TimeSinceLastUpdate = Level.TimeSeconds - ServerTimeStamp;
-		ProcessTime = TimeSinceLastUpdate - class'UTPure'.default.MaxJitterTime;
-
-		if (class'UTPure'.default.bEnableJitterBounding &&
-			ProcessTime > AverageServerDeltaTime && bJustRespawned == false
-		) {
-			if (class'UTPure'.default.bEnableServerExtrapolation) {
-				UndoExtrapolation();
-				MoveAutonomous(ProcessTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
-				CurrentTimeStamp += ProcessTime;
-				ServerTimeStamp += ProcessTime;
-				ExtrapolationDelta = class'UTPure'.default.MaxJitterTime;
-			} else {
-				SimMoveAutonomous(TimeSinceLastUpdate);
-				CurrentTimeStamp += TimeSinceLastUpdate;
-				ServerTimeStamp += TimeSinceLastUpdate;
-			}
-			ClientDebugMessage("JitterBounding"@CurrentTimeStamp@TimeSinceLastUpdate);
-		}
-
 		if (class'UTPure'.default.bEnableServerExtrapolation &&
 			bExtrapolatedLastUpdate == false && ExtrapolationDelta > AverageServerDeltaTime
 		) {

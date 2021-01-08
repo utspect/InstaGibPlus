@@ -87,7 +87,6 @@ var localized config float MaxJitterTime;
 var localized config float MinNetUpdateRate;
 var localized config float MaxNetUpdateRate;
 var localized config bool bEnableServerExtrapolation;
-var localized config bool bEnableJitterBounding;
 var localized config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
@@ -1398,7 +1397,6 @@ defaultproperties
 	MaxTradeTimeMargin=0.1
 	TradePingMargin=0.5
 	bEnableServerExtrapolation=True
-	bEnableJitterBounding=True
 	KillCamDelay=0.0
 	KillCamDuration=2.0
 	bJumpingPreservesMomentum=False

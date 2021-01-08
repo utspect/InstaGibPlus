@@ -638,9 +638,8 @@ Server settings can be found inside InstaGibPlus.ini.
 45. [MinNetUpdateRate](#minnetupdaterate)
 46. [MaxNetUpdateRate](#maxnetupdaterate)
 47. [bEnableServerExtrapolation](#benableserverextrapolation)
-48. [bEnableJitterBounding](#benablejitterbounding)
-49. [ShowTouchedPackage](#showtouchedpackage)
-50. [ExcludeMapsForKickers](#excludemapsforkickers)
+48. [ShowTouchedPackage](#showtouchedpackage)
+49. [ExcludeMapsForKickers](#excludemapsforkickers)
 
 ## HeadshotDamage
 
@@ -965,7 +964,7 @@ List of map names (with or without .unr) for maps that should not have their Kic
 **Default: 0.1**  
 **Unit: s**  
 
-Maximum time between updates by clients that's tolerated by IG+. If a client exceeds this time and [bEnableJitterBounding](#benablejitterbounding) is `True` an update is generated for the client. Guideline setting is half the maximum supported ping.
+Maximum time between updates by clients that's tolerated by IG+. Allowed position error scales with time since last update, up to this amount of time. Guideline setting is half the maximum supported ping.
 
 ## MinNetUpdateRate
 
@@ -1013,13 +1012,6 @@ Trade uncertainty relative to shooters ping. Reasonable values range from 0 to 1
 **Default: True**  
 
 If enabled the server will extrapolate client movement when the client's movement updates are too far behind the server's timepoint.
-
-## bEnableJitterBounding
-
-**Type: bool**  
-**Default: True**  
-
-If enabled the server will generate movement updates for clients that havent sent updates in a while.
 
 ## KillCamDelay
 
