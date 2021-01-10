@@ -67,8 +67,9 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 39. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
 40. [KillCamMinDelay](#killcammindelay)
 41. [bAllowWeaponShake](#ballowweaponshake)
-42. [bUseCrosshairFactory](#busecrosshairfactory)
-43. [CrosshairLayers](#crosshairlayers)
+42. [bAutoReady](#bautoready)
+43. [bUseCrosshairFactory](#busecrosshairfactory)
+44. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -365,6 +366,12 @@ Minimum time between death and when KillCam starts rotating towards killer.
 
 If `True`, weapons can shake view. If `False` weapons can't shake view.
 
+## bAutoReady
+**Type: bool**  
+**Default: True**  
+
+If `True`, you ready up when spawning for the first time during warmup. If `False` you have to manually ready up using the [Ready](#ready) command, or using `mutate ready`, or by saying one of `ready`, `rdy`, `r`, `!ready`, `!rdy`.
+
 ## bUseCrosshairFactory
 **Type: bool**  
 **Default: False**  
@@ -446,6 +453,7 @@ Parameters marked `optional` do not have to be supplied.
 29. [DemoStart](#demostart)
 30. [ShowFPS](#showfps)
 31. [ShowOwnBeam](#showownbeam)
+32. [Ready](#ready)
 
 ## EnableDebugData
 **Parameters: (bool b)**  
@@ -557,6 +565,9 @@ Toggles displaying FPS information in the top right corner. See [bShowFPS](#bsho
 
 ## ShowOwnBeam
 Toggles showing your own beam when firing the SuperShockRifle. See [bHideOwnBeam](#bhideownbeam).
+
+## Ready
+Toggles ready state during warmup.
 
 # Server Installation
 

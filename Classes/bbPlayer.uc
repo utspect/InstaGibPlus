@@ -150,6 +150,7 @@ var string zzRemCmd;		// The command the server sent.
 var bool bRemValid;		// True when valid.
 
 var UTPure zzUTPure;		// The UTPure mutator.
+var MutWarmup WarmupMutator;
 
 var bool zzbDoScreenshot;	// True when we are about to do screenshot
 var bool zzbReportScreenshot;	// True when reporting the screenshot.
@@ -313,6 +314,7 @@ replication
 		bJumpingPreservesMomentum,
 		bUseFlipAnimation,
 		DuckFraction,
+		Ready,
 		SetPendingWeapon,
 		TimeBetweenNetUpdates,
 		xxClientKicker,
@@ -391,6 +393,7 @@ replication
 		DropFlag,
 		Go,
 		Hold,
+		ServerEnterWarmup,
 		ShowStats,
 		xxExplodeOther,
 		xxNN_AltFire,
@@ -4809,12 +4812,15 @@ state PlayerWaiting
 
 	exec function Fire(optional float F)
 	{
-		if (!bIsFinishedLoading) {
-			GoToState('PlayerWaiting');
-			return;
+		if (GetWarmup() != none) {
+			if (GetWarmup().IsInState('Warmup'))
+				ServerEnterWarmup();
+		} else {
+			if (!bIsFinishedLoading)
+				return;
+			xxServerSetReadyToPlay();
 		}
-		bReadyToPlay = true;
-		xxServerSetReadyToPlay();
+		bReadyToPlay = Settings.bAutoReady;
 	}
 
 	exec function AltFire(optional float F)
@@ -4987,6 +4993,13 @@ simulated function PlayRunning()
 	}
 }
 
+function ServerEnterWarmup() {
+	PlayerRestartState = default.PlayerRestartState;
+	GoToState(PlayerRestartState);
+	if (Level.Game.ReStartPlayer(self) == false)
+		GoToState('Dying');
+}
+
 function xxServerSetReadyToPlay()
 {
 	if (zzUTPure.zzDMP == None)
@@ -5002,7 +5015,6 @@ function xxServerSetReadyToPlay()
 		zzUTPure.zzDMP.ReStartPlayer(Self);
 		zzUTPure.zzbWarmupPlayers = True;
 	}
-
 }
 
 function GiveMeWeapons()
@@ -7571,6 +7583,18 @@ function ClientPutDown(Weapon Current, Weapon Next)
 	}
 }
 
+exec function Say(string Msg) {
+	if (Msg ~= "r" ||
+		Msg ~= "rdy" ||
+		Msg ~= "ready" ||
+		Msg ~= "!rdy" ||
+		Msg ~= "!ready"
+	) {
+		Ready();
+	}
+	super.Say(Msg);
+}
+
 //enhanced teamsay:
 exec function TeamSay( string Msg )
 {
@@ -8210,6 +8234,30 @@ exec function ShowOwnBeam() {
 function ClientShake(vector shake) {
 	if (Settings.bAllowWeaponShake)
 		super.ClientShake(shake);
+}
+
+exec function Ready() {
+	if (GetWarmup() != none) {
+		if (GetWarmup().IsInState('Warmup') == false)
+			return;
+	} else {
+		if (zzbIsWarmingUp == false)
+			return;
+	}
+
+	bReadyToPlay = !bReadyToPlay;
+	if (bReadyToPlay)
+		ClientMessage(DeathMatchPlus(Level.Game).ReadyMessage);
+	else
+		ClientMessage(DeathMatchPlus(Level.Game).NotReadyMessage);
+}
+
+function MutWarmup GetWarmup() {
+	if (WarmupMutator == none)
+		foreach AllActors(class'MutWarmup', WarmupMutator)
+			break;
+
+	return WarmupMutator;
 }
 
 defaultproperties

@@ -166,6 +166,7 @@ function PostBeginPlay()
 	local string	ServPacks, curMLHPack, sTag, fullpack;
 	local int XC_Version;
 	local string MapName;
+	local MutWarmup WarmupMutator;
 
 	Super.PostBeginPlay();
 
@@ -890,6 +891,10 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		}
 		if (CHSpectator(Sender) != None)
 			Sender.ClientMessage("As spectator, you may need to add 'mutate pure' + command (mutate pures howtickrate)");
+	}
+	else if (MutateString ~= "ready")
+	{
+		bbPlayer(Sender).Ready();
 	}
 	else if (MutateString ~= "EnablePure")
 	{

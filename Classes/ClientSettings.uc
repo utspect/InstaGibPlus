@@ -49,6 +49,7 @@ var config bool   bShowFPS;
 var config int    FPSCounterSmoothingStrength;
 var config float  KillCamMinDelay;
 var config bool   bAllowWeaponShake;
+var config bool   bAutoReady;
 
 struct CrosshairLayerDescr {
 	var() config string Texture;
@@ -181,6 +182,8 @@ simulated function string DumpSettings() {
 		GetSetting("bShowFPS")$
 		GetSetting("FPSCounterSmoothingStrength")$
 		GetSetting("KillCamMinDelay")$
+		GetSetting("bAllowWeaponShake")$
+		GetSetting("bAutoReady")$
 		GetSetting("bUseCrosshairFactory")$
 		DumpCrosshairLayers();
 }
@@ -229,5 +232,6 @@ defaultproperties
 	FPSCounterSmoothingStrength=1000
 	KillCamMinDelay=0.0
 	bAllowWeaponShake=True
+	bAutoReady=True
 	bUseCrosshairFactory=False
 }
