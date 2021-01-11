@@ -720,9 +720,11 @@ function ModifyPlayer(Pawn Other)
 			zzP.zzCVDeny = !bAllowCenterView;
        		zzP.zzbNoMultiWeapon = !bAllowMultiWeapon;
 			zzP.zzForceSettingsLevel = ForceSettingsLevel;
-			zzP.zzbForceDemo = bForceDemo;
-			zzP.zzbGameStarted = True;
-			zzP.zzbUsingTranslocator = DeathMatchPlus(Level.Game).bUseTranslocator;
+			if (bUseNewWarmup == false && zzDMP.CountDown < 1) {
+				// only set on first spawn after warmup
+				zzP.zzbForceDemo = bForceDemo;
+				zzP.zzbGameStarted = True;
+			}
 		}
 	}
 	Super.ModifyPlayer(Other);

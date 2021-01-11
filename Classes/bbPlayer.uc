@@ -26,7 +26,6 @@ var int		zzForceSettingsLevel;	// The Anti-Default/Ini check force.
 var bool	zzbForceModels;		// Allow/Enable/Force Models for clients.
 var bool	zzbForceDemo;		// Set true by server to force client to do demo.
 var bool	zzbGameStarted;	// Set to true when Pawn spawns first time (ModifyPlayer)
-var bool	zzbUsingTranslocator;
 var byte	HUDInfo;		// 0 = Off, 1 = boots/timer, 2 = Team Info too.
 
 // Debug Stuff
@@ -305,7 +304,6 @@ replication
 		xxClientAcceptMutator,
 		zzbForceDemo,
 		zzbGameStarted,
-		zzbUsingTranslocator,
 		zzForceSettingsLevel;
 
 	// Server->Client
@@ -5028,23 +5026,15 @@ function GiveMeWeapons()
 	local bool bAlready;
 	local Mutator M;
 	local string Tmp;
+	local bool bSavedRequireReady;
 
 	DMP = DeathMatchPlus(Level.Game);
 	if (DMP == None) return;			// If DMP is none, I would never be here, so darnit really? :P
 
-	if (DMP.BaseMutator != None)			// Add the default weapon
-		WeaponList[WeapCnt++] = string(DMP.BaseMutator.MutatedDefaultWeapon());
-
-	M = Level.Game.BaseMutator;
-	while(M != none) {
-		if (M.IsA('LCArenaMutator')) {
-			if (bool(M.GetPropertyText("bReplaceAllWeapons"))) {
-				Tmp = M.GetPropertyText("MainWeapClass");
-				WeaponList[WeapCnt++] = Mid(Tmp, 6, Len(Tmp)-7);
-			}
-		}
-		M = M.NextMutator;
-	}
+	bSavedRequireReady = DMP.bRequireReady;
+	DMP.bRequireReady = false;
+	Level.Game.AddDefaultInventory(self);
+	DMP.bRequireReady = bSavedRequireReady;
 
 	ForEach AllActors(Class'Weapon', w)
 	{	// Find the rest of the weapons around the map.
