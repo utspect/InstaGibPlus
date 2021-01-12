@@ -263,6 +263,9 @@ var ClientSettings Settings;
 var int FrameCount;
 var float AverageClientDeltaTime;
 
+var bool bPaused;
+var float GRISecondCountOffset;
+
 var NavigationPoint DelayedNavPoint;
 
 replication
@@ -5024,8 +5027,6 @@ function GiveMeWeapons()
 	local string WeaponList[32], s;
 	local int WeapCnt, x;				// Grr, wish UT had dyn arrays :P
 	local bool bAlready;
-	local Mutator M;
-	local string Tmp;
 	local bool bSavedRequireReady;
 
 	DMP = DeathMatchPlus(Level.Game);
@@ -5823,7 +5824,15 @@ function xxPlayerTickEvents()
 				xxServerReceiveStuff( zzClientTTarget.Location, zzClientTTarget.Velocity );
 			zzLastStuffUpdate = CurrentTime;
 		}
+	}
 
+	if (GameReplicationInfo != none && (bPaused ^^ (Level.Pauser != ""))) {
+		bPaused = !bPaused;
+		if (bPaused) {
+			GRISecondCountOffset = Level.TimeSeconds - GameReplicationInfo.SecondCount;
+		} else {
+			GameReplicationInfo.SecondCount = Level.TimeSeconds - GRISecondCountOffset;
+		}
 	}
 
 	if (zzbIsWarmingUp)

@@ -36,6 +36,9 @@ var rotator LastRotation;
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
 
+var bool bPaused;
+var float GRISecondCountOffset;
+
 replication
 {
 	// Server -> Client
@@ -147,6 +150,15 @@ function int TickPID(out PIDController C, float DeltaTime, int Error) {
 
 function xxPlayerTickEvents()
 {
+	if (GameReplicationInfo != none && (bPaused ^^ (Level.Pauser != ""))) {
+		bPaused = !bPaused;
+		if (bPaused) {
+			GRISecondCountOffset = Level.TimeSeconds - GameReplicationInfo.SecondCount;
+		} else {
+			GameReplicationInfo.SecondCount = Level.TimeSeconds - GRISecondCountOffset;
+		}
+	}
+
 	CheckHitSound();
 }
 
@@ -345,17 +357,6 @@ event PostNetBeginPlay() {
 
 event PostRender( canvas Canvas )
 {
-	local GameReplicationInfo GRI;
-
-	if (Level.Pauser != "")				// Pause Fix/Hack.
-		ForEach AllActors(Class'GameReplicationInfo',GRI)
-		{
-			if (GRI != None)
-			{
-				GRI.SecondCount = Level.TimeSeconds;
-			}
-		}
-
 	if ( myHud != None )
 		myHUD.PostRender(Canvas);
 	else if ( (Viewport(Player) != None) && (HUDType != None) )
