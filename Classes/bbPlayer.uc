@@ -266,6 +266,7 @@ var float AverageClientDeltaTime;
 var bool bPaused;
 var float GRISecondCountOffset;
 
+var int BrightskinMode;
 var NavigationPoint DelayedNavPoint;
 
 replication
@@ -313,6 +314,7 @@ replication
 	reliable if ( Role == ROLE_Authority )
 		bIsAlive,
 		bJumpingPreservesMomentum,
+		BrightskinMode,
 		bUseFlipAnimation,
 		DuckFraction,
 		Ready,
@@ -884,7 +886,7 @@ event Possess()
 		DefaultTeamHitSound = zzUTPure.Default.DefaultTeamHitSound;
 		bForceDefaultHitSounds = zzUTPure.Default.bForceDefaultHitSounds;
 		xxSetHitSounds(DefaultHitSound, DefaultTeamHitSound, bForceDefaultHitSounds);
-
+		BrightskinMode = class'UTPure'.default.BrightskinMode;
 
 		xxSetSniperSpeed(class'UTPure'.default.SniperSpeed);
 		xxSetDefaultWeapon(Level.Game.BaseMutator.MutatedDefaultWeapon().name);
@@ -6106,8 +6108,13 @@ function ApplyForcedSkins(PlayerReplicationInfo PRI) {
 }
 
 function ApplyBrightskins(PlayerReplicationInfo PRI) {
-	if (Settings.bUnlitSkins)
+	if (BrightskinMode >= 1 && Settings.bUnlitSkins && PRI.Owner.IsInState('FeigningDeath') == false) {
 		PRI.Owner.bUnlit = true;
+		Pawn(PRI.Owner).Weapon.bUnlit = true;
+	} else {
+		PRI.Owner.bUnlit = false;
+		Pawn(PRI.Owner).Weapon.bUnlit = false;
+	}
 }
 
 event PreRender( canvas zzCanvas )

@@ -210,8 +210,3 @@ function Timer()
 	else
 		Super.Timer();
 }
-
-defaultproperties
-{
-	OverTime=-1
-}

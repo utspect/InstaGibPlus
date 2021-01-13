@@ -58,6 +58,7 @@ var localized config float KillCamDuration;
 var localized config bool bJumpingPreservesMomentum;
 var localized config bool bEnableSingleButtonDodge;
 var localized config bool bUseFlipAnimation;
+var localized config int BrightskinMode; //0=None,1=Unlit
 
 // Nice variables.
 var float zzTeamChangeTime;			// This would be to Prevent Team Change Spamming
@@ -1408,4 +1409,5 @@ defaultproperties
 	KillCamDuration=2.0
 	bJumpingPreservesMomentum=False
 	bEnableSingleButtonDodge=True
+	BrightskinMode=1
 }
