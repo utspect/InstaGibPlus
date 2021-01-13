@@ -6108,13 +6108,19 @@ function ApplyForcedSkins(PlayerReplicationInfo PRI) {
 }
 
 function ApplyBrightskins(PlayerReplicationInfo PRI) {
-	if (BrightskinMode >= 1 && Settings.bUnlitSkins && PRI.Owner.IsInState('FeigningDeath') == false) {
-		PRI.Owner.bUnlit = true;
-		Pawn(PRI.Owner).Weapon.bUnlit = true;
-	} else {
-		PRI.Owner.bUnlit = false;
-		Pawn(PRI.Owner).Weapon.bUnlit = false;
+	local name Anim;
+
+	if (BrightskinMode >= 1 && Settings.bUnlitSkins) {
+		Anim = PRI.Owner.AnimSequence;
+		if (Anim != 'DeathEnd' && Anim != 'DeathEnd2' && Anim != 'DeathEnd3') {
+			PRI.Owner.bUnlit = true;
+			Pawn(PRI.Owner).Weapon.bUnlit = true;
+			return;
+		}
 	}
+
+	PRI.Owner.bUnlit = false;
+	Pawn(PRI.Owner).Weapon.bUnlit = false;
 }
 
 event PreRender( canvas zzCanvas )
