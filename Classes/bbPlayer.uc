@@ -2340,6 +2340,9 @@ function xxServerMoveDead(
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
 
+	bFire = 0;
+	bAltFire = 0;
+
 	Acceleration = vect(0,0,0);
 }
 
@@ -4114,7 +4117,8 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 	if( Event != '' )
 		foreach AllActors( class 'Actor', A, Event )
 			A.Trigger( Self, Killer );
-
+	if (Weapon.IsA('TournamentWeapon'))
+		TournamentWeapon(Weapon).bCanClientFire = false;
 	Velocity.Z *= 1.3;
 	if ( Gibbed(damageType) )
 	{
