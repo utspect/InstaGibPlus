@@ -3157,7 +3157,7 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 		Velocity,
 		MiscData,
 		MiscData2,
-		((ViewRotation.Pitch & 0xFFFF) << 16) | (ViewRotation.Yaw & 0xFFFF),
+		((Move.IGPlus_SavedViewRotation.Pitch & 0xFFFF) << 16) | (Move.IGPlus_SavedViewRotation.Yaw & 0xFFFF),
 		Base,
 		OldMoveData1,
 		OldMoveData2
