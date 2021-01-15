@@ -6113,6 +6113,7 @@ function ApplyForcedSkins(PlayerReplicationInfo PRI) {
 
 function ApplyBrightskins(PlayerReplicationInfo PRI) {
 	local name Anim;
+	local Pawn P;
 
 	if (BrightskinMode >= 1 && Settings.bUnlitSkins) {
 		Anim = PRI.Owner.AnimSequence;
@@ -6123,8 +6124,12 @@ function ApplyBrightskins(PlayerReplicationInfo PRI) {
 		}
 	}
 
-	PRI.Owner.bUnlit = false;
-	Pawn(PRI.Owner).Weapon.bUnlit = false;
+	P = Pawn(PRI.Owner);
+	if (P != none) {
+		P.bUnlit = false;
+		if (P.Weapon != none)
+			P.Weapon.bUnlit = false;
+	}
 }
 
 event PreRender( canvas zzCanvas )
