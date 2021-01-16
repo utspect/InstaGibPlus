@@ -7346,7 +7346,8 @@ exec function GetWeapon(class<Weapon> NewWeaponClass )
 	local Inventory Inv;
 
 	if ( (Inventory == None) || (NewWeaponClass == None)
-		|| ((Weapon != None) && Weapon.IsA(NewWeaponClass.Name)) )
+		|| ((Weapon != None) && Weapon.IsA(NewWeaponClass.Name))
+		|| IsInState('Dying') )
 		return;
 
 	for ( Inv=Inventory; Inv!=None; Inv=Inv.Inventory )
@@ -7369,7 +7370,7 @@ exec function SwitchWeapon(byte F)
 {
 	local weapon newWeapon;
 
-	if ( bShowMenu || Level.Pauser!="" )
+	if ( bShowMenu || Level.Pauser!="" || IsInState('Dying') )
 	{
 		if ( myHud != None )
 			myHud.InputNumber(F);
@@ -7401,7 +7402,7 @@ exec function PrevWeapon()
 	local Weapon realWeapon, w, Prev;
 	local bool bFoundWeapon;
 
-	if( bShowMenu || Level.Pauser!="" )
+	if( bShowMenu || Level.Pauser!="" || IsInState('Dying') )
 		return;
 	if ( Weapon == None )
 	{
@@ -7480,7 +7481,7 @@ exec function NextWeapon()
 	local Weapon realWeapon, w, Prev;
 	local bool bFoundWeapon;
 
-	if( bShowMenu || Level.Pauser!="" )
+	if( bShowMenu || Level.Pauser!="" || IsInState('Dying') )
 		return;
 	if ( Weapon == None )
 	{
