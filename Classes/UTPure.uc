@@ -726,6 +726,8 @@ function ModifyPlayer(Pawn Other)
 				zzP.zzbForceDemo = bForceDemo;
 				zzP.zzbGameStarted = True;
 			}
+			zzP.bHidden = true;
+			zzP.SetCollision(false, false, false);
 		}
 	}
 	Super.ModifyPlayer(Other);

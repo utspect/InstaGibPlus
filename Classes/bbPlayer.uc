@@ -2209,6 +2209,11 @@ function xxServerMove(
 	if ((Level.Pauser == "") && bClientPaused == false && (DeltaTime > 0)) {
 		UndoExtrapolation();
 
+		if (bHidden && (IsInState('PlayerWalking') || IsInState('PlayerSwimming'))) {
+			bHidden = false;
+			SetCollision(true, true, true);
+		}
+
 		// HACK
 		// See below for explanation. Undoing extrapolation can trigger this as well.
 		if (Physics == PHYS_Falling)
