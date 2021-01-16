@@ -5108,9 +5108,11 @@ state PlayerWarmup extends PlayerWalking
 	{
 		local float NewJumpZ;
 
-		NewJumpZ = Default.JumpZ * 1.1;
-		if (NewJumpZ > 0)
-			JumpZ = NewJumpZ;
+		if (zzUTPure != none && zzUTPure.zzDMP != none && zzUTPure.zzDMP.Role == ROLE_Authority) {
+			NewJumpZ = Default.JumpZ * zzUTPure.zzDMP.PlayerJumpZScaling();
+			if (NewJumpZ > 0)
+				JumpZ = NewJumpZ;
+		}
 
 		zzbIsWarmingUp = true;
 		GiveMeWeapons();
