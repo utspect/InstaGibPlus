@@ -6061,6 +6061,14 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 }
 
 function int GetForcedSkinForPlayer(PlayerReplicationInfo PRI) {
+	local string Anim;
+
+	Anim = string(PRI.Owner.AnimSequence);
+	if (Left(Anim, 8) ~= "DeathEnd" || Left(Anim, 4) ~= "Dead") {
+		// Dont force skin when feigning death to match actual death animations
+		return -1;
+	}
+
 	if (GameReplicationInfo.bTeamGame && PRI.Team == PlayerReplicationInfo.Team) {
 		if (PRI.bIsFemale) {
 			return Settings.DesiredTeamSkinFemale;
@@ -6074,6 +6082,7 @@ function int GetForcedSkinForPlayer(PlayerReplicationInfo PRI) {
 			return Settings.DesiredSkin;
 		}
 	}
+
 	return -1;
 }
 
@@ -6122,7 +6131,7 @@ function ApplyBrightskins(PlayerReplicationInfo PRI) {
 
 	if (BrightskinMode >= 1 && Settings.bUnlitSkins) {
 		Anim = string(P.AnimSequence);
-		if (Left(Anim, 5) ~= "Death") {
+		if (Left(Anim, 5) ~= "Death" || Left(Anim, 4) ~= "Dead") {
 			//
 		} else {
 			P.bUnlit = true;
