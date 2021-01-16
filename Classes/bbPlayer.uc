@@ -1072,7 +1072,7 @@ event ClientMessage(coerce string zzS, optional Name zzType, optional bool zzbBe
 	Super.ClientMessage(zzS, zzType, zzbBeep);
 	zzPrevClientMessage = "";
 	if (Settings.bLogClientMessages)
-		Log(zzS, zzType);
+		Log("["$FrameCount@Level.TimeSeconds$"]"@zzS, zzType);
 }
 
 function ClientDebugMessage(coerce string S, optional name Type, optional bool bBeep) {
@@ -2557,11 +2557,12 @@ exec function Fire( optional float F )
 	}
 
 	xxEnableCarcasses();
+	if (Weapon != none)
+		ClientDebugMessage("Fire"@Weapon.Name@ViewRotation);
 	if (!bNewNet || !xxWeaponIsNewNet()) {
 		if (xxCanFire())
 			Super.Fire(F);
 	} else if (Role < ROLE_Authority && (Level.Game == none || Level.Game.bGameEnded == false)) {
-		ClientDebugMessage("Fire"@ViewRotation.Yaw@ViewRotation.Pitch);
 		if (Weapon != none)
 			Weapon.ClientFire(1);
 	} else {
@@ -4544,13 +4545,14 @@ ignores SeePlayer, HearNoise, Bump;
 		}
 
 		if (DodgeDir == DODGE_Active) {
-			if (Level.NetMode == NM_Client)
-				ClientDebugMessage("Landed");
 			DodgeDir = DODGE_Done;
 			DodgeClickTimer = 0.0;
 		} else {
 			DodgeDir = DODGE_None;
 		}
+
+		if (Level.NetMode == NM_Client)
+			ClientDebugMessage("Landed");
 	}
 
 	simulated function Dodge(eDodgeDir DodgeMove)
