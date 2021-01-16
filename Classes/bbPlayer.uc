@@ -6114,24 +6114,27 @@ function ApplyForcedSkins(PlayerReplicationInfo PRI) {
 }
 
 function ApplyBrightskins(PlayerReplicationInfo PRI) {
-	local name Anim;
+	local string Anim;
 	local Pawn P;
 
+	P = Pawn(PRI.Owner);
+	if (P == none) return;
+
 	if (BrightskinMode >= 1 && Settings.bUnlitSkins) {
-		Anim = PRI.Owner.AnimSequence;
-		if (Anim != 'DeathEnd' && Anim != 'DeathEnd2' && Anim != 'DeathEnd3') {
-			PRI.Owner.bUnlit = true;
-			Pawn(PRI.Owner).Weapon.bUnlit = true;
+		Anim = string(P.AnimSequence);
+		if (Left(Anim, 5) ~= "Death") {
+			//
+		} else {
+			P.bUnlit = true;
+			if (P.Weapon != none)
+				P.Weapon.bUnlit = true;
 			return;
 		}
 	}
 
-	P = Pawn(PRI.Owner);
-	if (P != none) {
-		P.bUnlit = false;
-		if (P.Weapon != none)
-			P.Weapon.bUnlit = false;
-	}
+	P.bUnlit = false;
+	if (P.Weapon != none)
+		P.Weapon.bUnlit = false;
 }
 
 event PreRender( canvas zzCanvas )
