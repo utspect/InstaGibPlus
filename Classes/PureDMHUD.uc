@@ -181,7 +181,7 @@ simulated function DrawStatus(Canvas Canvas)
 
 	if ((bbPlayer(PlayerOwner) != None && bbPlayer(PlayerOwner).HUDInfo > 0) || bbCHSpectator(PlayerOwner) != None)
 	{
-		class'PureHUDHelper'.static.DrawTime(self, Canvas, X, Y);
+		class'PureHUDHelper'.static.DrawTime(self, Canvas);
 
 		if (bJumpBoots)
 		{

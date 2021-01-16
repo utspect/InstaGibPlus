@@ -25,25 +25,41 @@ static function int GetClockTime(HUD H) {
 	return Rem;
 }
 
-static function DrawTime(ChallengeHUD H, Canvas C, float X, float Y) {
+static function DrawTime(ChallengeHUD H, Canvas C) {
 	local int Min, Sec;
 	local float FullSize;
+	local float X, Y;
 	local float XL;
 	local int Seconds;
+	local float CharX, CharY;
+	local float CharXScaled, CharYScaled;
+
+	CharX = 25.0;
+	CharY = 64.0;
+	CharXScaled = CharX * H.Scale;
+	CharYScaled = CharY * H.Scale;
 
 	C.DrawColor = H.HUDColor;
 
 	Seconds = GetClockTime(H);
+	Min = Seconds / 60;
+	Sec = Seconds % 60;
 
-	XL = 0;
-	if (Seconds >= 200*60)
-		XL = 25;
-	else if (Seconds >= 100*60)
-		XL = 15;
+	if (Min >= 200)
+		XL = 25; // extra full 7-Seg char
+	else if (Min >= 100)
+		XL = 15; // extra 1 as 7-Seg char
+	else
+		XL = 0;
 
-	if (H.bHideStatus && H.bHideAllWeapons) {
-		X = 0.5*C.ClipX - 384*H.Scale - XL*H.Scale;
-		Y = C.ClipY - 64*H.Scale;
+	if (H.bHideStatus) {
+		if (H.bHideAllWeapons) {
+			X = 0.5*C.ClipX - 384*H.Scale - XL*H.Scale;
+			Y = C.ClipY - 64*H.Scale;
+		} else {
+			X = C.ClipX - 140*H.Scale - XL*H.Scale;
+			Y = 128*H.Scale;
+		}
 	} else {
 		X = C.ClipX - 128*H.StatusScale*H.Scale - 140*H.Scale - XL*H.Scale;
 		Y = 128*H.Scale;
@@ -54,26 +70,25 @@ static function DrawTime(ChallengeHUD H, Canvas C, float X, float Y) {
 	C.Style = H.Style;
 	C.DrawColor = H.WhiteColor;
 
-	Min = Seconds / 60;
-	Sec = Seconds % 60;
 	X += XL * H.Scale;
 
 	if (H.Level.bHighDetailMode)
 		C.Style = ERenderStyle.STY_Translucent;
 
-	FullSize = 25 * H.Scale * 4 + 16 * H.Scale; //At least 4 digits and : (extra size not counted)
+	FullSize = CharXScaled * 4 + 12 * H.Scale; //At least 4 digits and : (extra size not counted)
 
 	C.SetPos( X + 64 * H.Scale, Y + 12 * H.Scale);
 	C.CurX -= (FullSize / 2);
 	if (Min >= 100) {
 		C.CurX -= XL * H.Scale;
-		C.DrawTile(Texture'BotPack.HudElements1', H.Scale*XL, 64*H.Scale, ((Min / 100)%10) * 25 + (25 - XL), 0, XL, 64.0);
+		C.DrawTile(Texture'BotPack.HudElements1', H.Scale*XL, CharYScaled, ((Min/100)%10)*CharX + (CharX - XL), 0, XL, CharY);
+		Min = Min%100;
 	}
-	C.DrawTile(Texture'BotPack.HudElements1', H.Scale*25, 64*H.Scale, ((Min/10)%10) *25, 0, 25.0, 64.0);
-	C.DrawTile(Texture'BotPack.HudElements1', H.Scale*25, 64*H.Scale, (Min%10)*25, 0, 25.0, 64.0);
+	C.DrawTile(Texture'BotPack.HudElements1', CharXScaled, CharYScaled, (Min/10)*CharX, 0, CharX, CharY);
+	C.DrawTile(Texture'BotPack.HudElements1', CharXScaled, CharYScaled, (Min%10)*CharX, 0, CharX, CharY);
+	C.CurX -= 7 * H.Scale;
+	C.DrawTile(Texture'BotPack.HudElements1', CharXScaled, CharYScaled, 25, 64, CharX, CharY); //DOUBLE DOT HERE
 	C.CurX -= 6 * H.Scale;
-	C.DrawTile(Texture'BotPack.HudElements1', H.Scale*25, 64*H.Scale, 25, 64, 25.0, 64.0); //DOUBLE DOT HERE
-	C.CurX -= 6 * H.Scale;
-	C.DrawTile(Texture'BotPack.HudElements1', H.Scale*25, 64*H.Scale, ((Sec/10)%10) *25, 0, 25.0, 64.0);
-	C.DrawTile(Texture'BotPack.HudElements1', H.Scale*25, 64*H.Scale, (Sec%10)*25, 0, 25.0, 64.0);
+	C.DrawTile(Texture'BotPack.HudElements1', CharXScaled, CharYScaled, (Sec/10)*CharX, 0, CharX, CharY);
+	C.DrawTile(Texture'BotPack.HudElements1', CharXScaled, CharYScaled, (Sec%10)*CharX, 0, CharX, CharY);
 }
