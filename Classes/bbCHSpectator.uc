@@ -38,6 +38,7 @@ var ClientSettings Settings;
 
 var bool bPaused;
 var float GRISecondCountOffset;
+var float LastDeltaTime;
 
 replication
 {
@@ -229,6 +230,7 @@ auto state InvalidState
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -239,6 +241,7 @@ state FeigningDeath
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -249,6 +252,7 @@ state PlayerFlying
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -259,6 +263,7 @@ state PlayerWaiting
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -269,6 +274,7 @@ state PlayerSpectating
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -279,6 +285,7 @@ state PlayerWaking
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -289,6 +296,7 @@ state Dying
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -299,6 +307,7 @@ state GameEnded
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -332,6 +341,7 @@ function SmoothRotation(float DeltaTime)
 
 event PlayerTick( float DeltaTime )
 {
+	LastDeltaTime = DeltaTime;
 	xxPlayerTickEvents();
 	SmoothRotation(DeltaTime);
 }
@@ -360,10 +370,9 @@ event PostRender( canvas Canvas )
 	if ( myHud != None )
 		myHUD.PostRender(Canvas);
 	else if ( (Viewport(Player) != None) && (HUDType != None) )
-	{
-//		HUDType.Default.bAlwaysTick = True;
 		myHUD = spawn(HUDType, self);
-	}
+
+	class'bbPlayerStatics'.static.DrawFPS(Canvas, MyHud, Settings, LastDeltaTime);
 
 	if (Stat != None && Stat.bShowStats)
 	{
@@ -471,6 +480,7 @@ auto state CheatFlying
 
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		ForceOldServerMove();
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
@@ -578,6 +588,7 @@ state PlayerWalking
 
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -593,6 +604,7 @@ state PlayerSwimming
 
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -920,6 +932,15 @@ exec function FindFlag()
 
 exec function ShowStats()
 {
+}
+
+exec function ShowFPS() {
+	Settings.bShowFPS = !Settings.bShowFPS;
+	Settings.SaveConfig();
+	if (Settings.bShowFPS)
+		ClientMessage("FPS shown!", 'IGPlus');
+	else
+		ClientMessage("FPS hidden!", 'IGPlus');
 }
 
 defaultproperties
