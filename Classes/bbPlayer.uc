@@ -268,6 +268,10 @@ var float GRISecondCountOffset;
 var int BrightskinMode;
 var NavigationPoint DelayedNavPoint;
 
+var vector VelocityBeforeTeleporter;
+var rotator RotationBeforeTeleporter;
+var Teleporter LastTouchedTeleporter;
+
 replication
 {
 	//	Client->Demo
@@ -519,6 +523,9 @@ simulated event bool PreTeleport(Teleporter T) {
 		return true;
 	}
 
+	VelocityBeforeTeleporter = Velocity;
+	RotationBeforeTeleporter = Rotation;
+	LastTouchedTeleporter = T;
 	bForcePacketSplit = true;
 	return false;
 }
@@ -1558,7 +1565,7 @@ function IGPlus_ClientReplayMove(bbSavedMove M) {
 		bDoRun = (MoveIndex < M.RunChangeIndex) ^^ M.bRun;
 		bDoDuck = (MoveIndex < M.DuckChangeIndex) ^^ M.bDuck;
 
-		MoveAutonomous(dt, bDoRun, bDoDuck, bDoJump, DoDodge, M.Acceleration, rot(0,0,0));
+		IGPlus_MoveAutonomous(dt, bDoRun, bDoDuck, bDoJump, DoDodge, M.Acceleration, rot(0,0,0));
 	}
 
 	M.IGPlus_SavedLocation = Location;
@@ -1714,6 +1721,31 @@ function xxSetPendingWeapon(Weapon W)
 }
 
 /**
+ * Corrects velocity after going through Teleporters
+ */
+function CorrectTeleporterVelocity() {
+	if (LastTouchedTeleporter != none && LastTouchedTeleporter.Class == class'Teleporter') {
+		// only deal with Engine.Teleporter
+		// other classes might do weird custom stuff
+		Velocity = vector(Rotation) * VSize(VelocityBeforeTeleporter);
+	}
+}
+
+function IGPlus_MoveAutonomous(
+	float DeltaTime,
+	bool NewbRun,
+	bool NewbDuck,
+	bool NewbPressedJump,
+	eDodgeDir DodgeMove,
+	vector newAccel,
+	rotator DeltaRot
+) {
+	LastTouchedTeleporter = none;
+	MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, newAccel, DeltaRot);
+	CorrectTeleporterVelocity();
+}
+
+/**
  * Splits a large DeltaTime into chunks reasonable enough for MoveAutonomous,
  * so players dont warp through walls
  */
@@ -1724,7 +1756,7 @@ function SimMoveAutonomous(float DeltaTime) {
 	SimSteps = Max(1, int(DeltaTime / AverageServerDeltaTime)); // handle (DeltaTime < AverageServerDeltaTime)
 	SimTime = DeltaTime / SimSteps;
 	while(SimSteps > 0) {
-		MoveAutonomous(SimTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
+		IGPlus_MoveAutonomous(SimTime, bRun>0, bDuck>0, false, DODGE_None, Acceleration, rot(0,0,0));
 		SimSteps--;
 	}
 }
@@ -1989,7 +2021,7 @@ function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMov
 		ClientDebugMessage("Received Old Dodge"@DodgeMove@CurrentTimeStamp@OldTimeStamp);
 
 	UndoExtrapolation();
-	MoveAutonomous(OldTimeStamp - CurrentTimeStamp, OldRun, OldDuck, OldJump, DodgeMove, Accel, rot(0,0,0));
+	IGPlus_MoveAutonomous(OldTimeStamp - CurrentTimeStamp, OldRun, OldDuck, OldJump, DodgeMove, Accel, rot(0,0,0));
 	CurrentTimeStamp = OldTimeStamp;
 
 	return true;
@@ -2249,7 +2281,7 @@ function xxServerMove(
 			bRunActual = (MoveIndex < RunChangeIndex) ^^ NewbRun;
 			bDuckActual = (MoveIndex < DuckChangeIndex) ^^ NewbDuck;
 
-			MoveAutonomous(SimStep, bRunActual, bDuckActual, bDoJump, DoDodge, Accel, DeltaRot / MergeCount);
+			IGPlus_MoveAutonomous(SimStep, bRunActual, bDuckActual, bDoJump, DoDodge, Accel, DeltaRot / MergeCount);
 		}
 
 		bWasPaused = false;
@@ -3063,6 +3095,8 @@ function xxReplicateMove(
 	bJustAltFired = false;
 	OldPhys = Physics;
 
+	LastTouchedTeleporter = none;
+
 	// Simulate the movement locally.
 	ProcessMove(NewMove.Delta, NewMove.Acceleration, NewMove.DodgeMove, DeltaRot);
 	AutonomousPhysics(NewMove.Delta);
@@ -3072,6 +3106,8 @@ function xxReplicateMove(
 		zzbFire = bFire;
 		zzbAltFire = bAltFire;
 	}
+
+	CorrectTeleporterVelocity();
 
 	// Decide whether to hold off on move
 	// send if dodge, jump, or fire unless really too soon, or if newmove.delta big enough
