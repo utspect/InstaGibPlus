@@ -268,6 +268,7 @@ var float GRISecondCountOffset;
 var int BrightskinMode;
 var NavigationPoint DelayedNavPoint;
 
+var float OffsetZBeforeTeleporter;
 var vector VelocityBeforeTeleporter;
 var rotator RotationBeforeTeleporter;
 var Teleporter LastTouchedTeleporter;
@@ -523,6 +524,7 @@ simulated event bool PreTeleport(Teleporter T) {
 		return true;
 	}
 
+	OffsetZBeforeTeleporter = Location.Z - T.Location.Z;
 	VelocityBeforeTeleporter = Velocity;
 	RotationBeforeTeleporter = Rotation;
 	LastTouchedTeleporter = T;
@@ -1724,12 +1726,24 @@ function xxSetPendingWeapon(Weapon W)
  * Corrects velocity after going through Teleporters
  */
 function CorrectTeleporterVelocity() {
+	local rotator Delta;
+	local Teleporter T;
+
 	if (LastTouchedTeleporter != none && LastTouchedTeleporter.Class == class'Teleporter') {
 		// only deal with Engine.Teleporter
 		// other classes might do weird custom stuff
 		if (LastTouchedTeleporter.bChangesVelocity == false) {
+			Delta = rotator(VelocityBeforeTeleporter) - RotationBeforeTeleporter;
 			// Teleporter doesnt change velocity, so we can do it ourselves
-			Velocity = vector(Rotation) * VSize(VelocityBeforeTeleporter);
+			Velocity = vector(Rotation+Delta) * VSize(VelocityBeforeTeleporter*vect(1,1,0)) * vect(1,1,0);
+			Velocity.Z = VelocityBeforeTeleporter.Z;
+
+			foreach RadiusActors(class'Teleporter', T, 16)
+				break;
+
+			T.Disable('Touch');
+			MoveSmooth(vect(0,0,1)*OffsetZBeforeTeleporter);
+			T.Enable('Touch');
 		}
 	}
 }
