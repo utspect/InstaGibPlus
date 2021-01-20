@@ -1727,7 +1727,10 @@ function CorrectTeleporterVelocity() {
 	if (LastTouchedTeleporter != none && LastTouchedTeleporter.Class == class'Teleporter') {
 		// only deal with Engine.Teleporter
 		// other classes might do weird custom stuff
-		Velocity = vector(Rotation) * VSize(VelocityBeforeTeleporter);
+		if (LastTouchedTeleporter.bChangesVelocity == false) {
+			// Teleporter doesnt change velocity, so we can do it ourselves
+			Velocity = vector(Rotation) * VSize(VelocityBeforeTeleporter);
+		}
 	}
 }
 
