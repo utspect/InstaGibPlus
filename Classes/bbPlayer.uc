@@ -2401,6 +2401,7 @@ function xxServerMoveDead(
 	bAltFire = 0;
 
 	Acceleration = vect(0,0,0);
+	Velocity = vect(0,0,0);
 }
 
 function float CalculateLocError(float DeltaTime, EPhysics Phys, vector ClientVel) {
