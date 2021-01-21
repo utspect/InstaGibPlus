@@ -1729,8 +1729,13 @@ function CorrectTeleporterVelocity() {
 	local rotator Delta;
 	local Teleporter T;
 
-	if (LastTouchedTeleporter != none && LastTouchedTeleporter.Class == class'Teleporter') {
-		// only deal with Engine.Teleporter
+	if (LastTouchedTeleporter != none &&
+		(
+			LastTouchedTeleporter.Class == class'Teleporter' ||
+			LastTouchedTeleporter.Class == class'VisibleTeleporter'
+		)
+	) {
+		// only deal with base game teleporters
 		// other classes might do weird custom stuff
 		if (LastTouchedTeleporter.bChangesVelocity == false) {
 			Delta = rotator(VelocityBeforeTeleporter) - RotationBeforeTeleporter;
