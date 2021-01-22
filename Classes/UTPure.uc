@@ -1411,5 +1411,6 @@ defaultproperties
 	KillCamDuration=2.0
 	bJumpingPreservesMomentum=False
 	bEnableSingleButtonDodge=True
+	bUseFlipAnimation=True
 	BrightskinMode=1
 }
