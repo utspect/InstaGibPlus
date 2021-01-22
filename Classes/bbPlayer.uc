@@ -96,7 +96,6 @@ var int DefaultHitSound, DefaultTeamHitSound;
 var bool bForceDefaultHitSounds;
 var bool zzbNN_Tracing;
 var Weapon zzPendingWeapon;
-var bool bIsAlpha;
 var bool bJustRespawned;
 var float LastCAPTime; // ServerTime when last CAP was sent
 var float NextRealCAPTime;
@@ -6406,9 +6405,6 @@ simulated function xxRenderLogo(canvas zzC)
 	}
 
 	if (zzbLogoDone) {
-		if (bIsAlpha) {
-			xxDrawAlphaWarning(zzC, 10, zzC.ClipY - 128);
-		}
 		return;
 	}
 
@@ -6427,28 +6423,6 @@ simulated function xxRenderLogo(canvas zzC)
 		zzFadeValue = 1.0;
 
 	xxDrawLogo(zzC, 10, zzC.ClipY - 128, zzFadeValue);
-}
-
-
-simulated function xxDrawAlphaWarning(canvas zzC, float zzx, float zzY) {
-
-	/**
-	 * @Author: spect
-	 * @Date: 2020-02-18 02:23:10
-	 * @Desc: Draw a big and visible ALPHA WARNING text in the left hand corner so people complain less. It didn't work, they complained anyway.
-	 */
-
-	if (MyHUD == None)
-		return;
-
-	zzC.Style = ERenderStyle.STY_Translucent;
-	zzC.DrawColor = ChallengeHud(MyHud).WhiteColor;
-	zzC.SetPos(zzx,zzY);
-	zzC.Font = ChallengeHud(MyHud).MyFonts.GetBigFont(zzC.ClipX);
-	zzC.DrawText("ALPHA VERSION");
-	zzC.setPos(zzx, zzY + 20);
-	zzC.DrawText("FOR TESTING ONLY!");
-	zzC.Style = ERenderStyle.STY_Normal;
 }
 
 exec function ShowFPS() {
@@ -8318,7 +8292,6 @@ defaultproperties
 	HUDInfo=1
 	TeleRadius=210
 	NN_ProjLength=256
-	bIsAlpha=False
 	bIsFinishedLoading=False
 	bDrawDebugData=False
 	TimeBetweenNetUpdates=0.01
