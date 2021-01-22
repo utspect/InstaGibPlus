@@ -37,6 +37,7 @@ var localized config bool bAdvancedTeamSay;	// Enable or disable Advanced TeamSa
 var localized config byte ForceSettingsLevel;	// 0 = off, 1 = PostNetBeginPlay, 2 = SpawnNotify, 3 = Intervalled
 var localized config bool bNoLockdown;		// Enable or disable to have Lockdown when players get hit by mini/pulse
 var localized config bool bWarmup;		// Enable or disable warmup. (bTournament only)
+var localized config bool bUseNewWarmup;
 var localized config int WarmupTimeLimit; // Warmup lasts at most this long
 var localized config bool bCoaches;		// Enable or disable coaching. (bTournament only)
 var localized config bool bAutoPause;		// Enable or disable autopause. (bTournament only)
@@ -93,7 +94,8 @@ var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
 
 // Auto Pause Handler
-var PureAutoPause	zzAutoPauser;
+var PureAutoPause zzAutoPauser;
+var MutWarmup WarmupMutator;
 
 //Add the maplist where kickers will work using normal network
 var localized config string ExcludeMapsForKickers[128];
@@ -103,6 +105,7 @@ replication
 {
 	unreliable if (Role == ROLE_Authority)
 		bExludeKickers,
+		bUseNewWarmup,
 		MaxPosError,
 		MinPosError,
 		NNAnnouncer,
@@ -167,7 +170,6 @@ function PostBeginPlay()
 	local string	ServPacks, curMLHPack, sTag, fullpack;
 	local int XC_Version;
 	local string MapName;
-	local MutWarmup WarmupMutator;
 
 	Super.PostBeginPlay();
 
@@ -274,6 +276,12 @@ function PostBeginPlay()
 
 	if (bDelayedPickupSpawn)
 		Spawn(Class'PureDPS');
+
+	if (bWarmup && bUseNewWarmup) {
+		WarmupMutator = Spawn(class'MutWarmup');
+		WarmupMutator.Pure = self;
+		Level.Game.BaseMutator.AddMutator(WarmupMutator);
+	}
 
 // Necessary functions to let the "bExludeKickers" list work
 /////////////////////////////////////////////////////////////////////////
@@ -721,10 +729,18 @@ function ModifyPlayer(Pawn Other)
 			zzP.zzCVDeny = !bAllowCenterView;
        		zzP.zzbNoMultiWeapon = !bAllowMultiWeapon;
 			zzP.zzForceSettingsLevel = ForceSettingsLevel;
-			if (bUseNewWarmup == false && zzDMP.CountDown < 1) {
-				// only set on first spawn after warmup
-				zzP.zzbForceDemo = bForceDemo;
-				zzP.zzbGameStarted = True;
+			if (bUseNewWarmup) {
+				if (WarmupMutator != none && WarmupMutator.IsInState('WarmupEnded')) {
+					// only set on first spawn after warmup
+					zzP.zzbForceDemo = bForceDemo;
+					zzP.zzbGameStarted = True;
+				}
+			} else {
+				if (zzDMP.CountDown < 1) {
+					// only set on first spawn after warmup
+					zzP.zzbForceDemo = bForceDemo;
+					zzP.zzbGameStarted = True;
+				}
 			}
 			zzP.bHidden = true;
 			zzP.SetCollision(false, false, false);

@@ -11,17 +11,57 @@ var int WeaponCount;
 var string WeaponsToGive[MaxWeapons];
 
 var localized string ReadyText;
+var localized color ReadyColor;
 var localized string NotReadyText;
+var localized color NotReadyColor;
 var localized string WarmupText;
 
 var PlayerPawn HUDOwner;
+var bool bInWarmup;
+
+replication {
+	reliable if (Role == ROLE_Authority)
+		bInWarmup;
+}
+
+simulated function PostRender(Canvas C) {
+	local string Message;
+	local color MessageColor;
+	local float X, Y;
+
+	if (NextHUDMutator != none)
+		NextHUDMutator.PostRender(C);
+
+	if (HUDOwner == none || bInWarmup == false)
+		return;
+
+	// Write WARMUP - READY or WARMUP - NOT READY on screen
+	if (TournamentPlayer(HUDOwner).bReadyToPlay) {
+		Message = WarmupText@"-"@ReadyText;
+		MessageColor = ReadyColor;
+	} else {
+		Message = WarmupText@"-"@NotReadyText;
+		MessageColor = NotReadyColor;
+	}
+
+	class'CanvasUtils'.static.SaveCanvas(C);
+
+	C.Font = ChallengeHUD(HUDOwner.myHUD).MyFonts.GetBigFont(C.SizeX);
+	C.DrawColor = MessageColor;
+	C.TextSize(Message, X, Y);
+	C.SetPos(C.SizeX*0.5 - X*0.5, C.SizeY*0.8);
+	C.DrawText(Message);
+
+	class'CanvasUtils'.static.RestoreCanvas(C);
+}
 
 state auto Warmup {
 	function BeginState() {
 		local DeathMatchPlus DMP;
 		DMP = DeathMatchPlus(Level.Game);
 
-		DMP.bRequireReady = false;
+		DMP.bRequireReady = true;
+		DMP.CountDown = 0;
 		GameTimeLimit = DMP.TimeLimit;
 		DMP.TimeLimit = class'UTPure'.default.WarmupTimeLimit;
 		DMP.RemainingTime = DMP.TimeLimit*60;
@@ -34,17 +74,9 @@ state auto Warmup {
 		DMP.WorldLog = none;
 
 		DetermineWeapons();
-		SetTimer(1.0, true);
-	}
+		SetTimer(Level.TimeDilation, true);
 
-	simulated function PostRender(Canvas C) {
-		if (NextHUDMutator != none)
-			NextHUDMutator.PostRender(C);
-
-		if (HUDOwner == none)
-			return;
-
-		// Write WARMUP - READY or WARMUP - NOT READY on screen
+		bInWarmup = true;
 	}
 
 	function ModifyPlayer(Pawn P) {
@@ -60,24 +92,60 @@ state auto Warmup {
 	}
 
 	function Timer() {
+		local DeathMatchPlus DMP;
+		DMP = DeathMatchPlus(Level.Game);
+
+		// deal with changing gamespeed
+		if (TimerRate != Level.TimeDilation)
+			SetTimer(Level.TimeDilation, true);
+
 		ResetPlayers();
 		ResetTeams();
 
-		if (AreAllPlayersReady())
-			GoToState('WarmupEnded');
+		if (AreAllPlayersReady() || DMP.RemainingTime <= 10)
+			GoToState('WarmupCountdown');
+	}
+}
+
+state WarmupCountdown {
+	function BeginState() {
+		local Pawn P;
+		local DeathMatchPlus DMP;
+		DMP = DeathMatchPlus(Level.Game);
+
+		foreach AllActors(class'Pawn', P) {
+			if (P.IsA('Bot') || (P.IsA('PlayerPawn') && P.IsA('Spectator') == false)) {
+				P.Health = 0;
+				P.Died(P, 'Suicided', P.Location);
+				P.PlayerReStartState = 'PlayerSpectating';
+				//P.GoToState(P.PlayerReStartState);
+				DMP.CountDown = 1;
+				Level.Game.RestartPlayer(P);
+				DMP.CountDown = 0;
+			}
+		}
+
+		DMP.RemainingTime = 10;
+		DMP.GameReplicationInfo.RemainingMinute = DMP.RemainingTime;
+
+		ResetPlayers();
+		ResetTeams();
+
+		bInWarmup = false;
 	}
 
-	function bool HandleEndGame() {
-		super.HandleEndGame();
-		GoToState('WarmupEnded');
-		return true;
+	function Timer() {
+		local DeathMatchPlus DMP;
+		DMP = DeathMatchPlus(Level.Game);
+
+		if (DMP.RemainingTime <= 1)
+			GoToState('WarmupEnded');
 	}
 }
 
 state WarmupEnded {
 Begin:
-	SetTimer(-1.0, false);
-	Sleep(0.0);
+	SetTimer(0.0, false);
 	Reset();
 	GoToState('');
 }
@@ -98,26 +166,23 @@ function bool AreAllPlayersReady() {
 }
 
 function Reset() {
-	ResetGame(DeathMatchPlus(Level.Game));
 	ResetPlayers();
 	ResetPickups();
 	ResetCarcasses();
 	ResetProjectiles();
 	ResetObjectives();
+	ResetGame(DeathMatchPlus(Level.Game));
 }
 
 function ResetGame(DeathMatchPlus G) {
-	local Pawn P;
 	local PlayerPawn PP;
-	foreach AllActors(class'Pawn', P) {
-		if (P.IsA('Bot') || (P.IsA('PlayerPawn') && P.IsA('Spectator') == false)) {
-			P.Health = 0;
-			P.Died(P, 'Suicided', P.Location);
-		}
-	}
+	local TournamentGameReplicationInfo TGRI;
+
+	TGRI = TournamentGameReplicationInfo(G.GameReplicationInfo);
 
 	G.bOvertime = false;
 	G.bRequireReady = true;
+	G.CountDown = 0;
 	G.TimeLimit = GameTimeLimit;
 	G.RemainingTime = GameTimeLimit*60;
 	G.FragLimit = GameFragLimit;
@@ -126,10 +191,12 @@ function ResetGame(DeathMatchPlus G) {
 
 	foreach AllActors(class'PlayerPawn', PP) {
 		if (G.LocalLog != none)
-			G.LocalLog.LogPlayerConnect(P);
+			G.LocalLog.LogPlayerConnect(PP);
 		if (G.WorldLog != none)
-			G.WorldLog.LogPlayerConnect(P);
+			G.WorldLog.LogPlayerConnect(PP);
 	}
+
+	G.StartMatch();
 }
 
 function ResetPlayers() {
@@ -271,6 +338,10 @@ simulated function PostBeginPlay() {
 
 defaultproperties {
 	ReadyText="READY"
+	ReadyColor=(R=255,G=255,B=255,A=255)
 	NotReadyText="NOT READY"
+	NotReadyColor=(R=255,G=255,B=255,A=255)
 	WarmupText="Warmup"
+	bInWarmup=True
+	bAlwaysRelevant=True
 }
