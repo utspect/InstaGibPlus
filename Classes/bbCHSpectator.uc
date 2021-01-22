@@ -367,10 +367,27 @@ event PostNetBeginPlay() {
 
 event PostRender( canvas Canvas )
 {
-	if ( myHud != None )
-		myHUD.PostRender(Canvas);
-	else if ( (Viewport(Player) != None) && (HUDType != None) )
-		myHUD = spawn(HUDType, self);
+	local int CH;
+
+	if ((MyHud == none) && (Viewport(Player) != None) && (HUDType != None))
+		MyHud = spawn(HUDType, self);
+
+	if (Settings.bUseCrosshairFactory) {
+		CH = MyHud.Crosshair;
+		MyHud.Crosshair = ChallengeHUD(MyHud).CrosshairCount;
+	}
+	MyHud.PostRender(Canvas);
+	if (Settings.bUseCrosshairFactory) {
+		if (ChallengeHUD(MyHud).bShowInfo == false &&
+			bShowScores == false &&
+			ChallengeHUD(MyHud).bForceScores == false &&
+			bBehindView == false &&
+			Level.LevelAction == LEVACT_None
+		) {
+			class'bbPlayerStatics'.static.DrawCrosshair(Canvas, Settings);
+		}
+		MyHud.Crosshair = CH;
+	}
 
 	class'bbPlayerStatics'.static.DrawFPS(Canvas, MyHud, Settings, LastDeltaTime);
 

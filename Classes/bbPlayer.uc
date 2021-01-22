@@ -6262,7 +6262,7 @@ event PostRender( canvas zzCanvas )
 			Weapon != none &&
 			Weapon.bOwnsCrossHair == false
 		) {
-			xxDrawCrossHair(zzCanvas, 0, 0);
+			class'bbPlayerStatics'.static.DrawCrosshair(zzCanvas, Settings);
 		}
 		MyHud.Crosshair = CH;
 	}
@@ -6305,33 +6305,6 @@ event PostRender( canvas zzCanvas )
 	class'bbPlayerStatics'.static.DrawFPS(zzCanvas, MyHud, Settings, zzTick);
 
 	FrameCount += 1;
-}
-
-simulated function xxDrawCrossHair(Canvas C, int X, int Y) {
-	local float XLength, YLength;
-	local byte Style;
-	local CrosshairLayer L;
-
-	X = C.ClipX / 2;
-	Y = C.ClipY / 2;
-
-	Style = C.Style;
-
-	for (L = Settings.BottomLayer; L != none; L = L.Next) {
-		XLength = L.ScaleX * L.Texture.USize;
-		YLength = L.ScaleY * L.Texture.VSize;
-		C.Style = L.Style;
-
-		C.bNoSmooth = (L.bSmooth == false);
-		C.SetPos(
-			X - 0.5 * XLength + L.OffsetX,
-			Y - 0.5 * YLength + L.OffsetY);
-		C.DrawColor = L.Color;
-		C.DrawTile(L.Texture, XLength, YLength, 0, 0, L.Texture.USize, L.Texture.VSize);
-	}
-
-	C.bNoSmooth = True;
-	C.Style = Style;
 }
 
 exec simulated Function TellConsole()

@@ -23,3 +23,28 @@ static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float Delt
 	class'CanvasUtils'.static.RestoreCanvas(C);
 }
 
+static function DrawCrosshair(Canvas C, ClientSettings Settings) {
+	local float X, Y;
+	local float XLength, YLength;
+	local CrosshairLayer L;
+
+	X = C.ClipX / 2;
+	Y = C.ClipY / 2;
+
+	class'CanvasUtils'.static.SaveCanvas(C);
+
+	for (L = Settings.BottomLayer; L != none; L = L.Next) {
+		XLength = L.ScaleX * L.Texture.USize;
+		YLength = L.ScaleY * L.Texture.VSize;
+		C.Style = L.Style;
+
+		C.bNoSmooth = (L.bSmooth == false);
+		C.SetPos(
+			X - 0.5 * XLength + L.OffsetX,
+			Y - 0.5 * YLength + L.OffsetY);
+		C.DrawColor = L.Color;
+		C.DrawTile(L.Texture, XLength, YLength, 0, 0, L.Texture.USize, L.Texture.VSize);
+	}
+
+	class'CanvasUtils'.static.RestoreCanvas(C);
+}
