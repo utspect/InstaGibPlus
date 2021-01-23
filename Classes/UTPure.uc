@@ -82,7 +82,6 @@ var int zzAntiTimerListState;			// The state of the pickups, calculated each tic
 // Pause control (for Event PlayerCalcView)
 var bool	zzbPaused;			// Game has been paused at one time.
 var float	zzPauseCountdown;		// Give 120 seconds of "ignore FT"
-var localized config int MinPosError;
 var localized config int MaxPosError;
 var localized config int MaxHitError;
 var localized config float MaxJitterTime;
@@ -107,7 +106,6 @@ replication
 		bExludeKickers,
 		bUseNewWarmup,
 		MaxPosError,
-		MinPosError,
 		NNAnnouncer,
 		zzAutoPauser;
 }
@@ -911,7 +909,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 			Sender.ClientMessage("- ShowDemos (Will show who is recording demos)");
 		}
 		if (CHSpectator(Sender) != None)
-			Sender.ClientMessage("As spectator, you may need to add 'mutate pure' + command (mutate pures howtickrate)");
+			Sender.ClientMessage("As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickrate)");
 	}
 	else if (MutateString ~= "ready")
 	{
@@ -1013,7 +1011,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 			Sender.ClientMessage(BADminText);
 	}
 	else if (MutateString ~= "geterrordata") {
-		Sender.ClientMessage("MinPosError:"@MinPosError@"MaxPosError:"@MaxPosError);
+		Sender.ClientMessage("MaxPosError:"@MaxPosError);
 	}
 	else if (Left(MutateString,7) ~= "KICKID ")
 	{
@@ -1412,7 +1410,6 @@ defaultproperties
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
-	MinPosError=100
 	MaxPosError=1000
 	MaxHitError=10000
 	MaxJitterTime=0.1
