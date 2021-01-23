@@ -1951,7 +1951,7 @@ function IGPlus_CheckClientError() {
 		clientForcedPosition = ClientLocAbs;
 		zzLastClientErr = 0;
 		bMovedToNewLoc = xxNewMoveSmooth(ClientLocAbs);
-		if (bMovedToNewLoc)
+		if (bMovedToNewLoc && ClientPhysics == Physics)
 			Velocity = ClientVel;
 	}
 	if (bCanTraceNewLoc == false) {
@@ -1959,7 +1959,8 @@ function IGPlus_CheckClientError() {
 		OldLoc = Location;
 
 		bCanTeleport = false;
-		xxNewSetLocation(ClientLocAbs, ClientVel);
+		if (SetLocation(ClientLocAbs) && ClientPhysics == Physics)
+			Velocity = ClientVel;
 		bCanTeleport = true;
 
 		if (Carried != None) {
@@ -2306,26 +2307,6 @@ function xxServerMove(
 		}
 
 		bWasPaused = false;
-	}
-
-	// HACK
-	// This fixes players skating around. I can't explain why they start doing
-	// that. Maybe because we're dodging in a place where we can't dodge?
-	// Symptoms of skating around are:
-	//  a) Tweening between DuckWlkL and JumpLGFR at 0.25Hz (see PlayInAir)
-	//  b) DodgeMove is DODGE_None, Physics are still PHYS_Falling
-	// This hack uses the second set of symptoms to getect when were about to
-	// start skating around and forces the Pawn to land. No idea about side-
-	// effects yet.
-	if (Physics != PHYS_Falling) {
-		bWasDodging = false;
-	} else {
-		bWasDodging = bWasDodging || DodgeDir == DODGE_Active;
-		if (bWasDodging && DodgeMove == DODGE_None) {
-			bWasDodging = false;
-			SetPhysics(PHYS_Walking);
-			Landed(vect(0,0,1));
-		}
 	}
 
 	if (SetPendingWeapon) {
