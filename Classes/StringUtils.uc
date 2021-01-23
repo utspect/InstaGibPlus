@@ -90,3 +90,16 @@ static function string FormatFloat(float F, optional int Decimals) {
 	}
 	return Result $ int(F);
 }
+
+static function string CommonPrefix(string A, string B) {
+	local int Common;
+	local int Length;
+
+	Length = Min(Len(A), Len(B));
+
+	for (Common = 0; Common < Length; ++Common)
+		if (Mid(A, Common, 1) != Mid(B, Common, 1))
+			break;
+
+	return Left(A, Common);
+}
