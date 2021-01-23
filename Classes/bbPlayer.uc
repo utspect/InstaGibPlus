@@ -272,6 +272,8 @@ var vector VelocityBeforeTeleporter;
 var rotator RotationBeforeTeleporter;
 var Teleporter LastTouchedTeleporter;
 
+var StringUtils StringUtils;
+
 replication
 {
 	//	Client->Demo
@@ -537,7 +539,7 @@ simulated function Touch( actor Other )
 	{
 		if (Class'UTPure'.Default.ShowTouchedPackage)
 		{
-			ClientMessage(class'StringUtils'.static.PackageOfObject(Other));
+			ClientMessage(StringUtils.PackageOfObject(Other));
 		}
 
 		if ((Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker')) {
@@ -2344,7 +2346,7 @@ function xxServerMoveDead(
 	if (TimeStamp > Level.TimeSeconds)
 		TimeStamp = Level.TimeSeconds;
 
-	if ( CurrentTimeStamp >= TimeStamp )
+	if (CurrentTimeStamp >= TimeStamp)
 		return;
 
 	ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
@@ -4876,9 +4878,8 @@ state PlayerWaiting
 }
 
 /******************************************
- *				Animations
- ******************************************
-*/
+ *				Animations                *
+ ******************************************/
 
 simulated function PlayTurning()
 {
@@ -7856,109 +7857,48 @@ simulated function xxClientDemoBolt(Actor A, optional Vector V, optional Rotator
 	PBolt(A).CheckBeam(X, Delta);
 }
 
-// AUTODEMO CODE
-function string xxExtractTag(string zzNicks[32], int zzCount)
-{
-	local int zzShortNickSize,zzPartSize;
-	local string zzShortNick,zzPart;
-	local int zzx, zzY, zzLoc, zzFound;
-	local string zzParts[256];
-	local int zzPartFound[256],zzPartCount;
-	local string zzBestPart;
-	local int zzBestFindNumber;
-	local bool zzbAlready;
+function string xxFindClanTags() {
+	local PlayerReplicationInfo PRI;
+	local string Tags[4];
+	local int TeamSize[4];
+	local int MaxTeams;
+	local int Team;
+	local int MixCount;
+	local string Result;
 
-	zzShortNickSize = 999;
-	for (zzx = 0; zzx < zzCount; zzx++)		// Find Shortest nick
-	{
-		if (Len(zzNicks[zzx]) < zzShortNickSize)
-		{
-			zzShortNickSize = Len(zzNicks[zzx]);
-			zzShortNick = zzNicks[zzx];
-		}
+	if (GameReplicationInfo.bTeamGame == false)
+		return "FFA";
+
+	foreach AllActors(class'PlayerReplicationInfo', PRI) {
+		if (PRI.bIsSpectator == true || PRI.bIsABot == true)
+			continue;
+
+		if (TeamSize[PRI.Team] == 0)
+			Tags[PRI.Team] = PRI.PlayerName;
+		else
+			Tags[PRI.Team] = StringUtils.CommonPrefix(Tags[PRI.Team], PRI.PlayerName);
+
+		++TeamSize[PRI.Team];
 	}
 
-	for (zzY = 0; zzY < zzCount; zzY++)		// Go through all nicks to find a potential tag.
-	{
-		zzPartSize = zzShortNickSize;	// Use the shortest nick as base for search.
+	MaxTeams = TeamGamePlus(Level.Game).MaxTeams;
 
-		while (zzPartSize > 1)			// Ignore clantags less than 2 letters...
-		{
-			for (zzLoc = 0; zzLoc < (Len(zzNicks[zzY]) - zzPartSize + 1); zzLoc++)	// Go through all the parts of a nick..
-			{
-				zzPart = Mid(zzNicks[zzY],zzLoc,zzPartSize);
-				zzFound = 0;
-				for (zzx = 0; zzx < zzCount ; zzx++)	// Go through all nicks
-				{
-					if (InStr(zzNicks[zzx],zzPart) >= 0)
-						zzFound++;
-				}
-				if (zzFound == zzCount)		// All nicks had this, so stop search (Gold nugget man!)
-					return xxFixFileName(zzPart,"");
-				if (zzFound > (zzCount / 2) && zzPartCount < 256)	// if more than half of the nicks had it, store it to the list
-				{
-					zzbAlready = False;
-					for (zzx = 0; zzx < zzPartCount; zzx++)
-					{
-						if (zzParts[zzx] ~= zzPart)
-						{
-							zzbAlready = True;
-							break;
-						}
-					}
-					if (!zzbAlready)		// Don't readd if already in list.
-					{
-						zzPartFound[zzPartCount] = zzFound;
-						zzParts[zzPartCount] = zzPart;
-						zzPartCount++;
-					}
-				}
-			}
-			zzPartSize--;
-		}
-	}
-
-	for (zzx = 0; zzx < zzPartCount; zzx++)	// Check through parts, see if we found one that all agrees on!
-	{
-		if (zzPartFound[zzx] > zzBestFindNumber)	// One that matches better
-		{
-			zzBestFindNumber = zzPartFound[zzx];
-			zzBestPart = zzParts[zzx];
-		}
-	}
-
-	if (zzBestPart == "")
-		zzBestPart = "Unknown";
-
-	return xxFixFileName(zzBestPart, Settings.DemoChar);
-}
-
-function string xxFindClanTags()
-{
-	local PlayerReplicationInfo zzPRI;
-	local string zzTeamNames[32],zzFinalTags[2];
-	local int zzTeamCount,zzTeamNr;
-	local GameReplicationInfo zzGRI;
-
-	ForEach Level.AllActors(Class'GameReplicationInfo',zzGRI)
-		if (!zzGRI.bTeamGame)
-		{
-			return "FFA";
+	for (Team = 0; Team < MaxTeams; ++Team)
+		if (Tags[Team] == "") {
+			Tags[Team] = "Mix";
+			++MixCount;
 		}
 
-	zzTeamNr = 0;
-	while (zzTeamNr < 2)
-	{
-		zzTeamCount = 0;
-		ForEach Level.AllActors(Class'PlayerReplicationInfo',zzPRI)
-			if (zzPRI.Team == zzTeamNr)
-				zzTeamNames[zzTeamCount++] = zzPRI.PlayerName;
+	if (MixCount > 1)
+		return "Unknown";
 
-		zzFinalTags[zzTeamNr] = xxExtractTag(zzTeamNames,zzTeamCount);
-		zzTeamNr++;
+	for (Team = 0; Team < MaxTeams; ++Team) {
+		if (Team == 0)
+			Result = Tags[Team];
+		else
+			Result = Result$"_"$Tags[Team];
 	}
-
-	return zzFinalTags[0]$"_"$zzFinalTags[1];
+	return xxFixFileName(Result, Settings.DemoChar);
 }
 
 

@@ -99,6 +99,7 @@ var MutWarmup WarmupMutator;
 //Add the maplist where kickers will work using normal network
 var localized config string ExcludeMapsForKickers[128];
 var bool bExludeKickers;
+var StringUtils StringUtils;
 
 replication
 {
@@ -152,11 +153,11 @@ function PrintVersionInfo() {
 	LongStr = VersionStr@LongVersion$NiceVer;
 
 	if (Len(LongStr) > 20) {
-		xxLog("#"$class'StringUtils'.static.CenteredString(VersionStr, 29, " ")$"#");
+		xxLog("#"$StringUtils.CenteredString(VersionStr, 29, " ")$"#");
 		LongStr = LongVersion$NiceVer;
 	}
 
-	xxLog("#"$class'StringUtils'.static.CenteredString(LongStr, 29, " ")$"#");
+	xxLog("#"$StringUtils.CenteredString(LongStr, 29, " ")$"#");
 }
 
 function PostBeginPlay()
