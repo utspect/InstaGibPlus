@@ -201,40 +201,10 @@ function ResetGame(DeathMatchPlus G) {
 
 function ResetPlayers() {
 	local PlayerReplicationInfo PRI;
-	local bbPlayerReplicationInfo bbPRI;
+
 	foreach AllActors(class'PlayerReplicationInfo', PRI) {
 		PRI.Score = 0;
 		PRI.Deaths = 0;
-
-		if (PRI.IsA('bbPlayerReplicationInfo')) {
-			bbPRI = bbPlayerReplicationInfo(PRI);
-
-			if (bbPRI.PlayerName == "")
-				// Lets hope this is temporary
-				continue;
-
-			if (IsInState('Warmup')) {
-				if (InStr(bbPRI.PlayerName, " - "$NotReadyText) < 0 && InStr(bbPRI.PlayerName, " - "$ReadyText) < 0) {
-					bbPRI.OriginalName = bbPRI.PlayerName;
-				}
-
-				if (PlayerPawn(bbPRI.Owner).bReadyToPlay == false) {
-					if (Len(bbPRI.OriginalName) > 32 - (Len(NotReadyText) + 4)) {
-						bbPRI.PlayerName = Left(bbPRI.OriginalName, 32 - (Len(NotReadyText) + 7))$"... - "$NotReadyText;
-					} else {
-						bbPRI.PlayerName = bbPRI.OriginalName$" - "$NotReadyText;
-					}
-				} else {
-					if (Len(bbPRI.OriginalName) > 32 - (Len(ReadyText) + 4)) {
-						bbPRI.PlayerName = Left(bbPRI.OriginalName, 32 - (Len(ReadyText) + 7))$"... - "$ReadyText;
-					} else {
-						bbPRI.PlayerName = bbPRI.OriginalName$" - "$ReadyText;
-					}
-				}
-			} else {
-				bbPRI.PlayerName = bbPRI.OriginalName;
-			}
-		}
 	}
 }
 
