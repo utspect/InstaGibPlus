@@ -1063,7 +1063,7 @@ event PlayerTick( float Time )
 		Settings.FPSCounterSmoothingStrength = 1;
 		Settings.SaveConfig();
 	}
-	xxPlayerTickEvents();
+	xxPlayerTickEvents(Time);
 	zzTick = Time;
 }
 
@@ -4362,7 +4362,7 @@ state FeigningDeath
 
 	event PlayerTick( float DeltaTime )
 	{
-		xxPlayerTickEvents();
+		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 	}
@@ -4424,7 +4424,7 @@ state PlayerSwimming
 
 	event PlayerTick( float DeltaTime )
 	{
-		xxPlayerTickEvents();
+		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 	}
@@ -4499,7 +4499,7 @@ state PlayerFlying
 {
 	event PlayerTick( float DeltaTime )
 	{
-		xxPlayerTickEvents();
+		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 	}
@@ -4532,7 +4532,7 @@ state CheatFlying
 {
 	event PlayerTick( float DeltaTime )
 	{
-		xxPlayerTickEvents();
+		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 	}
@@ -4790,7 +4790,7 @@ ignores SeePlayer, HearNoise, Bump;
 
 	event PlayerTick( float DeltaTime )
 	{
-		xxPlayerTickEvents();
+		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 	}
@@ -4830,7 +4830,7 @@ state PlayerWaiting
 {
 	event PlayerTick( float DeltaTime )
 	{
-		xxPlayerTickEvents();
+		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 	}
@@ -5177,7 +5177,7 @@ state PlayerSpectating
 {
 	event PlayerTick( float DeltaTime )
 	{
-		xxPlayerTickEvents();
+		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 	}
@@ -5211,7 +5211,7 @@ state PlayerWaking
 
 	event PlayerTick( float DeltaTime )
 	{
-		xxPlayerTickEvents();
+		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 	}
@@ -5297,7 +5297,7 @@ state Dying
 		if (Level.Pauser == "")
 			TimeDead += DeltaTime;
 
-		xxPlayerTickEvents();
+		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 
@@ -5464,7 +5464,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 
 	event PlayerTick( float DeltaTime )
 	{
-		xxPlayerTickEvents();
+		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 	}
@@ -5839,7 +5839,7 @@ function CalcAvgTick()
 		Log(AvgTickDiff);
 }
 
-function xxPlayerTickEvents()
+function xxPlayerTickEvents(float DeltaTime)
 {
 	local float CurrentTime;
 
