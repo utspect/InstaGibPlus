@@ -500,7 +500,7 @@ event Tick(float zzDelta)
 				zzbP.xxClientDoEndShot();
 
 			if ((Level.NetMode == NM_DedicatedServer) ||
-				(Level.NetMode == NM_ListenServer && zzbP.Role < ROLE_Authority))
+				(Level.NetMode == NM_ListenServer && zzbP.RemoteRole == ROLE_AutonomousProxy))
 				zzbP.ServerTick(zzDelta);
 		}
 		else
