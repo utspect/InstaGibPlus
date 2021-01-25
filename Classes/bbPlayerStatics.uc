@@ -53,7 +53,7 @@ static function DrawCrosshair(Canvas C, ClientSettings Settings) {
 
 static function PlayHitMarker(ClientSettings Settings, float Damage) {
 	local float Size;
-	Size = FClamp(Damage/160, 0.03125, 1.0) * Settings.HitMarkerSize;
+	Size = (FClamp(Damage/150, 0.0, 1.0) * 0.75 + 0.25) * Settings.HitMarkerSize;
 	if (Size >= default.HitMarkerSize || default.HitMarkerLifespan == 0.0) {
 		default.HitMarkerLifespan = Settings.HitMarkerDuration;
 		default.HitMarkerSize = Size;
