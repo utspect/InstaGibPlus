@@ -390,6 +390,7 @@ event PostRender( canvas Canvas )
 	}
 
 	class'bbPlayerStatics'.static.DrawFPS(Canvas, MyHud, Settings, LastDeltaTime);
+	class'bbPlayerStatics'.static.DrawHitMarker(Canvas, Settings, LastDeltaTime);
 
 	if (Stat != None && Stat.bShowStats)
 	{
@@ -862,8 +863,11 @@ simulated function PlayTeamHitSound(int Dmg)
 
 simulated function CheckHitSound()
 {
-	if (zzRecentDmgGiven > 0 && Level.TimeSeconds - zzLastHitSound > 0.1)
-		PlayHitSound(0);
+	if (zzRecentDmgGiven > 0) {
+		if (Level.TimeSeconds - zzLastHitSound > 0.1)
+			PlayHitSound(0);
+		class'bbPlayerStatics'.static.PlayHitMarker(Settings);
+	}
 
 	if (zzRecentTeamDmgGiven > 0 && Level.TimeSeconds - zzLastTeamHitSound > 0.1)
 		PlayTeamHitSound(0);
