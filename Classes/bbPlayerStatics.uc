@@ -2,6 +2,7 @@ class bbPlayerStatics extends Actor;
 
 var float AverageDeltaTime;
 var float HitMarkerLifespan;
+var float HitMarkerSize;
 
 static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float DeltaTime) {
 	local string FPS;
@@ -50,8 +51,13 @@ static function DrawCrosshair(Canvas C, ClientSettings Settings) {
 	class'CanvasUtils'.static.RestoreCanvas(C);
 }
 
-static function PlayHitMarker(ClientSettings Settings) {
-	default.HitMarkerLifespan = Settings.HitMarkerDuration;
+static function PlayHitMarker(ClientSettings Settings, float Damage) {
+	local float Size;
+	Size = FClamp(Damage/160, 0.03125, 1.0) * Settings.HitMarkerSize;
+	if (Size >= default.HitMarkerSize || default.HitMarkerLifespan == 0.0) {
+		default.HitMarkerLifespan = Settings.HitMarkerDuration;
+		default.HitMarkerSize = Size;
+	}
 }
 
 static function DrawHitMarker(Canvas C, ClientSettings Settings, float DeltaTime) {
@@ -62,7 +68,7 @@ static function DrawHitMarker(Canvas C, ClientSettings Settings, float DeltaTime
 
 	class'CanvasUtils'.static.SaveCanvas(C);
 
-	MarkerSize = Settings.HitMarkerSize;
+	MarkerSize = default.HitMarkerSize;
 	MarkerOffset = Settings.HitMarkerOffset;
 
 	C.Style = ERenderStyle.STY_Translucent;
