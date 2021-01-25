@@ -50,6 +50,12 @@ var config int    FPSCounterSmoothingStrength;
 var config float  KillCamMinDelay;
 var config bool   bAllowWeaponShake;
 var config bool   bAutoReady;
+var config bool   bEnableHitMarker;
+var config color  HitMarkerColor;
+var config float  HitMarkerSize;
+var config float  HitMarkerOffset;
+var config float  HitMarkerDuration;
+var config float  HitMarkerDecayExponent;
 
 struct CrosshairLayerDescr {
 	var() config string Texture;
@@ -184,6 +190,12 @@ simulated function string DumpSettings() {
 		GetSetting("KillCamMinDelay")$
 		GetSetting("bAllowWeaponShake")$
 		GetSetting("bAutoReady")$
+		GetSetting("bEnableHitMarker")$
+		GetSetting("HitMarkerColor")$
+		GetSetting("HitMarkerSize")$
+		GetSetting("HitMarkerOffset")$
+		GetSetting("HitMarkerDuration")$
+		GetSetting("HitMarkerDecayExponent")$
 		GetSetting("bUseCrosshairFactory")$
 		DumpCrosshairLayers();
 }
@@ -233,5 +245,11 @@ defaultproperties
 	KillCamMinDelay=0.0
 	bAllowWeaponShake=True
 	bAutoReady=True
+	bEnableHitMarker=False
+	HitMarkerColor=(R=255,G=0,B=0,A=255)
+	HitMarkerSize=128.0
+	HitMarkerOffset=32.0
+	HitMarkerDuration=0.3
+	HitMarkerDecayExponent=5.0
 	bUseCrosshairFactory=False
 }

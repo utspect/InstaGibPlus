@@ -4,6 +4,7 @@ class UTPure extends Mutator config(InstaGibPlus);
 #exec Texture Import File=Textures\bootbit.pcx Name=PureBoots Mips=Off
 #exec Texture Import File=Textures\hudbgplain.pcx Name=PureTimeBG Mips=Off
 #exec Texture Import File=Textures\smallwhitething.pcx Name=PureSWT Mips=Off
+#exec Texture Import File=Textures\Arrow.pcx Name=HitMarkerArrow Mips=Off
 #exec Audio Import FILE=Sounds\HitSound.wav Name=HitSound
 #exec Audio Import FILE=Sounds\HitSoundFriendly.wav Name=HitSoundFriendly
 

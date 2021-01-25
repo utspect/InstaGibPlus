@@ -68,8 +68,14 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 40. [KillCamMinDelay](#killcammindelay)
 41. [bAllowWeaponShake](#ballowweaponshake)
 42. [bAutoReady](#bautoready)
-43. [bUseCrosshairFactory](#busecrosshairfactory)
-44. [CrosshairLayers](#crosshairlayers)
+43. [bEnableHitMarker](#benablehitmarker)
+44. [HitMarkerColor](#hitmarkercolor)
+45. [HitMarkerSize](#hitmarkersize)
+46. [HitMarkerOffset](#hitmarkeroffset)
+47. [HitMarkerDuration](#hitmarkerduration)
+48. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+49. [bUseCrosshairFactory](#busecrosshairfactory)
+50. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -371,6 +377,45 @@ If `True`, weapons can shake view. If `False` weapons can't shake view.
 **Default: True**  
 
 If `True`, you ready up when spawning for the first time during warmup. If `False` you have to manually ready up using the [Ready](#ready) command, or using `mutate ready`, or by saying one of `ready`, `rdy`, `r`, `!ready`, `!rdy`.
+
+## bEnableHitMarker
+**Type: bool**  
+**Default: False** 
+
+If `True`, plays an animation on the hud whenever you damage an enemy.
+
+## HitMarkerColor
+**Type: color**  
+**Default: (R=255,G=0,B=0,A=255)** 
+
+The initial color of the HitMarker. Fades over [HitMarkerDuration](#hitmarkerduration) to completely transparent.
+
+## HitMarkerSize
+**Type: float**  
+**Default: 128.0**  
+**Unit: pixel** 
+
+The length of the arrows that the HitMarker places on screen.
+
+## HitMarkerOffset
+**Type: float**  
+**Default: 32.0**  
+**Unit: pixel** 
+
+How far away from the center of the screen the arrows are placed.
+
+## HitMarkerDuration
+**Type: float**  
+**Default: 0.3**  
+**Unit: seconds** 
+
+How long the HitMarker stays on screen. Negative values effectively disable HitMarker.
+
+## HitMarkerDecayExponent
+**Type: float**  
+**Default: 5.0**  
+
+How quickly the HitMarker becomes transparent. Higher values mean sharper drop-off. Values closer to zero make the HitMarker stay on screen at full brightness for longer until [HitMarkerDuration](#hitmarkerduration) is reached.
 
 ## bUseCrosshairFactory
 **Type: bool**  

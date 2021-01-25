@@ -1,6 +1,7 @@
 class bbPlayerStatics extends Actor;
 
 var float AverageDeltaTime;
+var float HitMarkerLifespan;
 
 static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float DeltaTime) {
 	local string FPS;
@@ -47,4 +48,36 @@ static function DrawCrosshair(Canvas C, ClientSettings Settings) {
 	}
 
 	class'CanvasUtils'.static.RestoreCanvas(C);
+}
+
+static function PlayHitMarker(ClientSettings Settings) {
+	default.HitMarkerLifespan = Settings.HitMarkerDuration;
+}
+
+static function DrawHitMarker(Canvas C, ClientSettings Settings, float DeltaTime) {
+	local float MarkerSize;
+	local float MarkerOffset;
+
+	if (Settings.bEnableHitMarker == false) return;
+
+	class'CanvasUtils'.static.SaveCanvas(C);
+
+	MarkerSize = Settings.HitMarkerSize;
+	MarkerOffset = Settings.HitMarkerOffset;
+
+	C.Style = ERenderStyle.STY_Translucent;
+	C.bNoSmooth = false;
+	C.DrawColor = Settings.HitMarkerColor * ((default.HitMarkerLifespan/Settings.HitMarkerDuration) ** Settings.HitMarkerDecayExponent);
+	C.SetPos(C.SizeX/2 - MarkerOffset - MarkerSize, C.SizeY/2 - MarkerOffset - MarkerSize);
+	C.DrawTile(texture'HitMarkerArrow', MarkerSize, MarkerSize, 0, 0, 512, 512);
+	C.SetPos(C.SizeX/2 + MarkerOffset, C.SizeY/2 - MarkerOffset - MarkerSize);
+	C.DrawTile(texture'HitMarkerArrow', MarkerSize, MarkerSize, 0, 0, -512, 512);
+	C.SetPos(C.SizeX/2 - MarkerOffset - MarkerSize, C.SizeY/2 + MarkerOffset);
+	C.DrawTile(texture'HitMarkerArrow', MarkerSize, MarkerSize, 0, 0, 512, -512);
+	C.SetPos(C.SizeX/2 + MarkerOffset, C.SizeY/2 + MarkerOffset);
+	C.DrawTile(texture'HitMarkerArrow', MarkerSize, MarkerSize, 0, 0, -512, -512);
+
+	class'CanvasUtils'.static.RestoreCanvas(C);
+
+	default.HitMarkerLifespan = FMax(0.0, default.HitMarkerLifespan - DeltaTime);
 }
