@@ -103,3 +103,16 @@ static function string CommonPrefix(string A, string B) {
 
 	return Left(A, Common);
 }
+
+static function string CommonSuffix(string A, string B) {
+	local int Common;
+	local int Length;
+
+	Length = Min(Len(A), Len(B));
+
+	for (Common = 0; Common < Length; ++Common)
+		if (Mid(A, Len(A)-Common-1, 1) != Mid(B, Len(B)-Common-1, 1))
+			break;
+
+	return Right(A, Common);
+}

@@ -7863,6 +7863,8 @@ simulated function xxClientDemoBolt(Actor A, optional Vector V, optional Rotator
 
 function string xxFindClanTags() {
 	local PlayerReplicationInfo PRI;
+	local string PrefixTags[4];
+	local string SuffixTags[4];
 	local string Tags[4];
 	local int TeamSize[4];
 	local int MaxTeams;
@@ -7877,21 +7879,26 @@ function string xxFindClanTags() {
 		if (PRI.bIsSpectator == true || PRI.bIsABot == true)
 			continue;
 
-		if (TeamSize[PRI.Team] == 0)
-			Tags[PRI.Team] = PRI.PlayerName;
-		else
-			Tags[PRI.Team] = StringUtils.CommonPrefix(Tags[PRI.Team], PRI.PlayerName);
+		if (TeamSize[PRI.Team] == 0) {
+			PrefixTags[PRI.Team] = PRI.PlayerName;
+			SuffixTags[PRI.Team] = PRI.PlayerName;
+		} else {
+			PrefixTags[PRI.Team] = StringUtils.CommonPrefix(PrefixTags[PRI.Team], PRI.PlayerName);
+			SuffixTags[PRI.Team] = StringUtils.CommonSuffix(SuffixTags[PRI.Team], PRI.PlayerName);
+		}
 
 		++TeamSize[PRI.Team];
 	}
 
 	MaxTeams = TeamGamePlus(Level.Game).MaxTeams;
 
-	for (Team = 0; Team < MaxTeams; ++Team)
+	for (Team = 0; Team < MaxTeams; ++Team) {
+		Tags[Team] = PrefixTags[Team]$SuffixTags[Team];
 		if (Tags[Team] == "") {
 			Tags[Team] = "Mix";
 			++MixCount;
 		}
+	}
 
 	if (MixCount > 1)
 		return "Unknown";
