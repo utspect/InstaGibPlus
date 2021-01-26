@@ -866,6 +866,7 @@ simulated function CheckHitSound()
 	if (zzRecentDmgGiven > 0) {
 		if (Level.TimeSeconds - zzLastHitSound > 0.1)
 			PlayHitSound(0);
+
 		class'bbPlayerStatics'.static.PlayHitMarker(Settings, zzRecentDmgGiven);
 	}
 

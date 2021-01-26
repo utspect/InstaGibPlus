@@ -249,9 +249,9 @@ var rotator KillCamTargetRotation;
 var float KillCamDelay;
 var float KillCamDuration;
 
-var bool bJumpingPreservesMomentum;
 var float DodgeEndVelocity;
 var float JumpEndVelocity;
+var bool bJumpingPreservesMomentum;
 var bool bUseFlipAnimation;
 
 var bool bAppearanceChanged;
@@ -4266,7 +4266,8 @@ simulated function CheckHitSound()
 	if (zzRecentDmgGiven > 0) {
 		if (Level.TimeSeconds - zzLastHitSound > 0.1)
 			PlayHitSound(0);
-		class'bbPlayerStatics'.static.PlayHitMarker(Settings, zzRecentDmgGiven);
+		if (Settings.HitMarkerSource == 0)
+			class'bbPlayerStatics'.static.PlayHitMarker(Settings, zzRecentDmgGiven);
 	}
 
 	if (zzRecentTeamDmgGiven > 0 && Level.TimeSeconds - zzLastTeamHitSound > 0.1)

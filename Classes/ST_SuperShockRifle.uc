@@ -303,7 +303,6 @@ simulated function NN_TraceFire()
 simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
 	local bbPlayer bbP;
-	local float is, f;
 	local vector Offset;
 	local vector HitOffset;
 
@@ -319,6 +318,9 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		HitOffset = HitLocation - Other.Location;
 	}
 
+	bbP = bbPlayer(Owner);
+	if (bbP == none) return false;
+
 	Offset = CDO + (FireOffset.X + 20) * X + Y * yMod + FireOffset.Z * Z;
 	bbPlayer(Owner).SendWeaponEffect(
 		class'SuperShockRifleWeaponEffect',
@@ -330,19 +332,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		HitOffset,
 		HitNormal);
 
-	is = ImpactSize;
-	f = 60000.0;
-
-	bbP = bbPlayer(Owner);
-
-	if (Other.isA('Pawn')) {
-		if (bbP.Settings.bEnableHitSounds) {
-			if (!bbP.GameReplicationInfo.bTeamGame || bbPlayer(Other).PlayerReplicationInfo.Team != bbP.PlayerReplicationInfo.Team) {
-				//Log("Hitsound:"@bbP.playedHitSound);
-				bbP.ClientPlaySound(bbP.playedHitSound);
-			}
-		}
-	}
+	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, HitDamage, ST_MyDamageType);
 
 	return false;
 }

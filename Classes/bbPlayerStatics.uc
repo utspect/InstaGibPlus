@@ -87,3 +87,32 @@ static function DrawHitMarker(Canvas C, ClientSettings Settings, float DeltaTime
 
 	default.HitMarkerLifespan = FMax(0.0, default.HitMarkerLifespan - DeltaTime);
 }
+
+/**
+ * Plays response to client-side hits
+ */
+static function PlayClientHitResponse(
+	Pawn Instigator,
+	Actor Victim,
+	float Damage,
+	name DamageType
+) {
+	local bbPlayer P;
+
+	if (Victim.IsA('Pawn') == false)
+		return;
+
+	if (Instigator.IsA('bbPlayer') == false)
+		return;
+
+	if (Instigator.Level.Game.GameReplicationInfo.bTeamGame == true &&
+		Instigator.PlayerReplicationInfo.Team == Pawn(Victim).PlayerReplicationInfo.Team)
+		return;
+
+	P = bbPlayer(Instigator);
+	if (P.Settings.HitMarkerSource == 1)
+		PlayHitMarker(P.Settings, Damage);
+
+	if (P.Settings.bEnableHitSounds)
+		P.ClientPlaySound(P.playedHitSound);
+}

@@ -237,20 +237,9 @@ simulated function NN_TraceFire()
 simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z, float yMod)
 {
 	local UT_Shellcase s;
-	local bbPlayer O;
 
 	if (Owner.IsA('Bot'))
 		return false;
-
-	O = bbPlayer(Owner);
-
-	if (Other.isA('Pawn')) {
-		if (O.Settings.bEnableHitSounds) {
-			if (!O.GameReplicationInfo.bTeamGame || PlayerPawn(Other).PlayerReplicationInfo.Team != O.PlayerReplicationInfo.Team) {
-				O.ClientPlaySound(O.playedHitSound);
-			}
-		}
-	}
 
 	s = Spawn(class'UT_ShellCase',, '', Owner.Location + CDO + 30 * X + (2.8 * yMod+5.0) * Y - Z * 1);
 	if ( s != None )
@@ -270,13 +259,16 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		if ( Other.bIsPawn )
 		{
 			HitLocation += (X * Other.CollisionRadius * 0.5);
-			if (HitLocation.Z - Other.Location.Z > GetMinHeadshotZ(Pawn(Other)))
+			if (HitLocation.Z - Other.Location.Z > GetMinHeadshotZ(Pawn(Other))) {
+				class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, HeadDamage, AltDamageType);
 				return true;
+			}
 		}
 
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}
+	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, HitDamage, MyDamageType);
 	return false;
 }
 
