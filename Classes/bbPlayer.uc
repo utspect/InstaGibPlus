@@ -274,6 +274,9 @@ var Teleporter LastTouchedTeleporter;
 
 var StringUtils StringUtils;
 
+var int HitMarkerTestDamage;
+var int HitMarkerTestTeam;
+
 replication
 {
 	//	Client->Demo
@@ -6290,6 +6293,12 @@ event PostRender( canvas zzCanvas )
 
 	class'bbPlayerStatics'.static.DrawFPS(zzCanvas, MyHud, Settings, zzTick);
 	class'bbPlayerStatics'.static.DrawHitMarker(zzCanvas, Settings, zzTick);
+	if (HitMarkerTestDamage > 0 && class'bbPlayerStatics'.default.HitMarkerLifespan == 0) {
+		class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, HitMarkerTestDamage, PlayerReplicationInfo.Team, HitMarkerTestTeam);
+		++HitMarkerTestTeam;
+		if (HitMarkerTestTeam >= 4)
+			HitMarkerTestTeam = 0;
+	}
 
 	FrameCount += 1;
 }
@@ -8217,6 +8226,10 @@ function MutWarmup GetWarmup() {
 			break;
 
 	return WarmupMutator;
+}
+
+exec function TestHitMarker(optional int Dmg) {
+	HitMarkerTestDamage = Dmg;
 }
 
 defaultproperties
