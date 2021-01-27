@@ -999,7 +999,7 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 			return;
 
 		if (Settings.HitMarkerSource == 0 && RelatedPRI_2 != none)
-			class'bbPlayerStatics'.static.PlayHitMarker(Level, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
+			class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
 
 		if (GameReplicationInfo.bTeamGame && RelatedPRI_1.Team == RelatedPRI_2.Team)
 		{

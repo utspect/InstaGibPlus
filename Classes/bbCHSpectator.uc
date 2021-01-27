@@ -884,7 +884,7 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 			return;
 
 		if (RelatedPRI_1.Owner == ViewTarget && RelatedPRI_2 != none)
-			class'bbPlayerStatics'.static.PlayHitMarker(Level, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
+			class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
 
 		if (GameReplicationInfo != None && GameReplicationInfo.bTeamGame && RelatedPRI_2 != None && RelatedPRI_1.Team == RelatedPRI_2.Team)
 		{

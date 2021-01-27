@@ -53,14 +53,14 @@ static function DrawCrosshair(Canvas C, ClientSettings Settings) {
 	class'CanvasUtils'.static.RestoreCanvas(C);
 }
 
-static function PlayHitMarker(LevelInfo L, ClientSettings Settings, float Damage, int OwnTeam, int EnemyTeam) {
+static function PlayHitMarker(PlayerPawn Me, ClientSettings Settings, float Damage, int OwnTeam, int EnemyTeam) {
 	local float Size;
 	local color HMColor;
 	local bool bEnable;
 
 	Size = (FClamp(Damage/150, 0.0, 1.0) * 0.75 + 0.25) * Settings.HitMarkerSize;
 	bEnable = Settings.bEnableHitMarker;
-	if (L.Game.GameReplicationInfo.bTeamGame == false) {
+	if (Me.GameReplicationInfo.bTeamGame == false) {
 		HMColor = Settings.HitMarkerColor;
 	} else {
 		if (OwnTeam == EnemyTeam)
@@ -137,7 +137,7 @@ static function PlayClientHitResponse(
 
 	P = bbPlayer(Instigator);
 	if (P.Settings.HitMarkerSource == 1)
-		PlayHitMarker(P.Level, P.Settings, Damage, InstigatorTeam, VictimTeam);
+		PlayHitMarker(P, P.Settings, Damage, InstigatorTeam, VictimTeam);
 
 	if (Instigator.Level.Game.GameReplicationInfo.bTeamGame == true &&
 		InstigatorTeam == VictimTeam)
