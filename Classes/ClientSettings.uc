@@ -55,9 +55,16 @@ enum EHitMarkerSource {
 	HMSRC_Server,
 	HMSRC_Client
 };
+enum EHitMarkerColorMode {
+	HMCM_FriendOrFoe,
+	HMCM_TeamColor
+};
 
 var config bool   bEnableHitMarker;
+var config bool   bEnableTeamHitMarker;
+var config EHitMarkerColorMode HitMarkerColorMode;
 var config color  HitMarkerColor;
+var config color  HitMarkerTeamColor;
 var config float  HitMarkerSize;
 var config float  HitMarkerOffset;
 var config float  HitMarkerDuration;
@@ -198,7 +205,10 @@ simulated function string DumpSettings() {
 		GetSetting("bAllowWeaponShake")$
 		GetSetting("bAutoReady")$
 		GetSetting("bEnableHitMarker")$
+		GetSetting("bEnableTeamHitMarker")$
+		GetSetting("HitMarkerColorMode")$
 		GetSetting("HitMarkerColor")$
+		GetSetting("HitMarkerTeamColor")$
 		GetSetting("HitMarkerSize")$
 		GetSetting("HitMarkerOffset")$
 		GetSetting("HitMarkerDuration")$
@@ -254,7 +264,10 @@ defaultproperties
 	bAllowWeaponShake=True
 	bAutoReady=True
 	bEnableHitMarker=False
+	bEnableTeamHitMarker=False
+	HitMarkerColorMode=HMCM_FriendOrFoe
 	HitMarkerColor=(R=255,G=0,B=0,A=255)
+	HitMarkerTeamColor=(R=0,G=0,B=255,A=255)
 	HitMarkerSize=128.0
 	HitMarkerOffset=32.0
 	HitMarkerDuration=0.3

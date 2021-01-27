@@ -998,6 +998,9 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 		if (RelatedPRI_1 == None)
 			return;
 
+		if (Settings.HitMarkerSource == 0 && RelatedPRI_2 != none)
+			class'bbPlayerStatics'.static.PlayHitMarker(Level, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
+
 		if (GameReplicationInfo.bTeamGame && RelatedPRI_1.Team == RelatedPRI_2.Team)
 		{
 			if (Settings.TeamHitSound > 0)
@@ -4266,8 +4269,6 @@ simulated function CheckHitSound()
 	if (zzRecentDmgGiven > 0) {
 		if (Level.TimeSeconds - zzLastHitSound > 0.1)
 			PlayHitSound(0);
-		if (Settings.HitMarkerSource == 0)
-			class'bbPlayerStatics'.static.PlayHitMarker(Settings, zzRecentDmgGiven);
 	}
 
 	if (zzRecentTeamDmgGiven > 0 && Level.TimeSeconds - zzLastTeamHitSound > 0.1)

@@ -3,6 +3,8 @@ class bbPlayerStatics extends Actor;
 var float AverageDeltaTime;
 var float HitMarkerLifespan;
 var float HitMarkerSize;
+var color HitMarkerColor;
+var color HitMarkerTeamColors[4];
 
 static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float DeltaTime) {
 	local string FPS;
@@ -51,20 +53,44 @@ static function DrawCrosshair(Canvas C, ClientSettings Settings) {
 	class'CanvasUtils'.static.RestoreCanvas(C);
 }
 
-static function PlayHitMarker(ClientSettings Settings, float Damage) {
+static function PlayHitMarker(LevelInfo L, ClientSettings Settings, float Damage, int OwnTeam, int EnemyTeam) {
 	local float Size;
+	local color HMColor;
+	local bool bEnable;
+
 	Size = (FClamp(Damage/150, 0.0, 1.0) * 0.75 + 0.25) * Settings.HitMarkerSize;
-	if (Size >= default.HitMarkerSize || default.HitMarkerLifespan == 0.0) {
+	bEnable = Settings.bEnableHitMarker;
+	if (L.Game.GameReplicationInfo.bTeamGame == false) {
+		HMColor = Settings.HitMarkerColor;
+	} else {
+		if (OwnTeam == EnemyTeam)
+			bEnable = Settings.bEnableTeamHitMarker;
+
+		if (Settings.HitMarkerColorMode == 0) {
+			if (OwnTeam == EnemyTeam) {
+				HMColor = Settings.HitMarkerTeamColor;
+			} else {
+				HMColor = Settings.HitMarkerColor;
+			}
+		} else if (Settings.HitMarkerColorMode == 1) {
+			if (EnemyTeam >= 0 && EnemyTeam < arraycount(default.HitMarkerTeamColors)) {
+				HMColor = default.HitMarkerTeamColors[EnemyTeam];
+			} else {
+				HMColor = Settings.HitMarkerColor;
+			}
+		}
+	}
+
+	if (bEnable && (Size >= default.HitMarkerSize || default.HitMarkerLifespan == 0.0)) {
 		default.HitMarkerLifespan = Settings.HitMarkerDuration;
 		default.HitMarkerSize = Size;
+		default.HitMarkerColor = HMColor;
 	}
 }
 
 static function DrawHitMarker(Canvas C, ClientSettings Settings, float DeltaTime) {
 	local float MarkerSize;
 	local float MarkerOffset;
-
-	if (Settings.bEnableHitMarker == false) return;
 
 	class'CanvasUtils'.static.SaveCanvas(C);
 
@@ -73,7 +99,7 @@ static function DrawHitMarker(Canvas C, ClientSettings Settings, float DeltaTime
 
 	C.Style = ERenderStyle.STY_Translucent;
 	C.bNoSmooth = false;
-	C.DrawColor = Settings.HitMarkerColor * ((default.HitMarkerLifespan/Settings.HitMarkerDuration) ** Settings.HitMarkerDecayExponent);
+	C.DrawColor = default.HitMarkerColor * ((default.HitMarkerLifespan/Settings.HitMarkerDuration) ** Settings.HitMarkerDecayExponent);
 	C.SetPos(C.SizeX/2 - MarkerOffset - MarkerSize, C.SizeY/2 - MarkerOffset - MarkerSize);
 	C.DrawTile(texture'HitMarkerArrow', MarkerSize, MarkerSize, 0, 0, 512, 512);
 	C.SetPos(C.SizeX/2 + MarkerOffset, C.SizeY/2 - MarkerOffset - MarkerSize);
@@ -98,6 +124,7 @@ static function PlayClientHitResponse(
 	name DamageType
 ) {
 	local bbPlayer P;
+	local int InstigatorTeam, VictimTeam;
 
 	if (Victim.IsA('Pawn') == false)
 		return;
@@ -105,14 +132,24 @@ static function PlayClientHitResponse(
 	if (Instigator.IsA('bbPlayer') == false)
 		return;
 
-	if (Instigator.Level.Game.GameReplicationInfo.bTeamGame == true &&
-		Instigator.PlayerReplicationInfo.Team == Pawn(Victim).PlayerReplicationInfo.Team)
-		return;
+	InstigatorTeam = Instigator.PlayerReplicationInfo.Team;
+	VictimTeam = Pawn(Victim).PlayerReplicationInfo.Team;
 
 	P = bbPlayer(Instigator);
 	if (P.Settings.HitMarkerSource == 1)
-		PlayHitMarker(P.Settings, Damage);
+		PlayHitMarker(P.Level, P.Settings, Damage, InstigatorTeam, VictimTeam);
+
+	if (Instigator.Level.Game.GameReplicationInfo.bTeamGame == true &&
+		InstigatorTeam == VictimTeam)
+		return;
 
 	if (P.Settings.bEnableHitSounds)
 		P.ClientPlaySound(P.playedHitSound);
+}
+
+defaultproperties {
+	HitMarkerTeamColors(0)=(R=255,G=0,B=0,A=255)
+	HitMarkerTeamColors(1)=(R=0,G=0,B=255,A=255)
+	HitMarkerTeamColors(2)=(R=0,G=255,B=0,A=255)
+	HitMarkerTeamColors(3)=(R=255,G=200,B=0,A=255)
 }

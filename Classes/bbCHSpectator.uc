@@ -866,8 +866,6 @@ simulated function CheckHitSound()
 	if (zzRecentDmgGiven > 0) {
 		if (Level.TimeSeconds - zzLastHitSound > 0.1)
 			PlayHitSound(0);
-
-		class'bbPlayerStatics'.static.PlayHitMarker(Settings, zzRecentDmgGiven);
 	}
 
 	if (zzRecentTeamDmgGiven > 0 && Level.TimeSeconds - zzLastTeamHitSound > 0.1)
@@ -884,6 +882,9 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 	{
 		if (RelatedPRI_1 == None)
 			return;
+
+		if (RelatedPRI_1.Owner == ViewTarget && RelatedPRI_2 != none)
+			class'bbPlayerStatics'.static.PlayHitMarker(Level, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
 
 		if (GameReplicationInfo != None && GameReplicationInfo.bTeamGame && RelatedPRI_2 != None && RelatedPRI_1.Team == RelatedPRI_2.Team)
 		{

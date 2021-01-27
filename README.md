@@ -69,13 +69,17 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 41. [bAllowWeaponShake](#ballowweaponshake)
 42. [bAutoReady](#bautoready)
 43. [bEnableHitMarker](#benablehitmarker)
-44. [HitMarkerColor](#hitmarkercolor)
-45. [HitMarkerSize](#hitmarkersize)
-46. [HitMarkerOffset](#hitmarkeroffset)
-47. [HitMarkerDuration](#hitmarkerduration)
-48. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-49. [bUseCrosshairFactory](#busecrosshairfactory)
-50. [CrosshairLayers](#crosshairlayers)
+44. [bEnableTeamHitMarker](#benableteamhitmarker)
+45. [HitMarkerColorMode](#hitmarkercolormode)
+46. [HitMarkerColor](#hitmarkercolor)
+47. [HitMarkerTeamColor](#hitmarkerteamcolor)
+48. [HitMarkerSize](#hitmarkersize)
+49. [HitMarkerOffset](#hitmarkeroffset)
+50. [HitMarkerDuration](#hitmarkerduration)
+51. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+52. [HitMarkerSource](#hitmarkersource)
+53. [bUseCrosshairFactory](#busecrosshairfactory)
+54. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -384,11 +388,30 @@ If `True`, you ready up when spawning for the first time during warmup. If `Fals
 
 If `True`, plays an animation on the hud whenever you damage an enemy.
 
+## bEnableTeamHitMarker
+**Type: bool**  
+**Default: False** 
+
+If `True`, plays an animation on the hud whenever you damage a teammate.
+
+## HitMarkerColorMode
+**Type: EHitMarkerColorMode**  
+**Default: HMCM_FriendOrFoe** 
+
+* `HMCM_FriendOrFoe` - Use [HitMarkerColor](#hitmarkercolor) for enemies and [HitMarkerTeamColor](#hitmarkerteamcolor) for friends.
+* `HMCM_TeamColor` - Use team color in team games, [HitMarkerColor](#hitmarkercolor) in FFA games.
+
 ## HitMarkerColor
 **Type: color**  
 **Default: (R=255,G=0,B=0,A=255)** 
 
-The initial color of the HitMarker. Fades over [HitMarkerDuration](#hitmarkerduration) to completely transparent.
+The color of the HitMarker when damaging enemies. Fades over [HitMarkerDuration](#hitmarkerduration) to completely transparent.
+
+## HitMarkerTeamColor
+**Type: color**  
+**Default: (R=0,G=0,B=255,A=255)** 
+
+The color of the HitMarker when damaging teammates. Fades over [HitMarkerDuration](#hitmarkerduration) to completely transparent.
 
 ## HitMarkerSize
 **Type: float**  
@@ -416,6 +439,13 @@ How long the HitMarker stays on screen. Negative values effectively disable HitM
 **Default: 5.0**  
 
 How quickly the HitMarker becomes transparent. Higher values mean sharper drop-off. Values closer to zero make the HitMarker stay on screen at full brightness for longer until [HitMarkerDuration](#hitmarkerduration) is reached.
+
+## HitMarkerSource
+**Type: EHitMarkerSource**  
+**Default: HMSRC_Server** 
+
+* `HMSRC_Server` - HitMarkers are triggered server-side, accurate but delayed by ping
+* `HMSRC_Client` - HitMarkers are triggered client-side, inaccurate but instant
 
 ## bUseCrosshairFactory
 **Type: bool**  
