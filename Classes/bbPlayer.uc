@@ -4,8 +4,6 @@ class bbPlayer extends TournamentPlayer
 var int bReason;
 // Client Config
 var bool bNewNet;	// if Client wants new or old netcode. (default true)
-var Sound playedHitSound;
-var(Sounds) Sound cHitSound[16];
 
 // Replicated settings Client -> Server
 var int		zzNetspeed;		// The netspeed this client is using
@@ -92,8 +90,6 @@ var bbOldMovementInfo OldestMI, NewestMI;
 var int zzPositionIndex;
 var float zzNextPositionTime;
 var bool zzbInitialized;
-var int DefaultHitSound, DefaultTeamHitSound;
-var bool bForceDefaultHitSounds;
 var bool zzbNN_Tracing;
 var Weapon zzPendingWeapon;
 var bool bJustRespawned;
@@ -332,7 +328,6 @@ replication
 		xxClientSwJumpPad,
 		xxNN_MoveClientTTarget,
 		xxSetDefaultWeapon,
-		xxSetHitSounds,
 		xxSetPendingWeapon,
 		xxSetSniperSpeed,
 		xxSetTeleRadius,
@@ -849,7 +844,6 @@ event Possess()
 		Log("Possessed PlayerPawn (bbPlayer) by InstaGib Plus");
 		zzTrue = !zzFalse;
 		zzInfoThing = Spawn(Class'PureInfo');
-		playedHitSound = loadHitSound(Settings.selectedHitSound);
 		SetNetUpdateRate(Settings.DesiredNetUpdateRate);
 		xxServerSetForceModels(Settings.bForceModels);
 		xxServerSetTeamInfo(Settings.bTeamInfo);
@@ -894,10 +888,6 @@ event Possess()
 		TeleRadius = zzUTPure.Default.TeleRadius;
 		xxSetTeleRadius(TeleRadius);
 
-		DefaultHitSound = zzUTPure.Default.DefaultHitSound;
-		DefaultTeamHitSound = zzUTPure.Default.DefaultTeamHitSound;
-		bForceDefaultHitSounds = zzUTPure.Default.bForceDefaultHitSounds;
-		xxSetHitSounds(DefaultHitSound, DefaultTeamHitSound, bForceDefaultHitSounds);
 		BrightskinMode = class'UTPure'.default.BrightskinMode;
 
 		xxSetSniperSpeed(class'UTPure'.default.SniperSpeed);
@@ -1004,15 +994,10 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 		if (Settings.HitMarkerSource == 0 && RelatedPRI_2 != none)
 			class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
 
-		if (GameReplicationInfo.bTeamGame && RelatedPRI_1.Team == RelatedPRI_2.Team)
-		{
-			if (Settings.TeamHitSound > 0)
-				Sw = -1*Sw;
-			else
-				return;
-		}
-		else if (Settings.HitSound == 0)
-			return;
+		if (Settings.HitSoundSource == 0 && RelatedPRI_2 != none)
+			class'bbPlayerStatics'.static.PlayHitSound(self, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
+
+		return;
 	}
 	else if (ClassIsChildOf(Message, class'DecapitationMessage'))
 	{
@@ -2903,13 +2888,6 @@ simulated function xxSetTeleRadius(int newRadius)
 	TeleRadius = newRadius;
 }
 
-simulated function xxSetHitSounds(int DHS, int DTHS, bool bFDHS)
-{
-	DefaultHitSound = DHS;
-	DefaultTeamHitSound = DTHS;
-	bForceDefaultHitSounds = bFDHS;
-}
-
 simulated function xxSetDefaultWeapon(name W)
 {
 	zzDefaultWeapon = W;
@@ -3284,11 +3262,6 @@ exec function ThrowWeapon()
 	TossWeapon();
 	if ( Weapon == None )
 		SwitchToBestWeapon();
-}
-
-simulated function Sound loadHitSound(int c) {
-	cHitSound[c] = Sound(DynamicLoadObject(Settings.sHitSound[c], class'Sound'));
-	return cHitSound[c];
 }
 
 function string forcedModelToString(int fm) {
@@ -4187,95 +4160,6 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 		ClientDying(DamageType, HitLocation);
 	LastKiller = Killer;
 	GotoState('Dying');
-}
-
-simulated function PlayHitSound(int Dmg)
-{
-	local Actor SoundPlayer;
-	local float Pitch;
-	local int HS;
-
-	if (Dmg > 0) {
-
-		zzRecentDmgGiven += Dmg;
-
-	} else if (zzRecentDmgGiven > 0) {
-
-		LastPlaySound = Level.TimeSeconds;	// so voice messages won't overlap
-
-		if ( ViewTarget != None )
-			SoundPlayer = ViewTarget;
-		else
-			SoundPlayer = Self;
-
-		Pitch = FClamp(42/zzRecentDmgGiven, 0.22, 3.2);
-		zzRecentDmgGiven = 0;
-
-		if (bForceDefaultHitSounds && !Settings.bDisableForceHitSounds)
-			HS = DefaultHitSound;
-		else
-			HS = Settings.HitSound;
-
-		if (HS == 1)
-			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
-		else if (HS == 2)
-			SoundPlayer.PlaySound(Sound'HitSound', SLOT_None, 255.0, True,, Pitch);
-		else if (HS == 3)
-			SoundPlayer.PlaySound(Sound'HitSoundFriendly', SLOT_None, 255.0, True);
-
-		zzLastHitSound = LastPlaySound;
-
-	}
-}
-
-simulated function PlayTeamHitSound(int Dmg)
-{
-	local Actor SoundPlayer;
-	local float Pitch;
-	local int HS;
-
-	if (Dmg > 0) {
-
-		zzRecentTeamDmgGiven += Dmg;
-
-	} else if (zzRecentTeamDmgGiven > 0) {
-
-		LastPlaySound = Level.TimeSeconds;	// so voice messages won't overlap
-
-		if ( ViewTarget != None )
-			SoundPlayer = ViewTarget;
-		else
-			SoundPlayer = Self;
-
-		Pitch = FClamp(42/zzRecentTeamDmgGiven, 0.22, 3.2);
-		zzRecentTeamDmgGiven = 0;
-
-		if (bForceDefaultHitSounds && !Settings.bDisableForceHitSounds)
-			HS = DefaultTeamHitSound;
-		else
-			HS = Settings.TeamHitSound;
-
-		if (HS == 1)
-			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
-		else if (HS == 2)
-			SoundPlayer.PlaySound(Sound'HitSound', SLOT_None, 255.0, True,, Pitch);
-		else if (HS == 3)
-			SoundPlayer.PlaySound(Sound'HitSoundFriendly', SLOT_None, 255.0, True);
-
-		zzLastTeamHitSound = LastPlaySound;
-
-	}
-}
-
-simulated function CheckHitSound()
-{
-	if (zzRecentDmgGiven > 0) {
-		if (Level.TimeSeconds - zzLastHitSound > 0.1)
-			PlayHitSound(0);
-	}
-
-	if (zzRecentTeamDmgGiven > 0 && Level.TimeSeconds - zzLastTeamHitSound > 0.1)
-		PlayTeamHitSound(0);
 }
 
 event ServerTick(float DeltaTime) {
@@ -5852,8 +5736,6 @@ function xxPlayerTickEvents(float DeltaTime)
 	local float CurrentTime;
 
 	CurrentTime = Level.TimeSeconds;
-
-	CheckHitSound();
 
 	if (Level.NetMode == NM_Client)
 	{
@@ -8230,6 +8112,13 @@ function MutWarmup GetWarmup() {
 
 exec function TestHitMarker(optional int Dmg) {
 	HitMarkerTestDamage = Dmg;
+}
+
+exec function TestHitSound(optional int Dmg) {
+	class'bbPlayerStatics'.static.PlayHitSound(self, Settings, Dmg, PlayerReplicationInfo.Team, HitMarkerTestTeam);
+	HitMarkerTestTeam += 1;
+	if (HitMarkerTestTeam >= 4)
+		HitMarkerTestTeam = 0;
 }
 
 defaultproperties

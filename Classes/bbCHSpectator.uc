@@ -17,8 +17,6 @@ var Class<PureStats> cStat;	// The class to use
 
 var int   zzRecentDmgGiven, zzRecentTeamDmgGiven;
 var float   zzLastHitSound, zzLastTeamHitSound, zzNextTimeTime;
-var int DefaultHitSound, DefaultTeamHitSound;
-var bool bForceDefaultHitSounds;
 var bool zzbInitialized;
 
 var bool zzTrue,zzFalse;		// True & False
@@ -54,7 +52,7 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		xxSetHitSounds, xxSetTimes, xxReceivePosition; //, xxClientActivateMover;
+		xxSetTimes, xxReceivePosition; //, xxClientActivateMover;
 
 	reliable if ( (!bDemoRecording || (bClientDemoRecording && bClientDemoNetFunc) || (Level.NetMode==NM_Standalone)) && Role == ROLE_Authority )
 		ReceiveWeaponEffect;
@@ -159,15 +157,6 @@ function xxPlayerTickEvents()
 			GameReplicationInfo.SecondCount = Level.TimeSeconds - GRISecondCountOffset;
 		}
 	}
-
-	CheckHitSound();
-}
-
-simulated function xxSetHitSounds(int DHS, int DTHS, bool bFDHS)
-{
-	DefaultHitSound = DHS;
-	DefaultTeamHitSound = DTHS;
-	bForceDefaultHitSounds = bFDHS;
 }
 
 simulated function xxSetTimes(int RemainingTime, int ElapsedTime)
@@ -214,11 +203,6 @@ event Possess()
 	}
 	else
 	{
-		DefaultHitSound = zzUTPure.Default.DefaultHitSound;
-		DefaultTeamHitSound = zzUTPure.Default.DefaultTeamHitSound;
-		bForceDefaultHitSounds = zzUTPure.Default.bForceDefaultHitSounds;
-		xxSetHitSounds(DefaultHitSound, DefaultTeamHitSound, bForceDefaultHitSounds);
-
 		GameReplicationInfo.RemainingTime = DeathMatchPlus(Level.Game).RemainingTime;
 		GameReplicationInfo.ElapsedTime = DeathMatchPlus(Level.Game).ElapsedTime;
 		xxSetTimes(GameReplicationInfo.RemainingTime, GameReplicationInfo.ElapsedTime);
@@ -783,95 +767,6 @@ exec function AdminLogout()
 	Log("Admin was"@PlayerReplicationInfo.PlayerName);
 }
 
-simulated function PlayHitSound(int Dmg)
-{
-	local Actor SoundPlayer;
-	local float Pitch;
-	local int HS;
-
-	if (Dmg > 0) {
-
-		zzRecentDmgGiven += Dmg;
-
-	} else if (zzRecentDmgGiven > 0) {
-
-		LastPlaySound = Level.TimeSeconds;	// so voice messages won't overlap
-
-		if ( ViewTarget != None )
-			SoundPlayer = ViewTarget;
-		else
-			SoundPlayer = Self;
-
-		Pitch = FClamp(42/zzRecentDmgGiven, 0.22, 3.2);
-		zzRecentDmgGiven = 0;
-
-		if (bForceDefaultHitSounds && !Settings.bDisableForceHitSounds)
-			HS = DefaultHitSound;
-		else
-			HS = Settings.HitSound;
-
-		if (HS == 1)
-			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
-		else if (HS == 2)
-			SoundPlayer.PlaySound(Sound'HitSound', SLOT_None, 255.0, True,, Pitch);
-		else if (HS == 3)
-			SoundPlayer.PlaySound(Sound'HitSoundFriendly', SLOT_None, 255.0, True);
-
-		zzLastHitSound = LastPlaySound;
-
-	}
-}
-
-simulated function PlayTeamHitSound(int Dmg)
-{
-	local Actor SoundPlayer;
-	local float Pitch;
-	local int HS;
-
-	if (Dmg > 0) {
-
-		zzRecentTeamDmgGiven += Dmg;
-
-	} else if (zzRecentTeamDmgGiven > 0) {
-
-		LastPlaySound = Level.TimeSeconds;	// so voice messages won't overlap
-
-		if ( ViewTarget != None )
-			SoundPlayer = ViewTarget;
-		else
-			SoundPlayer = Self;
-
-		Pitch = FClamp(42/zzRecentTeamDmgGiven, 0.22, 3.2);
-		zzRecentTeamDmgGiven = 0;
-
-		if (bForceDefaultHitSounds && !Settings.bDisableForceHitSounds)
-			HS = DefaultTeamHitSound;
-		else
-			HS = Settings.TeamHitSound;
-
-		if (HS == 1)
-			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
-		else if (HS == 2)
-			SoundPlayer.PlaySound(Sound'HitSound', SLOT_None, 255.0, True,, Pitch);
-		else if (HS == 3)
-			SoundPlayer.PlaySound(Sound'HitSoundFriendly', SLOT_None, 255.0, True);
-
-		zzLastTeamHitSound = LastPlaySound;
-
-	}
-}
-
-simulated function CheckHitSound()
-{
-	if (zzRecentDmgGiven > 0) {
-		if (Level.TimeSeconds - zzLastHitSound > 0.1)
-			PlayHitSound(0);
-	}
-
-	if (zzRecentTeamDmgGiven > 0 && Level.TimeSeconds - zzLastTeamHitSound > 0.1)
-		PlayTeamHitSound(0);
-}
-
 event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject )
 {
 	if (Message == class'CTFMessage2' && RelatedPRI_1 != None && PureFlag(RelatedPRI_1.HasFlag) != None)
@@ -883,18 +778,12 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 		if (RelatedPRI_1 == None)
 			return;
 
-		if (RelatedPRI_1.Owner == ViewTarget && RelatedPRI_2 != none)
+		if (RelatedPRI_1.Owner == ViewTarget && RelatedPRI_2 != none) {
 			class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
-
-		if (GameReplicationInfo != None && GameReplicationInfo.bTeamGame && RelatedPRI_2 != None && RelatedPRI_1.Team == RelatedPRI_2.Team)
-		{
-			if (Settings.TeamHitSound > 0)
-				Sw = -1*Sw;
-			else
-				return;
+			class'bbPlayerStatics'.static.PlayHitSound(self, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
 		}
-		else if (Settings.HitSound == 0)
-			return;
+
+		return;
 	}
 
 	Super.ReceiveLocalizedMessage(Message, Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);

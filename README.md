@@ -36,50 +36,57 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 8. [TeamHitSound](#teamhitsound)
 9. [bDisableForceHitSounds](#bdisableforcehitsounds)
 10. [bEnableHitSounds](#benablehitsounds)
-11. [selectedHitSound](#selectedhitsound)
-12. [sHitSound](#shitsound)
-13. [bDoEndShot](#bdoendshot)
-14. [bAutoDemo](#bautodemo)
-15. [DemoMask](#demomask)
-16. [DemoPath](#demopath)
-17. [DemoChar](#demochar)
-18. [bTeamInfo](#bteaminfo)
-19. [bShootDead](#bshootdead)
-20. [cShockBeam](#cshockbeam)
-21. [bHideOwnBeam](#bhideownbeam)
-22. [BeamScale](#beamscale)
-23. [BeamFadeCurve](#beamfadecurve)
-24. [BeamDuration](#beamduration)
-25. [BeamOriginMode](#beamoriginmode)
-26. [BeamDestinationMode](#beamdestinationmode)
-27. [SSRRingType](#ssrringtype)
-28. [bNoOwnFootsteps](#bnoownfootsteps)
-29. [DesiredNetUpdateRate](#desirednetupdaterate)
-30. [DesiredNetspeed](#desirednetspeed)
-31. [FakeCAPInterval](#fakecapinterval)
-32. [bNoSmoothing](#bnosmoothing)
-33. [bLogClientMessages](#blogclientmessages)
-34. [bEnableKillCam](#benablekillcam)
-35. [MinDodgeClickTime](#mindodgeclicktime)
-36. [bUseOldMouseInput](#buseoldmouseinput)
-37. [SmoothVRController](#smoothvrcontroller)
-38. [bShowFPS](#bshowfps)
-39. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
-40. [KillCamMinDelay](#killcammindelay)
-41. [bAllowWeaponShake](#ballowweaponshake)
-42. [bAutoReady](#bautoready)
-43. [bEnableHitMarker](#benablehitmarker)
-44. [bEnableTeamHitMarker](#benableteamhitmarker)
-45. [HitMarkerColorMode](#hitmarkercolormode)
-46. [HitMarkerColor](#hitmarkercolor)
-47. [HitMarkerTeamColor](#hitmarkerteamcolor)
-48. [HitMarkerSize](#hitmarkersize)
-49. [HitMarkerOffset](#hitmarkeroffset)
-50. [HitMarkerDuration](#hitmarkerduration)
-51. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-52. [HitMarkerSource](#hitmarkersource)
-53. [bUseCrosshairFactory](#busecrosshairfactory)
-54. [CrosshairLayers](#crosshairlayers)
+11. [bEnableTeamHitSounds](#benableteamhitsounds)
+12. [bHitSoundPitchShift](#bhitsoundpitchshift)
+13. [bHitSoundTeamPitchShift](#bhitsoundteampitchshift)
+14. [HitSoundSource](#hitsoundsource)
+15. [SelectedHitSound](#selectedhitsound)
+16. [SelectedTeamHitSound](#selectedteamhitsound)
+17. [HitSoundVolume](#hitsoundvolume)
+18. [HitSoundTeamVolume](#hitsoundteamvolume)
+19. [sHitSound](#shitsound)
+20. [bDoEndShot](#bdoendshot)
+21. [bAutoDemo](#bautodemo)
+22. [DemoMask](#demomask)
+23. [DemoPath](#demopath)
+24. [DemoChar](#demochar)
+25. [bTeamInfo](#bteaminfo)
+26. [bShootDead](#bshootdead)
+27. [cShockBeam](#cshockbeam)
+28. [bHideOwnBeam](#bhideownbeam)
+29. [BeamScale](#beamscale)
+30. [BeamFadeCurve](#beamfadecurve)
+31. [BeamDuration](#beamduration)
+32. [BeamOriginMode](#beamoriginmode)
+33. [BeamDestinationMode](#beamdestinationmode)
+34. [SSRRingType](#ssrringtype)
+35. [bNoOwnFootsteps](#bnoownfootsteps)
+36. [DesiredNetUpdateRate](#desirednetupdaterate)
+37. [DesiredNetspeed](#desirednetspeed)
+38. [FakeCAPInterval](#fakecapinterval)
+39. [bNoSmoothing](#bnosmoothing)
+40. [bLogClientMessages](#blogclientmessages)
+41. [bEnableKillCam](#benablekillcam)
+42. [MinDodgeClickTime](#mindodgeclicktime)
+43. [bUseOldMouseInput](#buseoldmouseinput)
+44. [SmoothVRController](#smoothvrcontroller)
+45. [bShowFPS](#bshowfps)
+46. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
+47. [KillCamMinDelay](#killcammindelay)
+48. [bAllowWeaponShake](#ballowweaponshake)
+49. [bAutoReady](#bautoready)
+50. [bEnableHitMarker](#benablehitmarker)
+51. [bEnableTeamHitMarker](#benableteamhitmarker)
+52. [HitMarkerColorMode](#hitmarkercolormode)
+53. [HitMarkerColor](#hitmarkercolor)
+54. [HitMarkerTeamColor](#hitmarkerteamcolor)
+55. [HitMarkerSize](#hitmarkersize)
+56. [HitMarkerOffset](#hitmarkeroffset)
+57. [HitMarkerDuration](#hitmarkerduration)
+58. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+59. [HitMarkerSource](#hitmarkersource)
+60. [bUseCrosshairFactory](#busecrosshairfactory)
+61. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -157,11 +164,50 @@ If `True`, server can not override HitSound and TeamHitSound.
 
 If `True`, plays a sound when a weapon you fire hits an enemy on your client.
 If `False`, no sound is played.
-## selectedHitSound
+
+## bEnableTeamHitSounds
+**Type: bool**  
+**Default: False**  
+
+If `True`, plays a sound when a weapon you fire hits a teammate on your client.
+If `False`, no sound is played.
+
+## bHitSoundPitchShift
+**Type: bool**  
+**Default: True**  
+
+Whether the HitSound from hitting enemies should be pitch shifted depending on damage dealt or not.
+
+## bHitSoundTeamPitchShift
+**Type: bool**  
+**Default: False**  
+
+Whether the HitSound from hitting teammates should be pitch shifted depending on damage dealt or not.
+
+## SelectedHitSound
 **Type: int**  
 **Default: 0**  
 
-Index into sHitSound array for the sound to play.
+Index into sHitSound array for the sound to play when hitting an enemy.
+
+## SelectedTeamHitSound
+**Type: int**  
+**Default: 2**  
+
+Index into sHitSound array for the sound to play when hitting a teammate.
+
+## HitSoundVolume
+**Type: float**  
+**Default: 4.0**  
+
+Volume of the HitSound from hitting enemies.
+
+## HitSoundTeamVolume
+**Type: float**  
+**Default: 4.0**  
+
+Volume of the HitSound from hitting teammates.
+
 ## sHitSound
 **Type: string\[16\]**  
 

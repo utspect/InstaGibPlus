@@ -8,6 +8,11 @@ struct PIDControllerSettings {
 	var() float d;
 };
 
+enum EHitSoundSource {
+	HSSRC_Server,
+	HSSRC_Client
+};
+
 var config bool   bForceModels; // if Client wishes models forced to his own. (default false)
 var config bool   bTeamInfo;    // if Client wants extra team info.
 var config bool   bShootDead;
@@ -25,7 +30,14 @@ var config int    HitSound;     // if Client wishes hitsounds (default 2, must b
 var config int    TeamHitSound; // if Client wishes team hitsounds (default 3, must be enabled on server)
 var config bool   bDisableForceHitSounds;
 var config bool   bEnableHitSounds;
-var config int    selectedHitSound;
+var config bool   bEnableTeamHitSounds;
+var config bool   bHitSoundPitchShift;
+var config bool   bHitSoundTeamPitchShift;
+var config EHitSoundSource HitSoundSource;
+var config int    SelectedHitSound;
+var config int    SelectedTeamHitSound;
+var config float  HitSoundVolume;
+var config float  HitSoundTeamVolume;
 var config string sHitSound[16];
 var config int    cShockBeam;
 var config bool   bHideOwnBeam;
@@ -102,9 +114,14 @@ simulated function CheckConfig() {
 
 	PackageName = class'StringUtils'.static.GetPackage();
 
-	for (i = 0; i < arraycount(sHitSound); i++)
-		if (Left(sHitSound[i], 12) ~= "InstaGibPlus")
+	for (i = 0; i < arraycount(sHitSound); i++) {
+		if (Left(sHitSound[i], 12) ~= "InstaGibPlus") {
 			sHitSound[i] = PackageName$Mid(sHitSound[i], InStr(sHitSound[i], "."));
+		}
+		if (sHitSound[i] == "" && sHitSound[i] != default.sHitSound[i]) {
+			sHitSound[i] = default.sHitSound[i];
+		}
+	}
 
 	for (i = 0; i < arraycount(CrosshairLayers); i++) {
 		if (CrosshairLayers[i].bUse) {
@@ -180,7 +197,14 @@ simulated function string DumpSettings() {
 		GetSetting("TeamHitSound")$
 		GetSetting("bDisableForceHitSounds")$
 		GetSetting("bEnableHitSounds")$
-		GetSetting("selectedHitSound")$
+		GetSetting("bEnableTeamHitSounds")$
+		GetSetting("bHitSoundPitchShift")$
+		GetSetting("bHitSoundTeamPitchShift")$
+		GetSetting("HitSoundSource")$
+		GetSetting("SelectedHitSound")$
+		GetSetting("SelectedTeamHitSound")$
+		GetSetting("HitSoundVolume")$
+		GetSetting("HitSoundTeamVolume")$
 		DumpHitSounds()$
 		GetSetting("cShockBeam")$
 		GetSetting("bHideOwnBeam")$
@@ -237,9 +261,17 @@ defaultproperties
 	DesiredTeamSkinFemale=0
 	bUnlitSkins=True
 	bEnableHitSounds=True
-	selectedHitSound=0
+	bEnableTeamHitSounds=False
+	bHitSoundPitchShift=True
+	bHitSoundTeamPitchShift=False
+	HitSoundSource=HSSRC_Server
+	SelectedHitSound=0
+	SelectedTeamHitSound=2
+	HitSoundVolume=4
+	HitSoundTeamVolume=4
 	sHitSound(0)="InstaGibPlus6.HitSound"
 	sHitSound(1)="UnrealShare.StingerFire"
+	sHitSound(2)="InstaGibPlus6.HitSoundFriendly"
 	cShockBeam=1
 	bHideOwnBeam=False
 	BeamScale=0.45

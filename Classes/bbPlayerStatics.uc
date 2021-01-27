@@ -5,6 +5,8 @@ var float HitMarkerLifespan;
 var float HitMarkerSize;
 var color HitMarkerColor;
 var color HitMarkerTeamColors[4];
+var Sound PlayedHitSound;
+var Sound PlayedTeamHitSound;
 
 static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float DeltaTime) {
 	local string FPS;
@@ -114,6 +116,57 @@ static function DrawHitMarker(Canvas C, ClientSettings Settings, float DeltaTime
 	default.HitMarkerLifespan = FMax(0.0, default.HitMarkerLifespan - DeltaTime);
 }
 
+static function Sound GetHitSound(ClientSettings Settings) {
+	if (default.PlayedHitSound == none) {
+		default.PlayedHitSound = Sound(DynamicLoadObject(Settings.sHitSound[Settings.SelectedHitSound], class'Sound'));
+	}
+	return default.PlayedHitSound;
+}
+
+static function Sound GetTeamHitSound(ClientSettings Settings) {
+	if (default.PlayedTeamHitSound == none) {
+		default.PlayedTeamHitSound = Sound(DynamicLoadObject(Settings.sHitSound[Settings.SelectedTeamHitSound], class'Sound'));
+	}
+	return default.PlayedTeamHitSound;
+}
+
+static function PlayHitSound(PlayerPawn Me, ClientSettings Settings, float Damage, int OwnTeam, int EnemyTeam) {
+	local bool bEnable;
+	local bool bPitchShift;
+	local Sound HitSound;
+	local float Volume;
+	local float Pitch;
+
+	if (Me.GameReplicationInfo.bTeamGame && OwnTeam == EnemyTeam) {
+		bEnable = Settings.bEnableTeamHitSounds;
+		bPitchShift = Settings.bHitSoundTeamPitchShift;
+		HitSound = GetTeamHitSound(Settings);
+		Volume = Settings.HitSoundTeamVolume;
+	} else {
+		bEnable = Settings.bEnableHitSounds;
+		bPitchShift = Settings.bHitSoundPitchShift;
+		HitSound = GetHitSound(Settings);
+		Volume = Settings.HitSoundVolume;
+	}
+
+	if (bEnable) {
+		if (bPitchShift)
+			Pitch = FClamp(42/Damage, 0.22, 3.2);
+		else
+			Pitch = 1.0;
+
+		// hack around galaxy
+		if (Me.ConsoleCommand("get ini:engine.engine.audiodevice class") ~= "Class'Galaxy.GalaxyAudioSubsystem'") {
+			while (Volume > 0.0) {
+				Me.PlaySound(HitSound, SLOT_None, FMin(1.0, Volume), false, , Pitch);
+				Volume -= FMin(1.0, Volume);
+			}
+		} else {
+			Me.PlaySound(HitSound, SLOT_None, Volume, false, , Pitch);
+		}
+	}
+}
+
 /**
  * Plays response to client-side hits
  */
@@ -139,12 +192,8 @@ static function PlayClientHitResponse(
 	if (P.Settings.HitMarkerSource == 1)
 		PlayHitMarker(P, P.Settings, Damage, InstigatorTeam, VictimTeam);
 
-	if (Instigator.Level.Game.GameReplicationInfo.bTeamGame == true &&
-		InstigatorTeam == VictimTeam)
-		return;
-
-	if (P.Settings.bEnableHitSounds)
-		P.ClientPlaySound(P.playedHitSound);
+	if (P.Settings.HitSoundSource == 1)
+		PlayHitSound(P, P.Settings, Damage, InstigatorTeam, VictimTeam);
 }
 
 defaultproperties {
