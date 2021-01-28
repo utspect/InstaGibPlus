@@ -536,50 +536,60 @@ Types for parameters:
 Parameters marked `optional` do not have to be supplied.
 
 1. [EnableDebugData](#enabledebugdata)
-2. [EnableHitSounds](#enablehitsounds)
-3. [SetHitSound](#sethitsound)
-4. [ForceModels](#forcemodels)
-5. [ListSkins](#listskins)
-6. [SetForcedSkins](#setforcedskins)
-7. [SetForcedTeamSkins](#setforcedteamskins)
-8. [SetShockBeam](#setshockbeam)
-9. [SetBeamScale](#setbeamscale)
-10. [MyIgSettings](#myigsettings)
-11. [SetNetUpdateRate](#setnetupdaterate)
-12. [SetMouseSmoothing](#setmousesmoothing)
-13. [SetKillCamEnabled](#setkillcamenabled)
-14. [DropFlag](#dropflag)
-15. [PureLogo](#purelogo)
-16. [HitSounds](#hitsounds)
-17. [TeamHitSounds](#teamhitsounds)
-18. [DisableForceHitSounds](#disableforcehitsounds)
-19. [MyHitsounds](#myhitsounds)
-20. [TeamInfo](#teaminfo)
-21. [SetMinDodgeClickTime](#setmindodgeclicktime)
-22. [mdct](#mdct)
-23. [EndShot](#endshot)
-24. [Hold](#hold)
-25. [Go](#go)
-26. [AutoDemo](#autodemo)
-27. [ShootDead](#shootdead)
-28. [SetDemoMask](#setdemomask)
-29. [DemoStart](#demostart)
-30. [ShowFPS](#showfps)
-31. [ShowOwnBeam](#showownbeam)
-32. [Ready](#ready)
+2. [EnableHitSound](#enablehitsound)
+3. [EnableTeamHitSound](#enableteamhitsound)
+4. [SetHitSound](#sethitsound)
+5. [SetTeamHitSound](#setteamhitsound)
+6. [ForceModels](#forcemodels)
+7. [ListSkins](#listskins)
+8. [SetForcedSkins](#setforcedskins)
+9. [SetForcedTeamSkins](#setforcedteamskins)
+10. [SetShockBeam](#setshockbeam)
+11. [SetBeamScale](#setbeamscale)
+12. [MyIgSettings](#myigsettings)
+13. [SetNetUpdateRate](#setnetupdaterate)
+14. [SetMouseSmoothing](#setmousesmoothing)
+15. [SetKillCamEnabled](#setkillcamenabled)
+16. [DropFlag](#dropflag)
+17. [PureLogo](#purelogo)
+18. [TeamInfo](#teaminfo)
+19. [SetMinDodgeClickTime](#setmindodgeclicktime)
+20. [mdct](#mdct)
+21. [EndShot](#endshot)
+22. [Hold](#hold)
+23. [Go](#go)
+24. [AutoDemo](#autodemo)
+25. [ShootDead](#shootdead)
+26. [SetDemoMask](#setdemomask)
+27. [DemoStart](#demostart)
+28. [ShowFPS](#showfps)
+29. [ShowOwnBeam](#showownbeam)
+30. [Ready](#ready)
 
 ## EnableDebugData
 **Parameters: (bool b)**  
 
 Displays a variety of useful debugging information on screen.
-## EnableHitSounds
+## EnableHitSound
 **Parameters: (bool b)**
 
-Enables/Disables client-side hitsounds.
-## SetHitSound
-**Parameters: (int hs)**
+Enables/Disables hitsound when hitting enemies.
 
-Switches between the 16 slots available for hitsounds (see [sHitSound](#shitsound)). `hs` must be a value between `0` and `15`.
+## EnableTeamHitSound
+**Parameters: (bool b)**
+
+Enables/Disables hitsound when hitting teammates.
+
+## SetHitSound
+**Parameters: (byte hs)**
+
+Switches between the 16 slots available for enemy hitsounds (see [sHitSound](#shitsound)). `hs` must be a value between `0` and `15`.
+
+## SetTeamHitSound
+**Parameters: (byte hs)**
+
+Switches between the 16 slots available for teammate hitsounds (see [sHitSound](#shitsound)). `hs` must be a value between `0` and `15`.
+
 
 ## ForceModels
 **Parameters: (bool b)**
@@ -631,17 +641,6 @@ Changes [bEnableKillCam setting](#benablekillcam).
 Drops the currently held flag, if any.
 ## PureLogo
 Shows IG+ version in the bottom left corner of the screen.
-## HitSounds
-**Parameters: (int b)**
-
-Changes server-side hit-sound when damaging enemies. See [HitSound setting](#hitsound).
-## TeamHitSounds
-**Parameters: (int b)**
-
-Changes server-side hit-sound when damaging teammates. See [TeamHitSound setting](#teamhitsound).
-## DisableForceHitSounds
-Overrides (Team)HitSound choice of the server, even if the server forces its (Team)HitSound choice. See [bDisableForceHitSounds setting](#bdisableforcehitsounds).
-## MyHitsounds
 ## TeamInfo
 **Parameters: (bool b)**
 ## SetMinDodgeClickTime
@@ -1001,25 +1000,13 @@ Enable or disable telling spectators of reason for kicks.
 Config list of supported player packs
 
 ## DefaultHitSound
-
-**Type: int**  
-**Default: 2**  
-
-HitSound for enemy damage to use when forcing clients (see [bForceDefaultHitSounds](#bforcedefaulthitsounds)).
+**Reserved**
 
 ## DefaultTeamHitSound
-
-**Type: int**  
-**Default: 3**  
-
-HitSound for friendly fire to use when forcing clients (see [bForceDefaultHitSounds](#bforcedefaulthitsounds)).
+**Reserved**
 
 ## bForceDefaultHitSounds
-
-**Type: bool**  
-**Default: False**  
-
-Force clients to use a specific HitSound.
+**Reserved**
 
 ## TeleRadius
 

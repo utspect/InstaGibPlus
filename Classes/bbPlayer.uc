@@ -3314,15 +3314,23 @@ exec function enableDebugData(bool b) {
 	}
 }
 
-exec function enableHitSounds(bool b) {
+exec function EnableHitSound(bool b) {
 	Settings.bEnableHitSounds = b;
 	Settings.SaveConfig();
 	if (b) {
-		ClientMessage("Hitsounds: on");
-		reconnectClient();
+		ClientMessage("HitSound: on");
 	} else {
-		ClientMessage("Hitsounds: off");
-		reconnectClient();
+		ClientMessage("HitSound: off");
+	}
+}
+
+exec function EnableTeamHitSound(bool b) {
+	Settings.bEnableTeamHitSounds = b;
+	Settings.SaveConfig();
+	if (b) {
+		ClientMessage("Team HitSound: on");
+	} else {
+		ClientMessage("Team HitSound: off");
 	}
 }
 
@@ -3370,16 +3378,24 @@ exec function setForcedTeamSkins(int maleSkin, int femaleSkin) {
 	ClientMessage("Forced team skin set!");
 }
 
-exec function setHitSound(int hs) {
-	if (hs >= 0 && hs <= 16) {
-		Settings.selectedHitSound = hs;
+exec function SetHitSound(byte hs) {
+	if (hs >= 0 && hs < 16) {
+		Settings.SelectedHitSound = hs;
 		Settings.SaveConfig();
-		ClientMessage("Hitsound set!");
-		reconnectClient();
+		ClientMessage("HitSound set!");
 	} else {
-		ClientMessage("Please input a value between 0 and 16");
+		ClientMessage("Please input a value from 0 to 15");
 	}
+}
 
+exec function SetTeamHitSound(byte hs) {
+	if (hs >= 0 && hs < 16) {
+		Settings.SelectedTeamHitSound = hs;
+		Settings.SaveConfig();
+		ClientMessage("Team HitSound set!");
+	} else {
+		ClientMessage("Please input a value from 0 to 15");
+	}
 }
 
 exec function setShockBeam(int sb) {
@@ -6896,48 +6912,6 @@ exec function ForceModels(bool b)
 simulated function reconnectClient() {
 	ConsoleCommand("disconnect");
 	ConsoleCommand("reconnect");
-}
-
-exec function HitSounds(int b)
-{
-	Settings.HitSound = b;
-	Settings.SaveConfig();
-	if (b == 0)
-		ClientMessage("HitSounds: Off");
-	else if (b == 1)
-		ClientMessage("HitSounds: Classic Stinger");
-	else if (b == 2)
-		ClientMessage("HitSounds: Dynamic Cowbell (BWOOM BWOOM BWANG BWANG)");
-	else if (b == 3)
-		ClientMessage("HitSounds: Ouchies!");
-}
-
-exec function TeamHitSounds(int b)
-{
-	Settings.TeamHitSound = b;
-	Settings.SaveConfig();
-	if (b == 0)
-		ClientMessage("TeamHitSounds: Off");
-	else if (b == 1)
-		ClientMessage("TeamHitSounds: Classic Stinger");
-	else if (b == 2)
-		ClientMessage("TeamHitSounds: Dynamic Cowbell (BWOOM BWOOM BWANG BWANG)");
-	else if (b == 3)
-		ClientMessage("TeamHitSounds: Ouchies!");
-}
-
-exec function DisableForceHitSounds()
-{
-	Settings.bDisableForceHitSounds = true;
-	Settings.SaveConfig();
-	ClientMessage("bDisableForceHitSounds: True");
-}
-
-exec function MyHitsounds()
-{
-	Settings.bDisableForceHitSounds = true;
-	Settings.SaveConfig();
-	ClientMessage("bDisableForceHitSounds: True");
 }
 
 exec function TeamInfo(bool b)
