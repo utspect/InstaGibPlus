@@ -779,8 +779,8 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 			return;
 
 		if (RelatedPRI_1.Owner == ViewTarget && RelatedPRI_2 != none) {
-			class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
-			class'bbPlayerStatics'.static.PlayHitSound(self, Settings, Abs(Sw), RelatedPRI_1.Team, RelatedPRI_2.Team);
+			class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
+			class'bbPlayerStatics'.static.PlayHitSound(self, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
 		}
 
 		return;
