@@ -3381,6 +3381,7 @@ exec function setForcedTeamSkins(int maleSkin, int femaleSkin) {
 exec function SetHitSound(byte hs) {
 	if (hs >= 0 && hs < 16) {
 		Settings.SelectedHitSound = hs;
+		class'bbPlayerStatics'.default.PlayedHitSound = none;
 		Settings.SaveConfig();
 		ClientMessage("HitSound set!");
 	} else {
@@ -3391,6 +3392,7 @@ exec function SetHitSound(byte hs) {
 exec function SetTeamHitSound(byte hs) {
 	if (hs >= 0 && hs < 16) {
 		Settings.SelectedTeamHitSound = hs;
+		class'bbPlayerStatics'.default.PlayedTeamHitSound = none;
 		Settings.SaveConfig();
 		ClientMessage("Team HitSound set!");
 	} else {
