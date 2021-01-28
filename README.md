@@ -142,21 +142,13 @@ Any value below zero disables forcing models. For example, if you set [DesiredSk
 If `True`, player skins will not be affected by surrounding lighting, usually making them brighter.
 
 ## HitSound
-**Type: int**  
-**Default: 2**  
+**Reserved**
 
-Plays the specified sound when the server detects you dealing damage to enemies.
 ## TeamHitSound
-**Type: int**  
-**Default: 3**  
+**Reserved**
 
-Plays the specified sound when the server detects you dealing damage to teammates.
 ## bDisableForceHitSounds
-**Type: bool**  
-**Default: False**  
-
-If `False`, server can override HitSound and TeamHitSound.
-If `True`, server can not override HitSound and TeamHitSound.
+**Reserved**
 
 ## bEnableHitSounds
 **Type: bool**  
