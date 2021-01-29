@@ -7759,25 +7759,25 @@ function string xxFindClanTags() {
 		++TeamSize[PRI.Team];
 	}
 
-	MaxTeams = TeamGamePlus(Level.Game).MaxTeams;
+	for (MaxTeams = 0; MaxTeams < 4; ++MaxTeams)
+		if (TeamSize[MaxTeams] == 0)
+			break;
 
 	for (Team = 0; Team < MaxTeams; ++Team) {
 		Tags[Team] = PrefixTags[Team]$SuffixTags[Team];
-		if (Tags[Team] == "") {
+		if (Len(Tags[Team]) == 0) {
 			Tags[Team] = "Mix";
 			++MixCount;
 		}
 	}
 
-	if (MixCount > 1)
+	if (MaxTeams <= 1 || MixCount > 1)
 		return "Unknown";
 
-	for (Team = 0; Team < MaxTeams; ++Team) {
-		if (Team == 0)
-			Result = Tags[Team];
-		else
-			Result = Result$"_"$Tags[Team];
-	}
+	Result = Tags[0];
+	for (Team = 1; Team < MaxTeams; ++Team)
+		Result = Result$"_"$Tags[Team];
+
 	return xxFixFileName(Result, Settings.DemoChar);
 }
 
