@@ -7764,7 +7764,7 @@ function string xxFindClanTags() {
 			break;
 
 	for (Team = 0; Team < MaxTeams; ++Team) {
-		Tags[Team] = PrefixTags[Team]$SuffixTags[Team];
+		Tags[Team] = StringUtils.MergeAffixes(PrefixTags[Team], SuffixTags[Team]);
 		if (Len(Tags[Team]) == 0) {
 			Tags[Team] = "Mix";
 			++MixCount;

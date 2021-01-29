@@ -116,3 +116,10 @@ static function string CommonSuffix(string A, string B) {
 
 	return Right(A, Common);
 }
+
+static function string MergeAffixes(string Prefix, string Suffix) {
+	if (Prefix == Suffix)
+		return Prefix;
+
+	return Prefix$Suffix;
+}
