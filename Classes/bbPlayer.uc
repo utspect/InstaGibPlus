@@ -6010,7 +6010,7 @@ function int GetForcedSkinForPlayer(PlayerReplicationInfo PRI) {
 	local string Anim;
 
 	Anim = string(PRI.Owner.AnimSequence);
-	if (Left(Anim, 8) ~= "DeathEnd" || Left(Anim, 4) ~= "Dead") {
+	if (Left(Anim, 8) ~= "DeathEnd") {
 		// Dont force skin when feigning death to match actual death animations
 		return -1;
 	}
@@ -6077,7 +6077,7 @@ function ApplyBrightskins(PlayerReplicationInfo PRI) {
 
 	if (BrightskinMode >= 1 && Settings.bUnlitSkins) {
 		Anim = string(P.AnimSequence);
-		if (Left(Anim, 5) ~= "Death" || Left(Anim, 4) ~= "Dead") {
+		if (Left(Anim, 8) ~= "DeathEnd") {
 			//
 		} else {
 			P.bUnlit = true;
