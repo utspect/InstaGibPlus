@@ -27,7 +27,7 @@ if ERRORLEVEL 1 goto cleanup
 ucc compress %PACKAGE_NAME%.u
 
 :: copy to release location
-if not exist %BUILD_DIR%System do (mkdir %BUILD_DIR%System)
+if not exist %BUILD_DIR%System (mkdir %BUILD_DIR%System)
 copy %PACKAGE_NAME%.u     %BUILD_DIR%System >NUL
 copy %PACKAGE_NAME%.u.uz  %BUILD_DIR%System >NUL
 
