@@ -130,6 +130,39 @@ static function Sound GetTeamHitSound(ClientSettings Settings) {
 	return default.PlayedTeamHitSound;
 }
 
+static function PlaySoundWithPitch469(PlayerPawn Me, Sound S, float Volume, float Pitch) {
+	local string TSP;
+
+	TSP = Me.GetPropertyText("TransientSoundPriority");
+	Me.SetPropertyText("TransientSoundPriority", "255");
+
+	while (Volume > 0.0) {
+		Me.PlaySound(S, SLOT_None, FMin(1.0, Volume), false, , Pitch);
+		Volume -= FMin(1.0, Volume);
+	}
+
+	Me.SetPropertyText("TransientSoundPriority", TSP);
+}
+
+static function PlaySoundWithPitch436(PlayerPawn Me, Sound S, float Volume, float Pitch) {
+	while (Volume > 0.0) {
+		Me.PlaySound(S, SLOT_None, 16.0, false, , Pitch);
+		Volume -= 1.0;
+	}
+}
+
+static function PlaySoundWithPitch(PlayerPawn Me, Sound S, float Volume, float Pitch) {
+	Volume = FClamp(Volume, 0.0, 6.0);
+
+	if (int(Me.Level.EngineVersion) >= 469) {
+		// >=469
+		PlaySoundWithPitch469(Me, S, Volume, Pitch);
+	} else {
+		// <469
+		PlaySoundWithPitch436(Me, S, Volume, Pitch);
+	}
+}
+
 static function PlayHitSound(PlayerPawn Me, ClientSettings Settings, float Damage, int OwnTeam, int EnemyTeam) {
 	local bool bEnable;
 	local bool bPitchShift;
@@ -155,15 +188,7 @@ static function PlayHitSound(PlayerPawn Me, ClientSettings Settings, float Damag
 		else
 			Pitch = 1.0;
 
-		// hack around galaxy
-		if (Me.ConsoleCommand("get ini:engine.engine.audiodevice class") ~= "Class'Galaxy.GalaxyAudioSubsystem'") {
-			while (Volume > 0.0) {
-				Me.PlaySound(HitSound, SLOT_None, FMin(1.0, Volume), false, , Pitch);
-				Volume -= FMin(1.0, Volume);
-			}
-		} else {
-			Me.PlaySound(HitSound, SLOT_None, Volume, false, , Pitch);
-		}
+		PlaySoundWithPitch(Me, HitSound, Volume, Pitch);
 	}
 }
 
