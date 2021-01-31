@@ -146,7 +146,7 @@ static function PlaySoundWithPitch469(PlayerPawn Me, Sound S, float Volume, floa
 
 static function PlaySoundWithPitch436(PlayerPawn Me, Sound S, float Volume, float Pitch) {
 	while (Volume > 0.0) {
-		Me.PlaySound(S, SLOT_None, 16.0, false, , Pitch);
+		Me.PlaySound(S, SLOT_None, 255.0, false, , Pitch);
 		Volume -= 1.0;
 	}
 }
@@ -192,9 +192,6 @@ static function PlayHitSound(PlayerPawn Me, ClientSettings Settings, float Damag
 	}
 }
 
-/**
- * Plays response to client-side hits
- */
 static function PlayClientHitResponse(
 	Pawn Instigator,
 	Actor Victim,
