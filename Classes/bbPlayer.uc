@@ -7480,7 +7480,7 @@ exec function TeamSay( string Msg )
 {
 	local string OutMsg;
 	local string cmd;
-	local int pos,i, zzi;
+	local int pos, zzi;
 	local int ArmorAmount;
 	local inventory inv;
 
@@ -7490,167 +7490,134 @@ exec function TeamSay( string Msg )
 	local CTFFlag F,Red_F, Blue_F;
 	local float dRed_b, dBlue_b, dRed_f, dBlue_f;
 
-	if (!Class'UTPure'.Default.bAdvancedTeamSay || PlayerReplicationInfo.Team == 255)
-	{
+	if (!Class'UTPure'.Default.bAdvancedTeamSay || PlayerReplicationInfo.Team == 255) {
 		Super.TeamSay(Msg);
 		return;
 	}
 
-	pos = InStr(Msg,"%");
-
-	if (pos>-1)
-	{
-		for (i=0; i < 100; i = 1)
-		{
-			if (pos > 0)
-			{
-				OutMsg = OutMsg$Left(Msg,pos);
-				Msg = Mid(Msg,pos);
-				pos = 0;
-			}
-
-			x = len(Msg);
-			cmd = Mid(Msg,pos,2);
-			if (x-2 > 0)
-				Msg = Right(Msg,x-2);
-			else
-				Msg = "";
-
-			if (cmd == "%H")
-			{
-				OutMsg = OutMsg$Health$" Health";
-			}
-			else if (cmd == "%h")
-			{
-				OutMsg = OutMsg$Health$"%";
-			}
-			else if (cmd ~= "%W")
-			{
-				if (Weapon == None)
-					OutMsg = OutMsg$"Empty hands";
-				else
-					OutMsg = OutMsg$Weapon.GetHumanName();
-			}
-			else if (cmd == "%A")
-			{
-				ArmorAmount = 0;
-				for( Inv=Inventory; Inv != None; Inv = Inv.Inventory )
-				{
-					if (Inv.bIsAnArmor)
-					{
-						if ( Inv.IsA('UT_Shieldbelt') )
-							OutMsg = OutMsg$Inv.Charge@"Shieldbelt and ";
-						else
-							ArmorAmount += Inv.Charge;
-					}
-				}
-				OutMsg = OutMsg$ArmorAmount$" Armor";
-			}
-			else if (cmd == "%a")
-			{
-				ArmorAmount = 0;
-				for( Inv=Inventory; Inv != None; Inv = Inv.Inventory )
-				{
-					if (Inv.bIsAnArmor)
-					{
-						if ( Inv.IsA('UT_Shieldbelt') )
-							OutMsg = OutMsg$Inv.Charge$"SB ";
-						else
-							ArmorAmount += Inv.Charge;
-					}
-				}
-				OutMsg = OutMsg$ArmorAmount$"A";
-			}
-			else if (cmd ~= "%P" && GameReplicationInfo.IsA('CTFReplicationInfo')) //CTF only
-			{
-					// Figure out Posture.
-
-				for (zzi=0; zzi < 4; zzi++)
-				{
-					f = CTFReplicationInfo(GameReplicationInfo).FlagList[zzi];
-					if (f == None)
-						break;
-					if (F.HomeBase.Team == 0)
-						Red_FB = F.HomeBase;
-					else if (F.HomeBase.Team == 1)
-						Blue_FB = F.HomeBase;
-					if (F.Team == 0)
-						Red_F = F;
-					else if (F.Team == 1)
-						Blue_F = F;
-				}
-
-				dRed_b = VSize(Location - Red_FB.Location);
-				dBlue_b = VSize(Location - Blue_FB.Location);
-				dRed_f = VSize(Location - Red_F.Position().Location);
-				dBlue_f = VSize(Location - Blue_F.Position().Location);
-
-				if (PlayerReplicationInfo.Team == 0)
-				{
-					if (dRed_f < 2048 && Red_F.Holder != None && (Blue_f.Holder == None || dRed_f < dBlue_f))
-						zone = 0;
-					else if (dBlue_f < 2048 && Blue_F.Holder != None && (Red_f.Holder == None || dRed_f > dBlue_f))
-						zone = 1;
-					else if (dBlue_b < 2049)
-						zone = 2;
-					else if (dRed_b < 2048)
-						zone = 3;
-					else
-						zone = 4;
-				}
-				else if (PlayerReplicationInfo.Team == 1)
-				{
-					if (dBlue_f < 2048 && Blue_f.Holder != None && (Red_f.Holder == None || dRed_f >= dBlue_f))
-						zone = 0;
-					else if (dRed_f < 2048 && Red_f.Holder != None && (Blue_f.Holder == None || dRed_f < dBlue_f))
-						zone = 1;
-					else if (dRed_b < 2048)
-						zone = 2;
-					else if (dBlue_b < 2048)
-						zone = 3;
-					else
-						zone = 4;
-				}
-
-				if ( (Blue_f.Holder == Self) || (Red_f.Holder == Self) )
-					zone = 5;
-
-				Switch(zone)
-				{
-					Case 0:	OutMsg = OutMsg$"Attacking Enemy Flag Carrier";
-						break;
-					Case 1: OutMsg = OutMsg$"Supporting Our Flag Carrier";
-						break;
-					Case 2: OutMsg = OutMsg$"Attacking";
-						break;
-					Case 3: OutMsg = OutMsg$"Defending";
-						break;
-					Case 4: OutMsg = OutMsg$"Floating";
-						break;
-					Case 5: OutMsg = OutMsg$"Carrying Flag";
-						break;
-				}
-			}
-			else if (cmd == "%%")
-			{
-				OutMsg = OutMsg$"%";
-			}
-			else
-			{
-				OutMsg = OutMsg$cmd;
-			}
-
-			Pos = InStr(Msg,"%");
-
-			if (Pos == -1)
-				break;
+	pos = InStr(Msg, "%");
+	while (pos >= 0) {
+		if (pos > 0) {
+			OutMsg = OutMsg$Left(Msg,pos);
+			Msg = Mid(Msg,pos);
+			pos = 0;
 		}
 
-		if (Len(Msg) > 0)
-		OutMsg = OutMsg$Msg;
+		x = len(Msg);
+		if (x >= 2) {
+			cmd = Left(Msg, 2);
+			Msg = Right(Msg,x-2);
+		} else {
+			OutMsg = OutMsg$Msg;
+			Msg = "";
+			continue;
+		}
+
+		if (cmd == "%H") {
+			OutMsg = OutMsg$Health$" Health";
+		} else if (cmd == "%h") {
+			OutMsg = OutMsg$Health$"%";
+		} else if (cmd ~= "%W") {
+			if (Weapon == None)
+				OutMsg = OutMsg$"Empty hands";
+			else
+				OutMsg = OutMsg$Weapon.GetHumanName();
+		} else if (cmd == "%A") {
+			ArmorAmount = 0;
+			for( Inv=Inventory; Inv != None; Inv = Inv.Inventory ) {
+				if (Inv.bIsAnArmor) {
+					if ( Inv.IsA('UT_Shieldbelt') )
+						OutMsg = OutMsg$Inv.Charge@"Shieldbelt and ";
+					else
+						ArmorAmount += Inv.Charge;
+				}
+			}
+			OutMsg = OutMsg$ArmorAmount$" Armor";
+		} else if (cmd == "%a") {
+			ArmorAmount = 0;
+			for( Inv=Inventory; Inv != None; Inv = Inv.Inventory ) {
+				if (Inv.bIsAnArmor) {
+					if ( Inv.IsA('UT_Shieldbelt') )
+						OutMsg = OutMsg$Inv.Charge$"SB ";
+					else
+						ArmorAmount += Inv.Charge;
+				}
+			}
+			OutMsg = OutMsg$ArmorAmount$"A";
+		} else if (cmd ~= "%P" && GameReplicationInfo.IsA('CTFReplicationInfo')) {
+			// CTF only
+			// Figure out Posture.
+
+			for (zzi=0; zzi < 4; zzi++) {
+				f = CTFReplicationInfo(GameReplicationInfo).FlagList[zzi];
+				if (f == None)
+					break;
+				if (F.HomeBase.Team == 0)
+					Red_FB = F.HomeBase;
+				else if (F.HomeBase.Team == 1)
+					Blue_FB = F.HomeBase;
+				if (F.Team == 0)
+					Red_F = F;
+				else if (F.Team == 1)
+					Blue_F = F;
+			}
+
+			dRed_b = VSize(Location - Red_FB.Location);
+			dBlue_b = VSize(Location - Blue_FB.Location);
+			dRed_f = VSize(Location - Red_F.Position().Location);
+			dBlue_f = VSize(Location - Blue_F.Position().Location);
+
+			if (PlayerReplicationInfo.Team == 0) {
+				if (dRed_f < 2048 && Red_F.Holder != None && (Blue_f.Holder == None || dRed_f < dBlue_f))
+					zone = 0;
+				else if (dBlue_f < 2048 && Blue_F.Holder != None && (Red_f.Holder == None || dRed_f > dBlue_f))
+					zone = 1;
+				else if (dBlue_b < 2049)
+					zone = 2;
+				else if (dRed_b < 2048)
+					zone = 3;
+				else
+					zone = 4;
+			} else if (PlayerReplicationInfo.Team == 1) {
+				if (dBlue_f < 2048 && Blue_f.Holder != None && (Red_f.Holder == None || dRed_f >= dBlue_f))
+					zone = 0;
+				else if (dRed_f < 2048 && Red_f.Holder != None && (Blue_f.Holder == None || dRed_f < dBlue_f))
+					zone = 1;
+				else if (dRed_b < 2048)
+					zone = 2;
+				else if (dBlue_b < 2048)
+					zone = 3;
+				else
+					zone = 4;
+			}
+
+			if ( (Blue_f.Holder == Self) || (Red_f.Holder == Self) )
+				zone = 5;
+
+			Switch(zone) {
+				Case 0:	OutMsg = OutMsg$"Attacking Enemy Flag Carrier";
+					break;
+				Case 1: OutMsg = OutMsg$"Supporting Our Flag Carrier";
+					break;
+				Case 2: OutMsg = OutMsg$"Attacking";
+					break;
+				Case 3: OutMsg = OutMsg$"Defending";
+					break;
+				Case 4: OutMsg = OutMsg$"Floating";
+					break;
+				Case 5: OutMsg = OutMsg$"Carrying Flag";
+					break;
+			}
+		} else if (cmd == "%%") {
+			OutMsg = OutMsg$"%";
+		} else {
+			OutMsg = OutMsg$cmd;
+		}
+
+		pos = InStr(Msg, "%");
 	}
-	else
-		OutMsg = Msg;
+
+	OutMsg = OutMsg$Msg;
 
 	Super.TeamSay(OutMsg);
 }
