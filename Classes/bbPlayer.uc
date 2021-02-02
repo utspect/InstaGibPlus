@@ -4261,8 +4261,8 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 
 event ServerTick(float DeltaTime) {
 	AverageServerDeltaTime = (AverageServerDeltaTime*99 + DeltaTime) * 0.01;
-	xxRememberPosition();
 	IGPlus_ProcessRemoteMovement();
+	xxRememberPosition();
 
 	if (DelayedNavPoint != none) {
 		if (DelayedNavPoint.Class.Name == 'swJumpPad')
