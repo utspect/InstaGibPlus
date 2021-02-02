@@ -89,6 +89,7 @@ var localized config float MaxJitterTime;
 var localized config float MinNetUpdateRate;
 var localized config float MaxNetUpdateRate;
 var localized config bool bEnableServerExtrapolation;
+var localized config bool bEnableServerPacketReordering;
 var localized config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
@@ -1421,11 +1422,12 @@ defaultproperties
 	bRestrictTrading=True
 	MaxTradeTimeMargin=0.1
 	TradePingMargin=0.5
-	bEnableServerExtrapolation=True
 	KillCamDelay=0.0
 	KillCamDuration=2.0
 	bJumpingPreservesMomentum=False
 	bEnableSingleButtonDodge=True
 	bUseFlipAnimation=True
 	BrightskinMode=1
+	bEnableServerExtrapolation=True
+	bEnableServerPacketReordering=True
 }

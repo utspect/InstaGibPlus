@@ -2326,9 +2326,7 @@ function IGPlus_DestroyServerMove(bbServerMove SM) {
 // recursive algorithm, dont use on long chains
 function IGPlus_DestroyServerMoveChain(bbServerMove SM) {
 	if (SM == none) return;
-	if (SM.Next != none) {
-		IGPlus_DestroyServerMoveChain(SM.Next);
-	}
+	IGPlus_DestroyServerMoveChain(SM.Next);
 	IGPlus_DestroyServerMove(SM);
 }
 
@@ -2391,7 +2389,12 @@ function xxServerMove(
 	SM.OldMoveData1 = OldMoveData1;
 	SM.OldMoveData2 = OldMoveData2;
 
-	IGPlus_InsertServerMove(SM);
+	if (class'UTPure'.default.bEnableServerPacketReordering) {
+		IGPlus_InsertServerMove(SM);
+	} else {
+		IGPlus_ApplyServerMove(SM);
+		IGPlus_DestroyServerMove(SM);
+	}
 }
 
 function xxServerMoveDead(
