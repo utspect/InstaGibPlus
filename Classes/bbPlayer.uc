@@ -2310,10 +2310,11 @@ function bbServerMove IGPlus_CreateServerMove() {
 	if (FreeServerMove != none) {
 		F = FreeServerMove;
 		FreeServerMove = F.Next;
+		F.Next = none;
 		return F;
 	}
 
-	return Spawn(class'bbServerMove');
+	return Spawn(class'bbServerMove', self);
 }
 
 function IGPlus_DestroyServerMove(bbServerMove SM) {
