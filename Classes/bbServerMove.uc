@@ -13,3 +13,8 @@ var int OldMoveData1;
 var int OldMoveData2;
 
 var bbServerMove Next;
+
+defaultproperties {
+	bHidden=True
+	RemoteRole=ROLE_None
+}
