@@ -268,8 +268,6 @@ var vector VelocityBeforeTeleporter;
 var rotator RotationBeforeTeleporter;
 var Teleporter LastTouchedTeleporter;
 
-var StringUtils StringUtils;
-
 var int HitMarkerTestDamage;
 var int HitMarkerTestTeam;
 
@@ -540,7 +538,7 @@ simulated function Touch( actor Other )
 	{
 		if (Class'UTPure'.Default.ShowTouchedPackage)
 		{
-			ClientMessage(StringUtils.PackageOfObject(Other));
+			ClientMessage(class'StringUtils'.static.PackageOfObject(Other));
 		}
 
 		if ((Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker')) {
@@ -7798,8 +7796,8 @@ function string xxFindClanTags() {
 			PrefixTags[PRI.Team] = PRI.PlayerName;
 			SuffixTags[PRI.Team] = PRI.PlayerName;
 		} else {
-			PrefixTags[PRI.Team] = StringUtils.CommonPrefix(PrefixTags[PRI.Team], PRI.PlayerName);
-			SuffixTags[PRI.Team] = StringUtils.CommonSuffix(SuffixTags[PRI.Team], PRI.PlayerName);
+			PrefixTags[PRI.Team] = class'StringUtils'.static.CommonPrefix(PrefixTags[PRI.Team], PRI.PlayerName);
+			SuffixTags[PRI.Team] = class'StringUtils'.static.CommonSuffix(SuffixTags[PRI.Team], PRI.PlayerName);
 		}
 
 		++TeamSize[PRI.Team];
@@ -7810,7 +7808,7 @@ function string xxFindClanTags() {
 			break;
 
 	for (Team = 0; Team < MaxTeams; ++Team) {
-		Tags[Team] = StringUtils.MergeAffixes(PrefixTags[Team], SuffixTags[Team]);
+		Tags[Team] = class'StringUtils'.static.MergeAffixes(PrefixTags[Team], SuffixTags[Team]);
 		if (Len(Tags[Team]) == 0) {
 			Tags[Team] = "Mix";
 			++MixCount;
