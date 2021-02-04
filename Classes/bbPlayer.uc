@@ -249,6 +249,8 @@ var float DodgeEndVelocity;
 var float JumpEndVelocity;
 var bool bJumpingPreservesMomentum;
 var bool bUseFlipAnimation;
+var bool bCanWallDodge;
+var int MultiDodgesRemaining;
 
 var bool bAppearanceChanged;
 
@@ -317,6 +319,7 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
+		bCanWallDodge,
 		bIsAlive,
 		bJumpingPreservesMomentum,
 		BrightskinMode,
@@ -903,6 +906,7 @@ event Possess()
 		bJumpingPreservesMomentum = class'UTPure'.default.bJumpingPreservesMomentum;
 		bEnableSingleButtonDodge = class'UTPure'.default.bEnableSingleButtonDodge;
 		bUseFlipAnimation = class'UTPure'.default.bUseFlipAnimation;
+		bCanWallDodge = class'UTPure'.default.bEnableWallDodging;
 
 		if(!zzUTPure.bExludeKickers)
 		{
@@ -4578,6 +4582,8 @@ ignores SeePlayer, HearNoise, Bump;
 			DodgeDir = DODGE_None;
 		}
 
+		MultiDodgesRemaining = bbPlayerReplicationInfo(PlayerReplicationInfo).MaxMultiDodges;
+
 		if (Level.NetMode == NM_Client)
 			ClientDebugMessage("Landed");
 	}
@@ -4585,11 +4591,35 @@ ignores SeePlayer, HearNoise, Bump;
 	simulated function Dodge(eDodgeDir DodgeMove)
 	{
 		local vector X,Y,Z;
+		local vector HitLocation;
+		local vector HitNormal;
+		local Actor  HitActor;
+		local vector TraceStart;
+		local vector TraceEnd;
 
-		if ( bIsCrouching || (Physics != PHYS_Walking) )
+		if ( bIsCrouching || (Physics != PHYS_Walking && Physics != PHYS_Falling) )
+			return;
+		if (Physics == PHYS_Falling && bCanWallDodge == false)
 			return;
 
 		GetAxes(Rotation.Yaw*rot(0,1,0),X,Y,Z);
+
+		if (Physics == PHYS_Falling) {
+			if (DodgeMove == DODGE_Forward)
+				TraceEnd = -X;
+			else if (DodgeMove == DODGE_Back)
+				TraceEnd = X;
+			else if (DodgeMove == DODGE_Left)
+				TraceEnd = -Y;
+			else if (DodgeMove == DODGE_Right)
+				TraceEnd = Y;
+			TraceStart = Location - CollisionHeight*vect(0,0,1) + TraceEnd*CollisionRadius;
+			TraceEnd = TraceStart + TraceEnd*32.0;
+			HitActor = Trace(HitLocation, HitNormal, TraceEnd, TraceStart, false, vect(1,1,1));
+			if ((HitActor == none) || (HitActor != Level && Mover(HitActor) == none))
+				return;
+		}
+
 		if (DodgeMove == DODGE_Forward)
 			Velocity = 1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
 		else if (DodgeMove == DODGE_Back)
@@ -4600,7 +4630,7 @@ ignores SeePlayer, HearNoise, Bump;
 			Velocity = -1.5*GroundSpeed*Y + (Velocity Dot X)*X;
 
 		Velocity.Z = 210;
-		PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, true, 800, 1.0 );
+		PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, false, 800, 1.0 );
 		PlayDodge(DodgeMove);
 		DodgeDir = DODGE_Active;
 		SetPhysics(PHYS_Falling);
@@ -4780,6 +4810,11 @@ ignores SeePlayer, HearNoise, Bump;
 		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
+
+		if (DodgeDir == DODGE_Active && MultiDodgesRemaining > 0) {
+			MultiDodgesRemaining -= 1;
+			DodgeDir = DODGE_None;
+		}
 	}
 
 	function BeginState()
@@ -7269,6 +7304,7 @@ function ClientReStart()
 	}
 
 	IgnoreZChangeTicks = 1;
+	MultiDodgesRemaining = bbPlayerReplicationInfo(PlayerReplicationInfo).MaxMultiDodges;
 }
 
 exec function GetWeapon(class<Weapon> NewWeaponClass )
