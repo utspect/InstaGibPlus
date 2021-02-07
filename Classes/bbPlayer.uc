@@ -213,7 +213,6 @@ var int CompressedViewRotation; // Compressed Pitch/Yaw
 // |     Pitch      |      Yaw       |
 // +----------------+----------------+
 
-var bool bWasDodging;
 var bool bWasPaused;
 
 var float LastAddVelocityTimeStamp[4];
@@ -250,6 +249,7 @@ var float JumpEndVelocity;
 var bool bJumpingPreservesMomentum;
 var bool bUseFlipAnimation;
 var bool bCanWallDodge;
+var bool bDodging;
 var int MultiDodgesRemaining;
 
 var bool bAppearanceChanged;
@@ -1224,6 +1224,8 @@ event PlayerInput( float DeltaTime )
 	bEdgeBack = bOldWasBack != bWasBack;
 	bEdgeLeft = bOldWasLeft != bWasLeft;
 	bEdgeRight = bOldWasRight != bWasRight;
+	if (bEdgeForward || bEdgeBack || bEdgeLeft || bEdgeRight)
+		ClientDebugMessage("BaseY:"@aBaseY@"Strafe:"@aStrafe@bWasForward@bWasBack@bWasLeft@bWasRight);
 
 	bPressedDodge = (bDodge != bOldDodge) && (bDodge > 0);
 	bOldDodge = bDodge;
@@ -2047,11 +2049,6 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 			bHidden = false;
 			SetCollision(true, true, true);
 		}
-
-		// HACK
-		// See below for explanation. Undoing extrapolation can trigger this as well.
-		if (Physics == PHYS_Falling)
-			bWasDodging = bWasDodging || DodgeDir == DODGE_Active;
 
 		MergeCount++;
 
@@ -3018,7 +3015,7 @@ function bbSavedMove xxGetFreeMove() {
 }
 
 function bbSavedMove PickRedundantMove(bbSavedMove Old, bbSavedMove M, vector Accel, EDodgeDir DodgeMove) {
-	if (M.bPressedJump || (DodgeMove > DODGE_None && M.DodgeMove >= DODGE_Left && M.DodgeMove <= DODGE_Back)) {
+	if (M.bPressedJump || (bDodging && M.DodgeMove >= DODGE_Left && M.DodgeMove <= DODGE_Back)) {
 		return M;
 	}
 	if (VSize(Accel - M.Acceleration) > 0.125 * AccelRate) {
@@ -4563,21 +4560,22 @@ ignores SeePlayer, HearNoise, Bump;
 		if (bJumpingPreservesMomentum == false) {
 			Velocity *= vect(1,1,0);
 
-			if (DodgeDir == DODGE_Active)
+			if (bDodging)
 				Vel = VSize(Velocity) * DodgeEndVelocity;
 			else
 				Vel = VSize(Velocity) * JumpEndVelocity;
 
 			Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * FMin(Vel, GroundSpeed);
-		} else if (DodgeDir == DODGE_Active) {
+		} else if (bDodging) {
 			Velocity *= DodgeEndVelocity;
 		} else {
 			Velocity *= JumpEndVelocity;
 		}
 
-		if (DodgeDir == DODGE_Active) {
+		if (bDodging) {
 			DodgeDir = DODGE_Done;
 			DodgeClickTimer = 0.0;
+			bDodging = false;
 		} else {
 			DodgeDir = DODGE_None;
 		}
@@ -4633,6 +4631,7 @@ ignores SeePlayer, HearNoise, Bump;
 		PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, false, 800, 1.0 );
 		PlayDodge(DodgeMove);
 		DodgeDir = DODGE_Active;
+		bDodging = true;
 		SetPhysics(PHYS_Falling);
 		if (Level.NetMode == NM_Client)
 			ClientDebugMessage("Dodged"@DodgeMove);
