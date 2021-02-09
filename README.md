@@ -66,27 +66,28 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 38. [FakeCAPInterval](#fakecapinterval)
 39. [bNoSmoothing](#bnosmoothing)
 40. [bLogClientMessages](#blogclientmessages)
-41. [bEnableKillCam](#benablekillcam)
-42. [MinDodgeClickTime](#mindodgeclicktime)
-43. [bUseOldMouseInput](#buseoldmouseinput)
-44. [SmoothVRController](#smoothvrcontroller)
-45. [bShowFPS](#bshowfps)
-46. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
-47. [KillCamMinDelay](#killcammindelay)
-48. [bAllowWeaponShake](#ballowweaponshake)
-49. [bAutoReady](#bautoready)
-50. [bEnableHitMarker](#benablehitmarker)
-51. [bEnableTeamHitMarker](#benableteamhitmarker)
-52. [HitMarkerColorMode](#hitmarkercolormode)
-53. [HitMarkerColor](#hitmarkercolor)
-54. [HitMarkerTeamColor](#hitmarkerteamcolor)
-55. [HitMarkerSize](#hitmarkersize)
-56. [HitMarkerOffset](#hitmarkeroffset)
-57. [HitMarkerDuration](#hitmarkerduration)
-58. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-59. [HitMarkerSource](#hitmarkersource)
-60. [bUseCrosshairFactory](#busecrosshairfactory)
-61. [CrosshairLayers](#crosshairlayers)
+41. [bDebugMovement](#bdebugmovement)
+42. [bEnableKillCam](#benablekillcam)
+43. [MinDodgeClickTime](#mindodgeclicktime)
+44. [bUseOldMouseInput](#buseoldmouseinput)
+45. [SmoothVRController](#smoothvrcontroller)
+46. [bShowFPS](#bshowfps)
+47. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
+48. [KillCamMinDelay](#killcammindelay)
+49. [bAllowWeaponShake](#ballowweaponshake)
+50. [bAutoReady](#bautoready)
+51. [bEnableHitMarker](#benablehitmarker)
+52. [bEnableTeamHitMarker](#benableteamhitmarker)
+53. [HitMarkerColorMode](#hitmarkercolormode)
+54. [HitMarkerColor](#hitmarkercolor)
+55. [HitMarkerTeamColor](#hitmarkerteamcolor)
+56. [HitMarkerSize](#hitmarkersize)
+57. [HitMarkerOffset](#hitmarkeroffset)
+58. [HitMarkerDuration](#hitmarkerduration)
+59. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+60. [HitMarkerSource](#hitmarkersource)
+61. [bUseCrosshairFactory](#busecrosshairfactory)
+62. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -362,6 +363,11 @@ This is a backport from UT99 client version 469, where the equivalent setting is
 **Default: True**  
 
 Causes all ClientMessages to be logged, if set to `True`
+## bDebugMovement
+**Type: bool**  
+**Default: False**  
+
+Causes IG+ to write movement debugging events to console/demo, depending on whether debug data is enabled at the moment (see [EnableDebugData](#enabledebugdata))
 ## bEnableKillCam
 **Type: bool**  
 **Default: False**  

@@ -52,6 +52,7 @@ var config int    DesiredNetspeed;
 var config bool   bNoSmoothing;
 var config bool   bNoOwnFootsteps;
 var config bool   bLogClientMessages;
+var config bool   bDebugMovement;
 var config bool   bEnableKillCam;
 var config float  FakeCAPInterval; // Send a FakeCAP after no CAP has been sent for this amount of time
 var config float  MinDodgeClickTime; // Minimum time between two presses of the same direction for them to count as a dodge
@@ -218,6 +219,7 @@ simulated function string DumpSettings() {
 		GetSetting("bNoSmoothing")$
 		GetSetting("bNoOwnFootsteps")$
 		GetSetting("bLogClientMessages")$
+		GetSetting("bDebugMovement")$
 		GetSetting("bEnableKillCam")$
 		GetSetting("FakeCAPInterval")$
 		GetSetting("MinDodgeClickTime")$
@@ -285,6 +287,7 @@ defaultproperties
 	bNoSmoothing=False
 	bNoOwnFootsteps=False
 	bLogClientMessages=True
+	bDebugMovement=False
 	bEnableKillCam=False
 	FakeCAPInterval=0.1
 	MinDodgeClickTime=0

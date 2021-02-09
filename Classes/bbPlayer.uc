@@ -1229,7 +1229,7 @@ event PlayerInput( float DeltaTime )
 	bEdgeBack = bOldWasBack != bWasBack;
 	bEdgeLeft = bOldWasLeft != bWasLeft;
 	bEdgeRight = bOldWasRight != bWasRight;
-	if (bEdgeForward || bEdgeBack || bEdgeLeft || bEdgeRight)
+	if (Settings.bDebugMovement && (bEdgeForward || bEdgeBack || bEdgeLeft || bEdgeRight))
 		ClientDebugMessage("BaseY:"@aBaseY@"Strafe:"@aStrafe@bWasForward@bWasBack@bWasLeft@bWasRight);
 
 	bPressedDodge = (bDodge != bOldDodge) && (bDodge > 0);
@@ -4587,7 +4587,7 @@ ignores SeePlayer, HearNoise, Bump;
 
 		MultiDodgesRemaining = bbPlayerReplicationInfo(PlayerReplicationInfo).MaxMultiDodges;
 
-		if (Level.NetMode == NM_Client)
+		if (Settings.bDebugMovement && Level.NetMode == NM_Client)
 			ClientDebugMessage("Landed");
 	}
 
@@ -4638,7 +4638,7 @@ ignores SeePlayer, HearNoise, Bump;
 		DodgeDir = DODGE_Active;
 		bDodging = true;
 		SetPhysics(PHYS_Falling);
-		if (Level.NetMode == NM_Client)
+		if (Settings.bDebugMovement && Level.NetMode == NM_Client)
 			ClientDebugMessage("Dodged"@DodgeMove);
 	}
 
