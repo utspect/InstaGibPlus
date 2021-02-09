@@ -1075,8 +1075,13 @@ event ClientMessage(coerce string zzS, optional Name zzType, optional bool zzbBe
 	zzPrevClientMessage = zzS;
 	Super.ClientMessage(zzS, zzType, zzbBeep);
 	zzPrevClientMessage = "";
-	if (Settings.bLogClientMessages)
-		Log("["$FrameCount@Level.TimeSeconds$"]"@zzS, zzType);
+	if (Settings.bLogClientMessages) {
+		if (zzType == 'IGPlusDebug') {
+			Log(zzS, zzType);
+		} else {
+			Log("["$FrameCount@Level.TimeSeconds$"]"@zzS, zzType);
+		}
+	}
 }
 
 function ClientDebugMessage(coerce string S, optional name Type, optional bool bBeep) {
@@ -1084,7 +1089,7 @@ function ClientDebugMessage(coerce string S, optional name Type, optional bool b
 		return;
 
 	if (Type == '')
-		Type = 'IGPlus';
+		Type = 'IGPlusDebug';
 
 	if (bDrawDebugData) {
 		ClientMessage("["$FrameCount@Level.TimeSeconds$"] "$S, Type, bBeep);
