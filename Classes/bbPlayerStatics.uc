@@ -172,11 +172,11 @@ static function Sound GetTeamHitSound(ClientSettings Settings) {
 	return default.PlayedTeamHitSound;
 }
 
-static function PlaySoundWithPitch469(PlayerPawn Me, Sound S, float Volume, float Pitch) {
+static function PlaySoundWithPitch469(PlayerPawn Me, Sound S, float Volume, optional byte Priority, optional float Pitch) {
 	local string TSP;
 
 	TSP = Me.GetPropertyText("TransientSoundPriority");
-	Me.SetPropertyText("TransientSoundPriority", "255");
+	Me.SetPropertyText("TransientSoundPriority", string(Priority));
 
 	while (Volume > 0.0) {
 		Me.PlaySound(S, SLOT_None, FMin(1.0, Volume), false, , Pitch);
@@ -186,22 +186,22 @@ static function PlaySoundWithPitch469(PlayerPawn Me, Sound S, float Volume, floa
 	Me.SetPropertyText("TransientSoundPriority", TSP);
 }
 
-static function PlaySoundWithPitch436(PlayerPawn Me, Sound S, float Volume, float Pitch) {
+static function PlaySoundWithPitch436(PlayerPawn Me, Sound S, float Volume, optional byte Priority, optional float Pitch) {
 	while (Volume > 0.0) {
-		Me.PlaySound(S, SLOT_None, 255.0, false, , Pitch);
+		Me.PlaySound(S, SLOT_None, float(Priority), false, , Pitch);
 		Volume -= 1.0;
 	}
 }
 
-static function PlaySoundWithPitch(PlayerPawn Me, Sound S, float Volume, float Pitch) {
+static function PlaySoundWithPitch(PlayerPawn Me, Sound S, float Volume, optional byte Priority, optional float Pitch) {
 	Volume = FClamp(Volume, 0.0, 6.0);
 
 	if (int(Me.Level.EngineVersion) >= 469) {
 		// >=469
-		PlaySoundWithPitch469(Me, S, Volume, Pitch);
+		PlaySoundWithPitch469(Me, S, Volume, Priority, Pitch);
 	} else {
 		// <469
-		PlaySoundWithPitch436(Me, S, Volume, Pitch);
+		PlaySoundWithPitch436(Me, S, Volume, Priority, Pitch);
 	}
 }
 
@@ -230,7 +230,7 @@ static function PlayHitSound(PlayerPawn Me, ClientSettings Settings, float Damag
 		else
 			Pitch = 1.0;
 
-		PlaySoundWithPitch(Me, HitSound, Volume, Pitch);
+		PlaySoundWithPitch(Me, HitSound, Volume, 255, Pitch);
 	}
 }
 
