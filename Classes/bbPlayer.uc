@@ -3641,6 +3641,8 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 
 function ViewShake(float DeltaTime)
 {
+	local int Roll;
+
 	if (shaketimer > 0.0) //shake view
 	{
 		shaketimer -= DeltaTime;
@@ -3687,18 +3689,15 @@ function ViewShake(float DeltaTime)
 	else
 	{
 		ShakeVert = 0;
-		ViewRotation.Roll = ViewRotation.Roll & 65535;
-		if (ViewRotation.Roll < 32768)
-		{
-			if ( ViewRotation.Roll > 0 )
-				ViewRotation.Roll = Max(0, ViewRotation.Roll - (Max(ViewRotation.Roll,500) * 10 * FMin(0.1,DeltaTime)));
+		Roll = Utils.RotU2S(ViewRotation.Roll);
+		if (Roll > 0) {
+			Roll -= Max(Roll, 500) * 10 * FMin(0.1, DeltaTime);
+			if (Roll < 0) Roll = 0;
+		} else if (Roll < 0) {
+			Roll -= Min(Roll, -500) * 10 * FMin(0.1, DeltaTime);
+			if (Roll > 0) Roll = 0;
 		}
-		else
-		{
-			ViewRotation.Roll += ((65536 - Max(500,ViewRotation.Roll)) * 10 * FMin(0.1,DeltaTime));
-			if ( ViewRotation.Roll > 65534 )
-				ViewRotation.Roll = 0;
-		}
+		ViewRotation.Roll = Utils.RotS2U(Roll);
 	}
 }
 
