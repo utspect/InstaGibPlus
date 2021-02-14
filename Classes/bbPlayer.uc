@@ -964,10 +964,10 @@ function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 	local int Pitch;
 
 	zzNewRotation.Roll = 0;
-	Pitch = Clamp(zzNewRotation.Pitch << 16 >> 16, -16384, 16383);
-	zzNewRotation.Pitch = 0xFFFF & Pitch;
+	Pitch = Clamp(Utils.RotU2S(zzNewRotation.Pitch), -16384, 16383);
+	zzNewRotation.Pitch = Utils.RotS2U(Pitch);
 	ViewRotation = zzNewRotation;
-	zzNewRotation.Pitch = 0xFFFF & Clamp(Pitch, -RotationRate.Pitch, RotationRate.Pitch);
+	zzNewRotation.Pitch = Utils.RotS2U(Clamp(Pitch, -RotationRate.Pitch, RotationRate.Pitch));
 	SetRotation( zzNewRotation );
 	SetLocation( zzNewLocation );
 
@@ -3715,7 +3715,7 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 	if (!Settings.bUseOldMouseInput)
 		LookUpFractionalPart = PitchDelta - int(PitchDelta);
 
-	ViewRotation.Pitch = Clamp((ViewRotation.Pitch << 16 >> 16), -16384, 16383) & 0xFFFF;
+	ViewRotation.Pitch = Utils.RotS2U(Clamp(Utils.RotU2S(ViewRotation.Pitch), -16384, 16383));
 
 	YawDelta = 32.0 * DeltaTime * aTurn + TurnFractionalPart;
 	ViewRotation.Yaw += int(YawDelta);
@@ -3727,14 +3727,10 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 
 	newRotation = Rotation;
 	newRotation.Yaw = ViewRotation.Yaw;
-	newRotation.Pitch = ViewRotation.Pitch;
-	If ( (newRotation.Pitch > maxPitch * RotationRate.Pitch) && (newRotation.Pitch < 65536 - maxPitch * RotationRate.Pitch) )
-	{
-		If (ViewRotation.Pitch < 32768)
-			newRotation.Pitch = maxPitch * RotationRate.Pitch;
-		else
-			newRotation.Pitch = 65536 - maxPitch * RotationRate.Pitch;
-	}
+	newRotation.Pitch = Utils.RotS2U(Clamp(
+		Utils.RotU2S(ViewRotation.Pitch),
+		-maxPitch * RotationRate.Pitch,
+		maxPitch * RotationRate.Pitch));
 	setRotation(newRotation);
 
 	if (!zzbRepVRData)
@@ -5631,6 +5627,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 function PlayWaiting()
 {
 	local name newAnim;
+	local int Pitch;
 
 	if ( Mesh == None )
 		return;
@@ -5652,25 +5649,20 @@ function PlayWaiting()
 	else
 	{
 		BaseEyeHeight = Default.BaseEyeHeight;
-		ViewRotation.Pitch = ViewRotation.Pitch & 65535;
-		If ( (ViewRotation.Pitch > RotationRate.Pitch)
-			&& (ViewRotation.Pitch < 65536 - RotationRate.Pitch) )
+		Pitch = ViewRotation.Pitch << 16 >> 16;
+		if (Pitch > RotationRate.Pitch)
 		{
-			If (ViewRotation.Pitch < 32768)
-			{
-				if ( (Weapon == None) || (Weapon.Mass < 20) ) {
-					TweenAnim('AimUpSm', 0.3);
-				} else {
-					TweenAnim('AimUpLg', 0.3);
-				}
-			}
+			if ( (Weapon == None) || (Weapon.Mass < 20) )
+				TweenAnim('AimUpSm', 0.3);
 			else
-			{
-				if ( (Weapon == None) || (Weapon.Mass < 20) )
-					TweenAnim('AimDnSm', 0.3);
-				else
-					TweenAnim('AimDnLg', 0.3);
-			}
+				TweenAnim('AimUpLg', 0.3);
+		}
+		else if (Pitch < -RotationRate.Pitch)
+		{
+			if ( (Weapon == None) || (Weapon.Mass < 20) )
+				TweenAnim('AimDnSm', 0.3);
+			else
+				TweenAnim('AimDnLg', 0.3);
 		}
 		else if ( (Weapon != None) && Weapon.bPointing )
 		{
