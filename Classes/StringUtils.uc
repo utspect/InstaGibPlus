@@ -81,14 +81,18 @@ static function string Trim(string source)
 
 static function string FormatFloat(float F, optional int Decimals) {
 	local string Result;
+	local int T;
 	if (Decimals <= 0) return string(int(F));
 	Result = int(F) $ ".";
 	F -= int(F);
 	while(Decimals > 0) {
 		F *= 10;
+		T = int(F);
+		Result = Result $ T;
+		F -= T;
 		Decimals--;
 	}
-	return Result $ int(F);
+	return Result;
 }
 
 static function string CommonPrefix(string A, string B) {
