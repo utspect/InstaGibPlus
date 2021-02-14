@@ -5303,8 +5303,6 @@ state Dying
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
 			return;
 
-		Level.Game.DiscardInventory(self);
-
 		if ( Level.Game.RestartPlayer(self) )
 		{
 			ServerTimeStamp = 0;
@@ -5332,6 +5330,9 @@ state Dying
 			TimeDead += DeltaTime;
 
 		global.ServerTick(DeltaTime);
+
+		if (RealTimeDead > 2*class'UTPure'.default.MaxTradeTimeMargin+AverageServerDeltaTime && Weapon != none)
+			Level.Game.DiscardInventory(self);
 	}
 
 	event PlayerTick( float DeltaTime )
