@@ -5480,6 +5480,7 @@ state Dying
 		bJustRespawned = true;
 		LastKiller = none;
 		ClientUpdateTime = 0;
+		bDodging = false;
 	}
 
 }
