@@ -1,6 +1,11 @@
 class bbPlayerStatics extends Actor;
 
 var float AverageDeltaTime;
+var float DeltaTimeVariance;
+var float MinDeltaTime;
+var float MaxDeltaTime;
+var int LastStatsUpdateTime;
+
 var float HitMarkerLifespan;
 var float HitMarkerSize;
 var color HitMarkerColor;
@@ -11,6 +16,7 @@ var Sound PlayedTeamHitSound;
 static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float DeltaTime) {
 	local string FPS;
 	local float X,Y;
+	local float Variance;
 
 	if (Settings.bShowFPS == false) return;
 
@@ -18,12 +24,48 @@ static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float Delt
 
 	class'CanvasUtils'.static.SaveCanvas(C);
 
-	FPS = class'StringUtils'.static.FormatFloat(MyHud.Level.TimeDilation/default.AverageDeltaTime, 1);
 	C.Style = ERenderStyle.STY_Translucent;
 	C.DrawColor = ChallengeHud(MyHud).WhiteColor;
 	C.Font = ChallengeHud(MyHud).MyFonts.GetSmallFont(C.ClipX);
+
+	FPS = class'StringUtils'.static.FormatFloat(MyHud.Level.TimeDilation/default.AverageDeltaTime, 1);
 	C.TextSize(FPS, X, Y);
 	C.SetPos(C.ClipX - X, 0);
+	C.DrawText(FPS);
+
+	if (Settings.FPSDetail <= 0) return;
+
+	FPS = class'StringUtils'.static.FormatFloat(default.AverageDeltaTime*1000.0/MyHud.Level.TimeDilation, 2) $ " ms";
+	C.TextSize(FPS, X, Y);
+	C.SetPos(C.ClipX - X, Y);
+	C.DrawText(FPS);
+
+	if (Settings.FPSDetail <= 1) return;
+
+	Variance = Square(DeltaTime - default.AverageDeltaTime);
+	default.DeltaTimeVariance = (default.DeltaTimeVariance * float(Settings.FPSCounterSmoothingStrength - 1) + Variance) / float(Settings.FPSCounterSmoothingStrength);
+
+	FPS = class'StringUtils'.static.FormatFloat(Sqrt(default.DeltaTimeVariance)*1000.0/MyHud.Level.TimeDilation, 2) $ " ms";
+	C.TextSize(FPS, X, Y);
+	C.SetPos(C.ClipX - X, 2*Y);
+	C.DrawText(FPS);
+
+	if (Settings.FPSDetail <= 2) return;
+
+	if (int(MyHud.Level.TimeSeconds/3.0) != default.LastStatsUpdateTime) {
+		default.LastStatsUpdateTime = int(MyHud.Level.TimeSeconds/3.0);
+		default.MinDeltaTime = 999.0;
+		default.MaxDeltaTime = 0.0;
+	}
+
+	if (DeltaTime < default.MinDeltaTime)
+		default.MinDeltaTime = DeltaTime;
+	if (DeltaTime > default.MaxDeltaTime)
+		default.MaxDeltaTime = DeltaTime;
+
+	FPS = "Min:"@class'StringUtils'.static.FormatFloat(default.MinDeltaTime*1000/MyHud.Level.TimeDilation, 2)$"ms Max:"@class'StringUtils'.static.FormatFloat(default.MaxDeltaTime*1000/MyHud.Level.TimeDilation, 2)$"ms";
+	C.TextSize(FPS, X, Y);
+	C.SetPos(C.ClipX - X, 3*Y);
 	C.DrawText(FPS);
 
 	class'CanvasUtils'.static.RestoreCanvas(C);

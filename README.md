@@ -72,22 +72,23 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 44. [bUseOldMouseInput](#buseoldmouseinput)
 45. [SmoothVRController](#smoothvrcontroller)
 46. [bShowFPS](#bshowfps)
-47. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
-48. [KillCamMinDelay](#killcammindelay)
-49. [bAllowWeaponShake](#ballowweaponshake)
-50. [bAutoReady](#bautoready)
-51. [bEnableHitMarker](#benablehitmarker)
-52. [bEnableTeamHitMarker](#benableteamhitmarker)
-53. [HitMarkerColorMode](#hitmarkercolormode)
-54. [HitMarkerColor](#hitmarkercolor)
-55. [HitMarkerTeamColor](#hitmarkerteamcolor)
-56. [HitMarkerSize](#hitmarkersize)
-57. [HitMarkerOffset](#hitmarkeroffset)
-58. [HitMarkerDuration](#hitmarkerduration)
-59. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-60. [HitMarkerSource](#hitmarkersource)
-61. [bUseCrosshairFactory](#busecrosshairfactory)
-62. [CrosshairLayers](#crosshairlayers)
+47. [FPSDetail](#fpsdetail)
+48. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
+49. [KillCamMinDelay](#killcammindelay)
+50. [bAllowWeaponShake](#ballowweaponshake)
+51. [bAutoReady](#bautoready)
+52. [bEnableHitMarker](#benablehitmarker)
+53. [bEnableTeamHitMarker](#benableteamhitmarker)
+54. [HitMarkerColorMode](#hitmarkercolormode)
+55. [HitMarkerColor](#hitmarkercolor)
+56. [HitMarkerTeamColor](#hitmarkerteamcolor)
+57. [HitMarkerSize](#hitmarkersize)
+58. [HitMarkerOffset](#hitmarkeroffset)
+59. [HitMarkerDuration](#hitmarkerduration)
+60. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+61. [HitMarkerSource](#hitmarkersource)
+62. [bUseCrosshairFactory](#busecrosshairfactory)
+63. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -400,6 +401,17 @@ This holds the PID settings for the controller thats smoothing the view of playe
 **Default: False**  
 
 If `True`, show averaged FPS information in top right corner. If `False`, show nothing.
+
+## FPSDetail
+**Type: int**  
+**Default: 0**  
+
+How much detail to display about FPS
+
+* 0 ➜ Average FPS only
+* 1 ➜ Average Frame-Time
+* 2 ➜ Standard deviation of Frame-Time
+* 3 ➜ Min/Max Frame-Time over the last 3 seconds
 
 ## FPSCounterSmoothingStrength
 **Type: int**  
