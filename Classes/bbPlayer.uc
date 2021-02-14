@@ -2403,7 +2403,8 @@ function xxServerMove(
 
 function xxServerMoveDead(
 	float TimeStamp,
-	float MoveDeltaTime
+	float MoveDeltaTime,
+	int View
 ){
 	local float ServerDeltaTime;
 	local float DeltaTime;
@@ -2461,6 +2462,9 @@ function xxServerMoveDead(
 
 	Acceleration = vect(0,0,0);
 	Velocity = vect(0,0,0);
+
+	ViewRotation.Yaw = View & 0xFFFF;
+	ViewRotation.Pitch = View >>> 16;
 }
 
 function float CalculateLocError(float DeltaTime, EPhysics Phys, vector ClientVel) {
@@ -5404,7 +5408,7 @@ state Dying
 		ClientUpdateTime += DeltaTime;
 		if (ClientUpdateTime > TimeBetweenNetUpdates) {
 			ClientUpdateTime = 0;
-			xxServerMoveDead(Level.TimeSeconds, DeltaTime);
+			xxServerMoveDead(Level.TimeSeconds, DeltaTime, ((ViewRotation.Pitch << 16) | (ViewRotation.Yaw & 0xFFFF)));
 		}
 	}
 
