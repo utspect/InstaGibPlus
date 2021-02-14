@@ -33,14 +33,14 @@ static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float Delt
 	C.SetPos(C.ClipX - X, 0);
 	C.DrawText(FPS);
 
-	if (Settings.FPSDetail <= 0) return;
+	if (Settings.FPSDetail <= 0) goto end;
 
 	FPS = class'StringUtils'.static.FormatFloat(default.AverageDeltaTime*1000.0/MyHud.Level.TimeDilation, 2) $ " ms";
 	C.TextSize(FPS, X, Y);
 	C.SetPos(C.ClipX - X, Y);
 	C.DrawText(FPS);
 
-	if (Settings.FPSDetail <= 1) return;
+	if (Settings.FPSDetail <= 1) goto end;
 
 	Variance = Square(DeltaTime - default.AverageDeltaTime);
 	default.DeltaTimeVariance = (default.DeltaTimeVariance * float(Settings.FPSCounterSmoothingStrength - 1) + Variance) / float(Settings.FPSCounterSmoothingStrength);
@@ -50,7 +50,7 @@ static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float Delt
 	C.SetPos(C.ClipX - X, 2*Y);
 	C.DrawText(FPS);
 
-	if (Settings.FPSDetail <= 2) return;
+	if (Settings.FPSDetail <= 2) goto end;
 
 	if (int(MyHud.Level.TimeSeconds/3.0) != default.LastStatsUpdateTime) {
 		default.LastStatsUpdateTime = int(MyHud.Level.TimeSeconds/3.0);
@@ -68,6 +68,7 @@ static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float Delt
 	C.SetPos(C.ClipX - X, 3*Y);
 	C.DrawText(FPS);
 
+end:
 	class'CanvasUtils'.static.RestoreCanvas(C);
 }
 
