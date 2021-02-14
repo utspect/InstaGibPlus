@@ -2466,6 +2466,17 @@ function xxServerMoveDead(
 function float CalculateLocError(float DeltaTime, EPhysics Phys, vector ClientVel) {
 	local vector ClientVelCalc;
 	local float PosErrFactor;
+
+	// limit ClientVelocity
+	switch (Phys) {
+	case PHYS_Walking:
+		ClientVel = Normal(ClientVel) * FMin(VSize(ClientVel), GroundSpeed);
+		break;
+	case PHYS_Swimming:
+		ClientVel = Normal(ClientVel) * FMin(VSize(ClientVel), WaterSpeed);
+		break;
+	}
+
 	// Maximum of old and new velocity
 	// Ensures we dont force updates when slowing down or speeding up
 	ClientVelCalc.X = FMax(ClientVel.X, Velocity.X);
@@ -2473,6 +2484,7 @@ function float CalculateLocError(float DeltaTime, EPhysics Phys, vector ClientVe
 	ClientVelCalc.Z = FMax(ClientVel.Z, Velocity.Z);
 
 	PosErrFactor = FMin(DeltaTime, class'UTPure'.default.MaxJitterTime);
+
 	switch (Phys) {
 	case PHYS_Walking:
 		return
