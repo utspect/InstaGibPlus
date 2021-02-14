@@ -276,6 +276,10 @@ var int HitMarkerTestTeam;
 var bbServerMove FirstServerMove;
 var bbServerMove FreeServerMove;
 
+var Utilities Utils;
+var StringUtils StringUtils;
+var bbPlayerStatics PlayerStatics;
+
 replication
 {
 	//	Client->Demo
@@ -839,6 +843,10 @@ static function SetMultiSkin(Actor SkinActor, string SkinName, string FaceName, 
 event Possess()
 {
 	local Kicker K;
+
+	Utils = new class'Utilities';
+	StringUtils = new class'StringUtils';
+	PlayerStatics = Spawn(class'bbPlayerStatics');
 
 	InitSettings();
 
