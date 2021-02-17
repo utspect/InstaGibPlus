@@ -317,7 +317,6 @@ replication
 	// Server->Client
 	reliable if ( bNetOwner && Role == ROLE_Authority )
 		HUDInfo,
-		xxClientAcceptMutator,
 		zzbForceDemo,
 		zzbGameStarted,
 		zzForceSettingsLevel;
@@ -420,7 +419,6 @@ replication
 		xxSendSpreeToSpecs,
 		xxServerAckScreenshot,
 		xxServerAddVelocity,
-		xxServerCheckMutator,
 		xxServerDemoReply,
 		xxServerReceiveConsole,
 		xxServerReceiveINT,
@@ -6357,59 +6355,6 @@ simulated function xxClientDoScreenshot(string zzMagic)
 {
 	zzMagicCode = zzMagic;
 	zzbDoScreenshot = zzTrue;
-}
-
-function xxServerCheckMutator(string zzClass, float zzv)
-{
-	local class<Mutator> zzAc;
-
-	zzAc = class<Mutator>(DynamicLoadObject(zzClass, class'Class'));
-	if (zzAc == None)
-	{
-		zzv = -zzv;	// - = it's a naughty naughty boy (client side only)
-		if (++zzFailedMutes == 50)
-			xxServerCheater("FM");
-	}
-
-	xxClientAcceptMutator(zzClass, zzv);
-}
-
-simulated function xxClientAcceptMutator(string zzClass, float zzv)
-{
-	local int zzi,zzi2;
-
-	if (zzHMCnt == 50)
-		return;
-
-	for (zzi = 0; zzi<50; zzi++)
-	{
-		if (zzWaitMutes[zzi] != None && string(zzWaitMutes[zzi].class) == zzClass)
-		{
-			if (zzv == zzWMCheck[zzi])
-			{
-				for (zzi2 = 0; zzi2 < zzHMCnt; zzi2++)	// Check if HUDMut is already in
-				{
-					if (zzHudMutes[zzi2] != None &&
-						string(zzHudMutes[zzi2].Class) == zzClass)
-					{
-						zzHudMutes[zzi2].Destroy();
-						break;
-					}
-				}
-				zzHudMutes[zzi2] = zzWaitMutes[zzi];
-				zzHMCnt++;
-				zzWaitMutes[zzi] = None;
-				zzWMCheck[zzi] = 0.0;
-			}
-			else if (zzv < 0 && -zzv == zzWMCheck[zzi])
-			{
-				zzWaitMutes[zzi].Destroy();
-				zzWaitMutes[zzi] = None;
-				zzWMCheck[zzi] = 0.0;
-				break;
-			}
-		}
-	}
 }
 
 simulated function xxDrawLogo(canvas zzC, float zzx, float zzY, float zzFadeValue)
