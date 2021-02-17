@@ -61,6 +61,7 @@ var localized config bool bJumpingPreservesMomentum;
 var localized config bool bEnableSingleButtonDodge;
 var localized config bool bUseFlipAnimation;
 var localized config bool bEnableWallDodging;
+var localized config bool bDodgePreserveZMomentum;
 var localized config int MaxMultiDodges;
 var localized config int BrightskinMode; //0=None,1=Unlit
 

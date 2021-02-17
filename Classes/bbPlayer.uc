@@ -250,6 +250,7 @@ var bool bJumpingPreservesMomentum;
 var bool bUseFlipAnimation;
 var bool bCanWallDodge;
 var bool bDodging;
+var bool bDodgePreserveZMomentum;
 var int MultiDodgesRemaining;
 
 var bool bAppearanceChanged;
@@ -324,6 +325,7 @@ replication
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
 		bCanWallDodge,
+		bDodgePreserveZMomentum,
 		bIsAlive,
 		bJumpingPreservesMomentum,
 		BrightskinMode,
@@ -915,6 +917,7 @@ event Possess()
 		bEnableSingleButtonDodge = class'UTPure'.default.bEnableSingleButtonDodge;
 		bUseFlipAnimation = class'UTPure'.default.bUseFlipAnimation;
 		bCanWallDodge = class'UTPure'.default.bEnableWallDodging;
+		bDodgePreserveZMomentum = class'UTPure'.default.bDodgePreserveZMomentum;
 
 		if(!zzUTPure.bExludeKickers)
 		{
@@ -4618,6 +4621,7 @@ ignores SeePlayer, HearNoise, Bump;
 		local Actor  HitActor;
 		local vector TraceStart;
 		local vector TraceEnd;
+		local float VelocityZ;
 
 		if ( bIsCrouching || (Physics != PHYS_Walking && Physics != PHYS_Falling) )
 			return;
@@ -4640,6 +4644,14 @@ ignores SeePlayer, HearNoise, Bump;
 			HitActor = Trace(HitLocation, HitNormal, TraceEnd, TraceStart, false, vect(1,1,1));
 			if ((HitActor == none) || (HitActor != Level && Mover(HitActor) == none))
 				return;
+
+			TakeFallingDamage();
+		}
+
+		if (bDodgePreserveZMomentum) {
+			VelocityZ = Velocity.Z;
+			if (Base != none)
+				VelocityZ += Base.Velocity.Z;
 		}
 
 		if (DodgeMove == DODGE_Forward)
@@ -4651,7 +4663,7 @@ ignores SeePlayer, HearNoise, Bump;
 		else if (DodgeMove == DODGE_Right)
 			Velocity = -1.5*GroundSpeed*Y + (Velocity Dot X)*X;
 
-		Velocity.Z = 210;
+		Velocity.Z = FMax(210, VelocityZ + 210);
 		PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, false, 800, 1.0 );
 		PlayDodge(DodgeMove);
 		DodgeDir = DODGE_Active;

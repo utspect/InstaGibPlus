@@ -772,6 +772,12 @@ Server settings can be found inside InstaGibPlus.ini.
 38. [KillCamDelay](#killcamdelay)
 39. [KillCamDuration](#killcamduration)
 40. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
+41. [bEnableSingleButtonDodge](#benablesinglebuttondodge)
+42. [bUseFlipAnimation](#buseflipanimation)
+43. [bEnableWallDodging](#benablewalldodging)
+44. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
+45. [MaxMultiDodges](#maxmultidodges)
+46. [BrightskinMode](#brightskinmode)
 41. [MinPosError](#minposerror)
 42. [MaxPosError](#maxposerror)
 43. [MaxHitError](#maxhiterror)
@@ -1164,6 +1170,53 @@ KillCam follows the killing player for this long after its start.
 **Default: False**  
 
 If False, players will be slowed down to ground speed upon landing, which prevents Bunny Hopping. If True, landing works like before.
+
+## bEnableSingleButtonDodge
+
+**Type: bool**  
+**Default: False**  
+
+Enables an input button clients can bind to a key, which makes the client dodge in the direction it is currently walking.
+
+Button can be bound to a key by assigning Button bDodge to a key in User.ini under section \[Engine.Input\]
+
+## bUseFlipAnimation
+
+**Type: bool**  
+**Default: True**  
+
+If False, models will not do a flip when dodging forwards, but use an animation similar to that of all other dodge directions.
+
+## bEnableWallDodging
+
+**Type: bool**  
+**Default: False**  
+
+If enabled, allows players to dodge off of walls while in the air.
+
+## bDodgePreserveZMomentum
+
+**Type: bool**  
+**Default: False**  
+
+If True, preserves upward momentum (from lifts and regular jumps) when dodging. Downward momentum is always cancelled out.
+
+## MaxMultiDodges
+
+**Type: int**  
+**Default: 1**  
+
+How many additional dodges you can perform after the first dodge. Only applies when [bEnableWallDodging](#benablewalldodging) is True.
+
+## BrightskinMode
+
+**Type: int**  
+**Default: 1**  
+
+What brightskin mode is allowed for clients.
+
+* 0 ➜ No brightskins allowed
+* 1 ➜ Unlit skins allowed
 
 # Building
 
