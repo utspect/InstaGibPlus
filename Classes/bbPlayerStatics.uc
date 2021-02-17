@@ -266,4 +266,6 @@ defaultproperties {
 	HitMarkerTeamColors(1)=(R=0,G=0,B=255,A=255)
 	HitMarkerTeamColors(2)=(R=0,G=255,B=0,A=255)
 	HitMarkerTeamColors(3)=(R=255,G=200,B=0,A=255)
+	RemoteRole=ROLE_None
+	bHidden=True
 }
