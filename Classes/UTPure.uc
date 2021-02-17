@@ -1430,6 +1430,7 @@ defaultproperties
 	bEnableSingleButtonDodge=True
 	bUseFlipAnimation=True
 	bEnableWallDodging=False
+	bDodgePreserveZMomentum=False
 	MaxMultiDodges=1
 	BrightskinMode=1
 	bEnableServerExtrapolation=True
