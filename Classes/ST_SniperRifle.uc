@@ -195,11 +195,21 @@ state NormalFire
 	}
 }
 
+state ClientFiring
+{
+	simulated function AnimEnd() {
+		local bbPlayer O;
+		O = bbPlayer(Owner);
+		if (O != none)
+			O.ClientDebugMessage("Sniper AnimEnd"@O.ViewRotation.Yaw@O.ViewRotation.Pitch);
+		super.AnimEnd();
+	}
+}
+
 simulated function NN_TraceFire()
 {
 	local vector HitLocation, HitDiff, HitNormal, StartTrace, EndTrace, X,Y,Z;
 	local actor Other;
-	local Pawn PawnOwner;
 	local bbPlayer bbP;
 	local bool bHeadshot;
 
@@ -208,16 +218,15 @@ simulated function NN_TraceFire()
 
 	yModInit();
 
-	PawnOwner = Pawn(Owner);
 	bbP = bbPlayer(Owner);
 	if (bbP == None)
 		return;
 
 	GetAxes(GV,X,Y,Z);
-	StartTrace = Owner.Location + bbP.Eyeheight * vect(0,0,1);
+	StartTrace = Owner.Location + bbP.EyeHeight * vect(0,0,1);
 	EndTrace = StartTrace + (100000 * vector(GV));
 
-	Other = bbP.NN_TraceShot(HitLocation,HitNormal,EndTrace,StartTrace,PawnOwner);
+	Other = bbP.NN_TraceShot(HitLocation,HitNormal,EndTrace,StartTrace,bbP);
 	if (Other.IsA('Pawn'))
 		HitDiff = HitLocation - Other.Location;
 
@@ -228,20 +237,9 @@ simulated function NN_TraceFire()
 simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z, float yMod)
 {
 	local UT_Shellcase s;
-	local bbPlayer O;
 
 	if (Owner.IsA('Bot'))
 		return false;
-
-	O = bbPlayer(Owner);
-
-	if (Other.isA('Pawn')) {
-		if (O.Settings.bEnableHitSounds) {
-			if (!O.GameReplicationInfo.bTeamGame || PlayerPawn(Other).PlayerReplicationInfo.Team != O.PlayerReplicationInfo.Team) {
-				O.ClientPlaySound(O.playedHitSound);
-			}
-		}
-	}
 
 	s = Spawn(class'UT_ShellCase',, '', Owner.Location + CDO + 30 * X + (2.8 * yMod+5.0) * Y - Z * 1);
 	if ( s != None )
@@ -260,19 +258,29 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	{
 		if ( Other.bIsPawn )
 		{
-			if ((Other.GetAnimGroup(Other.AnimSequence) == 'Ducking') && (Other.AnimFrame > -0.03)) {
-				return false; // disable crouching headshot
-			}
-
 			HitLocation += (X * Other.CollisionRadius * 0.5);
-			if (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight)
+			if (HitLocation.Z - Other.Location.Z > GetMinHeadshotZ(Pawn(Other))) {
+				class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, HeadDamage, AltDamageType);
 				return true;
+			}
 		}
 
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}
+	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, HitDamage, MyDamageType);
 	return false;
+}
+
+simulated function float GetMinHeadshotZ(Pawn Other) {
+	local bbPlayer P;
+
+	P = bbPlayer(Other);
+	if (P != none)
+		return (BodyHeight - 0.70 * P.DuckFraction) * P.CollisionHeight;
+
+
+	return BodyHeight * Other.CollisionHeight;
 }
 
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
@@ -314,10 +322,9 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		if ( Other.bIsPawn )
 			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
 
-		if ( (bbP.zzbNN_Special || !bNewNet &&
+		if ((bbP.zzbNN_Special || !bNewNet &&
 			Other.bIsPawn && (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight)
-			&& (instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice)) )
-			&& !PPOther.bIsCrouching && PPOther.GetAnimGroup(PPOther.AnimSequence) != 'Ducking' )
+			&& (instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice))))
 		{
 			if (HeadDamage > 0)
 				Other.TakeDamage(HeadDamage, PawnOwner, HitLocation, 35000 * X, AltDamageType); // was 100 (150) dmg

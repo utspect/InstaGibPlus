@@ -78,3 +78,52 @@ static function string Trim(string source)
 	// Return new string.
 	return result;
 }
+
+static function string FormatFloat(float F, optional int Decimals) {
+	local string Result;
+	local int T;
+	if (Decimals <= 0) return string(int(F));
+	Result = int(F) $ ".";
+	F -= int(F);
+	while(Decimals > 0) {
+		F *= 10;
+		T = int(F);
+		Result = Result $ T;
+		F -= T;
+		Decimals--;
+	}
+	return Result;
+}
+
+static function string CommonPrefix(string A, string B) {
+	local int Common;
+	local int Length;
+
+	Length = Min(Len(A), Len(B));
+
+	for (Common = 0; Common < Length; ++Common)
+		if (Mid(A, Common, 1) != Mid(B, Common, 1))
+			break;
+
+	return Left(A, Common);
+}
+
+static function string CommonSuffix(string A, string B) {
+	local int Common;
+	local int Length;
+
+	Length = Min(Len(A), Len(B));
+
+	for (Common = 0; Common < Length; ++Common)
+		if (Mid(A, Len(A)-Common-1, 1) != Mid(B, Len(B)-Common-1, 1))
+			break;
+
+	return Right(A, Common);
+}
+
+static function string MergeAffixes(string Prefix, string Suffix) {
+	if (Prefix == Suffix)
+		return Prefix;
+
+	return Prefix$Suffix;
+}

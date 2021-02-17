@@ -2,8 +2,8 @@ class PureCTFHUD expands ChallengeCTFHUD;
 
 simulated function DrawStatus(Canvas Canvas)
 {
-	local float StatScale, ChestAmount, ThighAmount, H1, H2, X, Y, XL, DamageTime;
-	Local int ArmorAmount,CurAbs,i,OverTime;
+	local float StatScale, ChestAmount, ThighAmount, H1, H2, X, Y, DamageTime;
+	Local int ArmorAmount,CurAbs,i;
 	Local inventory Inv,BestArmor;
 	local bool bChestArmor, bShieldbelt, bThighArmor, bJumpBoots, bHasDoll;
 	local Bot BotOwner;
@@ -16,18 +16,18 @@ simulated function DrawStatus(Canvas Canvas)
 	i = 0;
 	BestArmor=None;
 	for( Inv=PawnOwner.Inventory; Inv!=None; Inv=Inv.Inventory )
-	{ 
-		if (Inv.bIsAnArmor) 
+	{
+		if (Inv.bIsAnArmor)
 		{
 			if ( Inv.IsA('UT_Shieldbelt') )
-				bShieldbelt = true;
+			bShieldbelt = true;
 			else if ( Inv.IsA('Thighpads') )
 			{
 				ThighAmount += Inv.Charge;
 				bThighArmor = true;
 			}
 			else
-			{ 
+			{
 				bChestArmor = true;
 				ChestAmount += Inv.Charge;
 			}
@@ -38,16 +38,15 @@ simulated function DrawStatus(Canvas Canvas)
 			bJumpBoots = true;
 			BootCharges = Inv.Charge;
 		}
-		else
-		{
-			i++;
-			if ( i > 100 )
-				break; // can occasionally get temporary loops in netplay
-		}
+
+		// avoid infinite loops in netplay
+		// assumes no player will have more than 100 items in their inventory
+		i++;
+		if (i > 100) break;
 	}
 
 	if ( !bHideStatus )
-	{	
+	{
 		TPOwner = TournamentPlayer(PawnOwner);
 		if ( Canvas.ClipX < 400 )
 			bHasDoll = false;
@@ -68,7 +67,7 @@ simulated function DrawStatus(Canvas Canvas)
 			}
 		}
 		if ( bHasDoll )
-		{ 							
+		{
 			Canvas.Style = ERenderStyle.STY_Translucent;
 			StatScale = Scale * StatusScale;
 			X = Canvas.ClipX - 128 * StatScale;
@@ -181,45 +180,7 @@ simulated function DrawStatus(Canvas Canvas)
 
 	if ((bbPlayer(PlayerOwner) != None && bbPlayer(PlayerOwner).HUDInfo > 0) || bbCHSpectator(PlayerOwner) != None)
 	{
-		Canvas.DrawColor = HUDColor;
-
-        i = PlayerOwner.GameReplicationInfo.RemainingTime;
-        if (i == 0)
-        {
-            i = PlayerOwner.GameReplicationInfo.ElapsedTime;
-            if (OverTime < 0)
-                OverTime = i;
-            if (OverTime > 0)
-                i = OverTime - i;
-        }
-        else
-            OverTime = -1;
-
-		XL = 0;
-		if ( i/60 > 199 )
-			XL = 25;
-		else if ( i/60 > 99 )
-			XL = 15;
-
-        if ( bHideStatus && bHideAllWeapons )
-        {
-            X = 0.5 * Canvas.ClipX - 384 * Scale - XL * Scale;
-            Y = Canvas.ClipY - 64 * Scale;
-        }
-        else
-        {
-            X = Canvas.ClipX - 128 * StatScale - 140 * Scale - XL * Scale;
-            Y = 128 * Scale;
-        }
-
-        Canvas.SetPos(X,Y);
-        Canvas.DrawTile(Texture'PureTimeBG', 128*Scale + XL * Scale, 64*Scale, 0, 0, 128.0, 64.0);
-        Canvas.Style = Style;
-        Canvas.DrawColor = WhiteColor;
-		//Class'PureHUDHelper'.Static.TimeFont(Canvas, Scale, MyFonts);
-		//Log("Canvas Scale:"@Scale);
-		//Class'PureHUDHelper'.Static.DrawTime(Canvas, X + 64 * Scale, Y + 32 * Scale, PlayerOwner);
-		DrawTime(Canvas, X, Y, i, XL);
+		class'PureHUDHelper'.static.DrawTime(self, Canvas);
 
 		if (bJumpBoots)
 		{
@@ -240,36 +201,6 @@ simulated function DrawStatus(Canvas Canvas)
 			DrawBigNum(Canvas, BootCharges, X + 4 * Scale, Y + 16 * Scale, 1);
 		}
 	}
-}
-
-simulated function DrawTime(Canvas Canvas, float X, float Y, int Seconds, float ExtraSize)
-{
-	local int Min, Sec;
-	local float FullSize;
-
-	Min = Seconds / 60;
-	Sec = Seconds % 60;
-	X += ExtraSize * Scale;
-
-	if ( Level.bHighDetailMode )
-		Canvas.Style = ERenderStyle.STY_Translucent;
-
-	FullSize = 25 * Scale * 4 + 16 * Scale; //At least 4 digits and : (extra size not counted)
-
-	Canvas.SetPos( X + 64 * Scale, Y + 12 * Scale);
-	Canvas.CurX -= (FullSize / 2);
-	if ( Min >= 100 )
-	{
-		Canvas.CurX -= ExtraSize * Scale;
-		Canvas.DrawTile(Texture'BotPack.HudElements1', Scale*ExtraSize, 64*Scale, ((Min / 100)%10) * 25 + (25 - ExtraSize), 0, ExtraSize, 64.0);
-	}
-	Canvas.DrawTile(Texture'BotPack.HudElements1', Scale*25, 64*Scale, ((Min/10)%10) *25, 0, 25.0, 64.0);
-	Canvas.DrawTile(Texture'BotPack.HudElements1', Scale*25, 64*Scale, (Min%10)*25, 0, 25.0, 64.0);
-	Canvas.CurX -= 6 * Scale;
-	Canvas.DrawTile(Texture'BotPack.HudElements1', Scale*25, 64*Scale, 25, 64, 25.0, 64.0); //DOUBLE DOT HERE
-	Canvas.CurX -= 6 * Scale;
-	Canvas.DrawTile(Texture'BotPack.HudElements1', Scale*25, 64*Scale, ((Sec/10)%10) *25, 0, 25.0, 64.0);
-	Canvas.DrawTile(Texture'BotPack.HudElements1', Scale*25, 64*Scale, (Sec%10)*25, 0, 25.0, 64.0);
 }
 
 function Timer()

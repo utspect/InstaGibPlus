@@ -8,6 +8,19 @@ static function SetMultiSkin(Actor SkinActor, string SkinName, string FaceName, 
 {
 	local string MeshName, SkinItem, SkinPackage;
 
+	local PlayerPawn P;
+	local bbPlayerReplicationInfo bbPRI;
+
+	P = PlayerPawn(SkinActor);
+	if (P != none) {
+		bbPRI = bbPlayerReplicationInfo(P.PlayerReplicationInfo);
+		if (P.Role == ROLE_Authority && bbPRI != none) {
+
+			bbPRI.SkinName = SkinName;
+			bbPRI.FaceName = FaceName;
+		}
+	}
+
 	MeshName = SkinActor.GetItemName(string(SkinActor.Mesh));
 
 	SkinItem = SkinActor.GetItemName(SkinName);
@@ -43,7 +56,7 @@ static function SetMultiSkin(Actor SkinActor, string SkinName, string FaceName, 
 		SetSkinElement(SkinActor, 3, SkinName$"4", SkinName$"4");
 	}
 
-	if( Pawn(SkinActor) != None ) 
+	if( Pawn(SkinActor) != None )
 		Pawn(SkinActor).PlayerReplicationInfo.TalkTexture = Texture(DynamicLoadObject(SkinName$"5Xan", class'Texture'));
 }
 

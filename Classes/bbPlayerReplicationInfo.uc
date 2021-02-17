@@ -1,11 +1,22 @@
 class bbPlayerReplicationInfo extends PlayerReplicationInfo;
 
+var string SkinName;
+var string FaceName;
+var string OriginalName;
+var int MaxMultiDodges;
+
+replication {
+    reliable if (Role == ROLE_Authority)
+        SkinName, FaceName, MaxMultiDodges;
+}
+
 function PostBeginPlay()
 {
     StartTime = Level.TimeSeconds;
     Timer();
     SetTimer(1.0, true);
     bIsFemale = Pawn(Owner).bIsFemale;
+    MaxMultiDodges = class'UTPure'.default.MaxMultiDodges;
 }
 
 function Timer()

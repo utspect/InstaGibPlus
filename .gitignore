@@ -7,5 +7,6 @@
 
 PostBuildHook.bat
 
+/Build/Temp/**/*
 /System/**/*
 !/System/**/InstaGibPlus*.int

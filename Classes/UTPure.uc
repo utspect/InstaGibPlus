@@ -4,6 +4,7 @@ class UTPure extends Mutator config(InstaGibPlus);
 #exec Texture Import File=Textures\bootbit.pcx Name=PureBoots Mips=Off
 #exec Texture Import File=Textures\hudbgplain.pcx Name=PureTimeBG Mips=Off
 #exec Texture Import File=Textures\smallwhitething.pcx Name=PureSWT Mips=Off
+#exec Texture Import File=Textures\Arrow.pcx Name=HitMarkerArrow Mips=Off
 #exec Audio Import FILE=Sounds\HitSound.wav Name=HitSound
 #exec Audio Import FILE=Sounds\HitSoundFriendly.wav Name=HitSoundFriendly
 
@@ -15,7 +16,6 @@ var localized config float SniperDamagePri;
 
 var localized config bool SetPendingWeapon;
 var localized config bool NNAnnouncer;
-var bool DisablePortals;
 
 // Enable or disable.
 var localized config bool bUTPureEnabled;	// Possible to enable/disable UTPure without changing ini's
@@ -38,12 +38,13 @@ var localized config bool bAdvancedTeamSay;	// Enable or disable Advanced TeamSa
 var localized config byte ForceSettingsLevel;	// 0 = off, 1 = PostNetBeginPlay, 2 = SpawnNotify, 3 = Intervalled
 var localized config bool bNoLockdown;		// Enable or disable to have Lockdown when players get hit by mini/pulse
 var localized config bool bWarmup;		// Enable or disable warmup. (bTournament only)
+var localized config bool bUseNewWarmup;
+var localized config int WarmupTimeLimit; // Warmup lasts at most this long
 var localized config bool bCoaches;		// Enable or disable coaching. (bTournament only)
 var localized config bool bAutoPause;		// Enable or disable autopause. (bTournament only)
 var localized config byte ForceModels;		// 0 = Disallow, 1 = Client Selectable, 2 = Forced
 var localized config byte ImprovedHUD;		// 0 = Disabled, 1 = Boots/Clock, 2 = Enhanced Team Info
 var localized config bool bDelayedPickupSpawn;	// Enable or disable delayed first pickup spawn.
-//var localized config bool bNoOvertime;		// Set to True to disable overtime.
 var localized config bool bTellSpectators;	// Enable or disable telling spectators of reason for kicks.
 var localized config string PlayerPacks[8];	// Config list of supported player packs
 var localized config int DefaultHitSound, DefaultTeamHitSound;
@@ -53,11 +54,16 @@ var localized config int ThrowVelocity;	// How far a player can throw weapons
 var localized config bool bForceDemo;		// Forces clients to do demos.
 var localized config bool bRestrictTrading;
 var localized config float MaxTradeTimeMargin; // Only relevant when bRestrictTrading is true
+var localized config float TradePingMargin;
 var localized config float KillCamDelay;
 var localized config float KillCamDuration;
 var localized config bool bJumpingPreservesMomentum;
-var string MapName;
-
+var localized config bool bEnableSingleButtonDodge;
+var localized config bool bUseFlipAnimation;
+var localized config bool bEnableWallDodging;
+var localized config bool bDodgePreserveZMomentum;
+var localized config int MaxMultiDodges;
+var localized config int BrightskinMode; //0=None,1=Unlit
 
 // Nice variables.
 var float zzTeamChangeTime;			// This would be to Prevent Team Change Spamming
@@ -80,25 +86,20 @@ var int zzAntiTimerListState;			// The state of the pickups, calculated each tic
 // Pause control (for Event PlayerCalcView)
 var bool	zzbPaused;			// Game has been paused at one time.
 var float	zzPauseCountdown;		// Give 120 seconds of "ignore FT"
-var localized config int MinPosError;
 var localized config int MaxPosError;
 var localized config int MaxHitError;
 var localized config float MaxJitterTime;
 var localized config float MinNetUpdateRate;
 var localized config float MaxNetUpdateRate;
 var localized config bool bEnableServerExtrapolation;
-var localized config bool bEnableJitterBounding;
+var localized config bool bEnableServerPacketReordering;
 var localized config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
 
 // Auto Pause Handler
-var PureAutoPause	zzAutoPauser;
-
-// What server info is used
-var Class<ServerInfo> zzSI;
-
-var bbPlayer PlayerOwner;
+var PureAutoPause zzAutoPauser;
+var MutWarmup WarmupMutator;
 
 //Add the maplist where kickers will work using normal network
 var localized config string ExcludeMapsForKickers[128];
@@ -106,14 +107,12 @@ var bool bExludeKickers;
 
 replication
 {
-	unreliable if (Role < ROLE_Authority)
-		zzbWarmupPlayers;
-
 	unreliable if (Role == ROLE_Authority)
-		MinPosError, MaxPosError, zzAutoPauser;
-
-	reliable if( Role==ROLE_Authority )
-		NNAnnouncer, bExludeKickers, getErrorDetails;
+		bExludeKickers,
+		bUseNewWarmup,
+		MaxPosError,
+		NNAnnouncer,
+		zzAutoPauser;
 }
 
 //XC_Engine interface
@@ -151,9 +150,6 @@ function PreBeginPlay()
 		zzDMP.HUDType = Class'PureTDMHUD';
 	else if (zzDMP.HUDType == Class'ChallengeHUD')
 		zzDMP.HUDType = Class'PureDMHUD';
-
-	zzSI = Class<ChallengeHUD>(zzDMP.HUDType).Default.ServerInfoClass;
-
 }
 
 function PrintVersionInfo() {
@@ -176,6 +172,7 @@ function PostBeginPlay()
 	local int	ppCnt;
 	local string	ServPacks, curMLHPack, sTag, fullpack;
 	local int XC_Version;
+	local string MapName;
 
 	Super.PostBeginPlay();
 
@@ -283,6 +280,12 @@ function PostBeginPlay()
 	if (bDelayedPickupSpawn)
 		Spawn(Class'PureDPS');
 
+	if (bWarmup && bUseNewWarmup) {
+		WarmupMutator = Spawn(class'MutWarmup');
+		WarmupMutator.Pure = self;
+		Level.Game.BaseMutator.AddMutator(WarmupMutator);
+	}
+
 // Necessary functions to let the "bExludeKickers" list work
 /////////////////////////////////////////////////////////////////////////
 	if(GetCurrentMapName(MapName))
@@ -292,6 +295,7 @@ function PostBeginPlay()
 	SaveConfig();
 
 	ReplaceKickers();
+	ReplaceSwJumpPads();
 }
 
 function ReplaceKickers() {
@@ -329,6 +333,21 @@ function ReplaceKickers() {
 	}
 }
 
+function ReplaceSwJumpPads() {
+	local Teleporter T;
+	local vector L;
+
+	foreach AllActors(class'Teleporter', T) {
+		if (T.Class.Name != 'swJumpPad')
+			continue;
+
+		L.X = int(T.Location.X);
+		L.Y = int(T.Location.Y);
+		L.Z = int(T.Location.Z);
+		T.SetLocation(L);
+	}
+}
+
 // Necessary functions to let the "bExludeKickers" list work
 /////////////////////////////////////////////////////////////////////////
 function bool GetCurrentMapName (out string MapName)
@@ -358,10 +377,6 @@ function bool IsMapExcluded (string MapName)
 }
 
 /////////////////////////////////////////////////////////////////////////
-
-function int getErrorDetails() {
-	return MinPosError;
-}
 
 function SetupClickBoard()
 {
@@ -489,7 +504,7 @@ event Tick(float zzDelta)
 				zzbP.xxClientDoEndShot();
 
 			if ((Level.NetMode == NM_DedicatedServer) ||
-				(Level.NetMode == NM_ListenServer && zzbP.Role < ROLE_Authority))
+				(Level.NetMode == NM_ListenServer && zzbP.RemoteRole == ROLE_AutonomousProxy))
 				zzbP.ServerTick(zzDelta);
 		}
 		else
@@ -712,18 +727,26 @@ function ModifyPlayer(Pawn Other)
 		}
 		else if (zzP != None)
 		{
-			zzP.ViewRotation = Other.ViewRotation;
 			zzP.zzTrackFOV = TrackFOV;
 			zzP.zzCVDelay = CenterViewDelay;
 			zzP.zzCVDeny = !bAllowCenterView;
        		zzP.zzbNoMultiWeapon = !bAllowMultiWeapon;
 			zzP.zzForceSettingsLevel = ForceSettingsLevel;
-			zzP.zzbForceDemo = bForceDemo;
-			zzP.zzbGameStarted = True;
-			zzP.zzbUsingTranslocator = DeathMatchPlus(Level.Game).bUseTranslocator;
-			zzP.KillCamDelay = FMax(0.0, KillCamDelay);
-			zzP.KillCamDuration = KillCamDuration;
-			zzP.bJumpingPreservesMomentum = bJumpingPreservesMomentum;
+			if (bUseNewWarmup) {
+				if (WarmupMutator != none && WarmupMutator.IsInState('WarmupEnded')) {
+					// only set on first spawn after warmup
+					zzP.zzbForceDemo = bForceDemo;
+					zzP.zzbGameStarted = True;
+				}
+			} else {
+				if (zzDMP.CountDown < 1) {
+					// only set on first spawn after warmup
+					zzP.zzbForceDemo = bForceDemo;
+					zzP.zzbGameStarted = True;
+				}
+			}
+			zzP.bHidden = true;
+			zzP.SetCollision(false, false, false);
 		}
 	}
 	Super.ModifyPlayer(Other);
@@ -872,13 +895,14 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		Sender.ClientMessage("- ShowTickrate (Shows the tickrate server is running on)");
 		Sender.ClientMessage("- SetForcedTeamSkins maleSkin femaleSkin (Set forced skins for your team mates. Range: 1-18, Default: 0, 9)");
 		Sender.ClientMessage("- SetForcedSkins maleSkin femaleSkin (Set forced skins for your enemies. Range: 1-18, Default: 0, 9)");
-		Sender.ClientMessage("- EnableHitSounds x (Enables or disables hitsounds, 0 is disabled, 1 is enabled. Default: 1)");
-		Sender.ClientMessage("- SetHitSound x (Sets your current hitsound. Range: 0-16, Default: 0)");
+		Sender.ClientMessage("- Enable(Team)HitSound x (Enables or disables hitsounds, 0 is disabled, 1 is enabled. Default: 1)");
+		Sender.ClientMessage("- Set(Team)HitSound x (Sets your current hitsound. Range: 0-16, Default: 0)");
 		Sender.ClientMessage("- ListSkins (Lists the available skins that can be forced)");
 		Sender.ClientMessage("- SetShockBeam x (1 = Default, 2 = smithY's beam, 3 = No beam, 4 = instant beam) - Sets your Shock Rifle beam type.");
 		Sender.ClientMessage("- SetBeamScale x (Sets your Shock Rifle beam scale. Range: 0.1-1, Default 0.45)");
 		Sender.ClientMessage("- SetNetUpdateRate x (Changes how often you update the server on your position, Default: 100)");
 		Sender.ClientMessage("- SetMouseSmoothing x (0/False disables smoothing, 1/True enables smoothing, Default: True)");
+		Sender.ClientMessage("- ShowFPS (Toggles FPS display in top-right corner)");
 		if (Sender.PlayerReplicationInfo.bAdmin)
 		{
 			Sender.ClientMessage("InstaGib Plus Admin Commands:");
@@ -890,7 +914,11 @@ function Mutate(string MutateString, PlayerPawn Sender)
 			Sender.ClientMessage("- ShowDemos (Will show who is recording demos)");
 		}
 		if (CHSpectator(Sender) != None)
-			Sender.ClientMessage("As spectator, you may need to add 'mutate pure' + command (mutate pures howtickrate)");
+			Sender.ClientMessage("As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickrate)");
+	}
+	else if (MutateString ~= "ready")
+	{
+		bbPlayer(Sender).Ready();
 	}
 	else if (MutateString ~= "EnablePure")
 	{
@@ -988,7 +1016,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 			Sender.ClientMessage(BADminText);
 	}
 	else if (MutateString ~= "geterrordata") {
-		Sender.ClientMessage("MinPosError:"@MinPosError@"MaxPosError:"@MaxPosError);
+		Sender.ClientMessage("MaxPosError:"@MaxPosError);
 	}
 	else if (Left(MutateString,7) ~= "KICKID ")
 	{
@@ -1382,12 +1410,11 @@ defaultproperties
 	ThrowVelocity=750
 	VersionStr="IG+"
 	LongVersion=""
-	ThisVer="5"
-	NiceVer="5"
+	ThisVer="6"
+	NiceVer="6"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
-	MinPosError=100
 	MaxPosError=1000
 	MaxHitError=10000
 	MaxJitterTime=0.1
@@ -1396,9 +1423,15 @@ defaultproperties
 	ShowTouchedPackage=False
 	bRestrictTrading=True
 	MaxTradeTimeMargin=0.1
-	bEnableServerExtrapolation=True
-	bEnableJitterBounding=True
+	TradePingMargin=0.5
 	KillCamDelay=0.0
 	KillCamDuration=2.0
 	bJumpingPreservesMomentum=False
+	bEnableSingleButtonDodge=True
+	bUseFlipAnimation=True
+	bEnableWallDodging=False
+	MaxMultiDodges=1
+	BrightskinMode=1
+	bEnableServerExtrapolation=True
+	bEnableServerPacketReordering=True
 }

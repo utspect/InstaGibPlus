@@ -17,11 +17,8 @@ var Class<PureStats> cStat;	// The class to use
 
 var int   zzRecentDmgGiven, zzRecentTeamDmgGiven;
 var float   zzLastHitSound, zzLastTeamHitSound, zzNextTimeTime;
-var int DefaultHitSound, DefaultTeamHitSound;
-var bool bForceDefaultHitSounds;
 var bool zzbInitialized;
 
-var bool	zzbBadConsole;
 var bool zzTrue,zzFalse;		// True & False
 
 // Smooth ViewRotation when spectating in 1st person
@@ -33,9 +30,14 @@ struct PIDController {
 var PIDController PitchController;
 var PIDController YawController;
 var rotator LastRotation;
+var Actor LastViewTarget;
 
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
+
+var bool bPaused;
+var float GRISecondCountOffset;
+var float LastDeltaTime;
 
 replication
 {
@@ -51,75 +53,36 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		xxSetHitSounds, xxSetTimes, xxReceivePosition, xxClientSpawnSSRBeam; //, xxClientActivateMover;
+		xxSetTimes, xxReceivePosition; //, xxClientActivateMover;
+
+	reliable if ( (!bDemoRecording || (bClientDemoRecording && bClientDemoNetFunc) || (Level.NetMode==NM_Standalone)) && Role == ROLE_Authority )
+		ReceiveWeaponEffect;
 }
 
-simulated function xxClientSpawnSSRBeamInternal(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
-	local ClientSuperShockBeam Smoke;
-	local Vector DVector;
-	local int NumPoints;
-	local rotator SmokeRotation;
-	local vector MoveAmount;
-
-	if (Level.NetMode == NM_DedicatedServer) return;
-
-	DVector = HitLocation - SmokeLocation;
-	NumPoints = VSize(DVector) / 135.0;
-	if ( NumPoints < 1 )
-		return;
-	SmokeRotation = rotator(DVector);
-	SmokeRotation.roll = Rand(65535);
-
-	if (Settings.cShockBeam == 3) return;
-
-	Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
-	if (Smoke == none) return;
-	MoveAmount = DVector / NumPoints;
-
-	if (Settings.cShockBeam == 1) {
-		Smoke.SetProperties(
-			-1,
-			1,
-			1,
-			0.27,
-			MoveAmount,
-			NumPoints - 1);
-
-	} else if (Settings.cShockBeam == 2) {
-		Smoke.SetProperties(
-			PlayerPawn(O).PlayerReplicationInfo.Team,
-			Settings.BeamScale,
-			Settings.BeamFadeCurve,
-			Settings.BeamDuration,
-			MoveAmount,
-			NumPoints - 1);
-
-	} else if (Settings.cShockBeam == 4) {
-		Smoke.SetProperties(
-			PlayerPawn(O).PlayerReplicationInfo.Team,
-			Settings.BeamScale,
-			Settings.BeamFadeCurve,
-			Settings.BeamDuration,
-			MoveAmount,
-			0);
-
-		for (NumPoints = NumPoints - 1; NumPoints > 0; NumPoints--) {
-			SmokeLocation += MoveAmount;
-			Smoke = Spawn(class'ClientSuperShockBeam',O,, SmokeLocation, SmokeRotation);
-			if (Smoke == None) break;
-			Smoke.SetProperties(
-				PlayerPawn(O).PlayerReplicationInfo.Team,
-				Settings.BeamScale,
-				Settings.BeamFadeCurve,
-				Settings.BeamDuration,
-				MoveAmount,
-				0);
-		}
-	}
+function ReceiveWeaponEffect(
+	class<WeaponEffect> Effect,
+	Actor Source,
+	vector SourceLocation,
+	vector SourceOffset,
+	Actor Target,
+	vector TargetLocation,
+	vector TargetOffset,
+	vector HitNormal
+) {
+	Effect.static.Play(self, Settings, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
 }
 
-simulated function xxClientSpawnSSRBeam(vector HitLocation, vector SmokeLocation, vector SmokeOffset, actor O) {
-	xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, O);
+function SendWeaponEffect(
+	class<WeaponEffect> Effect,
+	Actor Source,
+	vector SourceLocation,
+	vector SourceOffset,
+	Actor Target,
+	vector TargetLocation,
+	vector TargetOffset,
+	vector HitNormal
+) {
+	ReceiveWeaponEffect(Effect, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
 }
 
 simulated function xxReceivePosition( bbPlayer Other, vector Loc, vector Vel, bool bSet )
@@ -187,14 +150,14 @@ function int TickPID(out PIDController C, float DeltaTime, int Error) {
 
 function xxPlayerTickEvents()
 {
-	CheckHitSound();
-}
-
-simulated function xxSetHitSounds(int DHS, int DTHS, bool bFDHS)
-{
-	DefaultHitSound = DHS;
-	DefaultTeamHitSound = DTHS;
-	bForceDefaultHitSounds = bFDHS;
+	if (GameReplicationInfo != none && (bPaused ^^ (Level.Pauser != ""))) {
+		bPaused = !bPaused;
+		if (bPaused) {
+			GRISecondCountOffset = Level.TimeSeconds - GameReplicationInfo.SecondCount;
+		} else {
+			GameReplicationInfo.SecondCount = Level.TimeSeconds - GRISecondCountOffset;
+		}
+	}
 }
 
 simulated function xxSetTimes(int RemainingTime, int ElapsedTime)
@@ -241,11 +204,6 @@ event Possess()
 	}
 	else
 	{
-		DefaultHitSound = zzUTPure.Default.DefaultHitSound;
-		DefaultTeamHitSound = zzUTPure.Default.DefaultTeamHitSound;
-		bForceDefaultHitSounds = zzUTPure.Default.bForceDefaultHitSounds;
-		xxSetHitSounds(DefaultHitSound, DefaultTeamHitSound, bForceDefaultHitSounds);
-
 		GameReplicationInfo.RemainingTime = DeathMatchPlus(Level.Game).RemainingTime;
 		GameReplicationInfo.ElapsedTime = DeathMatchPlus(Level.Game).ElapsedTime;
 		xxSetTimes(GameReplicationInfo.RemainingTime, GameReplicationInfo.ElapsedTime);
@@ -257,6 +215,7 @@ auto state InvalidState
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -267,6 +226,7 @@ state FeigningDeath
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -277,6 +237,7 @@ state PlayerFlying
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -287,6 +248,7 @@ state PlayerWaiting
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -297,6 +259,7 @@ state PlayerSpectating
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -307,6 +270,7 @@ state PlayerWaking
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -317,6 +281,7 @@ state Dying
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -327,6 +292,7 @@ state GameEnded
 {
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -341,6 +307,10 @@ function SmoothRotation(float DeltaTime)
 
 	P = bbPlayer(ViewTarget);
 	if (P != none) {
+		if (P != LastViewTarget) {
+			LastRotation = TargetViewRotation;
+			LastViewTarget = P;
+		}
 		if (LastRotation.Pitch != TargetViewRotation.Pitch || LastRotation.Yaw != TargetViewRotation.Yaw)
 			TargetViewRotation = LastRotation;
 
@@ -360,6 +330,7 @@ function SmoothRotation(float DeltaTime)
 
 event PlayerTick( float DeltaTime )
 {
+	LastDeltaTime = DeltaTime;
 	xxPlayerTickEvents();
 	SmoothRotation(DeltaTime);
 }
@@ -385,30 +356,50 @@ event PostNetBeginPlay() {
 
 event PostRender( canvas Canvas )
 {
-	local GameReplicationInfo GRI;
+	local int CH;
 
-	if (Level.Pauser != "")				// Pause Fix/Hack.
-		ForEach AllActors(Class'GameReplicationInfo',GRI)
-		{
-			if (GRI != None)
-			{
-				GRI.SecondCount = Level.TimeSeconds;
-			}
-		}
+	if ((MyHud == none) && (Viewport(Player) != None) && (HUDType != None))
+		MyHud = spawn(HUDType, self);
 
-	if ( myHud != None )
-		myHUD.PostRender(Canvas);
-	else if ( (Viewport(Player) != None) && (HUDType != None) )
-	{
-//		HUDType.Default.bAlwaysTick = True;
-		myHUD = spawn(HUDType, self);
+	if (Settings.bUseCrosshairFactory) {
+		CH = MyHud.Crosshair;
+		MyHud.Crosshair = ChallengeHUD(MyHud).CrosshairCount;
 	}
+	MyHud.PostRender(Canvas);
+	if (Settings.bUseCrosshairFactory) {
+		if (ChallengeHUD(MyHud).bShowInfo == false &&
+			bShowScores == false &&
+			ChallengeHUD(MyHud).bForceScores == false &&
+			bBehindView == false &&
+			Level.LevelAction == LEVACT_None
+		) {
+			class'bbPlayerStatics'.static.DrawCrosshair(Canvas, Settings);
+		}
+		MyHud.Crosshair = CH;
+	}
+
+	class'bbPlayerStatics'.static.DrawFPS(Canvas, MyHud, Settings, LastDeltaTime);
+	class'bbPlayerStatics'.static.DrawHitMarker(Canvas, Settings, LastDeltaTime);
 
 	if (Stat != None && Stat.bShowStats)
 	{
 		Stat.PostRender( Canvas );
 		return;
 	}
+}
+
+function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation, float Dist)
+{
+	local vector View,HitLocation,HitNormal;
+	local float ViewDist;
+
+	CameraRotation = ViewRotation;
+	View = vect(1,0,0) >> CameraRotation;
+	if( Trace( HitLocation, HitNormal, CameraLocation - (Dist + 30) * vector(CameraRotation), CameraLocation ) != None )
+		ViewDist = FMin( (CameraLocation - HitLocation) Dot View, Dist );
+	else
+		ViewDist = Dist;
+	CameraLocation -= (ViewDist - 30) * View;
 }
 
 // Fix the "roll" (upside/sideway view) bug.
@@ -426,34 +417,33 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 		{
 			if ( Level.NetMode == NM_Client )
 			{
-				if ( PTarget.bIsPlayer )
+				if ( PTarget.bIsPlayer ) {
 					PTarget.ViewRotation = TargetViewRotation;
+				}
 				PTarget.EyeHeight = TargetEyeHeight;
 				if ( PTarget.Weapon != None )
 					PTarget.Weapon.PlayerViewOffset = TargetWeaponViewOffset;
 			}
 			if ( PTarget.bIsPlayer )
 				CameraRotation = PTarget.ViewRotation;
-			if ( !bBehindView )
-				CameraLocation.Z += PTarget.EyeHeight;
+			CameraLocation.Z += PTarget.EyeHeight;
 		}
 		CameraRotation.Roll = 0;
 
 		if ( bBehindView )
-			CalcBehindView(CameraLocation, CameraRotation, 180);
+			xxCalcBehindView(CameraLocation, CameraRotation, 180);
 		return;
 	}
 
 	ViewActor = Self;
 	CameraLocation = Location;
+	CameraLocation.Z += EyeHeight;
 
-	if( bBehindView ) //up and behind
-		CalcBehindView(CameraLocation, CameraRotation, 150);
-	else
-	{
+	if( bBehindView ) { //up and behind
+		xxCalcBehindView(CameraLocation, CameraRotation, 150);
+	} else {
 		// First-person view.
 		CameraRotation = ViewRotation;
-		CameraLocation.Z += EyeHeight;
 		CameraLocation += WalkBob;
 	}
 }
@@ -487,8 +477,18 @@ auto state CheatFlying
 {
 	ignores Speech,ShowInventory,ShowPath,Profile,ServerTaunt;
 
+	function ForceOldServerMove() {
+		local ENetRole R;
+		R = Level.Role;
+		Level.Role = ROLE_Authority;
+		Level.SetPropertyText("ServerMoveVersion", "0");
+		Level.Role = R;
+	}
+
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
+		ForceOldServerMove();
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -595,6 +595,7 @@ state PlayerWalking
 
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -610,6 +611,7 @@ state PlayerSwimming
 
 	event PlayerTick( float DeltaTime )
 	{
+		LastDeltaTime = DeltaTime;
 		xxPlayerTickEvents();
 		SmoothRotation(DeltaTime);
 		Super.PlayerTick(DeltaTime);
@@ -770,93 +772,6 @@ exec function AdminLogout()
 	Log("Admin was"@PlayerReplicationInfo.PlayerName);
 }
 
-simulated function PlayHitSound(int Dmg)
-{
-	local Actor SoundPlayer;
-	local float Pitch;
-	local int HS;
-
-	if (Dmg > 0) {
-
-		zzRecentDmgGiven += Dmg;
-
-	} else if (zzRecentDmgGiven > 0) {
-
-		LastPlaySound = Level.TimeSeconds;	// so voice messages won't overlap
-
-		if ( ViewTarget != None )
-			SoundPlayer = ViewTarget;
-		else
-			SoundPlayer = Self;
-
-		Pitch = FClamp(42/zzRecentDmgGiven, 0.22, 3.2);
-		zzRecentDmgGiven = 0;
-
-		if (bForceDefaultHitSounds && !Settings.bDisableForceHitSounds)
-			HS = DefaultHitSound;
-		else
-			HS = Settings.HitSound;
-
-		if (HS == 1)
-			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
-		else if (HS == 2)
-			SoundPlayer.PlaySound(Sound'HitSound', SLOT_None, 255.0, True,, Pitch);
-		else if (HS == 3)
-			SoundPlayer.PlaySound(Sound'HitSoundFriendly', SLOT_None, 255.0, True);
-
-		zzLastHitSound = LastPlaySound;
-
-	}
-}
-
-simulated function PlayTeamHitSound(int Dmg)
-{
-	local Actor SoundPlayer;
-	local float Pitch;
-	local int HS;
-
-	if (Dmg > 0) {
-
-		zzRecentTeamDmgGiven += Dmg;
-
-	} else if (zzRecentTeamDmgGiven > 0) {
-
-		LastPlaySound = Level.TimeSeconds;	// so voice messages won't overlap
-
-		if ( ViewTarget != None )
-			SoundPlayer = ViewTarget;
-		else
-			SoundPlayer = Self;
-
-		Pitch = FClamp(42/zzRecentTeamDmgGiven, 0.22, 3.2);
-		zzRecentTeamDmgGiven = 0;
-
-		if (bForceDefaultHitSounds && !Settings.bDisableForceHitSounds)
-			HS = DefaultTeamHitSound;
-		else
-			HS = Settings.TeamHitSound;
-
-		if (HS == 1)
-			SoundPlayer.PlaySound(Sound'UnrealShare.StingerFire', SLOT_None, 255.0, True);
-		else if (HS == 2)
-			SoundPlayer.PlaySound(Sound'HitSound', SLOT_None, 255.0, True,, Pitch);
-		else if (HS == 3)
-			SoundPlayer.PlaySound(Sound'HitSoundFriendly', SLOT_None, 255.0, True);
-
-		zzLastTeamHitSound = LastPlaySound;
-
-	}
-}
-
-simulated function CheckHitSound()
-{
-	if (zzRecentDmgGiven > 0 && Level.TimeSeconds - zzLastHitSound > 0.1)
-		PlayHitSound(0);
-
-	if (zzRecentTeamDmgGiven > 0 && Level.TimeSeconds - zzLastTeamHitSound > 0.1)
-		PlayTeamHitSound(0);
-}
-
 event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject )
 {
 	if (Message == class'CTFMessage2' && RelatedPRI_1 != None && PureFlag(RelatedPRI_1.HasFlag) != None)
@@ -868,15 +783,12 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 		if (RelatedPRI_1 == None)
 			return;
 
-		if (GameReplicationInfo != None && GameReplicationInfo.bTeamGame && RelatedPRI_2 != None && RelatedPRI_1.Team == RelatedPRI_2.Team)
-		{
-			if (Settings.TeamHitSound > 0)
-				Sw = -1*Sw;
-			else
-				return;
+		if (RelatedPRI_1.Owner == ViewTarget && RelatedPRI_2 != none) {
+			class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
+			class'bbPlayerStatics'.static.PlayHitSound(self, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
 		}
-		else if (Settings.HitSound == 0)
-			return;
+
+		return;
 	}
 
 	Super.ReceiveLocalizedMessage(Message, Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
@@ -937,6 +849,15 @@ exec function FindFlag()
 
 exec function ShowStats()
 {
+}
+
+exec function ShowFPS() {
+	Settings.bShowFPS = !Settings.bShowFPS;
+	Settings.SaveConfig();
+	if (Settings.bShowFPS)
+		ClientMessage("FPS shown!", 'IGPlus');
+	else
+		ClientMessage("FPS hidden!", 'IGPlus');
 }
 
 defaultproperties

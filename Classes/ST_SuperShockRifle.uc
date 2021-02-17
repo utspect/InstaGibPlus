@@ -156,15 +156,18 @@ simulated function PlayFiring()
 {
 	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*4.0);
 	if (Level.NetMode == NM_Client)
-		LoopAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
+		PlayAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
 	else
-		LoopAnim('Fire1', 0.22 + 0.22 * FireAdjust,0.05);
+		PlayAnim('Fire1', 0.22 + 0.22 * FireAdjust,0.05);
 }
 
 simulated function PlayAltFiring()
 {
 	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*4.0);
-	LoopAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
+	if (Level.NetMode == NM_Client)
+		PlayAnim('Fire1', 0.20 + 0.20 * FireAdjust,0.05);
+	else
+		PlayAnim('Fire1', 0.22 + 0.22 * FireAdjust,0.05);
 }
 
 function AltFire( float Value )
@@ -299,11 +302,9 @@ simulated function NN_TraceFire()
 
 simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
-
 	local bbPlayer bbP;
-	local float is, f;
-	local actor a;
 	local vector Offset;
+	local vector HitOffset;
 
 	if (Owner.IsA('Bot'))
 		return false;
@@ -312,48 +313,28 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	{
 		HitNormal = -X;
 		HitLocation = Owner.Location + X*100000.0;
+		HitOffset = HitLocation;
+	} else {
+		HitOffset = HitLocation - Other.Location;
 	}
-
-	Offset = CDO + (FireOffset.X + 20) * X + Y * yMod + FireOffset.Z * Z;
-	NN_SpawnEffect(HitLocation, Owner.Location + Offset, Offset, HitNormal);
-
-	is = ImpactSize;
-	f = 60000.0;
 
 	bbP = bbPlayer(Owner);
+	if (bbP == none) return false;
 
-	if (Other.isA('Pawn')) {
-		if (bbP.Settings.bEnableHitSounds) {
-			if (!bbP.GameReplicationInfo.bTeamGame || bbPlayer(Other).PlayerReplicationInfo.Team != bbP.PlayerReplicationInfo.Team) {
-				//Log("Hitsound:"@bbP.playedHitSound);
-				bbP.ClientPlaySound(bbP.playedHitSound);
-			}
-		}
-	}
+	Offset = CDO + (FireOffset.X + 20) * X + Y * yMod + FireOffset.Z * Z;
+	bbPlayer(Owner).SendWeaponEffect(
+		class'SuperShockRifleWeaponEffect',
+		Owner,
+		Owner.Location + Offset,
+		Offset,
+		Other,
+		HitLocation,
+		HitOffset,
+		HitNormal);
 
-	if (bbPlayer(Owner).Settings.cShockBeam == 2) {
-		if (bbPlayer(Owner).PlayerReplicationInfo.Team == 1) {
-			Spawn(class'ut_RingExplosion',,, HitLocation+HitNormal*8,rotator(HitNormal));
-			a = Spawn(class'EnergyImpact');
-			a.RemoteRole = ROLE_None;
-		} else
-			Spawn(class'ut_SuperRing2',,, HitLocation+HitNormal*8,rotator(HitNormal));
-	} else
-		Spawn(class'ut_SuperRing2',,, HitLocation+HitNormal*8,rotator(HitNormal));
-
-	if (bbPlayer(Owner) != None)
-		bbPlayer(Owner).xxClientDemoFix(None, class'ut_SuperRing2',HitLocation+HitNormal*8,,, rotator(HitNormal));
+	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, HitDamage, ST_MyDamageType);
 
 	return false;
-}
-
-simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vector SmokeOffset, vector HitNormal)
-{
-	if (Owner.IsA('Bot'))
-		return;
-
-	bbPlayer(Owner).xxClientSpawnSSRBeamInternal(HitLocation, SmokeLocation, SmokeOffset, Owner);
-	bbPlayer(Owner).xxDemoSpawnSSRBeam(HitLocation, SmokeLocation, SmokeOffset, Owner);
 }
 
 function TraceFire( float Accuracy )
@@ -419,7 +400,9 @@ function TraceFire( float Accuracy )
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
 	local Pawn PawnOwner;
+	local Pawn P;
 	local bbPlayer bbP;
+	local vector HitOffset;
 
 	if (Owner.IsA('Bot'))
 	{
@@ -432,16 +415,41 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	PawnOwner = Pawn(Owner);
 	bbP = bbPlayer(Owner);
 
-	if (Other==None)
-	{
+	if (Other==None) {
 		HitNormal = -X;
 		HitLocation = Owner.Location + X*10000.0;
+		HitOffset = HitLocation;
+	} else {
+		HitOffset = HitLocation - Other.Location;
 	}
 
 	zzSmokeOffset = CalcDrawOffset() + (FireOffset.X + 20) * X + FireOffset.Y * Y + FireOffset.Z * Z;
 	SpawnEffect(HitLocation, Owner.Location + zzSmokeOffset);
-
-	Spawn(class'NN_UT_Superring2OwnerHidden',Owner,, HitLocation+HitNormal*8,rotator(HitNormal));
+	if (Owner.IsA('Bot') == false) {
+		for (P = Level.PawnList; P != none; P = P.NextPawn) {
+			if (P == Owner) continue;
+			if (bbPlayer(P) != none)
+				bbPlayer(P).SendWeaponEffect(
+					class'SuperShockRifleWeaponEffect',
+					Owner,
+					Owner.Location + zzSmokeOffset,
+					zzSmokeOffset,
+					Other,
+					HitLocation,
+					HitOffset,
+					HitNormal);
+			else if (bbCHSpectator(P) != none)
+				bbCHSpectator(P).SendWeaponEffect(
+					class'SuperShockRifleWeaponEffect',
+					Owner,
+					Owner.Location + zzSmokeOffset,
+					zzSmokeOffset,
+					Other,
+					HitLocation,
+					HitOffset,
+					HitNormal);
+		}
+	}
 
 	if ( (Other != self) && (Other != Owner) && (Other != None) )
 	{
@@ -451,7 +459,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 function SpawnEffect(vector HitLocation, vector SmokeLocation)
 {
-	local Pawn P;
 	local SuperShockBeam SSB;
 
 	if (Owner.IsA('Bot'))
@@ -468,14 +475,6 @@ function SpawnEffect(vector HitLocation, vector SmokeLocation)
 		SSB.bHidden = true;
 		// Dont replicate to clients
 		SSB.RemoteRole = ROLE_None;
-	}
-
-	for (P = Level.PawnList; P != none; P = P.NextPawn) {
-		if (P == Owner) continue;
-		if (bbPlayer(P) != none)
-			bbPlayer(P).xxClientSpawnSSRBeam(HitLocation, SmokeLocation, zzSmokeOffset, Owner);
-		else if (bbCHSpectator(P) != none)
-			bbCHSpectator(P).xxClientSpawnSSRBeam(HitLocation, SmokeLocation, zzSmokeOffset, Owner);
 	}
 }
 
