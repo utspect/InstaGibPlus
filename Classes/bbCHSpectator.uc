@@ -30,6 +30,7 @@ struct PIDController {
 var PIDController PitchController;
 var PIDController YawController;
 var rotator LastRotation;
+var Actor LastViewTarget;
 
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
@@ -306,6 +307,10 @@ function SmoothRotation(float DeltaTime)
 
 	P = bbPlayer(ViewTarget);
 	if (P != none) {
+		if (P != LastViewTarget) {
+			LastRotation = TargetViewRotation;
+			LastViewTarget = P;
+		}
 		if (LastRotation.Pitch != TargetViewRotation.Pitch || LastRotation.Yaw != TargetViewRotation.Yaw)
 			TargetViewRotation = LastRotation;
 
