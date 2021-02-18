@@ -141,6 +141,9 @@ simulated function CheckConfig() {
 		}
 	}
 
+	if (FPSCounterSmoothingStrength <= 0)
+		FPSCounterSmoothingStrength = 1;
+
 	SaveConfig();
 }
 

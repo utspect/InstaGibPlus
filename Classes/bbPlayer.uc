@@ -1059,10 +1059,6 @@ function xxSendSpreeToSpecs(optional int Sw, optional PlayerReplicationInfo Rela
 
 event PlayerTick( float Time )
 {
-	if (Settings.FPSCounterSmoothingStrength <= 0) {
-		Settings.FPSCounterSmoothingStrength = 1;
-		Settings.SaveConfig();
-	}
 	xxPlayerTickEvents(Time);
 	zzTick = Time;
 }
