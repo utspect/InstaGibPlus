@@ -89,7 +89,6 @@ var vector zzLast10Positions[10];	// every 50ms for half a second of backtrackin
 var bbOldMovementInfo OldestMI, NewestMI;
 var int zzPositionIndex;
 var float zzNextPositionTime;
-var bool zzbInitialized;
 var bool zzbNN_Tracing;
 var Weapon zzPendingWeapon;
 var bool bJustRespawned;
@@ -5906,16 +5905,9 @@ function xxPlayerTickEvents(float DeltaTime)
 			ConsoleCommand("set ini:engine.engine.gamerenderdevice SmoothMaskedTextures False");
 		}
 
-		if (!zzbInitialized)
-		{
-			zzbInitialized = true;
-		}
-
 		if (Player.CurrentNetSpeed != 0 && CurrentTime - zzLastStuffUpdate > 500.0/Player.CurrentNetSpeed)
 		{
 			xxGetDemoPlaybackSpec();
-
-			xxCheckForKickers();
 
 			if (zzClientTTarget != None)
 				xxServerReceiveStuff( zzClientTTarget.Location, zzClientTTarget.Velocity );

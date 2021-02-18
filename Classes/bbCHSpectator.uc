@@ -17,7 +17,6 @@ var Class<PureStats> cStat;	// The class to use
 
 var int   zzRecentDmgGiven, zzRecentTeamDmgGiven;
 var float   zzLastHitSound, zzLastTeamHitSound, zzNextTimeTime;
-var bool zzbInitialized;
 
 var bool zzTrue,zzFalse;		// True & False
 
