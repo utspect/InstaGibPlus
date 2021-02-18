@@ -39,7 +39,6 @@ function xxInstallSpawnNotify(PlayerPawn zzPP)
 		{
 			if (zzSN.Next != None && bbPlayer(zzPP) != None)
 				bbPlayer(zzPP).xxServerCheater("S1");
-//			Log("ISN: Already In");
 			return;
 		}
 		zzSNLast = zzSN;
@@ -56,20 +55,17 @@ function xxInstallSpawnNotify(PlayerPawn zzPP)
 		zzSNLast.Next = zzPSN;
 		zzPP.Level.SpawnNotify = zzSN;
 	}
-//	Log("ISN: Installed");
 }
 
 function xxStartupCheck(PlayerPawn zzPP)
 {
 	local actor zzA;
 
-//	Log("Level.AllActors");
 	ForEach zzPP.Level.AllActors(Class'Actor',zzA)
 	{
 		xxSetClassDefault(zzA.Class);
 		xxSetClass(zzA);
 	}
-//	Log("EntryLevel.AllActors");
 	ForEach zzPP.GetEntryLevel().AllActors(Class'Actor',zzA)
 	{
 		xxSetClassDefault(zzA.Class);
@@ -82,196 +78,44 @@ static function xxSetClassDefault(Class<Actor> zzA)
 	local int zzx;
 	local Class<Weapon> zzcW;
 
-//	Log("SCD:"@zzA);
-/* 
-	if (ClassIsChildOf(zzA,Class'Pickup'))
-	{
-		zzA.default.bUnlit = False;
-		zzA.Default.DrawScale = 1.0;
-		if (ClassIsChildOf(zzA, Class'UDamage'))
-			zzA.Default.Texture = Texture'Botpack.GoldSkin2';
-	}
-	else if (ClassIsChildOf(zzA,Class'Effects'))
-	{
-		zzA.default.bHidden = False;
-		if (ClassIsChildOf(zzA, Class'UTSmokeTrail'))
-			zzA.Default.DrawScale = 2.0;
-		else if (ClassIsChildOf(zzA, Class'UTTeleportEffect'))
-			zzA.Default.LightRadius = 9.0;
-		else if (ClassIsChildOf(zzA, Class'ShockBeam') || ClassIsChildOf(zzA, Class'SuperShockBeam'))
-		{
-			zzA.Default.LifeSpan = 0.27;
-			zzA.Default.DrawScale = 0.44;
-		}
-		else if (ClassIsChildOf(zzA, Class'UT_ComboRing'))
-		{
-			zzA.Default.Skin = Texture'Botpack.Effects.pPurpleRing';
-			zzA.Default.DrawScale = 4.0;
-		}	
-		else if (ClassIsChildOf(zzA, Class'UT_ShieldBeltEffect'))
-			zzA.Default.Texture = FireTexture'UnrealShare.Belt_fx.ShieldBelt.N_Shield';
-		else if (ClassIsChildOf(zzA, Class'ChunkTrail'))
-			zzA.Default.Texture = Texture'Botpack.FlakGlow.fglow_a00';
-		else if (ClassIsChildOf(zzA, Class'RocketTrail'))
-			zzA.Default.Texture = Texture'Botpack.JRFlare';
-	} */
 	if (ClassIsChildOf(zzA,Class'Weapon'))
 	{
-//		Log(zzA@"is a weapon");
 		zzcW = Class<Weapon>(zzA);
 		zzcW.Default.bUnlit = False;
 		for (zzx = 0; zzx < 10; zzx++)
 		{
 			if (ClassIsChildOf(zzcW,Default.WeaponFixes[zzx].zzWeaponClass))
 			{
-//				log("dFixing"@zzcW@zzcW.Default.ShakeMag@zzcW.Default.ShakeTime@zzcW.Default.ShakeVert);
 				zzcW.Default.ShakeMag = Default.WeaponFixes[zzx].zzShakeMag;
 				zzcW.Default.ShakeTime = Default.WeaponFixes[zzx].zzShakeTime;
 				zzcW.Default.ShakeVert = Default.WeaponFixes[zzx].zzShakeVert;
 				zzcW.Default.MuzzleFlashScale = Default.WeaponFixes[zzx].zzMuzzleFlashScale;
 				zzcW.Default.MuzzleFlashMesh = Default.WeaponFixes[zzx].zzMuzzleFlashMesh;
-//				log("dPost Fixing"@zzcW@zzcW.Default.ShakeMag@zzcW.Default.ShakeTime@zzcW.Default.ShakeVert);
 			}
 		}
 	}
-/* 	else if (ClassIsChildOf(zzA,Class'Projectile'))
-	{
-		if (ClassIsChildOf(zzA,Class'RocketMk2'))
-		{
-			zzA.Default.DrawScale = 0.02;
-			zzA.Default.Mesh = LodMesh'Botpack.UTRocket';
-		}
-		else if (ClassIsChildOf(zzA,Class'UTChunk'))
-		{
-			zzA.Default.bHidden = False;
-			zzA.Default.Texture = Texture'Botpack.ChunkGlow.Chunk_a00';
-		}
-		else if (ClassIsChildOf(zzA,Class'ShockProj'))
-		{
-			zzA.Default.DrawScale = 0.4;
-			zzA.Default.Texture = Texture'Botpack.ASMDAlt.ASMDAlt_a00';
-		}
-		else if (ClassIsChildOf(zzA,Class'PBolt'))
-			zzA.Default.DrawScale = 1.0;
-	}
-	else if (ClassIsChildOf(zzA,Class'Carcass'))
-	{
-		zzA.default.bHidden = False;
-	}
-	else if (ClassIsChildOf(zzA, Class'CTFFlag'))
-	{
-		zzA.Default.bUnlit = False;
-		zzA.Default.DrawScale = 0.6;
-		zzA.Default.LightRadius = 6.0;
-	}
-	else if (ClassIsChildOf(zzA,Class'PlayerStart'))
-	{
-		zzA.default.bHidden = True;
-	}
- */
 }
 
 static function xxSetClass(Actor zzA)
 {
 	local int zzx;
 	local Weapon zzW;
-/* 
-//	Log("SC:"@zzA);
-	if (ClassIsChildOf(zzA.Class,Class'Pickup'))
-	{
-		zzA.bUnlit = False;
-		zzA.DrawScale = 1.0;
-		if (ClassIsChildOf(zzA.Class, Class'UDamage'))
-			zzA.Texture = Texture'Botpack.GoldSkin2';
-	}
-	else if (ClassIsChildOf(zzA.Class,Class'Effects'))
-	{
-		zzA.bHidden = False;
-		if (ClassIsChildOf(zzA.Class, Class'UTSmokeTrail'))
-			zzA.DrawScale = 2.0;
-		else if (ClassIsChildOf(zzA.Class, Class'UTTeleportEffect'))
-			zzA.LightRadius = 9.0;
-		else if (ClassIsChildOf(zzA.Class, Class'ShockBeam') || ClassIsChildOf(zzA.Class, Class'SuperShockBeam'))
-		{
-			zzA.LifeSpan = 0.27;
-			zzA.DrawScale = 0.44;
-		}
-		else if (ClassIsChildOf(zzA.Class, Class'UT_ComboRing'))
-		{
-			zzA.Skin = Texture'Botpack.Effects.pPurpleRing';
-			zzA.DrawScale = 4.0;
-		}
-		else if (ClassIsChildOf(zzA.Class, Class'UT_ShieldBeltEffect'))
-			zzA.Texture = FireTexture'UnrealShare.Belt_fx.ShieldBelt.N_Shield';
-		else if (ClassIsChildOf(zzA.Class, Class'ChunkTrail'))
-			zzA.Texture = Texture'Botpack.FlakGlow.fglow_a00';
-		else if (ClassIsChildOf(zzA.Class, Class'RocketTrail'))
-			zzA.Texture = Texture'Botpack.JRFlare';
-	} */
 	if (ClassIsChildOf(zzA.Class,Class'Weapon'))
 	{
-//		Log(zzA@"is a weapon");
 		zzW = Weapon(zzA);
 		zzW.bUnlit = False;
 		for (zzx = 0; zzx < 10; zzx++)
 		{
 			if (ClassIsChildOf(zzW.Class,Default.WeaponFixes[zzx].zzWeaponClass))
 			{
-//				log("Fixing"@zzW.Class@zzW.ShakeMag@zzW.ShakeTime@zzW.ShakeVert);
 				zzW.ShakeMag = Default.WeaponFixes[zzx].zzShakeMag;
 				zzW.ShakeTime = Default.WeaponFixes[zzx].zzShakeTime;
 				zzW.ShakeVert = Default.WeaponFixes[zzx].zzShakeVert;
 				zzW.MuzzleFlashScale = Default.WeaponFixes[zzx].zzMuzzleFlashScale;
 				zzW.MuzzleFlashMesh = Default.WeaponFixes[zzx].zzMuzzleFlashMesh;
-//				log("Post Fixing"@zzW.Class@zzW.ShakeMag@zzW.ShakeTime@zzW.ShakeVert@zzW.MuzzleFlashScale@zzW.MuzzleFlashMesh);
-/* 				if (zzx == 2)
-				{	// Pulse
-					zzW.FireSound = Sound'Botpack.PulseGun.PulseFire';
-					zzW.AltFireSound = Sound'Botpack.PulseGun.PulseBolt';
-				}
-				else if (zzx == 0)
-				{	// Minigun
-					zzW.FireSound = Sound'Botpack.minigun2.M2RegFire';
-					zzW.AltFireSound = Sound'Botpack.minigun2.M2AltFire';
-					zzW.Misc1Sound = Sound'Botpack.minigun2.M2WindDown';
-				} */
 			}
 		}
 	}
-/* 	else if (ClassIsChildOf(zzA.Class,Class'Projectile'))
-	{
-		if (ClassIsChildOf(zzA.Class,Class'RocketMk2'))
-		{
-			zzA.DrawScale = 0.02;
-			zzA.Mesh = LodMesh'Botpack.UTRocket';
-		}
-		else if (ClassIsChildOf(zzA.Class,Class'UTChunk'))
-		{
-			zzA.bHidden = False;
-			zzA.Texture = Texture'Botpack.ChunkGlow.Chunk_a00';
-		}
-		else if (ClassIsChildOf(zzA.Class,Class'ShockProj'))
-		{
-			zzA.DrawScale = 0.4;
-			zzA.Texture = Texture'Botpack.ASMDAlt.ASMDAlt_a00';
-		}
-		else if (ClassIsChildOf(zzA.Class,Class'PBolt'))
-			zzA.DrawScale = 1.0;
-	}
-	else if (ClassIsChildOf(zzA.Class,Class'Carcass'))
-	{
-		zzA.bHidden = False;
-	}
-	else if (ClassIsChildOf(zzA.Class,Class'CTFFlag'))
-	{
-		zzA.bUnlit = False;
-		zzA.DrawScale = 0.6;
-		zzA.LightRadius = 6.0;
-	}
-	else if (ClassIsChildOf(zzA.Class,Class'PlayerStart'))
-	{
-		zzA.bHidden = True;
-	} */
 }
 
 defaultproperties
