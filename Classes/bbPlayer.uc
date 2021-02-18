@@ -7,7 +7,6 @@ var bool bNewNet;	// if Client wants new or old netcode. (default true)
 
 // Replicated settings Client -> Server
 var int		zzNetspeed;		// The netspeed this client is using
-var bool	zzbForcedTick;		// True on server if Tick was forced (Called more than once)
 var bool	zzbBadCanvas;		// True on server if Canvas is NOT engine.canvas
 var bool	zzbDemoRecording;	// True if client is recording demos.
 var float	zzClientTD;		// Client TimeDilation (Should always be same as server or HAX!)
@@ -396,7 +395,6 @@ replication
 		xxServerMoveDead,
 		zzbBadCanvas,
 		zzbDemoRecording,
-		zzbForcedTick,
 		zzClientTD,
 		zzFalse,
 		zzNetspeed,
@@ -5931,8 +5929,6 @@ function xxPlayerTickEvents(float DeltaTime)
 		xxDoShot();
 
 	xxHideItems();
-
-	zzbForcedTick = (zzInfoThing.zzTickOff != zzNull) || (zzInfoThing.zzLastTick != zzTick);
 
 	zzInfoThing.zzTickOff++;
 	zzInfoThing.zzLastTick = 0.0;
