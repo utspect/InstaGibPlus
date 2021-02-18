@@ -7,7 +7,6 @@ var bool bNewNet;	// if Client wants new or old netcode. (default true)
 
 // Replicated settings Client -> Server
 var int		zzNetspeed;		// The netspeed this client is using
-var bool	zzbBadCanvas;		// True on server if Canvas is NOT engine.canvas
 var bool	zzbDemoRecording;	// True if client is recording demos.
 var bool bIsFinishedLoading;
 
@@ -396,7 +395,6 @@ replication
 		xxServerCheater,
 		xxServerMove,
 		xxServerMoveDead,
-		zzbBadCanvas,
 		zzbDemoRecording,
 		zzFalse,
 		zzNetspeed,
@@ -6225,7 +6223,6 @@ event PreRender( canvas zzCanvas )
 	local PlayerReplicationInfo zzPRI;
 
 	zzbDemoRecording = PureLevel != None && PureLevel.zzDemoRecDriver != None;
-	zzbBadCanvas = zzbBadCanvas || (zzCanvas != None && zzCanvas.Class != Class'Canvas');
 
 	Super.PreRender(zzCanvas);
 
@@ -6246,8 +6243,6 @@ event PostRender( canvas zzCanvas )
 {
 	local int CH;
 	local int NetspeedTarget;
-
-	zzbBadCanvas = zzbBadCanvas || (zzCanvas.Class != Class'Canvas');
 
 	if (zzbRepVRData)
 	{	// Received data through demo replication.
