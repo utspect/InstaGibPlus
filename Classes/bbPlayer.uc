@@ -5947,16 +5947,6 @@ function xxPlayerTickEvents(float DeltaTime)
 	}
 }
 
-simulated function xxCheckForKickers()
-{
-	local Kicker K;
-
-	ForEach AllActors(class'Kicker', K)
-		if (K.Owner != Self)
-			K.SetCollision(false, false, false);
-}
-
-
 static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
 	local string suffix;
 	local bbPlayer P;
