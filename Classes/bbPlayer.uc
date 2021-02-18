@@ -241,6 +241,10 @@ var rotator KillCamTargetRotation;
 var float KillCamDelay;
 var float KillCamDuration;
 
+var float DodgeSpeedXY;
+var float DodgeSpeedZ;
+var float SecondaryDodgeSpeedXY;
+var float SecondaryDodgeSpeedZ;
 var float DodgeEndVelocity;
 var float JumpEndVelocity;
 var bool bJumpingPreservesMomentum;
@@ -4611,6 +4615,8 @@ ignores SeePlayer, HearNoise, Bump;
 		local vector TraceStart;
 		local vector TraceEnd;
 		local float VelocityZ;
+		local float DodgeXY;
+		local float DodgeZ;
 
 		if ( bIsCrouching || (Physics != PHYS_Walking && Physics != PHYS_Falling) )
 			return;
@@ -4637,6 +4643,14 @@ ignores SeePlayer, HearNoise, Bump;
 			TakeFallingDamage();
 		}
 
+		if (bDodging) {
+			DodgeXY = SecondaryDodgeSpeedXY;
+			DodgeZ = SecondaryDodgeSpeedZ;
+		} else {
+			DodgeXY = DodgeSpeedXY;
+			DodgeZ = DodgeSpeedZ;
+		}
+
 		if (bDodgePreserveZMomentum) {
 			VelocityZ = Velocity.Z;
 			if (Base != none)
@@ -4644,15 +4658,15 @@ ignores SeePlayer, HearNoise, Bump;
 		}
 
 		if (DodgeMove == DODGE_Forward)
-			Velocity = 1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
+			Velocity = DodgeXY*X + (Velocity Dot Y)*Y;
 		else if (DodgeMove == DODGE_Back)
-			Velocity = -1.5*GroundSpeed*X + (Velocity Dot Y)*Y;
+			Velocity = -DodgeXY*X + (Velocity Dot Y)*Y;
 		else if (DodgeMove == DODGE_Left)
-			Velocity = 1.5*GroundSpeed*Y + (Velocity Dot X)*X;
+			Velocity = DodgeXY*Y + (Velocity Dot X)*X;
 		else if (DodgeMove == DODGE_Right)
-			Velocity = -1.5*GroundSpeed*Y + (Velocity Dot X)*X;
+			Velocity = -DodgeXY*Y + (Velocity Dot X)*X;
 
-		Velocity.Z = FMax(210, VelocityZ + 210);
+		Velocity.Z = FMax(DodgeZ, VelocityZ + DodgeZ);
 		PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, false, 800, 1.0 );
 		PlayDodge(DodgeMove);
 		DodgeDir = DODGE_Active;
@@ -8137,6 +8151,10 @@ defaultproperties
 	bDrawDebugData=False
 	TimeBetweenNetUpdates=0.01
 	FakeCAPInterval=0.1
+	DodgeSpeedXY=600
+	DodgeSpeedZ=210
+	SecondaryDodgeSpeedXY=500
+	SecondaryDodgeSpeedZ=180
 	DodgeEndVelocity=0.1
 	JumpEndVelocity=1.0
 	DuckTransitionTime=0.25
