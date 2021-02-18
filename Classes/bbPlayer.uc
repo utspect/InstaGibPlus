@@ -9,7 +9,6 @@ var bool bNewNet;	// if Client wants new or old netcode. (default true)
 var int		zzNetspeed;		// The netspeed this client is using
 var bool	zzbBadCanvas;		// True on server if Canvas is NOT engine.canvas
 var bool	zzbDemoRecording;	// True if client is recording demos.
-var float	zzClientTD;		// Client TimeDilation (Should always be same as server or HAX!)
 var bool bIsFinishedLoading;
 
 // Replicated settings Server -> Client
@@ -395,7 +394,6 @@ replication
 		xxServerMoveDead,
 		zzbBadCanvas,
 		zzbDemoRecording,
-		zzClientTD,
 		zzFalse,
 		zzNetspeed,
 		zzTrue;
@@ -5940,7 +5938,6 @@ function xxPlayerTickEvents(float DeltaTime)
 		if (zzForceSettingsLevel > 1)
 			zzInfoThing.xxInstallSpawnNotify(Self);
 	}
-	zzClientTD = Level.TimeDilation;
 
 	if (PureLevel != None)	// Why would this be None?!
 	{
