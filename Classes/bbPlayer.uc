@@ -239,6 +239,7 @@ var Pawn LastKiller;
 var rotator KillCamTargetRotation;
 var float KillCamDelay;
 var float KillCamDuration;
+var bool bKillCamWanted;
 var float RespawnDelay;
 
 var float DodgeSpeedXY;
@@ -5363,7 +5364,8 @@ state Dying
 		Super.PlayerTick(DeltaTime);
 
 		if ((Settings.bEnableKillCam && LastKiller != none) &&
-			(TimeDead >= FMax(KillCamDelay, Settings.KillCamMinDelay) && TimeDead < KillCamDelay + KillCamDuration)
+			(TimeDead >= FMax(KillCamDelay, Settings.KillCamMinDelay) && TimeDead < KillCamDelay + KillCamDuration) &&
+			bKillCamWanted
 		) {
 			if (LastKiller != self) {
 				if (FastTrace(LastKiller.Location, Location))
@@ -5415,6 +5417,7 @@ state Dying
 		TimeDead = 0.0;
 		RealTimeDead = 0.0;
 		RotationRate = rot(0,0,0);
+		bKillCamWanted = true;
 	}
 
 	function PlayerMove(float DeltaTime)
@@ -5432,6 +5435,8 @@ state Dying
 			// Update view rotation.
 			aLookup  *= 0.24;
 			aTurn    *= 0.24;
+			if (aLookup != 0.0 || aTurn != 0.0)
+				bKillCamWanted = false;
 			ViewRotation.Yaw += 32.0 * DeltaTime * aTurn;
 			ViewRotation.Pitch += 32.0 * DeltaTime * aLookUp;
 			ViewRotation.Pitch = ViewRotation.Pitch & 65535;
