@@ -239,6 +239,7 @@ var Pawn LastKiller;
 var rotator KillCamTargetRotation;
 var float KillCamDelay;
 var float KillCamDuration;
+var float RespawnDelay;
 
 var float DodgeSpeedXY;
 var float DodgeSpeedZ;
@@ -331,6 +332,7 @@ replication
 		bUseFlipAnimation,
 		DuckFraction,
 		Ready,
+		RespawnDelay,
 		SetPendingWeapon,
 		TimeBetweenNetUpdates,
 		xxClientKicker,
@@ -5377,17 +5379,39 @@ state Dying
 
 	simulated function BeginState()
 	{
-		local float LKT;
-
 		bJumpStatus = false;
 		bIsAlive = false;
 		zzIgnoreUpdateUntil = 0;
 		if (zzClientTTarget != None)
 			zzClientTTarget.Destroy();
 
-		LKT = LastKillTime;
-		Super.BeginState();
-		LastKillTime = LKT;
+		// BEGIN PlayerPawn.Dying.BeginState
+		BaseEyeheight = Default.BaseEyeHeight;
+		EyeHeight = BaseEyeHeight;
+		if ( Carcass(ViewTarget) == None )
+			bBehindView = true;
+		bFrozen = true;
+		bPressedJump = false;
+		bJustFired = false;
+		bJustAltFired = false;
+		FindGoodView();
+		if ( (Role == ROLE_Authority) && !bHidden )
+			Super.Timer();
+		SetTimer(RespawnDelay, false); // MODIFIED
+
+		// clean out saved moves
+		while ( SavedMoves != None )
+		{
+			SavedMoves.Destroy();
+			SavedMoves = SavedMoves.NextMove;
+		}
+		if ( PendingMove != None )
+		{
+			PendingMove.Destroy();
+			PendingMove = None;
+		}
+		// END PlayerPawn.Dying.BeginState
+
 		TimeDead = 0.0;
 		RealTimeDead = 0.0;
 		RotationRate = rot(0,0,0);
@@ -8154,5 +8178,6 @@ defaultproperties
 	JumpEndVelocity=1.0
 	DuckTransitionTime=0.25
 	LastWeaponEffectCreated=-1
+	RespawnDelay=1.0
 	PlayerReplicationInfoClass=Class'bbPlayerReplicationInfo'
 }
