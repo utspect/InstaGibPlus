@@ -5424,7 +5424,7 @@ state Dying
 	{
 		local vector X,Y,Z;
 
-		if ( !bFrozen )
+		if ( TimeDead >= 1.0 )
 		{
 			if ( bPressedJump )
 			{
