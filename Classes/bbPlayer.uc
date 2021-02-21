@@ -140,7 +140,6 @@ var string zzRemCmd;		// The command the server sent.
 var bool bRemValid;		// True when valid.
 
 var UTPure zzUTPure;		// The UTPure mutator.
-var MutWarmup WarmupMutator;
 
 var bool zzbDoScreenshot;	// True when we are about to do screenshot
 var bool zzbReportScreenshot;	// True when reporting the screenshot.
@@ -4921,14 +4920,9 @@ state PlayerWaiting
 
 	exec function Fire(optional float F)
 	{
-		if (GetWarmup() != none) {
-			if (GetWarmup().IsInState('Warmup'))
-				ServerEnterWarmup();
-		} else {
-			if (!bIsFinishedLoading)
-				return;
-			xxServerSetReadyToPlay();
-		}
+		if (!bIsFinishedLoading)
+			return;
+		xxServerSetReadyToPlay();
 		bReadyToPlay = Settings.bAutoReady;
 	}
 
@@ -8123,27 +8117,14 @@ function ClientShake(vector shake) {
 }
 
 exec function Ready() {
-	if (GetWarmup() != none) {
-		if (GetWarmup().IsInState('Warmup') == false)
-			return;
-	} else {
-		if (zzbIsWarmingUp == false)
-			return;
-	}
+	if (zzbIsWarmingUp == false)
+		return;
 
 	bReadyToPlay = !bReadyToPlay;
 	if (bReadyToPlay)
 		ClientMessage(DeathMatchPlus(Level.Game).ReadyMessage);
 	else
 		ClientMessage(DeathMatchPlus(Level.Game).NotReadyMessage);
-}
-
-function MutWarmup GetWarmup() {
-	if (WarmupMutator == none)
-		foreach AllActors(class'MutWarmup', WarmupMutator)
-			break;
-
-	return WarmupMutator;
 }
 
 exec function TestHitMarker(optional int Dmg) {
