@@ -255,7 +255,8 @@ var bool bDodging;
 var bool bDodgePreserveZMomentum;
 var int MultiDodgesRemaining;
 
-var bool bAppearanceChanged;
+var int LastForcedSkin;
+var int LastForcedSkinTeam;
 
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
@@ -5997,11 +5998,18 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 	if (selectedSkin > 17)
 		selectedSkin = 12;
 
+	P = bbPlayer(SkinActor);
+
+	if (P != none) {
+		if (P.LastForcedSkin == selectedSkin && (bTeamGame == false || P.LastForcedSkinTeam == TeamNum))
+			return;
+		P.LastForcedSkin = selectedSkin;
+		P.LastForcedSkinTeam = TeamNum;
+	}
+
 	suffix = "";
 	if (bTeamGame)
 		suffix = "t_"$TeamNum;
-
-	P = bbPlayer(SkinActor);
 
 	switch (selectedSkin) {
 		case 0: // Female Commando Aphex
@@ -6150,15 +6158,13 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SkinActor.Mesh = class'bbTBoss'.Default.Mesh;
 			break;
 		default:
-			if (P.bAppearanceChanged) {
+			if (P != none) {
 				PRI = bbPlayerReplicationInfo(P.PlayerReplicationInfo);
 				SkinActor.Mesh = SkinActor.default.Mesh;
 				P.static.SetMultiSkin(SkinActor, PRI.SkinName, PRI.FaceName, TeamNum);
-				P.bAppearanceChanged = false;
 			}
-			return;
+			break;
 	}
-	P.bAppearanceChanged = true;
 }
 
 function int GetForcedSkinForPlayer(PlayerReplicationInfo PRI) {
@@ -8184,5 +8190,6 @@ defaultproperties
 	DuckTransitionTime=0.25
 	LastWeaponEffectCreated=-1
 	RespawnDelay=1.0
+	LastForcedSkin=-1
 	PlayerReplicationInfoClass=Class'bbPlayerReplicationInfo'
 }
