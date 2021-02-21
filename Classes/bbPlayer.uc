@@ -6698,7 +6698,7 @@ static function bool xxValidSP(string zzSkinName, string zzMeshName, optional Ac
 	  }
    }
 	//Extra pass before potentially crash code
-	if ( zzPackName ~= "BOTPACK" || zzPackName ~= "UNREALI" || zzPackName ~= "UNREALSHARE" || zzPackName ~= "INSTAGIBPLUS")
+	if ( zzPackName ~= "BOTPACK" || zzPackName ~= "UNREALI" || zzPackName ~= "UNREALSHARE")
 		return false;
 	if (Default.zzMyPacks == "")
 		Default.zzMyPacks = Caps(SkinActor.ConsoleCommand("get ini:engine.engine.gameengine serverpackages")); //Can still crash a server
