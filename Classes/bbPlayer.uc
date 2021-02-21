@@ -6289,7 +6289,7 @@ event PostRender( canvas zzCanvas )
 			Weapon != none &&
 			Weapon.bOwnsCrossHair == false
 		) {
-			class'bbPlayerStatics'.static.DrawCrosshair(zzCanvas, Settings);
+			PlayerStatics.DrawCrosshair(zzCanvas, Settings);
 		}
 		MyHud.Crosshair = CH;
 	}
@@ -6329,10 +6329,10 @@ event PostRender( canvas zzCanvas )
 		xxDrawDebugData(zzCanvas, 10, 120);
 	}
 
-	class'bbPlayerStatics'.static.DrawFPS(zzCanvas, MyHud, Settings, zzTick);
-	class'bbPlayerStatics'.static.DrawHitMarker(zzCanvas, Settings, zzTick);
-	if (HitMarkerTestDamage > 0 && class'bbPlayerStatics'.default.HitMarkerLifespan == 0) {
-		class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, HitMarkerTestDamage, PlayerReplicationInfo.Team, HitMarkerTestTeam);
+	PlayerStatics.DrawFPS(zzCanvas, MyHud, Settings, zzTick);
+	PlayerStatics.DrawHitMarker(zzCanvas, Settings, zzTick);
+	if (HitMarkerTestDamage > 0 && PlayerStatics.default.HitMarkerLifespan == 0) {
+		PlayerStatics.PlayHitMarker(self, Settings, HitMarkerTestDamage, PlayerReplicationInfo.Team, HitMarkerTestTeam);
 		++HitMarkerTestTeam;
 		if (HitMarkerTestTeam >= 4)
 			HitMarkerTestTeam = 0;
