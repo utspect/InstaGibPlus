@@ -6648,7 +6648,7 @@ local string pkg, SkinItem, MeshName;
 		pkg = Left(SkinName, Len(SkinName) - Len(SkinItem) - 1);
 		bProscribed = !xxValidSP(SkinName, MeshName, SkinActor);
 		if ( bProscribed )
-			log("Attempted to use illegal skin from package "$pkg$" for "$Meshname);
+			log("Attempted to use illegal skin from package "$pkg$" for "$MeshName);
 	}
 
 	NewSkin = Texture(DynamicLoadObject(SkinName, class'Texture'));
