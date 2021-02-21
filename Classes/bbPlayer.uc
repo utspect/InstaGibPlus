@@ -429,7 +429,6 @@ replication
 		xxServerSetMinDodgeClickTime,
 		xxServerSetReadyToPlay,
 		xxServerSetTeamInfo,
-		xxSet,
 		xxSetNetUpdateRate;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
@@ -6707,18 +6706,6 @@ static function bool xxValidSP(string zzSkinName, string zzMeshName, optional Ac
 	if ( Instr(Default.zzMyPacks, Chr(34)$zzPackName$Chr(34)) == -1 )
 		return false;
 	return (Left(zzPackName, Len(zzMeshName)) ~= zzMeshName && !(Right(zzSkinName,2) ~= "t_"));
-}
-
-function xxSet(string zzS, byte zzNetMode)
-{
-	if (zzNetMode != 3)
-		zzUTPure.ConsoleCommand("set"@zzS);
-	else
-	{
-		if (Left(zzS, 6) ~= "input " && InStr(zzS, "mouse") < 0)
-			xxClientSet("set"@zzS);
-		Mutate("ps"@zzS);
-	}
 }
 
 function xxClientSet(string zzS)
