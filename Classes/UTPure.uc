@@ -107,7 +107,6 @@ replication
 {
 	unreliable if (Role == ROLE_Authority)
 		bExludeKickers,
-		bUseNewWarmup,
 		MaxPosError,
 		NNAnnouncer,
 		zzAutoPauser;
