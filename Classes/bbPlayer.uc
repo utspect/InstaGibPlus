@@ -3934,11 +3934,7 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 		}
 	}
 
-	if (InstigatedBy != self && (momentum dot momentum) > 0)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
-	{
-		ClientAddMomentum( momentum, Level.TimeSeconds );
-	}
-
+	ClientAddMomentum( momentum, Level.TimeSeconds );
 	Health -= actualDamage;
 
 	if (CarriedDecoration != None)
