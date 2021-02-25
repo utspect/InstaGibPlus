@@ -583,6 +583,7 @@ Parameters marked `optional` do not have to be supplied.
 28. [ShowFPS](#showfps)
 29. [ShowOwnBeam](#showownbeam)
 30. [Ready](#ready)
+31. [RefreshForcedSkins](#refreshforcedskins)
 
 ## EnableDebugData
 **Parameters: (bool b)**  
@@ -698,6 +699,9 @@ Toggles showing your own beam when firing the SuperShockRifle. See [bHideOwnBeam
 
 ## Ready
 Toggles ready state during warmup.
+
+## RefreshForcedSkins
+Forces all forced skins to be applied again.
 
 # Server Installation
 
