@@ -5978,7 +5978,7 @@ function xxPlayerTickEvents(float DeltaTime)
 	}
 }
 
-static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
+function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
 	local string suffix;
 	local bbPlayer P;
 	local bbPlayerReplicationInfo PRI;
@@ -5992,10 +5992,14 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 		selectedSkin = 12;
 
 	P = bbPlayer(SkinActor);
-
 	if (P != none) {
-		if (P.LastForcedSkin == selectedSkin && (bTeamGame == false || P.LastForcedSkinTeam == TeamNum))
+		if (P.LastForcedSkin == selectedSkin &&
+			(bTeamGame == false || P.LastForcedSkinTeam == TeamNum) &&
+			PlayerReplicationInfo.Team == LastForcedSkinTeam
+		) {
 			return;
+		}
+
 		P.LastForcedSkin = selectedSkin;
 		P.LastForcedSkinTeam = TeamNum;
 	}
@@ -6251,6 +6255,7 @@ event PreRender( canvas zzCanvas )
 		}
 	}
 
+	LastForcedSkinTeam = PlayerReplicationInfo.Team;
 	xxShowItems();
 }
 
