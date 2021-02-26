@@ -6282,6 +6282,7 @@ event PostRender( canvas zzCanvas )
 {
 	local int CH;
 	local int NetspeedTarget;
+	local int Netspeed;
 
 	if (zzbRepVRData)
 	{	// Received data through demo replication.
@@ -6322,16 +6323,26 @@ event PostRender( canvas zzCanvas )
 	xxRenderLogo(zzCanvas);
 	xxCleanAvars();
 
-	NetspeedTarget = Settings.DesiredNetspeed;
-	if (zzMinimumNetspeed != 0 && NetspeedTarget < zzMinimumNetspeed)
-		NetspeedTarget = zzMinimumNetspeed;
-	if (zzMaximumNetspeed != 0 && NetspeedTarget > zzMaximumNetspeed)
-		NetspeedTarget = zzMaximumNetspeed;
+	if (Player.CurrentNetspeed != zzNetspeed) {
+		Netspeed = int(ConsoleCommand("get ini:Engine.Engine.NetworkDevice MaxClientRate"));
+		if (zzMinimumNetspeed > 0 && Netspeed < zzMinimumNetspeed) {
+			xxServerCheater("NS");
+			goto netspeed_end;
+		}
+		if (zzMaximumNetspeed > 0 && Netspeed < zzMaximumNetspeed)
+			zzMaximumNetspeed = Netspeed;
 
-	zzNetspeed = Player.CurrentNetspeed;
-	if (zzNetspeed != NetspeedTarget) {
+		NetspeedTarget = Settings.DesiredNetspeed;
+		if (zzMinimumNetspeed != 0 && NetspeedTarget < zzMinimumNetspeed)
+			NetspeedTarget = zzMinimumNetspeed;
+		if (zzMaximumNetspeed != 0 && NetspeedTarget > zzMaximumNetspeed)
+			NetspeedTarget = zzMaximumNetspeed;
+
 		ConsoleCommand("Netspeed"@NetspeedTarget);
-		zzNetspeed = NetspeedTarget;
+		zzNetspeed = Player.CurrentNetspeed;
+
+	netspeed_end:
+		//
 	}
 
 	if (zzDelayedStartTime != 0.0)
@@ -6567,6 +6578,8 @@ function xxServerCheater(string zzCode)
 			zzS = "Failed Adminlogin 5 times!";
 		else if (zzCode == "NC")
 			zzS = "Excess netspeed changes!";
+		else if (zzCode == "NS")
+			zzS = "MaxClientRate too low!";
 		else if (zzCode == "S1" || zzCode == "S2")
 			zzS = "Client Tampering!";
 		else if (zzCode == "ZD")
