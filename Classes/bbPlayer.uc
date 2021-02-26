@@ -252,6 +252,7 @@ var bool bDodging;
 var bool bDodgePreserveZMomentum;
 var int MultiDodgesRemaining;
 
+var float ForcedSkinStartTime;
 var int LastForcedSkin;
 var int LastForcedSkinTeam;
 
@@ -6007,9 +6008,13 @@ function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int Te
 
 	P = bbPlayer(SkinActor);
 	if (P != none) {
+		if (P.ForcedSkinStartTime == 0.0)
+			P.ForcedSkinStartTime = Level.TimeSeconds;
+
 		if (P.LastForcedSkin == selectedSkin &&
 			(bTeamGame == false || P.LastForcedSkinTeam == TeamNum) &&
-			PlayerReplicationInfo.Team == LastForcedSkinTeam
+			PlayerReplicationInfo.Team == LastForcedSkinTeam &&
+			Level.TimeSeconds > P.ForcedSkinStartTime + 3.0
 		) {
 			return;
 		}
