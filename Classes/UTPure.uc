@@ -36,7 +36,6 @@ var localized config int MinClientRate;		// Minimum allowed client rate.
 var localized config int MaxClientRate;     // Maximum allowed client rate.
 var localized config bool bAdvancedTeamSay;	// Enable or disable Advanced TeamSay.
 var localized config byte ForceSettingsLevel;	// 0 = off, 1 = PostNetBeginPlay, 2 = SpawnNotify, 3 = Intervalled
-var localized config bool bNoLockdown;		// Enable or disable to have Lockdown when players get hit by mini/pulse
 var localized config bool bWarmup;		// Enable or disable warmup. (bTournament only)
 var localized config int WarmupTimeLimit; // Warmup lasts at most this long
 var localized config bool bCoaches;		// Enable or disable coaching. (bTournament only)
@@ -847,7 +846,6 @@ function Mutate(string MutateString, PlayerPawn Sender)
 			if (bAllowCenterView)
 				Sender.ClientMessage("- CenterView Delay:"@CenterViewDelay);
 			Sender.ClientMessage("- Allow BehindView:"@bAllowBehindView);
-			Sender.ClientMessage("- No Lockdown:"@bNoLockdown);
 			Sender.ClientMessage("- Delayed First Pickup Spawn:"@bDelayedPickupSpawn);
 			Sender.ClientMessage("- Improved HUD:"@ImprovedHUD@"(0 = off, 1 = clock/boots, 2 = team)");
 			Sender.ClientMessage("- Forced Models:"@ForceModels@"(0 = off, 1 = allowed, 2 = forced)");
@@ -1382,7 +1380,6 @@ defaultproperties
 	MaxClientRate=25000
 	bAdvancedTeamSay=True
 	ForceSettingsLevel=2
-	bNoLockdown=True
 	bWarmup=True
 	ForceModels=1
 	ImprovedHUD=1

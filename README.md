@@ -755,42 +755,41 @@ Server settings can be found inside InstaGibPlus.ini.
 17. [MaxClientRate](#maxclientrate)
 18. [bAdvancedTeamSay](#badvancedteamsay)
 19. [ForceSettingsLevel](#forcesettingslevel)
-20. [bNoLockdown](#bnolockdown)
-21. [bWarmup](#bwarmup)
-22. [bCoaches](#bcoaches)
-23. [bAutoPause](#bautopause)
-24. [ForceModels](#forcemodels)
-25. [ImprovedHUD](#improvedhud)
-26. [bDelayedPickupSpawn](#bdelayedpickupspawn)
-27. [bTellSpectators](#btellspectators)
-28. [PlayerPacks](#playerpacks)
-29. [DefaultHitSound](#defaulthitsound)
-30. [DefaultTeamHitSound](#defaultteamhitsound)
-31. [bForceDefaultHitSounds](#bforcedefaulthitsounds)
-32. [TeleRadius](#teleradius)
-33. [ThrowVelocity](#throwvelocity)
-34. [bForceDemo](#bforcedemo)
-35. [bRestrictTrading](#brestricttrading)
-36. [MaxTradeTimeMargin](#maxtradetimemargin)
-37. [TradePingMargin](#tradepingmargin)
-38. [KillCamDelay](#killcamdelay)
-39. [KillCamDuration](#killcamduration)
-40. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
-41. [bEnableSingleButtonDodge](#benablesinglebuttondodge)
-42. [bUseFlipAnimation](#buseflipanimation)
-43. [bEnableWallDodging](#benablewalldodging)
-44. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
-45. [MaxMultiDodges](#maxmultidodges)
-46. [BrightskinMode](#brightskinmode)
-41. [MinPosError](#minposerror)
-42. [MaxPosError](#maxposerror)
-43. [MaxHitError](#maxhiterror)
-44. [MaxJitterTime](#maxjittertime)
-45. [MinNetUpdateRate](#minnetupdaterate)
-46. [MaxNetUpdateRate](#maxnetupdaterate)
-47. [bEnableServerExtrapolation](#benableserverextrapolation)
-48. [ShowTouchedPackage](#showtouchedpackage)
-49. [ExcludeMapsForKickers](#excludemapsforkickers)
+20. [bWarmup](#bwarmup)
+21. [bCoaches](#bcoaches)
+22. [bAutoPause](#bautopause)
+23. [ForceModels](#forcemodels)
+24. [ImprovedHUD](#improvedhud)
+25. [bDelayedPickupSpawn](#bdelayedpickupspawn)
+26. [bTellSpectators](#btellspectators)
+27. [PlayerPacks](#playerpacks)
+28. [DefaultHitSound](#defaulthitsound)
+29. [DefaultTeamHitSound](#defaultteamhitsound)
+30. [bForceDefaultHitSounds](#bforcedefaulthitsounds)
+31. [TeleRadius](#teleradius)
+32. [ThrowVelocity](#throwvelocity)
+33. [bForceDemo](#bforcedemo)
+34. [bRestrictTrading](#brestricttrading)
+35. [MaxTradeTimeMargin](#maxtradetimemargin)
+36. [TradePingMargin](#tradepingmargin)
+37. [KillCamDelay](#killcamdelay)
+38. [KillCamDuration](#killcamduration)
+39. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
+40. [bEnableSingleButtonDodge](#benablesinglebuttondodge)
+41. [bUseFlipAnimation](#buseflipanimation)
+42. [bEnableWallDodging](#benablewalldodging)
+43. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
+44. [MaxMultiDodges](#maxmultidodges)
+45. [BrightskinMode](#brightskinmode)
+46. [MinPosError](#minposerror)
+47. [MaxPosError](#maxposerror)
+48. [MaxHitError](#maxhiterror)
+49. [MaxJitterTime](#maxjittertime)
+50. [MinNetUpdateRate](#minnetupdaterate)
+51. [MaxNetUpdateRate](#maxnetupdaterate)
+52. [bEnableServerExtrapolation](#benableserverextrapolation)
+53. [ShowTouchedPackage](#showtouchedpackage)
+54. [ExcludeMapsForKickers](#excludemapsforkickers)
 
 ## HeadshotDamage
 
@@ -952,16 +951,6 @@ When to check that default settings for all objects are correct client-side.
 - `1` ➜ once after PostNetBeginPlay
 - `2` ➜ in addition, every time a new object is spawned
 - `3` and above ➜ in addition, once every 5000 server-ticks on average
-
-## bNoLockdown
-
-**Type: bool**  
-**Default: True**  
-
-Whether to have lockdown when players get hit by mini/pulse or not.
-
-- `True` ➜ don't allow lockdown
-- `False` ➜ allow lockdown
 
 ## bWarmup
 
