@@ -65,8 +65,6 @@ var string	FakeClass;		// Class that the model replaces
 var string	zzMyPacks;		// Defined only for defaults
 var bool	zzbBadGuy;		// BadGuy! (Avoid kick spamming)
 var int		zzOldForceSettingsLevel;	// Kept to see if things change.
-var float  	zzThrownTime;
-var Weapon  zzThrownWeapon;
 var int     zzRecentDmgGiven, zzRecentTeamDmgGiven, TeleRadius;
 var name    zzDefaultWeapon;
 var float   zzLastHitSound, zzLastTeamHitSound;
@@ -3367,18 +3365,14 @@ simulated function bool xxUsingDefaultWeapon()
 
 exec function ThrowWeapon()
 {
-	local vector ThrowVelocity;
+	if( Level.NetMode == NM_Client )
+		return;
 
 	if( Weapon==None || (Weapon.Class==Level.Game.BaseMutator.MutatedDefaultWeapon())
 		|| !Weapon.bCanThrow )
 		return;
 
-	zzThrownWeapon = Weapon;
-	zzThrownTime = Level.TimeSeconds;
-	ThrowVelocity.X = zzThrowVelocity;
-	ThrowVelocity.Y = zzThrowVelocity;
-	ThrowVelocity.Z = 500;
-	Weapon.Velocity = Vector(ViewRotation) * ThrowVelocity + vect(0,0,220);
+	Weapon.Velocity = Vector(ViewRotation) * zzThrowVelocity + vect(0,0,220);
 	Weapon.bTossedOut = true;
 	TossWeapon();
 	if ( Weapon == None )
