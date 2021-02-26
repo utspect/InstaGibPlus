@@ -5405,8 +5405,14 @@ state Dying
 		bJustFired = false;
 		bJustAltFired = false;
 		FindGoodView();
-		if ( (Role == ROLE_Authority) && !bHidden )
-			Super(Pawn).Timer();
+		if ( (Role == ROLE_Authority) && !bHidden ) {
+			bHidden = true;
+			SpawnCarcass();
+			if ( bIsPlayer )
+				HidePlayer();
+			else
+				Destroy();
+		}
 		SetTimer(RespawnDelay, false); // MODIFIED
 
 		// clean out saved moves
