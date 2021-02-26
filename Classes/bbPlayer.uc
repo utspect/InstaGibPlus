@@ -5406,7 +5406,7 @@ state Dying
 		bJustAltFired = false;
 		FindGoodView();
 		if ( (Role == ROLE_Authority) && !bHidden )
-			Super.Timer();
+			Super(Pawn).Timer();
 		SetTimer(RespawnDelay, false); // MODIFIED
 
 		// clean out saved moves
