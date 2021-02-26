@@ -277,6 +277,7 @@ var int HitMarkerTestDamage;
 var int HitMarkerTestTeam;
 
 var bbServerMove FirstServerMove;
+var bbServerMove LatestServerMove;
 var bbServerMove FreeServerMove;
 
 var Utilities Utils;
@@ -1863,10 +1864,14 @@ function IGPlus_ProcessRemoteMovement() {
 function IGPlus_ApplyAllServerMoves() {
 	local bbServerMove SM;
 
-	for (SM = FirstServerMove; SM != none; SM = SM.Next)
+	if (FirstServerMove == none) return;
+
+	for (SM = FirstServerMove; SM.Next != none; SM = SM.Next)
 		IGPlus_ApplyServerMove(SM);
 
-	IGPlus_DestroyServerMoveChain(FirstServerMove);
+	IGPlus_ApplyServerMove(SM);
+
+	IGPlus_DestroyServerMoveChain(FirstServerMove, SM);
 	FirstServerMove = none;
 }
 
@@ -2331,11 +2336,17 @@ function IGPlus_DestroyServerMove(bbServerMove SM) {
 	FreeServerMove = SM;
 }
 
-// recursive algorithm, dont use on long chains
-function IGPlus_DestroyServerMoveChain(bbServerMove SM) {
-	if (SM == none) return;
-	IGPlus_DestroyServerMoveChain(SM.Next);
-	IGPlus_DestroyServerMove(SM);
+function IGPlus_DestroyServerMoveChain(bbServerMove Head, bbServerMove Tail) {
+	if (Head == none) return;
+
+	if (Tail == none) {
+		Tail = Head;
+		while(Tail.Next != none)
+			Tail = Tail.Next;
+	}
+
+	Tail.Next = FreeServerMove;
+	FreeServerMove = Head;
 }
 
 function IGPlus_InsertServerMove(bbServerMove SM) {
@@ -2343,12 +2354,19 @@ function IGPlus_InsertServerMove(bbServerMove SM) {
 
 	if (FirstServerMove == none) {
 		FirstServerMove = SM;
+		LatestServerMove = SM;
 		return;
 	}
 
 	if (FirstServerMove.TimeStamp > SM.TimeStamp) {
 		SM.Next = FirstServerMove;
 		FirstServerMove = SM;
+		return;
+	}
+
+	if (LatestServerMove.TimeStamp < SM.TimeStamp) {
+		LatestServerMove.Next = SM;
+		LatestServerMove = SM;
 		return;
 	}
 
