@@ -5355,7 +5355,7 @@ state Dying
 
 		global.ServerTick(DeltaTime);
 
-		if (RealTimeDead > 2*class'UTPure'.default.MaxTradeTimeMargin+AverageServerDeltaTime && Weapon != none)
+		if (RealTimeDead > 2*class'UTPure'.default.MaxTradeTimeMargin && Weapon != none)
 			Level.Game.DiscardInventory(self);
 	}
 
