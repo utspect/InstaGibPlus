@@ -192,6 +192,7 @@ struct ServerMoveParams {
 	var vector Velocity;
 	var Actor Base;
 	var EPhysics Physics;
+	var bool bUsedTranslocator;
 };
 var bool bHaveReceivedServerMove;
 var ServerMoveParams LastServerMoveParams;
@@ -1853,6 +1854,7 @@ function ClearLastServerMoveParams() {
 	LastServerMoveParams.Velocity = vect(0.0, 0.0, 0.0);
 	LastServerMoveParams.Physics = PHYS_None;
 	LastServerMoveParams.Base = none;
+	LastServerMoveParams.bUsedTranslocator = false;
 }
 
 function IGPlus_ProcessRemoteMovement() {
@@ -1880,6 +1882,7 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	local float SimStep;
 	local rotator DeltaRot;
 	local rotator Rot;
+	local vector TlocPrevLocation;
 	local int maxPitch;
 	local int ViewPitch;
 	local int ViewYaw;
@@ -1981,6 +1984,8 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	NewbPressedJump = (bJumpStatus != NewbJumpStatus);
 	bJumpStatus = NewbJumpStatus;
 
+	TlocPrevLocation = Location;
+
 	// handle firing and alt-firing
 	if (bFired) {
 		if (bForceFire && (Weapon != None))
@@ -2001,6 +2006,9 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	} else {
 		bAltFire = 0;
 	}
+
+	if (IsInState('PlayerWalking') && VSize(Location - TlocPrevLocation) > 1)
+		LastServerMoveParams.bUsedTranslocator = true;
 
 	ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
 	if (ServerDeltaTime > 0.9)
@@ -2125,6 +2133,7 @@ function IGPlus_CheckClientError() {
 	local bool bServerOnMover;
 	local bool bClientOnMover;
 	local bool bForceUpdate;
+	local bool bUsedTranslocator;
 	local bool bCanTraceNewLoc;
 	local bool bMovedToNewLoc;
 	local Decoration Carried;
@@ -2139,6 +2148,7 @@ function IGPlus_CheckClientError() {
 	ClientLocAbs = ClientLoc;
 	if (LastServerMoveParams.Base != none)
 		ClientLocAbs += LastServerMoveParams.Base.Location;
+	bUsedTranslocator = LastServerMoveParams.bUsedTranslocator;
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxLocError = 3.0;
@@ -2170,7 +2180,11 @@ function IGPlus_CheckClientError() {
 		zzIgnoreUpdateUntil = ServerTimeStamp;
 	}
 
-	bForceUpdate = zzbForceUpdate || (zzForceUpdateUntil >= ServerTimeStamp) ||
+	// if we detect use of a translocator, we stop ignoring location mismatches to make the translocation succeed
+	if (bUsedTranslocator)
+		zzIgnoreUpdateUntil = Level.TimeSeconds;
+
+	bForceUpdate = zzbForceUpdate || bUsedTranslocator || (zzForceUpdateUntil >= ServerTimeStamp) ||
 		((ClientLocError > MaxLocError) && (zzIgnoreUpdateUntil < ServerTimeStamp));
 
 	clientLastUpdateTime = ServerTimeStamp;
