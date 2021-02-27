@@ -3370,15 +3370,26 @@ exec function ThrowWeapon()
 		return;
 
 	if( Weapon==None || (Weapon.Class==Level.Game.BaseMutator.MutatedDefaultWeapon())
-		|| !Weapon.bCanThrow )
+		|| !Weapon.bCanThrow || Weapon.IsInState('Idle') == false )
 		return;
 
-	Weapon.Velocity = Vector(ViewRotation) * zzThrowVelocity + vect(0,0,220);
+	Weapon.Velocity = Vector(ViewRotation) * vect(1,1,0) * zzThrowVelocity + vect(0,0,220);
 	Weapon.bTossedOut = true;
 	TossWeapon();
 	if ( Weapon == None )
 		SwitchToBestWeapon();
 }
+
+// toss out the weapon currently held
+function TossWeapon()
+{
+	local vector X,Y,Z;
+	if ( Weapon == None )
+		return;
+	GetAxes(Rotation.Yaw*rot(0,1,0),X,Y,Z);
+	Weapon.DropFrom(Location + (CollisionRadius+Weapon.CollisionRadius) * X - 0.5 * CollisionRadius * Y);
+}
+
 
 function string forcedModelToString(int fm) {
 	switch(fm) {
