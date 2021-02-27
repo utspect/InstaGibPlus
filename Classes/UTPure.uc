@@ -580,6 +580,7 @@ function xxResetPlayer(bbPlayer zzP)
 	zzP.Died(None, 'Suicided', Location);	// Nuke teh sukar!
 	zzP.GoToState('CountdownDying');
 	zzP.xxClientResetPlayer();
+	Level.Game.DiscardInventory(zzP);
 
 	zzP.DieCount = 0; zzP.ItemCount = 0; zzP.KillCount = 0; zzP.SecretCount = 0; zzP.Spree = 0;
 	zzPRI = zzP.PlayerReplicationInfo;
