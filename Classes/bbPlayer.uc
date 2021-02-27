@@ -3800,6 +3800,31 @@ function ServerTaunt(name Sequence )
 	zzLastTaunt = Level.TimeSeconds;
 }
 
+simulated function bool AdjustHitLocation(out vector HitLocation, vector TraceDir)
+{
+	local float adjZ, maxZ;
+
+	TraceDir = Normal(TraceDir);
+	HitLocation = HitLocation + 0.5 * CollisionRadius * TraceDir;
+
+	maxZ = Location.Z + (1.0 - 0.7 * DuckFraction) * CollisionHeight;
+	if ( HitLocation.Z <= maxZ )
+		return true;
+
+	if ( TraceDir.Z >= 0 )
+		return false;
+
+	adjZ = (maxZ - HitLocation.Z)/TraceDir.Z;
+	HitLocation.Z = maxZ;
+	HitLocation.X = HitLocation.X + TraceDir.X * adjZ;
+	HitLocation.Y = HitLocation.Y + TraceDir.Y * adjZ;
+
+	if ( VSize((HitLocation - Location)*vect(1,1,0)) > CollisionRadius )
+		return false;
+
+	return true;
+}
+
 simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector TraceDir)
 {
 	/**
