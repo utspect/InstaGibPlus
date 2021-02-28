@@ -955,8 +955,10 @@ function Timer() {
 		return;
 	}
 
-	bIsFinishedLoading = true;
-	ClientMessage("[IG+] To view available commands type 'mutate playerhelp' in the console");
+	if (bIsFinishedLoading == false) {
+		bIsFinishedLoading = true;
+		ClientMessage("[IG+] To view available commands type 'mutate playerhelp' in the console");
+	}
 }
 
 function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
