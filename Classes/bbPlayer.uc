@@ -2181,10 +2181,12 @@ function IGPlus_CheckClientError() {
 	}
 
 	// if we detect use of a translocator, we stop ignoring location mismatches to make the translocation succeed
-	if (bUsedTranslocator)
+	if (bUsedTranslocator) {
 		zzIgnoreUpdateUntil = Level.TimeSeconds;
+		zzForceUpdateUntil = Level.TimeSeconds + (PlayerReplicationInfo.Ping * 0.0011 * Level.TimeDilation);
+	}
 
-	bForceUpdate = zzbForceUpdate || bUsedTranslocator || (zzForceUpdateUntil >= ServerTimeStamp) ||
+	bForceUpdate = zzbForceUpdate || (zzForceUpdateUntil >= ServerTimeStamp) ||
 		((ClientLocError > MaxLocError) && (zzIgnoreUpdateUntil < ServerTimeStamp));
 
 	clientLastUpdateTime = ServerTimeStamp;
