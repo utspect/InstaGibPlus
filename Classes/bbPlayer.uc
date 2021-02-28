@@ -6040,7 +6040,7 @@ function xxPlayerTickEvents(float DeltaTime)
 	if (PureLevel != None)	// Why would this be None?!
 	{
 		zzbDemoRecording = PureLevel.zzDemoRecDriver != None;
-		if (!zzbDemoRecording && zzbGameStarted && (zzbForceDemo || Settings.bAutoDemo && zzUTPure.zzDMP.CountDown < 1))
+		if (!zzbDemoRecording && zzbGameStarted && (zzbForceDemo || Settings.bAutoDemo && DeathMatchPlus(Level.Game).CountDown < 1))
 			xxClientDemoRec();
 	}
 }
