@@ -192,10 +192,11 @@ struct ServerMoveParams {
 	var vector Velocity;
 	var Actor Base;
 	var EPhysics Physics;
-	var bool bUsedTranslocator;
+	var int TlocCounter;
 };
 var bool bHaveReceivedServerMove;
 var ServerMoveParams LastServerMoveParams;
+var int TlocCounter;
 
 // SSR Beam
 var float LastWeaponEffectCreated;
@@ -1430,52 +1431,54 @@ function ClientAdjustPosition
 
 // OLD STYLE (3xfloat) CAP
 
-function xxCAP(float TimeStamp, name newState, EPhysics newPhysics,
+function xxCAP(float TimeStamp, name newState, int MiscData,
 			float NewLocX, float NewLocY, float NewLocZ, float NewVelX, float NewVelY, float NewVelZ, Actor NewBase)
 {
 	local vector Loc,Vel;
 	Loc.X = NewLocX; Loc.Y = NewLocY; Loc.Z = NewLocZ;
 	Vel.X = NewVelX; Vel.Y = NewVelY; Vel.Z = NewVelZ;
-	xxPureCAP(TimeStamp, newState, newPhysics,Loc,Vel,NewBase);
+	xxPureCAP(TimeStamp, newState, MiscData,Loc,Vel,NewBase);
 }
 
-function xxCAPLevelBase(float TimeStamp, name newState, EPhysics newPhysics,
+function xxCAPLevelBase(float TimeStamp, name newState, int MiscData,
 			float NewLocX, float NewLocY, float NewLocZ, float NewVelX, float NewVelY, float NewVelZ)
 {
 	local vector Loc,Vel;
 	Loc.X = NewLocX; Loc.Y = NewLocY; Loc.Z = NewLocZ;
 	Vel.X = NewVelX; Vel.Y = NewVelY; Vel.Z = NewVelZ;
-	xxPureCAP(TimeStamp,newState,newPhysics,Loc,Vel,Level);
+	xxPureCAP(TimeStamp,newState,MiscData,Loc,Vel,Level);
 }
 
-function xxCAPWalking(float TimeStamp, EPhysics newPhysics,
+function xxCAPWalking(float TimeStamp, int MiscData,
 			float NewLocX, float NewLocY, float NewLocZ, float NewVelX, float NewVelY, float NewVelZ, Actor NewBase)
 {
 	local vector Loc,Vel;
 	Loc.X = NewLocX; Loc.Y = NewLocY; Loc.Z = NewLocZ;
 	Vel.X = NewVelX; Vel.Y = NewVelY; Vel.Z = NewVelZ;
-	xxPureCAP(TimeStamp,'PlayerWalking',newPhysics,Loc,Vel,NewBase);
+	xxPureCAP(TimeStamp,'PlayerWalking',MiscData,Loc,Vel,NewBase);
 }
 
-function xxCAPWalkingWalkingLevelBase(float TimeStamp,
+function xxCAPWalkingWalkingLevelBase(float TimeStamp, int MiscData,
 			float NewLocX, float NewLocY, float NewLocZ, float NewVelX, float NewVelY, float NewVelZ)
 {
 	local vector Loc,Vel;
 	Loc.X = NewLocX; Loc.Y = NewLocY; Loc.Z = NewLocZ;
 	Vel.X = NewVelX; Vel.Y = NewVelY; Vel.Z = NewVelZ;
-	xxPureCAP(TimeStamp,'PlayerWalking',PHYS_Walking,Loc,Vel,Level);
+	MiscData = MiscData | (/*PHYS_Walking*/(1) << 2);
+	xxPureCAP(TimeStamp,'PlayerWalking',MiscData,Loc,Vel,Level);
 }
 
-function xxCAPWalkingWalking(float TimeStamp,
+function xxCAPWalkingWalking(float TimeStamp, int MiscData,
 			float NewLocX, float NewLocY, float NewLocZ, float NewVelX, float NewVelY, float NewVelZ, Actor NewBase)
 {
 	local vector Loc,Vel;
 	Loc.X = NewLocX; Loc.Y = NewLocY; Loc.Z = NewLocZ;
 	Vel.X = NewVelX; Vel.Y = NewVelY; Vel.Z = NewVelZ;
-	xxPureCAP(TimeStamp,'PlayerWalking',PHYS_Walking,Loc,Vel,NewBase);
+	MiscData = MiscData | (/*PHYS_Walking*/(1) << 2);
+	xxPureCAP(TimeStamp,'PlayerWalking',MiscData,Loc,Vel,NewBase);
 }
 
-simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics, vector NewLoc, vector NewVel, Actor NewBase)
+simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vector NewLoc, vector NewVel, Actor NewBase)
 {
 	local Decoration Carried;
 	local vector OldLoc;
@@ -1494,7 +1497,8 @@ simulated function xxPureCAP(float TimeStamp, name newState, EPhysics newPhysics
 		IGPlus_AdjustLocationOffset = vect(0,0,0);
 	}
 
-	SetPhysics(newPhysics);
+	SetPhysics(GetPhysics((MiscData >> 2) & 0xF));
+	TlocCounter = MiscData & 3;
 
 	SetBase(NewBase);
 	if ( Mover(NewBase) != None )
@@ -1856,7 +1860,7 @@ function ClearLastServerMoveParams() {
 	LastServerMoveParams.Velocity = vect(0.0, 0.0, 0.0);
 	LastServerMoveParams.Physics = PHYS_None;
 	LastServerMoveParams.Base = none;
-	LastServerMoveParams.bUsedTranslocator = false;
+	LastServerMoveParams.TlocCounter = 0;
 }
 
 function IGPlus_ProcessRemoteMovement() {
@@ -1889,6 +1893,7 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	local int ViewPitch;
 	local int ViewYaw;
 	local vector ClientLocAbs;
+	local int ClientTlocCounter;
 	local bool NewbPressedJump;
 	local bool NewbRun;
 	local bool NewbDuck;
@@ -1946,6 +1951,7 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 		return;
 	}
 
+	ClientTlocCounter =          (SM.MiscData & 0x60000000) >> 29;
 	bFired         =             (SM.MiscData & 0x10000000) != 0;
 	bAltFired      =             (SM.MiscData & 0x08000000) != 0;
 	bForceFire     =             (SM.MiscData & 0x04000000) != 0;
@@ -2009,8 +2015,7 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 		bAltFire = 0;
 	}
 
-	if (IsInState('PlayerWalking') && VSize(Location - TlocPrevLocation) > 1)
-		LastServerMoveParams.bUsedTranslocator = true;
+
 
 	ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
 	if (ServerDeltaTime > 0.9)
@@ -2043,6 +2048,11 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	LastServerMoveParams.Velocity = SM.ClientVelocity;
 	LastServerMoveParams.Base = SM.ClientBase;
 	LastServerMoveParams.Physics = ClientPhysics;
+	LastServerMoveParams.TlocCounter = ClientTlocCounter;
+
+	if (VSize(Location - TlocPrevLocation) > 1) {
+		TlocCounter = (TlocCounter + 1) & 3;
+	}
 
 	CurrentTimeStamp = SM.TimeStamp;
 	ServerTimeStamp = Level.TimeSeconds;
@@ -2129,13 +2139,14 @@ function IGPlus_CheckClientError() {
 	local vector ClientVel;
 	local EPhysics ClientPhysics;
 	local vector ClientLocAbs;
+	local int ClientTlocCounter;
 	local vector LocDelta;
 	local float ClientLocError;
 	local float MaxLocError;
+	local int CAPMiscData;
 	local bool bServerOnMover;
 	local bool bClientOnMover;
 	local bool bForceUpdate;
-	local bool bUsedTranslocator;
 	local bool bCanTraceNewLoc;
 	local bool bMovedToNewLoc;
 	local Decoration Carried;
@@ -2150,7 +2161,7 @@ function IGPlus_CheckClientError() {
 	ClientLocAbs = ClientLoc;
 	if (LastServerMoveParams.Base != none)
 		ClientLocAbs += LastServerMoveParams.Base.Location;
-	bUsedTranslocator = LastServerMoveParams.bUsedTranslocator;
+	ClientTlocCounter = LastServerMoveParams.TlocCounter;
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxLocError = 3.0;
@@ -2182,13 +2193,7 @@ function IGPlus_CheckClientError() {
 		zzIgnoreUpdateUntil = ServerTimeStamp;
 	}
 
-	// if we detect use of a translocator, we stop ignoring location mismatches to make the translocation succeed
-	if (bUsedTranslocator) {
-		zzIgnoreUpdateUntil = Level.TimeSeconds;
-		zzForceUpdateUntil = Level.TimeSeconds + (PlayerReplicationInfo.Ping * 0.0011 * Level.TimeDilation);
-	}
-
-	bForceUpdate = zzbForceUpdate || (zzForceUpdateUntil >= ServerTimeStamp) ||
+	bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
 		((ClientLocError > MaxLocError) && (zzIgnoreUpdateUntil < ServerTimeStamp));
 
 	clientLastUpdateTime = ServerTimeStamp;
@@ -2206,20 +2211,22 @@ function IGPlus_CheckClientError() {
 		else
 			ClientLoc = Location;
 
+		CAPMiscData = TlocCounter & 0x0003;
+
 		if (GetStateName() == 'PlayerWalking') {
 			if (Physics == PHYS_Walking) {
 				if (Base == Level) {
-					xxCAPWalkingWalkingLevelBase(CurrentTimeStamp, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
+					xxCAPWalkingWalkingLevelBase(CurrentTimeStamp, CAPMiscData, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
 				} else {
-					xxCAPWalkingWalking(CurrentTimeStamp, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+					xxCAPWalkingWalking(CurrentTimeStamp, CAPMiscData, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
 				}
 			} else {
-				xxCAPWalking(CurrentTimeStamp, Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+				xxCAPWalking(CurrentTimeStamp, CAPMiscData | (Physics << 2), ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
 			}
 		} else if (Base == Level)
-			xxCAPLevelBase(CurrentTimeStamp, GetStateName(), Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
+			xxCAPLevelBase(CurrentTimeStamp, GetStateName(), CAPMiscData | (Physics << 2), ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
 		else
-			xxCAP(CurrentTimeStamp, GetStateName(), Physics, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+			xxCAP(CurrentTimeStamp, GetStateName(), CAPMiscData | (Physics << 2), ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
 
 		ClientDebugMessage("Send CAP:"@CurrentTimeStamp@Physics@ClientPhysics@ClientLocError@MaxLocError);
 
@@ -3286,6 +3293,7 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	else
 		RelLoc = Location - Base.Location;
 
+	MiscData = MiscData | (TlocCounter << 29);
 	if (Move.bFire) MiscData = MiscData | 0x10000000;
 	if (Move.bAltFire) MiscData = MiscData | 0x08000000;
 	if (Move.bForceFire) MiscData = MiscData | 0x04000000;
