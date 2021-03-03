@@ -5602,6 +5602,7 @@ state Dying
 		LastKiller = none;
 		ClientUpdateTime = 0;
 		bDodging = false;
+		MultiDodgesRemaining = bbPlayerReplicationInfo(PlayerReplicationInfo).MaxMultiDodges;
 	}
 
 }
