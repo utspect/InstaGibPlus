@@ -5446,8 +5446,8 @@ state Dying
 		bAltFire = 0;
 	}
 
-	simulated function BeginState()
-	{
+	simulated function BeginState() {
+		local Carcass C;
 		bJumpStatus = false;
 		bIsAlive = false;
 		zzIgnoreUpdateUntil = 0;
@@ -5466,13 +5466,15 @@ state Dying
 		FindGoodView();
 		if ( (Role == ROLE_Authority) && !bHidden ) {
 			bHidden = true;
-			SpawnCarcass();
+			C = SpawnCarcass();
+			if (C != none)
+				C.LifeSpan = 30.0;
 			if ( bIsPlayer )
 				HidePlayer();
 			else
 				Destroy();
 		}
-		SetTimer(RespawnDelay, false); // MODIFIED
+		SetTimer(RespawnDelay, false);
 
 		// clean out saved moves
 		while ( SavedMoves != None )
