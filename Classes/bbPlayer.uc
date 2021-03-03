@@ -1498,6 +1498,10 @@ simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vecto
 	}
 
 	SetPhysics(GetPhysics((MiscData >> 2) & 0xF));
+	if (Physics == PHYS_Walking) {
+		bDodging = false;
+		MultiDodgesRemaining = bbPlayerReplicationInfo(PlayerReplicationInfo).MaxMultiDodges;
+	}
 	TlocCounter = MiscData & 3;
 
 	SetBase(NewBase);
