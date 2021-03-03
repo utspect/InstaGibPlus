@@ -2019,7 +2019,9 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 		bAltFire = 0;
 	}
 
-
+	if (VSize(Location - TlocPrevLocation) > 1) {
+		TlocCounter = (TlocCounter + 1) & 3;
+	}
 
 	ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
 	if (ServerDeltaTime > 0.9)
@@ -2053,10 +2055,6 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	LastServerMoveParams.Base = SM.ClientBase;
 	LastServerMoveParams.Physics = ClientPhysics;
 	LastServerMoveParams.TlocCounter = ClientTlocCounter;
-
-	if (VSize(Location - TlocPrevLocation) > 1) {
-		TlocCounter = (TlocCounter + 1) & 3;
-	}
 
 	CurrentTimeStamp = SM.TimeStamp;
 	ServerTimeStamp = Level.TimeSeconds;
