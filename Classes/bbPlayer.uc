@@ -254,9 +254,7 @@ var bool bDodging;
 var bool bDodgePreserveZMomentum;
 var int MultiDodgesRemaining;
 
-var float ForcedSkinStartTime;
-var int LastForcedSkin;
-var int LastForcedSkinTeam;
+var bool bAppearanceChanged;
 
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
@@ -6060,7 +6058,7 @@ function xxPlayerTickEvents(float DeltaTime)
 	}
 }
 
-function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
+static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
 	local string suffix;
 	local bbPlayer P;
 	local bbPlayerReplicationInfo PRI;
@@ -6073,26 +6071,11 @@ function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int Te
 	if (selectedSkin > 17)
 		selectedSkin = 12;
 
-	P = bbPlayer(SkinActor);
-	if (P != none) {
-		if (P.ForcedSkinStartTime == 0.0)
-			P.ForcedSkinStartTime = Level.TimeSeconds;
-
-		if (P.LastForcedSkin == selectedSkin &&
-			(bTeamGame == false || P.LastForcedSkinTeam == TeamNum) &&
-			PlayerReplicationInfo.Team == LastForcedSkinTeam &&
-			Level.TimeSeconds > P.ForcedSkinStartTime + 3.0
-		) {
-			return;
-		}
-
-		P.LastForcedSkin = selectedSkin;
-		P.LastForcedSkinTeam = TeamNum;
-	}
-
 	suffix = "";
 	if (bTeamGame)
 		suffix = "t_"$TeamNum;
+
+	P = bbPlayer(SkinActor);
 
 	switch (selectedSkin) {
 		case 0: // Female Commando Aphex
@@ -6241,13 +6224,15 @@ function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int Te
 			SkinActor.Mesh = class'bbTBoss'.Default.Mesh;
 			break;
 		default:
-			if (P != none) {
+			if (P.bAppearanceChanged) {
 				PRI = bbPlayerReplicationInfo(P.PlayerReplicationInfo);
 				SkinActor.Mesh = SkinActor.default.Mesh;
 				P.static.SetMultiSkin(SkinActor, PRI.SkinName, PRI.FaceName, TeamNum);
+				P.bAppearanceChanged = false;
 			}
-			break;
+			return;
 	}
+	P.bAppearanceChanged = true;
 }
 
 function int GetForcedSkinForPlayer(PlayerReplicationInfo PRI) {
@@ -6341,7 +6326,6 @@ event PreRender( canvas zzCanvas )
 		}
 	}
 
-	LastForcedSkinTeam = PlayerReplicationInfo.Team;
 	xxShowItems();
 }
 
@@ -8255,6 +8239,5 @@ defaultproperties
 	DuckTransitionTime=0.25
 	LastWeaponEffectCreated=-1
 	RespawnDelay=1.0
-	LastForcedSkin=-1
 	PlayerReplicationInfoClass=Class'bbPlayerReplicationInfo'
 }
