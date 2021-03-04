@@ -8213,12 +8213,6 @@ exec function TestHitSound(optional int Dmg) {
 		HitMarkerTestTeam = 0;
 }
 
-exec function RefreshForcedSkins() {
-	local bbPlayer P;
-	foreach AllActors(class'bbPlayer', P)
-		P.LastForcedSkin = P.LastForcedSkin - 1;
-}
-
 defaultproperties
 {
 	bAlwaysRelevant=True
