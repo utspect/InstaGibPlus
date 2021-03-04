@@ -1391,8 +1391,8 @@ defaultproperties
 	ThrowVelocity=750
 	VersionStr="IG+"
 	LongVersion=""
-	ThisVer="6"
-	NiceVer="6"
+	ThisVer="6B"
+	NiceVer="6B"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True

@@ -276,9 +276,9 @@ defaultproperties
 	SelectedTeamHitSound=2
 	HitSoundVolume=4
 	HitSoundTeamVolume=4
-	sHitSound(0)="InstaGibPlus6.HitSound"
+	sHitSound(0)="InstaGibPlus6B.HitSound"
 	sHitSound(1)="UnrealShare.StingerFire"
-	sHitSound(2)="InstaGibPlus6.HitSoundFriendly"
+	sHitSound(2)="InstaGibPlus6B.HitSoundFriendly"
 	cShockBeam=1
 	bHideOwnBeam=False
 	BeamScale=0.45
