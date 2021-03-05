@@ -386,9 +386,9 @@ simulated event PostTouch( Actor Other )
     if( Role == ROLE_Authority )
     {
         // Find JumpTarget
-        foreach AllActors( class 'Actor', A )
-            if( string(A.tag) ~= URL && A != Self )
-                JumpTarget = A;
+        // foreach AllActors( class 'Actor', A )
+        //     if( string(A.tag) ~= URL && A != Self )
+        //         JumpTarget = A;
 
         if( JumpTarget == None )
         {

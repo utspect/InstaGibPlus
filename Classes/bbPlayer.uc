@@ -637,11 +637,14 @@ function xxClientSwJumpPad(
 	string JumpEffect,
 	string JumpPlayerEffect,
 	string JumpEvent,
-	string JumpSound
+	string JumpSound,
+	vector TargetLocation,
+	vector TargetCollision
 ) {
 	local NN_swJumpPad J;
 	local AttachMover AM;
 	local rotator TRot;
+	local NN_swJumpPad_DestinationDummy Target;
 
 	if (Level.NetMode != NM_Client)
 		return;
@@ -669,6 +672,10 @@ function xxClientSwJumpPad(
 	J.bClientSideEffects = false;
 	J.JumpWait = MiscData2.Z / 50.0;
 
+	Target = Spawn(class'NN_swJumpPad_DestinationDummy', self,, TargetLocation);
+	Target.SetCollisionSize(TargetCollision.X*0.1, TargetCollision.Y*0.1);
+	J.JumpTarget = Target;
+
 	if(J.Tag != '')
 		foreach AllActors(class'AttachMover', AM)
 			if(AM.AttachTag == J.Tag) {
@@ -695,6 +702,8 @@ function ReplicateSwJumpPad(Teleporter T) {
 	local vector CollJA;
 	local int MiscData;
 	local vector MiscData2;
+	local Actor Target;
+	local vector TargetCollision;
 
 	RotV.X = T.Rotation.Pitch << 16 >> 16;
 	RotV.Y = T.Rotation.Yaw << 16 >> 16;
@@ -720,6 +729,19 @@ function ReplicateSwJumpPad(Teleporter T) {
 	MiscData2.Y = float(T.GetPropertyText("AngleRand")) * 256.0;
 	MiscData2.Z = float(T.GetPropertyText("JumpWait")) * 50.0;
 
+	foreach AllActors(class'Actor', Target)
+		if (string(Target.Tag) ~= T.URL && Target != T)
+			break;
+
+	if (string(Target.Tag) ~= T.URL && Target != T) {}
+	else {
+		// invalid target for swJumpPad
+		return;
+	}
+
+	TargetCollision.X = Target.CollisionRadius*10;
+	TargetCollision.Y = Target.CollisionHeight*10;
+
 	xxClientSwJumpPad(
 		T.Tag,
 		T.Event,
@@ -733,7 +755,9 @@ function ReplicateSwJumpPad(Teleporter T) {
 		T.GetPropertyText("JumpEffect"),
 		T.GetPropertyText("JumpPlayerEffect"),
 		T.GetPropertyText("JumpEvent"),
-		T.GetPropertyText("JumpSound")
+		T.GetPropertyText("JumpSound"),
+		Target.Location,
+		TargetCollision
 	);
 }
 
