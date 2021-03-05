@@ -8237,6 +8237,10 @@ exec function TestHitSound(optional int Dmg) {
 		HitMarkerTestTeam = 0;
 }
 
+event PreClientTravel() {
+	GoToState('GameEnded');
+}
+
 defaultproperties
 {
 	bAlwaysRelevant=True
