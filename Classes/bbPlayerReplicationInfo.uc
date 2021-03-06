@@ -4,6 +4,7 @@ var string SkinName;
 var string FaceName;
 var string OriginalName;
 var int MaxMultiDodges;
+var int SkinIndex;
 
 replication {
     reliable if (Role == ROLE_Authority)
@@ -48,5 +49,6 @@ function Timer()
 
 defaultproperties
 {
-     NetUpdateFrequency=10.000000
+    SkinIndex=-1
+    NetUpdateFrequency=10.000000
 }
