@@ -338,7 +338,6 @@ replication
 		TimeBetweenNetUpdates,
 		xxClientKicker,
 		xxClientSwJumpPad,
-		xxNN_MoveClientTTarget,
 		xxSetDefaultWeapon,
 		xxSetPendingWeapon,
 		xxSetSniperSpeed,
@@ -432,11 +431,9 @@ replication
 		xxSetNetUpdateRate;
 
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
-		xxNN_MoveTTarget,
 		xxNN_ProjExplode,
 		xxNN_ReleaseAltFire,
-		xxNN_ReleaseFire,
-		xxNN_TransFrag;
+		xxNN_ReleaseFire;
 
 	// Server->Client
 	unreliable if (Role == ROLE_Authority && RemoteRole < ROLE_AutonomousProxy && bViewTarget)
@@ -3022,38 +3019,6 @@ simulated function xxNN_ClientProjExplode( int ProjIndex, optional vector HitLoc
 // Seriously.  Do something good with your time.  Build something that improves lives.
 // I understand that you are bitter, but you'll feel better if you listen to me.
 // Doing good things will make you feel good.
-
-function xxNN_TransFrag( Pawn Other )
-{
-	if (!IsInState('Dying') && !Other.IsInState('Dying') && !xxGarbageLocation(Other) && (!Other.IsA('bbPlayer') || VSize(Other.Location - TTarget.Location) < TeleRadius))
-		Other.GibbedBy(Self);
-}
-
-function xxNN_MoveTTarget( vector NewLoc, optional int Damage, optional Pawn EventInstigator, optional vector HitLocation, optional vector Momentum, optional name DamageType)
-{
-	local vector OldLoc;
-	if (Role < ROLE_Authority || TTarget == None || xxGarbageLocation(TTarget) || VSize(NewLoc - TTarget.Location) > Class'UTPure'.Default.MaxPosError)
-		return;
-
-	OldLoc = TTarget.Location;
-	if (!TTarget.SetLocation(NewLoc))
-		TTarget.SetLocation(OldLoc);
-	if (Damage >= 0)
-		TTarget.TakeDamage(Damage, EventInstigator, HitLocation, Momentum, DamageType);
-}
-
-simulated function xxNN_MoveClientTTarget( vector NewLoc, optional int Damage, optional Pawn EventInstigator, optional vector HitLocation, optional vector Momentum, optional name DamageType)
-{
-	local vector OldLoc;
-	if (Role == ROLE_Authority || zzClientTTarget == None || xxGarbageLocation(zzClientTTarget))
-		return;
-
-	OldLoc = zzClientTTarget.Location;
-	if (!zzClientTTarget.SetLocation(NewLoc))
-		zzClientTTarget.SetLocation(OldLoc);
-	if (Damage >= 0)
-		zzClientTTarget.TakeDamage(Damage, EventInstigator, HitLocation, Momentum, DamageType);
-}
 
 simulated function xxSetTeleRadius(int newRadius)
 {
