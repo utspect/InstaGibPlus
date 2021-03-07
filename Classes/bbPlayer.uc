@@ -5636,7 +5636,8 @@ state CountdownDying extends Dying
 
 	function EndState() {
 		Self.bBehindView = false;
-		ServerReStartPlayer();
+		if (Player != none)
+			ServerReStartPlayer();
 		bJustRespawned = true;
 		ClientUpdateTime = 0;
 	}
