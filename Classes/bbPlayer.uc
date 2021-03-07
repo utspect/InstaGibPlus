@@ -2765,7 +2765,7 @@ exec function Fire( optional float F )
 	if (!bNewNet || !xxWeaponIsNewNet()) {
 		if (xxCanFire())
 			Super.Fire(F);
-	} else if (Role < ROLE_Authority && (Level.Game == none || Level.Game.bGameEnded == false)) {
+	} else if (Role < ROLE_Authority && GameReplicationInfo.GameEndedComments == "") {
 		if (Weapon != none)
 			Weapon.ClientFire(1);
 	} else {
