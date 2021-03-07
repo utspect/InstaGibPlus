@@ -62,6 +62,7 @@ var localized config bool bEnableWallDodging;
 var localized config bool bDodgePreserveZMomentum;
 var localized config int MaxMultiDodges;
 var localized config int BrightskinMode; //0=None,1=Unlit
+var localized config float PlayerScale;
 
 // Nice variables.
 var float zzTeamChangeTime;			// This would be to Prevent Team Change Spamming
@@ -732,6 +733,10 @@ function ModifyPlayer(Pawn Other)
 			zzP.SetCollision(false, false, false);
 		}
 	}
+
+	Other.SetCollisionSize(Other.default.CollisionRadius * PlayerScale, Other.default.CollisionHeight * PlayerScale);
+	Other.DrawScale = Other.default.DrawScale * PlayerScale;
+
 	Super.ModifyPlayer(Other);
 }
 
@@ -1414,6 +1419,7 @@ defaultproperties
 	bDodgePreserveZMomentum=False
 	MaxMultiDodges=1
 	BrightskinMode=1
+	PlayerScale=1.0
 	bEnableServerExtrapolation=True
 	bEnableServerPacketReordering=True
 }

@@ -777,15 +777,16 @@ Server settings can be found inside InstaGibPlus.ini.
 43. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
 44. [MaxMultiDodges](#maxmultidodges)
 45. [BrightskinMode](#brightskinmode)
-46. [MinPosError](#minposerror)
-47. [MaxPosError](#maxposerror)
-48. [MaxHitError](#maxhiterror)
-49. [MaxJitterTime](#maxjittertime)
-50. [MinNetUpdateRate](#minnetupdaterate)
-51. [MaxNetUpdateRate](#maxnetupdaterate)
-52. [bEnableServerExtrapolation](#benableserverextrapolation)
-53. [ShowTouchedPackage](#showtouchedpackage)
-54. [ExcludeMapsForKickers](#excludemapsforkickers)
+46. [PlayerScale](#playerscale)
+47. [MinPosError](#minposerror)
+48. [MaxPosError](#maxposerror)
+49. [MaxHitError](#maxhiterror)
+50. [MaxJitterTime](#maxjittertime)
+51. [MinNetUpdateRate](#minnetupdaterate)
+52. [MaxNetUpdateRate](#maxnetupdaterate)
+53. [bEnableServerExtrapolation](#benableserverextrapolation)
+54. [ShowTouchedPackage](#showtouchedpackage)
+55. [ExcludeMapsForKickers](#excludemapsforkickers)
 
 ## HeadshotDamage
 
@@ -1206,6 +1207,14 @@ What brightskin mode is allowed for clients.
 
 * 0 ➜ No brightskins allowed
 * 1 ➜ Unlit skins allowed
+
+## PlayerScale
+
+**Type: float**  
+**Default: 1.0**  
+
+Scale factor for player models. Scales both DrawScale (visuals) and CollisionRadius/-Height (hitbox).
+
 
 # Building
 
