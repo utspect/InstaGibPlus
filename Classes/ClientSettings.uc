@@ -164,6 +164,8 @@ simulated function string DumpSkinIndexMaps() {
 		Result = Result$"SkinEnemyIndexMap["$i$"]:"@SkinEnemyIndexMap[i]$Chr(10);
 	for (i = 0; i < arraycount(SkinTeamIndexMap); ++i)
 		Result = Result$"SkinTeamIndexMap["$i$"]:"@SkinTeamIndexMap[i]$Chr(10);
+
+	return Result;
 }
 
 simulated function string DumpHitSounds() {

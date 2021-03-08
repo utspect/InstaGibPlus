@@ -31,64 +31,68 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 3. [DesiredSkinFemale](#desiredskinfemale)
 4. [DesiredTeamSkin](#desiredteamskin)
 5. [DesiredTeamSkinFemale](#desiredteamskinfemale)
-6. [bUnlitSkins](#bunlitskins)
-7. [HitSound](#hitsound)
-8. [TeamHitSound](#teamhitsound)
-9. [bDisableForceHitSounds](#bdisableforcehitsounds)
-10. [bEnableHitSounds](#benablehitsounds)
-11. [bEnableTeamHitSounds](#benableteamhitsounds)
-12. [bHitSoundPitchShift](#bhitsoundpitchshift)
-13. [bHitSoundTeamPitchShift](#bhitsoundteampitchshift)
-14. [HitSoundSource](#hitsoundsource)
-15. [SelectedHitSound](#selectedhitsound)
-16. [SelectedTeamHitSound](#selectedteamhitsound)
-17. [HitSoundVolume](#hitsoundvolume)
-18. [HitSoundTeamVolume](#hitsoundteamvolume)
-19. [sHitSound](#shitsound)
-20. [bDoEndShot](#bdoendshot)
-21. [bAutoDemo](#bautodemo)
-22. [DemoMask](#demomask)
-23. [DemoPath](#demopath)
-24. [DemoChar](#demochar)
-25. [bTeamInfo](#bteaminfo)
-26. [bShootDead](#bshootdead)
-27. [cShockBeam](#cshockbeam)
-28. [bHideOwnBeam](#bhideownbeam)
-29. [BeamScale](#beamscale)
-30. [BeamFadeCurve](#beamfadecurve)
-31. [BeamDuration](#beamduration)
-32. [BeamOriginMode](#beamoriginmode)
-33. [BeamDestinationMode](#beamdestinationmode)
-34. [SSRRingType](#ssrringtype)
-35. [bNoOwnFootsteps](#bnoownfootsteps)
-36. [DesiredNetUpdateRate](#desirednetupdaterate)
-37. [DesiredNetspeed](#desirednetspeed)
-38. [FakeCAPInterval](#fakecapinterval)
-39. [bNoSmoothing](#bnosmoothing)
-40. [bLogClientMessages](#blogclientmessages)
-41. [bDebugMovement](#bdebugmovement)
-42. [bEnableKillCam](#benablekillcam)
-43. [MinDodgeClickTime](#mindodgeclicktime)
-44. [bUseOldMouseInput](#buseoldmouseinput)
-45. [SmoothVRController](#smoothvrcontroller)
-46. [bShowFPS](#bshowfps)
-47. [FPSDetail](#fpsdetail)
-48. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
-49. [KillCamMinDelay](#killcammindelay)
-50. [bAllowWeaponShake](#ballowweaponshake)
-51. [bAutoReady](#bautoready)
-52. [bEnableHitMarker](#benablehitmarker)
-53. [bEnableTeamHitMarker](#benableteamhitmarker)
-54. [HitMarkerColorMode](#hitmarkercolormode)
-55. [HitMarkerColor](#hitmarkercolor)
-56. [HitMarkerTeamColor](#hitmarkerteamcolor)
-57. [HitMarkerSize](#hitmarkersize)
-58. [HitMarkerOffset](#hitmarkeroffset)
-59. [HitMarkerDuration](#hitmarkerduration)
-60. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-61. [HitMarkerSource](#hitmarkersource)
-62. [bUseCrosshairFactory](#busecrosshairfactory)
-63. [CrosshairLayers](#crosshairlayers)
+6. [SkinEnemyIndexMap](#skinenemyindexmap)
+7. [SkinTeamIndexMap](#skinteamindexmap)
+8. [bSkinEnemyUseIndexMap](#bskinenemyuseindexmap)
+9. [bSkinTeamUseIndexMap](#bskinteamuseindexmap)
+10. [bUnlitSkins](#bunlitskins)
+11. [HitSound](#hitsound)
+12. [TeamHitSound](#teamhitsound)
+13. [bDisableForceHitSounds](#bdisableforcehitsounds)
+14. [bEnableHitSounds](#benablehitsounds)
+15. [bEnableTeamHitSounds](#benableteamhitsounds)
+16. [bHitSoundPitchShift](#bhitsoundpitchshift)
+17. [bHitSoundTeamPitchShift](#bhitsoundteampitchshift)
+18. [HitSoundSource](#hitsoundsource)
+19. [SelectedHitSound](#selectedhitsound)
+20. [SelectedTeamHitSound](#selectedteamhitsound)
+21. [HitSoundVolume](#hitsoundvolume)
+22. [HitSoundTeamVolume](#hitsoundteamvolume)
+23. [sHitSound](#shitsound)
+24. [bDoEndShot](#bdoendshot)
+25. [bAutoDemo](#bautodemo)
+26. [DemoMask](#demomask)
+27. [DemoPath](#demopath)
+28. [DemoChar](#demochar)
+29. [bTeamInfo](#bteaminfo)
+30. [bShootDead](#bshootdead)
+31. [cShockBeam](#cshockbeam)
+32. [bHideOwnBeam](#bhideownbeam)
+33. [BeamScale](#beamscale)
+34. [BeamFadeCurve](#beamfadecurve)
+35. [BeamDuration](#beamduration)
+36. [BeamOriginMode](#beamoriginmode)
+37. [BeamDestinationMode](#beamdestinationmode)
+38. [SSRRingType](#ssrringtype)
+39. [bNoOwnFootsteps](#bnoownfootsteps)
+40. [DesiredNetUpdateRate](#desirednetupdaterate)
+41. [DesiredNetspeed](#desirednetspeed)
+42. [FakeCAPInterval](#fakecapinterval)
+43. [bNoSmoothing](#bnosmoothing)
+44. [bLogClientMessages](#blogclientmessages)
+45. [bDebugMovement](#bdebugmovement)
+46. [bEnableKillCam](#benablekillcam)
+47. [MinDodgeClickTime](#mindodgeclicktime)
+48. [bUseOldMouseInput](#buseoldmouseinput)
+49. [SmoothVRController](#smoothvrcontroller)
+50. [bShowFPS](#bshowfps)
+51. [FPSDetail](#fpsdetail)
+52. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
+53. [KillCamMinDelay](#killcammindelay)
+54. [bAllowWeaponShake](#ballowweaponshake)
+55. [bAutoReady](#bautoready)
+56. [bEnableHitMarker](#benablehitmarker)
+57. [bEnableTeamHitMarker](#benableteamhitmarker)
+58. [HitMarkerColorMode](#hitmarkercolormode)
+59. [HitMarkerColor](#hitmarkercolor)
+60. [HitMarkerTeamColor](#hitmarkerteamcolor)
+61. [HitMarkerSize](#hitmarkersize)
+62. [HitMarkerOffset](#hitmarkeroffset)
+63. [HitMarkerDuration](#hitmarkerduration)
+64. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+65. [HitMarkerSource](#hitmarkersource)
+66. [bUseCrosshairFactory](#busecrosshairfactory)
+67. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -136,6 +140,28 @@ Any value below zero disables forcing models. For example, if you set [DesiredSk
 ## DesiredTeamSkinFemale
 **Type: int**  
 **Default: 0**  
+
+## SkinEnemyIndexMap
+**Type: int\[16\]**  
+**Default: 0**  
+
+## SkinTeamIndexMap
+**Type: int\[16\]**  
+**Default: 0**  
+
+## bSkinEnemyUseIndexMap
+**Type: bool**  
+**Default: False**
+
+* `False` ➜ Assign each enemy `DesiredSkin` or `DesiredSkinFemale`
+* `True` ➜ Assigns each enemy a different skin, according to that players index into [SkinEnemyIndexMap](#skinenemyindexmap)
+
+## bSkinTeamUseIndexMap
+**Type: bool**  
+**Default: False**
+
+* `False` ➜ Assign each teammate `DesiredTeamSkin` or `DesiredTeamSkinFemale`
+* `True` ➜ Assigns each teammate a different skin, according to that players index into [SkinTeamIndexMap](#skinteamindexmap)
 
 ## bUnlitSkins
 **Type: bool**  
@@ -454,8 +480,8 @@ If `True`, plays an animation on the hud whenever you damage a teammate.
 **Type: EHitMarkerColorMode**  
 **Default: HMCM_FriendOrFoe** 
 
-* `HMCM_FriendOrFoe` - Use [HitMarkerColor](#hitmarkercolor) for enemies and [HitMarkerTeamColor](#hitmarkerteamcolor) for friends.
-* `HMCM_TeamColor` - Use team color in team games, [HitMarkerColor](#hitmarkercolor) in FFA games.
+* `HMCM_FriendOrFoe` ➜ Use [HitMarkerColor](#hitmarkercolor) for enemies and [HitMarkerTeamColor](#hitmarkerteamcolor) for friends.
+* `HMCM_TeamColor` ➜ Use team color in team games, [HitMarkerColor](#hitmarkercolor) in FFA games.
 
 ## HitMarkerColor
 **Type: color**  
@@ -500,8 +526,8 @@ How quickly the HitMarker becomes transparent. Higher values mean sharper drop-o
 **Type: EHitMarkerSource**  
 **Default: HMSRC_Server** 
 
-* `HMSRC_Server` - HitMarkers are triggered server-side, accurate but delayed by ping
-* `HMSRC_Client` - HitMarkers are triggered client-side, inaccurate but instant
+* `HMSRC_Server` ➜ HitMarkers are triggered server-side, accurate but delayed by ping
+* `HMSRC_Client` ➜ HitMarkers are triggered client-side, inaccurate but instant
 
 ## bUseCrosshairFactory
 **Type: bool**  
