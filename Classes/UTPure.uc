@@ -103,6 +103,8 @@ var PureAutoPause zzAutoPauser;
 var localized config string ExcludeMapsForKickers[128];
 var bool bExludeKickers;
 
+var bbPlayerReplicationInfo SkinIndexToPRIMap[64];
+
 replication
 {
 	unreliable if (Role == ROLE_Authority)
@@ -656,6 +658,73 @@ function xxResetGame()			// Resets the current game to make sure nothing bad hap
 	zzDMP.bFirstBlood = False;
 }
 
+function int FindEmptyIndex(bbPlayerReplicationInfo bbPRI) {
+	local TeamGamePlus TGP;
+	local int Index;
+	local int TeamOffset;
+
+	TGP = TeamGamePlus(Level.Game);
+	if (TGP != none) {
+		TeamOffset = bbPRI.Team << 4;
+		for (Index = 0; Index < 16; ++Index) {
+			if (SkinIndexToPRIMap[TeamOffset+Index] == none)
+				return TeamOffset+Index;
+		}
+	} else {
+		for (Index = 0; Index < 16; ++Index) {
+			if (SkinIndexToPRIMap[Index] == none)
+				return Index;
+		}
+	}
+	return -1;
+}
+
+function AssignFixedSkinIndex(Pawn Other) {
+	local bbPlayerReplicationInfo bbPRI;
+	local TeamGamePlus TGP;
+	local int MapIndex;
+	local int TmpIndex;
+	local int Team;
+
+	bbPRI = bbPlayerReplicationInfo(Other.PlayerReplicationInfo);
+	if (bbPRI != none && Spectator(bbPRI.Owner) == none) {
+		TGP = TeamGamePlus(Level.Game);
+		MapIndex = bbPRI.SkinIndex;
+		if (MapIndex >= 0) {
+			if (TGP != none) {
+				MapIndex += bbPRI.Team << 4;
+			
+				if (SkinIndexToPRIMap[MapIndex] != bbPRI) {
+					// likely changed team
+					// remove from old index
+					for (Team = 0; Team < TGP.MaxTeams; ++Team) {
+						TmpIndex = (Team << 4) + (MapIndex & 0xF);
+						if (SkinIndexToPRIMap[TmpIndex] == bbPRI)
+							SkinIndexToPRIMap[TmpIndex] = none;
+					}
+					// assign new index
+					MapIndex = FindEmptyIndex(bbPRI);
+					if (MapIndex >= 0) {
+						SkinIndexToPRIMap[MapIndex] = bbPRI;
+						bbPRI.SkinIndex = MapIndex & 0xF;
+					}
+				}
+			}
+		} else {
+			// first time spawning
+			// assign new index
+			MapIndex = FindEmptyIndex(bbPRI);
+			if (MapIndex >= 0) {
+				SkinIndexToPRIMap[MapIndex] = bbPRI;
+				if (TGP == none)
+					bbPRI.SkinIndex = MapIndex;
+				else 
+					bbPRI.SkinINdex = MapIndex & 0xF;
+			}
+		}
+	}
+}
+
 // Modify the login classes to our classes.
 function ModifyLogin(out class<playerpawn> SpawnClass, out string Portal, out string Options)
 {
@@ -713,7 +782,7 @@ function ModifyPlayer(Pawn Other)
 		zzP = bbPlayer(Other);
 		if (zzP == None && Spectator(Other) == None)
 		{
-			xxLog("Destroying bad player - Pure might be incompatible with some mod!");
+			xxLog("Destroying bad player - Pure might be incompatible with some mod! ("$class'StringUtils'.static.PackageOfObject(zzP)$")");
 			Other.Destroy();
 			return;
 		}
@@ -738,6 +807,21 @@ function ModifyPlayer(Pawn Other)
 	Other.DrawScale = Other.default.DrawScale * PlayerScale;
 
 	Super.ModifyPlayer(Other);
+}
+
+function ModifyLogout(Pawn Exiting) {
+	local bbPlayerReplicationInfo bbPRI;
+	local TeamGamePlus TGP;
+
+	bbPRI = bbPlayerReplicationInfo(Exiting.PlayerReplicationInfo);
+	if (bbPRI != none) {
+		TGP = TeamGamePlus(Level.Game);
+		if (TGP != none) {
+			SkinIndexToPRIMap[(bbPRI.Team << 4) + bbPRI.SkinIndex] = none;
+		} else {
+			SkinIndexToPRIMap[bbPRI.SkinIndex] = none;
+		}
+	}
 }
 
 //"Hack" for variables that only need to be set once.

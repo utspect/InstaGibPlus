@@ -25,6 +25,10 @@ var config int    DesiredSkin;
 var config int    DesiredSkinFemale;
 var config int    DesiredTeamSkin;
 var config int    DesiredTeamSkinFemale;
+var config int    SkinEnemyIndexMap[16];
+var config int    SkinTeamIndexMap[16];
+var config bool   bSkinEnemyUseIndexMap;
+var config bool   bSkinTeamUseIndexMap;
 var config bool   bUnlitSkins;
 var config int    HitSound;     // if Client wishes hitsounds (default 2, must be enabled on server)
 var config int    TeamHitSound; // if Client wishes team hitsounds (default 3, must be enabled on server)
@@ -151,6 +155,17 @@ simulated function string GetSetting(string Name) {
 	return Name$":"@GetPropertyText(Name)$Chr(10);
 }
 
+simulated function string DumpSkinIndexMaps() {
+	local int i;
+	local string Result;
+
+	Result = "";
+	for (i = 0; i < arraycount(SkinEnemyIndexMap); ++i)
+		Result = Result$"SkinEnemyIndexMap["$i$"]:"@SkinEnemyIndexMap[i]$Chr(10);
+	for (i = 0; i < arraycount(SkinTeamIndexMap); ++i)
+		Result = Result$"SkinTeamIndexMap["$i$"]:"@SkinTeamIndexMap[i]$Chr(10);
+}
+
 simulated function string DumpHitSounds() {
 	local int i;
 	local string Result;
@@ -197,6 +212,9 @@ simulated function string DumpSettings() {
 		GetSetting("DesiredSkinFemale")$
 		GetSetting("DesiredTeamSkin")$
 		GetSetting("DesiredTeamSkinFemale")$
+		DumpSkinIndexMaps()$
+		GetSetting("bSkinEnemyUseIndexMap")$
+		GetSetting("bSkinTeamUseIndexMap")$
 		GetSetting("bUnlitSkins")$
 		GetSetting("HitSound")$
 		GetSetting("TeamHitSound")$

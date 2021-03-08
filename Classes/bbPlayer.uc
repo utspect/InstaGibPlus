@@ -515,6 +515,13 @@ exec function Ghost()
 	Super.Ghost();
 }
 
+simulated event Destroyed() {
+	if (Role == ROLE_Authority && zzUTPure != none) {
+		zzUTPure.ModifyLogout(self);
+	}
+	super.Destroyed();
+}
+
 // Return true to override Teleporter
 simulated event bool PreTeleport(Teleporter T) {
 	local vector D;
@@ -6227,6 +6234,7 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 
 function int GetForcedSkinForPlayer(PlayerReplicationInfo PRI) {
 	local string Anim;
+	local bbPlayerReplicationInfo bbPRI;
 
 	Anim = string(PRI.Owner.AnimSequence);
 	if (Left(Anim, 8) ~= "DeathEnd") {
@@ -6235,12 +6243,27 @@ function int GetForcedSkinForPlayer(PlayerReplicationInfo PRI) {
 	}
 
 	if (GameReplicationInfo.bTeamGame && PRI.Team == PlayerReplicationInfo.Team) {
+		if (Settings.bSkinTeamUseIndexMap) {
+			bbPRI = bbPlayerReplicationInfo(PRI);
+			if (bbPRI != none && bbPRI.SkinIndex >= 0) {
+				return Settings.SkinTeamIndexMap[bbPRI.SkinIndex];
+			}
+		}
 		if (PRI.bIsFemale) {
 			return Settings.DesiredTeamSkinFemale;
 		} else {
 			return Settings.DesiredTeamSkin;
 		}
 	} else {
+		if (Settings.bSkinEnemyUseIndexMap) {
+			bbPRI = bbPlayerReplicationInfo(PRI);
+			if (bbPRI != none && bbPRI.SkinIndex >= 0) {
+				if (GameReplicationInfo.bTeamGame)
+					return Settings.SkinEnemyIndexMap[(bbPRI.Team << 4) + bbPRI.SkinIndex];
+				else
+					return Settings.SkinEnemyIndexMap[bbPRI.SkinIndex];
+			}
+		}
 		if (PRI.bIsFemale) {
 			return Settings.DesiredSkinFemale;
 		} else {
