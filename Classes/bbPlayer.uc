@@ -255,6 +255,7 @@ var bool bDodgePreserveZMomentum;
 var int MultiDodgesRemaining;
 
 var bool bAppearanceChanged;
+var bool bClientDead;
 
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
@@ -2024,6 +2025,8 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 
 	TlocPrevLocation = Location;
 
+	bClientDead = false;
+
 	// handle firing and alt-firing
 	if (bFired) {
 		if (bForceFire && (Weapon != None))
@@ -2531,8 +2534,11 @@ function xxServerMoveDead(
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
 
-	bFire = 0;
-	bAltFire = 0;
+	if (bClientDead == false) {
+		bClientDead = true;
+		bFire = 0;
+		bAltFire = 0;
+	}
 
 	Acceleration = vect(0,0,0);
 	Velocity = vect(0,0,0);
