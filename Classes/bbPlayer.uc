@@ -5441,9 +5441,6 @@ state Dying
 				ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-3.0 * DeltaTime)));
 			}
 		}
-
-		bFire = 0;
-		bAltFire = 0;
 	}
 
 	simulated function BeginState() {
