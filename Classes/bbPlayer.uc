@@ -1783,18 +1783,22 @@ function CorrectTeleporterVelocity() {
 	) {
 		// only deal with base game teleporters
 		// other classes might do weird custom stuff
-		if (LastTouchedTeleporter.bChangesVelocity == false) {
+
+		// find destination
+		foreach RadiusActors(class'Teleporter', T, 32.0)
+			break;
+
+		T.Disable('Touch');
+		MoveSmooth(vect(0,0,1)*OffsetZBeforeTeleporter);
+		T.Enable('Touch');
+
+		if (T.bChangesVelocity) {
+			Velocity = T.TargetVelocity;
+		} else {
 			Delta = rotator(VelocityBeforeTeleporter) - RotationBeforeTeleporter;
 			// Teleporter doesnt change velocity, so we can do it ourselves
 			Velocity = vector(Rotation+Delta) * VSize(VelocityBeforeTeleporter*vect(1,1,0)) * vect(1,1,0);
 			Velocity.Z = VelocityBeforeTeleporter.Z;
-
-			foreach RadiusActors(class'Teleporter', T, 16)
-				break;
-
-			T.Disable('Touch');
-			MoveSmooth(vect(0,0,1)*OffsetZBeforeTeleporter);
-			T.Enable('Touch');
 		}
 	}
 }
