@@ -803,6 +803,7 @@ function ModifyPlayer(Pawn Other)
 		}
 	}
 
+	AssignFixedSkinIndex(Other);
 	Other.SetCollisionSize(Other.default.CollisionRadius * PlayerScale, Other.default.CollisionHeight * PlayerScale);
 	Other.DrawScale = Other.default.DrawScale * PlayerScale;
 
