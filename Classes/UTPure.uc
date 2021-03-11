@@ -267,7 +267,7 @@ function PostBeginPlay()
 	if (bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
 		zzAutoPauser = Spawn(Class'PureAutoPause');
 
-	if (bUseClickboard && zzDMP.bTournament)
+	if (bUseClickboard)
 		SetupClickBoard();
 
 	if (ImprovedHUD == 2 && zzDMP.bTeamGame)

@@ -1,13 +1,6 @@
-// ====================================================================
-//  Class:  UTPureRC4d.PureClickBoard
-//  Parent: Engine.Mutator
-//
-//  <Enter a description here>
-// ====================================================================
-
 class PureClickBoard extends Mutator;
 
-var PureFlag		zzFakeFlag;
+var PureFlag FakeFlag;
 
 function bool AlwaysKeep(Actor Other)
 {
@@ -17,148 +10,110 @@ function bool AlwaysKeep(Actor Other)
 	return Super.AlwaysKeep(Other);
 }
 
-event PreBeginPlay()
-{
-local class<scoreboard>		  ScoreBoardType;
+auto state Initial {
+Begin:
+	if (Level.NetMode == NM_DedicatedServer)
+		Sleep(0.001);
 
-	Log("PreBeginPlay PureClickBoard!", 'UTPure');
+	Initialize();
+}
 
-	Super.PreBeginPlay();
+function Initialize() {
+	local class<ScoreBoard> ScoreBoardType;
+	local DeathMatchPlus DMP;
 
-	if (Level.Game.IsA('DeathMatchPlus') && DeathMatchPlus(Level.Game).bTournament)
+	DMP = DeathMatchPlus(Level.Game);
+	if (DMP == none || DMP.bTournament == false) {
+		Disable('Tick');
+		return;
+	}
+
+	// First, make sure the player uses a ScoreBoard that can show clicked status
+	if (Level.Game.ScoreBoardType == class'Botpack.TournamentScoreBoard')
+		ScoreBoardType = Class'PureScoreBoard';
+	else if (Level.Game.ScoreBoardType == Class'Botpack.TeamScoreBoard')
+		ScoreBoardType = Class'PureTeamScoreBoard';
+	else if (Level.Game.ScoreBoardType == Class'Botpack.AssaultScoreboard')
+		ScoreBoardType = Class'PureAssaultScoreBoard';
+	else if (Level.Game.ScoreBoardType == Class'Botpack.UnrealCTFScoreboard')
+		ScoreBoardType = Class'PureCTFScoreBoard';
+	else if (Level.Game.ScoreBoardType == Class'Botpack.DominationScoreboard')
+		ScoreBoardType = Class'PureDOMScoreBoard';
+	else {
+		ScoreBoardType = Level.Game.ScoreBoardType;
+		Log("Unknown ScoreBoardType "@Level.Game.ScoreBoardType, 'UTPure');
+	}
+
+	Log("Used ScoreBoard is "@String(ScoreBoardType));
+
+	if (ScoreBoardType != None)
 	{
-		// First, make sure the player uses a ScoreBoard that can show clicked status
-		if (Level.Game.ScoreBoardType == class'Botpack.TournamentScoreBoard')
-			ScoreBoardType = Class'PureScoreBoard';
-		else if (Level.Game.ScoreBoardType == Class'Botpack.TeamScoreBoard')
-			ScoreBoardType = Class'PureTeamScoreBoard';
-		else if (Level.Game.ScoreBoardType == Class'Botpack.AssaultScoreboard')
-			ScoreBoardType = Class'PureAssaultScoreBoard';
-		else if (Level.Game.ScoreBoardType == Class'Botpack.UnrealCTFScoreboard')
-			ScoreBoardType = Class'PureCTFScoreBoard';
-		else if (Level.Game.ScoreBoardType == Class'Botpack.DominationScoreboard')
-			ScoreBoardType = Class'PureDOMScoreBoard';
-		else {
-			ScoreBoardType = Class'PureCTFScoreBoard';
-			Log("Unknown Scoreboard type "@Level.Game.ScoreBoardType.Name, 'UTPure');
-		}
+		Level.Game.ScoreBoardType = ScoreBoardType;
+		// Also create a fake flag to transmit clicked status
+		CreateFakeFlag();
 
-		Log("Level is a "@String(ScoreBoardType));
-
-		if (ScoreBoardType != None)
-		{
-			Level.Game.ScoreBoardType = ScoreBoardType;
-			// Also create a fake flag to transmit clicked status
-			CreateFakeFlag();
-			if (zzFakeFlag == None)
-				Log("We don't have a fake flag! :(", 'UTPure');
-			if (zzFakeFlag != None)
-			{
-				Log("PureClickBoard Set", 'UTPure');
-				zzFakeFlag.bHidden = true;		// See if it prevents it from replicating
-				zzFakeFlag.SetTimer(0.0, false);	// Make sure it doesnt try to Send Home
-				// Start a timer to check for Clicked status
-				SetTimer(1.0, true);
-			}
-			else
-				Log("Failed to Initialize PureClick Environment", 'UTPure');
+		if (FakeFlag != None) {
+			Log("PureClickBoard Set", 'UTPure');
+			// Start a timer to check for Clicked status
+			SetTimer(1.0, true);
+		} else {
+			Log("We don't have a fake flag! :(", 'UTPure');
+			Log("Failed to Initialize PureClick Environment", 'UTPure');
 		}
 	}
 }
 
 function CreateFakeFlag()
 {
-local NavigationPoint zznav;
-local Actor zzA;
+	local Actor A;
 
-	// First, go thru all Navigation Points to find a valid spot
-	for (zznav = Level.NavigationPointList; zznav != None; zznav = zznav.nextNavigationPoint)
-	{
-		zzFakeFlag = Spawn(class'PureFlag', None,,zznav.Location);
-		if (zzFakeFlag != None) {
-			Log("We have a fake flag!", 'UTPure');
+	foreach AllActors(class'Actor', A) {
+		FakeFlag = Spawn(class'PureFlag', None,, A.Location);
+		if (FakeFlag != None) {
+			FakeFlag.bHidden = true;
+			FakeFlag.SetTimer(0.0, false);	// Make sure it doesnt try to Send Home
 			return;
 		}
-
 	}
 
-	// Still havent found one ? .. Try AllActors
-	foreach AllActors(class'Actor', zzA)
-	{
-		zzFakeFlag = Spawn(class'PureFlag', None,, zzA.Location);
-		if (zzFakeFlag != None) {
-			Log("We have a fake flag!", 'UTPure');
-			return;
-		}
-
-	}
-	// Oh Well, forget it, we wont make it.
 	Log("CreateFakeFlag() failed :(", 'UTPure');
 }
 
-event Timer()
-{
-local bbPlayer zzbbP;
-local DeathMatchPlus zzDMP;
+event Timer() {
+	local PlayerPawn P;
+	local DeathMatchPlus DMP;
 
-	// If Game has started, cleanup all the flags assigned
-	zzDMP = DeathMatchPlus(Level.Game);
-
-	//Log("On PureClickBoard Timer");
-
-	if (zzDMP.CountDown > 0)
-	{
-		if (zzFakeFlag == None)
-			zzFakeFlag = spawn(class'PureFlag');
-
-		if (zzFakeFlag == None)
-			Log("Failed once more in Timer");
-		else
-		{
-			/* // Check all player for their clicked status
-			for (zzP = Level.PawnList; zzP != None; zzP = zzP.NextPawn)
-			{
-				if (zzP.IsA('PlayerPawn') || zzP.IsA('bbPlayer') && !zzP.IsA('Spectator') && zzP.PlayerReplicationInfo != None)
-				{
-				    zzP = bbPlayer(zzP);
-					if (bbPlayer(zzP).bReadyToPlay && zzP.PlayerReplicationInfo.HasFlag == None)
-						zzP.PlayerReplicationInfo.HasFlag = zzFakeFlag;
-					else if (!bbPlayer(zzP).bReadyToPlay && zzP.PlayerReplicationInfo.HasFlag == zzFakeFlag)
-						zzP.PlayerReplicationInfo.HasFlag = None;
+	DMP = DeathMatchPlus(Level.Game);
+	if (DMP != none && DMP.CountDown > 0) {
+		foreach Level.AllActors(class'PlayerPawn', P) {
+			if (!P.IsA('Spectator') && P.PlayerReplicationInfo != none) {
+				if (P.bReadyToPlay) {
+					P.PlayerReplicationInfo.HasFlag = FakeFlag;
+				} else {
+					P.PlayerReplicationInfo.HasFlag = none;
 				}
-			} */
-
-			foreach Level.AllActors(class'bbPlayer', zzbbP) {
-				if (!zzbbP.IsA('Spectator') && zzbbP.PlayerReplicationInfo != none) {
-			        if (zzbbP.bReadyToPlay && zzbbP.PlayerReplicationInfo.HasFlag == none) {
-			            zzbbP.PlayerReplicationInfo.HasFlag = zzFakeFlag;
-                    } else if (!zzbbP.bReadyToPlay && zzbbP.PlayerReplicationInfo.HasFlag == zzFakeFlag) {
-                        zzbbP.PlayerReplicationInfo.HasFlag = none;
-                    }
-                }
-           }
+			}
 		}
 	}
 }
 
 event Tick(Float delta)
 {
-local Pawn zzP;
-local DeathMatchPlus zzDMP;
+	local PlayerReplicationInfo PRI;
+	local DeathMatchPlus DMP;
 
 	// If Game has started, cleanup all the flags assigned
-	zzDMP = DeathMatchPlus(Level.Game);
+	DMP = DeathMatchPlus(Level.Game);
 
-	if (zzDMP != None && zzDMP.CountDown <= 0)
-	{
-		for (zzP = Level.PawnList; zzP != None; zzP = zzP.NextPawn)
-			if (zzP.PlayerReplicationInfo != none && zzP.PlayerReplicationInfo.HasFlag == zzFakeFlag)
-				zzP.PlayerReplicationInfo.HasFlag = None;
+	if (DMP != None && DMP.CountDown <= 0) {
+		foreach AllActors(class'PlayerReplicationInfo', PRI)
+			if (PRI.HasFlag == FakeFlag)
+				PRI.HasFlag = None;
 
-		if (zzFakeFlag != None)
-			zzFakeFlag.Destroy();
+		if (FakeFlag != None)
+			FakeFlag.Destroy();
 
-		zzFakeFlag = None;
+		FakeFlag = None;
 		SetTimer(0.0, false);
 		Disable('Tick');
 	}
