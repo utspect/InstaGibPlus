@@ -270,7 +270,7 @@ function PostBeginPlay()
 	if (bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
 		zzAutoPauser = Spawn(Class'PureAutoPause');
 
-	if (bUseClickboard && zzDMP.bTournament)
+	if (bUseClickboard)
 		SetupClickBoard();
 
 	if (ImprovedHUD == 2 && zzDMP.bTeamGame)
@@ -693,7 +693,7 @@ function AssignFixedSkinIndex(Pawn Other) {
 		if (MapIndex >= 0) {
 			if (TGP != none) {
 				MapIndex += bbPRI.Team << 4;
-			
+
 				if (SkinIndexToPRIMap[MapIndex] != bbPRI) {
 					// likely changed team
 					// remove from old index
@@ -718,7 +718,7 @@ function AssignFixedSkinIndex(Pawn Other) {
 				SkinIndexToPRIMap[MapIndex] = bbPRI;
 				if (TGP == none)
 					bbPRI.SkinIndex = MapIndex;
-				else 
+				else
 					bbPRI.SkinINdex = MapIndex & 0xF;
 			}
 		}
