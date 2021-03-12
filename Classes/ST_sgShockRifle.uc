@@ -4,7 +4,7 @@
 // Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
 // ===============================================================
 
-class ST_sgShockRifle extends ST_ShockRifle;
+class ST_sgShockRifle extends NN_ShockRifle;
 
 simulated function NN_TraceFire()
 {

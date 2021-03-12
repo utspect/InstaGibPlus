@@ -1,16 +1,17 @@
 // ===============================================================
-// Stats.ST_ShockRifle: put your comment here
+// Stats.NN_ASMD: put your comment here
 
 // Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
 // ===============================================================
 
-class ST_ShockRifle extends ShockRifle;
+class NN_ASMD extends ShockRifle;
 
 var bool bNewNet;								// Self-explanatory lol
 var Rotator GV;
 var Vector CDO;
 var float yMod;
 var float LastFiredTime;
+var Pickup Amp;
 
 // For Special Shock Beam
 var int HitCounter;
@@ -49,6 +50,19 @@ simulated function yModInit()
 	CDO = class'NN_WeaponFunctions'.static.IGPlus_CalcDrawOffset(PlayerPawn(Owner), self);
 }
 
+function inventory SpawnCopy( pawn Other )
+{
+	local inventory Copy;
+	local Inventory I;
+
+	Copy = Super.SpawnCopy(Other);
+	I = Other.FindInventoryType(class'Amplifier');
+	if ( Amplifier(I) != None )
+		ASMD(Copy).Amp = Amplifier(I);
+
+	return Copy;
+}
+
 simulated function bool ClientFire(float Value)
 {
 	local bbPlayer bbP;
@@ -85,7 +99,6 @@ simulated function NN_TraceFire()
 {
 	local vector HitLocation, HitDiff, HitNormal, StartTrace, EndTrace, X,Y,Z;
 	local actor Other;
-	local bool zzbNN_Combo;
 	local bbPlayer bbP;
 	local bbPlayer zzbbP;
 	local actor zzOther;
@@ -129,13 +142,13 @@ simulated function NN_TraceFire()
 		}
 	}
 
-	zzbNN_Combo = NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(GV),Y,Z);
+	/* zzbNN_Combo = NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(GV),Y,Z);
 	if (zzbNN_Combo)
-		bbP.xxNN_Fire(ST_ShockProj(Other).zzNN_ProjIndex, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, true);
+		//bbP.xxNN_Fire(ST_TazerProj(Other).zzNN_ProjIndex, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, true);
 	else
 		bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, false);
 	if (Other == bbP.zzClientTTarget)
-		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(GV), MyDamageType);
+		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(GV), MyDamageType); */
 
 	//for (P = Level.PawnList; P != None; P = P.NextPawn)
 	//	P.SetCollisionSize(P.Default.CollisionRadius, P.CollisionHeight);
@@ -143,7 +156,9 @@ simulated function NN_TraceFire()
 
 simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
-	local bool zzbNN_Combo;
+	local vector SmokeLocation,DVector;
+	local rotator SmokeRotation;
+	local float NumPoints,Mult;
 
 	if (Owner.IsA('Bot'))
 		return false;
@@ -154,44 +169,25 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		HitLocation = Owner.Location + X*100000.0;
 	}
 
-	NN_SpawnEffect(HitLocation, Owner.Location + CDO + (FireOffset.X + 20) * X + Y * yMod + FireOffset.Z * Z, HitNormal);
-
-	if ( ST_ShockProj(Other)!=None )
-	{
-		ST_ShockProj(Other).NN_SuperExplosion(Pawn(Owner));
-		zzbNN_Combo = true;
-	}
-	else
-	{
-		Spawn(class'ut_RingExplosion5',,, HitLocation+HitNormal*8,rotator(HitNormal));
-		if (bbPlayer(Owner) != None)
-			bbPlayer(Owner).xxClientDemoFix(None, class'ut_RingExplosion5',HitLocation+HitNormal*8,,, rotator(HitNormal));
-	}
-	return zzbNN_Combo;
+	if (Amp!=None) Mult = Amp.UseCharge(100);
+	else Mult=1.0;
+	SmokeLocation = Owner.Location + CalcDrawOffset() + FireOffset.X * X + FireOffset.Y * 3.3 * Y + FireOffset.Z * Z * 3.0;
+	DVector = HitLocation - SmokeLocation;
+	NumPoints = VSize(DVector)/70.0;
+	SmokeLocation += DVector/NumPoints;
+	SmokeRotation = rotator(HitLocation-Owner.Location);
+	if (NumPoints>15) NumPoints=15;
+	if ( NumPoints>1.0 ) SpawnEffect2(DVector, NumPoints, SmokeRotation, SmokeLocation);
 }
 
-simulated function NN_SpawnEffect(vector HitLocation, vector SmokeLocation, vector HitNormal)
+function SpawnEffect2(Vector DVector, int NumPoints, rotator SmokeRotation, vector SmokeLocation)
 {
-	local ShockBeam Smoke;
-	local Vector DVector;
-	local int NumPoints;
-	local rotator SmokeRotation;
+	local RingExplosion4 Smoke;
 
-	if (Owner.IsA('Bot'))
-		return;
-
-	DVector = HitLocation - SmokeLocation;
-	NumPoints = VSize(DVector)/135.0;
-	if ( NumPoints < 1 )
-		return;
-	SmokeRotation = rotator(DVector);
-	SmokeRotation.roll = Rand(65535);
-
-	Smoke = Spawn(class'NN_ShockBeam',Owner,,SmokeLocation,SmokeRotation);
+	if (bNewNet)
+		Smoke = Spawn(class'RingExplosion4',,,SmokeLocation,SmokeRotation);
 	Smoke.MoveAmount = DVector/NumPoints;
-	Smoke.NumPuffs = NumPoints - 1;
-	if (bbPlayer(Owner) != None)
-		bbPlayer(Owner).xxClientDemoFix(None, class'NN_ShockBeam',SmokeLocation,,,SmokeRotation);
+	Smoke.NumPuffs = NumPoints;
 }
 
 function Fire ( float Value )
@@ -215,7 +211,7 @@ function AltFire( float Value )
 	local actor HitActor;
 	local vector HitLocation, HitNormal, Start;
 	local bbPlayer bbP;
-	local NN_ShockProjOwnerHidden NNSP;
+	//local NN_TazerProjOwnerHidden NNSP;
 
 	if (Owner.IsA('Bot'))
 	{
@@ -258,13 +254,14 @@ function AltFire( float Value )
 		ClientAltFire(value);
 		if (bNewNet)
 		{
-			NNSP = NN_ShockProjOwnerHidden(ProjectileFire(Class'NN_ShockProjOwnerHidden', AltProjectileSpeed, bAltWarnTarget));
+			/* NNSP = NN_TazerProjOwnerHidden(ProjectileFire(Class'NN_TazerProjOwnerHidden', AltProjectileSpeed, bAltWarnTarget));
 			if (NNSP != None)
 			{
 				NNSP.NN_OwnerPing = float(Owner.ConsoleCommand("GETPING"));
 				if (bbP != None)
 					NNSP.zzNN_ProjIndex = bbP.xxNN_AddProj(NNSP);
-			}
+			} */
+			return;
 		}
 		else
 		{
@@ -279,10 +276,10 @@ state ClientFiring
 	simulated function bool ClientFire(float Value)
 	{
 		local float MinTapTime;
-
+/*
 		if (Owner.IsA('Bot'))
 			return Super.ClientFire(Value);
-
+ */
 		if (bNewNet)
 			MinTapTime = 0.4;
 		else
@@ -297,10 +294,10 @@ state ClientFiring
 	simulated function bool ClientAltFire(float Value)
 	{
 		local float MinTapTime;
-
+/*
 		if (Owner.IsA('Bot'))
 			return Super.ClientAltFire(Value);
-
+ */
 		if (bNewNet)
 			MinTapTime = 0.4;
 		else
@@ -331,16 +328,27 @@ state ClientFiring
 		{
 			if ( bForce || (Pawn(Owner).bFire != 0) )
 			{
-				Global.ClientFire(1);
+				Global.ClientFire(0);
 				return;
 			}
 			else if ( bForceAlt || (Pawn(Owner).bAltFire != 0) )
 			{
-				Global.ClientAltFire(1);
+				Global.ClientAltFire(0);
 				return;
 			}
 		}
 		Super.AnimEnd();
+	}
+	simulated function EndState()
+	{
+		bForceFire = false;
+		bForceAltFire = false;
+	}
+	simulated function BeginState()
+	{
+		TapTime = Level.TimeSeconds;
+		bForceFire = false;
+		bForceAltFire = false;
 	}
 }
 
@@ -390,6 +398,9 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	}
 	AdjustedAim = pawn(owner).AdjustAim(ProjSpeed, Start, AimError, True, bWarn);
 
+	if ( PlayerOwner != None )
+		PlayerOwner.ClientInstantFlash( -0.4, vect(450, 190, 650));
+
 	LastFiredTime = Level.TimeSeconds;
 	return Spawn(ProjClass,Owner,, Start,AdjustedAim);
 }
@@ -399,7 +410,7 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	local Vector Start, X,Y,Z;
 	local PlayerPawn PlayerOwner;
 	local Projectile Proj;
-	local ST_ShockProj ST_Proj;
+	//local ST_TazerProj ST_Proj;
 	local int ProjIndex;
 	local bbPlayer bbP;
 
@@ -419,12 +430,12 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 
 	LastFiredTime = Level.TimeSeconds;
 	Proj = Spawn(ProjClass,Owner,, Start,GV);
-	ST_Proj = ST_ShockProj(Proj);
+	//ST_Proj = ST_TazerProj(Proj);
 	ProjIndex = bbP.xxNN_AddProj(Proj);
-	if (ST_Proj != None)
-		ST_Proj.zzNN_ProjIndex = ProjIndex;
+	/* if (ST_Proj != None)
+		ST_Proj.zzNN_ProjIndex = ProjIndex; */
 	bbP.xxNN_AltFire(ProjIndex, bbP.Location, bbP.Velocity, bbP.ViewRotation);
-	bbP.xxClientDemoFix(ST_Proj, Class'ShockProj', Start, ST_Proj.Velocity, Proj.Acceleration, GV);
+	//bbP.xxClientDemoFix(ST_Proj, Class'TazerProjectile', Start, ST_Proj.Velocity, Proj.Acceleration, GV);
 }
 
 simulated function bool ClientAltFire(float Value)
@@ -458,7 +469,7 @@ function TraceFire( float Accuracy )
 	local bbPlayer bbP;
 	local actor NN_Other;
 	local bool bShockCombo;
-	local NN_ShockProjOwnerHidden NNSP;
+	//local NN_TazerProjOwnerHidden NNSP;
 	local vector NN_HitLoc, HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
 
 	if (Owner.IsA('Bot'))
@@ -478,20 +489,21 @@ function TraceFire( float Accuracy )
 		bbP.zzNN_HitActor = None;
 
 	NN_Other = bbP.zzNN_HitActor;
-	bShockCombo = bbP.zzbNN_Special && (NN_Other == None || NN_ShockProjOwnerHidden(NN_Other) != None && NN_Other.Owner != Owner);
+	//bShockCombo = bbP.zzbNN_Special && (NN_Other == None || NN_TazerProjOwnerHidden(NN_Other) != None && NN_Other.Owner != Owner);
 
 	if (bShockCombo && NN_Other == None)
 	{
-		ForEach AllActors(class'NN_ShockProjOwnerHidden', NNSP)
+		/* ForEach AllActors(class'NN_TazerProjOwnerHidden', NNSP)
 			if (NNSP.zzNN_ProjIndex == bbP.zzNN_ProjIndex)
 				NN_Other = NNSP;
 
 		if (NN_Other == None)
-			NN_Other = Spawn(class'NN_ShockProjOwnerHidden', Owner,, bbP.zzNN_HitLoc);
+			NN_Other = Spawn(class'NN_TazerProjOwnerHidden', Owner,, bbP.zzNN_HitLoc);
 		else
 			NN_Other.SetLocation(bbP.zzNN_HitLoc);
 
-		bbP.zzNN_HitActor = NN_Other;
+		bbP.zzNN_HitActor = NN_Other; */
+		return;
 	}
 
 	Owner.MakeNoise(bbP.SoundDampening);
@@ -551,20 +563,21 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	}
 
 	PlayerOwner = PlayerPawn(Owner);
-
+	if ( PlayerOwner != None )
+		PlayerOwner.ClientInstantFlash( -0.4, vect(450, 190, 650));
 	SpawnEffect(HitLocation, Owner.Location + CalcDrawOffset() + (FireOffset.X + 20) * X + FireOffset.Y * Y + FireOffset.Z * Z);
 
-	if ( NN_ShockProjOwnerHidden(Other)!=None )
+	/* if ( NN_TazerProjOwnerHidden(Other)!=None )
 	{
 		AmmoType.UseAmmo(1);
 		Other.SetOwner(Owner);
-		NN_ShockProjOwnerHidden(Other).SuperExplosion();
+		NN_TazerProjOwnerHidden(Other).SuperExplosion();
 		return;
 	}
-	else if ( ST_ShockProj(Other)!=None )
+	else if ( ST_TazerProj(Other)!=None )
 	{
 		AmmoType.UseAmmo(1);
-		ST_ShockProj(Other).SuperExplosion();
+		ST_TazerProj(Other).SuperExplosion();
 		return;
 	}
 	else if (bNewNet)
@@ -573,12 +586,15 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	}
 	else
 	{
-		Spawn(class'ut_RingExplosion5',,, HitLocation+HitNormal*8,rotator(HitNormal));
-	}
+		Spawn(class'RingExplosion5',,, HitLocation+HitNormal*8,rotator(HitNormal));
+	} */
 
 	/* if ( (Other != self) && (Other != Owner) && (Other != None) )
 	{
-		Other.TakeDamage(class'UTPure'.default.ShockDamagePri, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
+		if (HitDamage > 0)
+			Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
+		else
+			Other.TakeDamage(class'UTPure'.default.ShockDamagePri, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
 	} */
 
 	if (Pawn(Other) != None && Other != Owner && Pawn(Other).Health > 0)
@@ -605,7 +621,7 @@ simulated function DoRingExplosion5(PlayerPawn Pwner, vector HitLocation, vector
 		//for (P = Level.PawnList; P != None; P = P.NextPawn)
 		ForEach AllActors(class'PlayerPawn', P)
 			if (P != Pwner) {
-				CR = P.Spawn(class'ut_RingExplosion5',P,, HitLocation+HitNormal*8,rotator(HitNormal));
+				CR = P.Spawn(class'RingExplosion5',P,, HitLocation+HitNormal*8,rotator(HitNormal));
 				CR.bOnlyOwnerSee = True;
 			}
 	}
@@ -786,8 +802,119 @@ auto state Pickup
 	}
 }
 
+simulated function PlayFiring()
+{
+	Owner.PlaySound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*4.0);
+	PlayAnim('Fire1', 0.5,0.05);
+}
+
+simulated function PlayAltFiring()
+{
+	Owner.PlaySound(AltFireSound, SLOT_None,Pawn(Owner).SoundDampening*4.0);
+	PlayAnim('Fire1',0.8,0.05);
+}
+
+simulated function PlayIdleAnim()
+{
+	if ( AnimSequence == 'Fire1' && FRand()<0.2)
+	{
+		Owner.PlaySound(Misc1Sound, SLOT_None, Pawn(Owner).SoundDampening*0.5);
+		PlayAnim('Steam',0.1,0.4);
+	}
+	else if ( VSize(Owner.Velocity) > 20 )
+	{
+		if ( AnimSequence=='Still' )
+			LoopAnim('Sway',0.1,0.3);
+	}
+	else if ( AnimSequence!='Still' )
+	{
+		if (FRand()<0.5)
+	{
+		PlayAnim('Steam',0.1,0.4);
+		Owner.PlaySound(Misc1Sound, SLOT_None, Pawn(Owner).SoundDampening*0.5);
+	}
+		else LoopAnim('Still',0.04,0.3);
+	}
+	Enable('AnimEnd');
+}
+
+state Idle
+{
+	function BeginState()
+	{
+		bPointing = false;
+		SetTimer(0.5 + 2 * FRand(), false);
+		Super.BeginState();
+		if (Pawn(Owner).bFire!=0) Fire(0.0);
+		if (Pawn(Owner).bAltFire!=0) AltFire(0.0);
+	}
+	function EndState()
+	{
+		SetTimer(0.0, false);
+		Super.EndState();
+	}
+}
+
+state ComboMove
+{
+	function Fire(float F);
+	function AltFire(float F);
+
+	function Tick(float DeltaTime)
+	{
+		if ( (Owner == None) || (Pawn(Owner).Enemy == None) )
+		{
+			Tracked = None;
+			bBotSpecialMove = false;
+			Finish();
+			return;
+		}
+		if ( (Tracked == None) || Tracked.bDeleteMe
+			|| (((Tracked.Location - Owner.Location)
+				dot (Tracked.Location - Pawn(Owner).Enemy.Location)) >= 0)
+			|| (VSize(Tracked.Location - Pawn(Owner).Enemy.Location) < 100) )
+			Global.Fire(0);
+	}
+
+Begin:
+	Sleep(7.0);
+	Tracked = None;
+	bBotSpecialMove = false;
+	Global.Fire(0);
+}
+
 defaultproperties
 {
-	AltProjectileClass=Class'ST_ShockProj'
+	//AltProjectileClass=Class'ST_TazerProj'
 	bNewNet=True
+    hitdamage=35
+    WeaponDescription="Classification: Energy Rifle\n\nPrimary Fire: Lightning-Fast Burst of focused energy.\n\nSecondary Fire: Unstable Energy projectile, expands radially.\n\nTechniques: Hitting the secondary fire energy projectiles with the regular fire's energy will cause an immensely powerful explosion."
+    PickupAmmoCount=20
+    bInstantHit=True
+    bAltWarnTarget=True
+    bSplashDamage=True
+    FireOffset=(X=12.00,Y=-6.00,Z=-7.00),
+    MyDamageType=jolted
+    AIRating=0.60
+    AltRefireRate=0.70
+    FireSound=Sound'UnrealShare.TazerFire'
+    AltFireSound=Sound'UnrealShare.TazerAltFire'
+    SelectSound=Sound'UnrealShare.TazerSelect'
+    Misc1Sound=Sound'UnrealShare.Vapour'
+    DeathMessage="%k inflicted mortal damage upon %o with the %w."
+    AutoSwitchPriority=4
+    InventoryGroup=4
+    PickupMessage="You got the ASMD"
+    ItemName="ASMD"
+    PlayerViewOffset=(X=3.50,Y=-1.80,Z=-2.00),
+	PlayerViewScale=1.00
+    PlayerViewMesh=LodMesh'UnrealShare.ASMDM'
+    PickupViewMesh=LodMesh'UnrealShare.ASMDPick'
+    ThirdPersonMesh=LodMesh'UnrealShare.ASMD3'
+    StatusIcon=Texture'UseA'
+    Icon=Texture'UseA'
+    Mesh=LodMesh'UnrealShare.ASMDPick'
+    CollisionRadius=28.00
+    CollisionHeight=8.00
+    Mass=50.00
 }

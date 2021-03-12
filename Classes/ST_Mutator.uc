@@ -374,9 +374,9 @@ function string GetReplacementWeapon(Weapon W, bool bDamnEpic)
 		WStr = "ST_ut_biorifle";
 		BitMap = (1 << 4);				// BioRifle = 04
 	}
-	else if ((W.IsA('ShockRifle') && !W.IsA('SuperShockRifle') && !W.IsA('ST_ShockRifle') && !W.IsA('ST_sgShockRifle')) || W.IsA('ASMD'))
+	else if ((W.IsA('ShockRifle') && !W.IsA('SuperShockRifle') && !W.IsA('NN_ShockRifle') && !W.IsA('ST_sgShockRifle')) || W.IsA('ASMD'))
 	{
-		WStr = "ST_ShockRifle";
+		WStr = "NN_ShockRifle";
 		BitMap = (1 << 5) | (1 << 6) | (1 << 7);	// Shock Rifle = 05, 06, 07
 	}
 	else if (W.IsA('SuperShockRifle') && !W.IsA('ST_SuperShockRifle'))
@@ -453,7 +453,7 @@ function FixBitMap(name WeaponName, bool bDamnEpic)
 		BitMap = (1 << 3);							// Enforcer = 03
 	else if (WeaponName == 'ST_ut_biorifle')
 		BitMap = (1 << 4);							// BioRifle = 04
-	else if (WeaponName == 'ST_ShockRifle')
+	else if (WeaponName == 'NN_ShockRifle')
 		BitMap = (1 << 5) | (1 << 6) | (1 << 7);	// Shock Rifle = 05, 06, 07
 	else if (WeaponName == 'ST_SuperShockRifle')
 		BitMap = (1 << 8);							// Super Shock = 08

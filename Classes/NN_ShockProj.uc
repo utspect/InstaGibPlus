@@ -1,10 +1,10 @@
 // ===============================================================
-// Stats.ST_ShockProj: put your comment here
+// Stats.NN_ShockProj: put your comment here
 
 // Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
 // ===============================================================
 
-class ST_ShockProj extends ShockProj;
+class NN_ShockProj extends ShockProj;
 
 // For Standstill combo Special
 var vector StartLocation;
