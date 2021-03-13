@@ -134,11 +134,6 @@ function PreBeginPlay()
 	// toggle first blood so it doesn't get triggered during warmup
 	zzDMP.bFirstBlood = True;
 
-	Spawn(class'NN_SpawnNotify');
-
-	if (NNAnnouncer)
-		Spawn(class'NNAnnouncerSA');
-
  	if (zzDMP.HUDType == Class'ChallengeDominationHUD')
 		zzDMP.HUDType = Class'PureDOMHUD';
 	else if (zzDMP.HUDType == Class'ChallengeCTFHUD')
@@ -278,6 +273,11 @@ function PostBeginPlay()
 
 	if (bDelayedPickupSpawn)
 		Spawn(Class'PureDPS');
+
+	Spawn(class'NN_SpawnNotify');
+
+	if (NNAnnouncer)
+		Spawn(class'NNAnnouncerSA');
 
 // Necessary functions to let the "bExludeKickers" list work
 /////////////////////////////////////////////////////////////////////////
