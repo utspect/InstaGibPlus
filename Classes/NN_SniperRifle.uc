@@ -1,10 +1,10 @@
 // ===============================================================
-// Stats.ST_SniperRifle: put your comment here
+// Stats.NN_SniperRifle: put your comment here
 
 // Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
 // ===============================================================
 
-class ST_SniperRifle extends SniperRifle;
+class NN_SniperRifle extends SniperRifle;
 
 var bool bNewNet;		// Self-explanatory lol
 var Rotator GV;

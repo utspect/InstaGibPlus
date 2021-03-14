@@ -374,9 +374,9 @@ function string GetReplacementWeapon(Weapon W, bool bDamnEpic)
 		WStr = "ST_ut_biorifle";
 		BitMap = (1 << 4);				// BioRifle = 04
 	}
-	else if ((W.IsA('ShockRifle') && !W.IsA('SuperShockRifle') && !W.IsA('NN_ShockRifle') && !W.IsA('ST_sgShockRifle')) || W.IsA('ASMD'))
+	else if ((W.IsA('ShockRifle') && !W.IsA('SuperShockRifle') && !W.IsA('ST_ShockRifle')) || W.IsA('ASMD'))
 	{
-		WStr = "NN_ShockRifle";
+		WStr = "ST_ShockRifle";
 		BitMap = (1 << 5) | (1 << 6) | (1 << 7);	// Shock Rifle = 05, 06, 07
 	}
 	else if (W.IsA('SuperShockRifle') && !W.IsA('ST_SuperShockRifle'))
@@ -389,27 +389,27 @@ function string GetReplacementWeapon(Weapon W, bool bDamnEpic)
 		WStr = "ST_PulseGun";
 		BitMap = (1 << 9) | (1 << 10);			// Pulse Gun = 09, 10
 	}
-	else if ( (W.IsA('ripper') && !W.IsA('ST_ripper')) )
+	else if ((W.IsA('ripper') && !W.IsA('ST_ripper')) || W.IsA('Razorjack'))
 	{
 		WStr = "ST_ripper";
 		BitMap = (1 << 11) | (1 << 12);			// Ripper = 11, 12
 	}
-	else if ( (W.IsA('minigun2') && !W.IsA('ST_minigun2')) )
+	else if ((W.IsA('minigun2') && !W.IsA('ST_minigun2')) || W.IsA('Minigun'))
 	{
 		WStr = "ST_minigun2";
 		BitMap = (1 << 13);				// Minigun2 = 13
 	}
-	else if ((W.IsA('UT_FlakCannon') && !W.IsA('ST_UT_FlakCannon')))
+	else if ((W.IsA('UT_FlakCannon') && !W.IsA('ST_UT_FlakCannon')) || W.IsA('FlakCannon'))
 	{
 		WStr = "ST_UT_FlakCannon";
 		BitMap = (1 << 14) | (1 << 15);			// Flak Cannon = 14, 15
 	}
-	else if ((W.IsA('UT_Eightball') && !W.IsA('ST_UT_Eightball') && !W.IsA('ST_sgUT_Eightball')) || W.IsA('Eightball'))
+	else if ((W.IsA('UT_Eightball') && !W.IsA('ST_UT_Eightball')) || W.IsA('Eightball'))
 	{
 		WStr = "ST_UT_Eightball";
 		BitMap = (1 << 16) | (1 << 17);			// Rocket Launcher = 16, 17
 	}
-	else if ((W.IsA('SniperRifle') && !W.IsA('ST_SniperRifle')))
+	else if ((W.IsA('SniperRifle') && !W.IsA('ST_SniperRifle')) || W.IsA('Rifle'))
 	{
 		WStr = "ST_SniperRifle";
 		BitMap = (1 << 18);				// Sniper = 18
@@ -419,24 +419,7 @@ function string GetReplacementWeapon(Weapon W, bool bDamnEpic)
 		WStr = "ST_WarheadLauncher";
 		BitMap = (1 << 19);				// Redeemer = 19
 	}
-	////////////////// Auto replace Unreal Weapons & OldSkool Weapons to NewNet one!
-	else if ((W.IsA('OlRazorjack') && !W.IsA('ST_RazorJack')) || W.IsA('Razorjack'))
-	{
-		WStr = "ST_RazorJack";
-	}
-	else if ((W.IsA('OlMinigun') && !W.IsA('ST_Minigun')) || W.IsA('Minigun'))
-	{
-		WStr = "ST_Minigun";
-	}
-	else if ((W.IsA('OlFlakCannon') && !W.IsA('ST_FlakCannon')) || W.IsA('FlakCannon'))
-	{
-		WStr = "ST_FlakCannon";
-	}
-	else if ((W.IsA('OlRifle') && !W.IsA('ST_Rifle')) || W.IsA('Rifle'))
-	{
-		WStr = "ST_Rifle";
-	}
-	////////////////// End!
+
 	WeaponDisplay = WeaponDisplay | BitMap;
 	return WStr;
 }
@@ -453,7 +436,7 @@ function FixBitMap(name WeaponName, bool bDamnEpic)
 		BitMap = (1 << 3);							// Enforcer = 03
 	else if (WeaponName == 'ST_ut_biorifle')
 		BitMap = (1 << 4);							// BioRifle = 04
-	else if (WeaponName == 'NN_ShockRifle')
+	else if (WeaponName == 'ST_ShockRifle')
 		BitMap = (1 << 5) | (1 << 6) | (1 << 7);	// Shock Rifle = 05, 06, 07
 	else if (WeaponName == 'ST_SuperShockRifle')
 		BitMap = (1 << 8);							// Super Shock = 08
@@ -481,6 +464,8 @@ function ReplaceWeapons()
 	local string NewClassName;
 	local Weapon W;
 	local Arena ArenaMutator;
+	local NewNetArena PA;
+	local int i;
 
 	WeaponDisplay = 1;		// Always show Other/Special
 
@@ -505,7 +490,7 @@ function ReplaceWeapons()
 
 		ForEach AllActors(Class'Weapon', W)
 		{
-			if (W.Location != VecNull && !W.Owner.IsA('ScriptedPawn'))
+			if (W.Location != VecNull && (W.Owner == none || !W.Owner.IsA('ScriptedPawn')))
 			{
 				NewClassName = GetReplacementWeapon(W, True);
 				if (NewClassName != "")
@@ -559,12 +544,14 @@ function GiveGoodWeapon(Pawn PlayerPawn, string aClassName, Weapon OldWeapon )
 
 function SwitchWeaponsInventory(Pawn Other)
 {	// Change "bad" weapons that have already come into players inventory somehow (like respawn weapons, and LastManLaming)
-	local Weapon W;
+	local Weapon W, Best;
 	local Inventory Inv;
 	local string NewName[32];
 	local Weapon OldWeap[32];
 	local int NewCount, x;
 	local name n;
+	local UTPure UTP;
+	local byte Current, Highest;
 
 	if (Other.Weapon != None)
 		n = Other.Weapon.Class.Name;
@@ -668,7 +655,6 @@ function ModifyPlayer(Pawn Other)
 			}
 			bbPlayer(Other).AttachStats(STW, Self);
 			bbPlayer(Other).ClientMessage(WelcomeMessage);
-			bbPlayer(Other).bFWS = Class'PureStat'.Default.bUseFWS;
 		}
 		else if (Other.IsA('ST_HumanBotPlus'))
 		{
@@ -790,31 +776,30 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		Sender.ClientMessage("UTPure Stats Extended commands:");
 		Sender.ClientMessage("- ShowStats x (0 = Current Game, 1 = Current Month, 2 = All Time, Default = 0)");
 		Sender.ClientMessage("- NoRevert x (0 = Off, 1 = On, Default = 0)");
-		if (Class'PureStat'.Default.bUseFWS)
+		if (Class'UTPure'.Default.bUseFastWeaponSwitch)
 			Sender.ClientMessage("- Mutate FWS (Toggles FWS on/off)");
 	}
 	else if (MutateString ~= "CheatInfo")
 	{
 		Sender.ClientMessage(WelcomeMessage);
 		Sender.ClientMessage("PureStats Settings:");
-		Sender.ClientMessage("- FWS Enabled:"@Class'PureStat'.Default.bUseFWS);
+		Sender.ClientMessage("- FWS Enabled:"@Class'UTPure'.Default.bUseFastWeaponSwitch);
 		bbP = bbPlayer(Sender);
 		if (bbP != None)
 		{
 			Sender.ClientMessage("Your Settings:");
-			Sender.ClientMessage("- Translocator No Revert:"@bbP.bNoRevert);
-			Sender.ClientMessage("- FWS Enabled:"@bbP.bFWS);
+			Sender.ClientMessage("- FWS Enabled:"@bbP.bUseFastWeaponSwitch);
 		}
 	}
 	else if (MutateString ~= "FWS")
 	{
-		if (Class'PureStat'.Default.bUseFWS)
+		if (Class'UTPure'.Default.bUseFastWeaponSwitch)
 		{
 			bbP = bbPlayer(Sender);
 			if (bbP != None)
 			{
-				bbP.bFWS = !bbP.bFWS;
-				Sender.ClientMessage("Faster Weapon Switch:"@bbP.bFWS);
+				bbP.bUseFastWeaponSwitch = !bbP.bUseFastWeaponSwitch;
+				Sender.ClientMessage("Faster Weapon Switch:"@bbP.bUseFastWeaponSwitch);
 			}
 		}
 		else

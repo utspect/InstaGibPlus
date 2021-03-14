@@ -157,6 +157,7 @@ var TranslocatorTarget zzClientTTarget, TTarget;
 var float LastTick, AvgTickDiff;
 
 var bool SetPendingWeapon;
+var bool bUseFastWeaponSwitch;
 
 // Net Updates
 var float TimeBetweenNetUpdates;
@@ -331,6 +332,7 @@ replication
 		bIsAlive,
 		bJumpingPreservesMomentum,
 		BrightskinMode,
+		bUseFastWeaponSwitch,
 		bUseFlipAnimation,
 		DuckFraction,
 		Ready,
@@ -944,6 +946,7 @@ event Possess()
 		bUseFlipAnimation = class'UTPure'.default.bUseFlipAnimation;
 		bCanWallDodge = class'UTPure'.default.bEnableWallDodging;
 		bDodgePreserveZMomentum = class'UTPure'.default.bDodgePreserveZMomentum;
+		bUseFastWeaponSwitch = class'UTPure'.default.bUseFastWeaponSwitch;
 
 		if(!zzUTPure.bExludeKickers)
 		{
@@ -2031,6 +2034,9 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 
 	bClientDead = false;
 
+	if (bUseFastWeaponSwitch && PendingWeapon != None)
+		ChangedWeapon();
+
 	// handle firing and alt-firing
 	if (bFired) {
 		if (bForceFire && (Weapon != None))
@@ -2692,34 +2698,10 @@ function bool xxWeaponIsNewNet( optional bool bAlt )
 	if (Weapon == None)
 		return false;
 
-	return ( Weapon.IsA('ST_ImpactHammer') // UT weapons
-		|| Weapon.IsA('ST_Translocator')
-		|| Weapon.IsA('ST_ut_biorifle')
-		|| Weapon.IsA('NN_ShockRifle')
-		|| Weapon.IsA('ST_SuperShockRifle')
-		|| Weapon.IsA('ST_PulseGun') && !bAlt
-		|| Weapon.IsA('ST_ripper')
-		|| Weapon.IsA('ST_UT_FlakCannon')
-		|| Weapon.IsA('ST_UT_Eightball')
-		|| Weapon.IsA('ST_SniperRifle')
-
-		|| Weapon.IsA('ST_DispersionPistol') // Unreal weapons
-		|| Weapon.IsA('ST_AutoMag')
-		|| Weapon.IsA('ST_GESBioRifle')
-		|| Weapon.IsA('ST_QuadShot')
+	return (Weapon.IsA('NN_ShockRifle')
+		|| Weapon.IsA('NN_SuperShockRifle')
+		|| Weapon.IsA('NN_SniperRifle')
 		|| Weapon.IsA('NN_ASMD')
-		|| Weapon.IsA('ST_Stinger')
-		|| Weapon.IsA('ST_RazorJack')
-		|| Weapon.IsA('ST_FlakCannon')
-		|| Weapon.IsA('ST_Eightball')
-		|| Weapon.IsA('ST_Rifle')
-
-		|| Weapon.GetPropertyText("Allow55") == "TRUE"
-
-		// For custom weapons
-		|| Weapon.IsA('TOWeapons')
-		|| Weapon.IsA('AXWeapons')
-		|| Weapon.IsA('ST_WildcardsWeapons')
 	);
 }
 
@@ -7631,6 +7613,11 @@ exec function bool SwitchToBestWeapon()
 
 simulated function ChangedWeapon()
 {
+	if (Weapon != None && bUseFastWeaponSwitch)
+	{
+		Weapon.GotoState('');
+		Weapon.ClientPutDown(PendingWeapon);
+	}
 	Super.ChangedWeapon();
 }
 

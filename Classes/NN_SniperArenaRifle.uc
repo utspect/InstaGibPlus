@@ -1,4 +1,4 @@
-class ST_SniperArenaRifle extends ST_SniperRifle;
+class NN_SniperArenaRifle extends NN_SniperRifle;
 
 simulated function PlayFiring()
 {

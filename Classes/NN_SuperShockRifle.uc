@@ -4,7 +4,7 @@
 // Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
 // ===============================================================
 
-class ST_SuperShockRifle extends SuperShockRifle;
+class NN_SuperShockRifle extends SuperShockRifle;
 
 var bool bNewNet;				// Self-explanatory lol
 var Rotator GV;

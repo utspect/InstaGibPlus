@@ -43,6 +43,7 @@ var localized config bool bAutoPause;		// Enable or disable autopause. (bTournam
 var localized config byte ForceModels;		// 0 = Disallow, 1 = Client Selectable, 2 = Forced
 var localized config byte ImprovedHUD;		// 0 = Disabled, 1 = Boots/Clock, 2 = Enhanced Team Info
 var localized config bool bDelayedPickupSpawn;	// Enable or disable delayed first pickup spawn.
+var localized config bool bUseFastWeaponSwitch;
 var localized config bool bTellSpectators;	// Enable or disable telling spectators of reason for kicks.
 var localized config string PlayerPacks[8];	// Config list of supported player packs
 var localized config int DefaultHitSound, DefaultTeamHitSound;
@@ -1480,6 +1481,8 @@ defaultproperties
 	bWarmup=True
 	ForceModels=1
 	ImprovedHUD=1
+	bDelayedPickupSpawn=False
+	bUseFastWeaponSwitch=True
 	PlayerPacks(0)=""
 	DefaultHitSound=2
 	DefaultTeamHitSound=3
