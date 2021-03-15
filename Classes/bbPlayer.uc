@@ -872,8 +872,8 @@ event Possess()
 {
 	local Kicker K;
 
-	Utils = new class'Utilities';
-	StringUtils = new class'StringUtils';
+	Utils = new(none) class'Utilities';
+	StringUtils = new(none) class'StringUtils';
 	PlayerStatics = Spawn(class'bbPlayerStatics');
 
 	InitSettings();
