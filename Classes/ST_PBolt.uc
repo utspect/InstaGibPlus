@@ -12,13 +12,13 @@ var float GrowthAccumulator;
 simulated function CheckBeam(vector X, float DeltaTime)
 {
 	local actor HitActor;
-	local vector HitLocation, HitNormal;
+	local vector HitLocation, HitNormal, Momentum;
 
 	// check to see if hits something, else spawn or orient child
 
 	HitActor = Trace(HitLocation, HitNormal, Location + BeamSize * X, Location, true);
 	if ( (HitActor != None)	&& (HitActor != Instigator)
-		&& (HitActor.bProjTarget || (HitActor == Level) || (HitActor.bBlockActors && HitActor.bBlockPlayers)) 
+		&& (HitActor.bProjTarget || (HitActor == Level) || (HitActor.bBlockActors && HitActor.bBlockPlayers))
 		&& ((Pawn(HitActor) == None) || Pawn(HitActor).AdjustHitLocation(HitLocation, Velocity)) )
 	{
 		if ( Level.Netmode != NM_Client )
@@ -26,20 +26,28 @@ simulated function CheckBeam(vector X, float DeltaTime)
 			if ( DamagedActor == None )
 			{
 				AccumulatedDamage = FMin(0.5 * (Level.TimeSeconds - LastHitTime), 0.08);	// Was 0.1, reduced to 80%.
+				if (Level.Game.GetPropertyText("NoLockdown") == "1")
+					Momentum = vect(0,0,0);
+				else
+					Momentum = MomentumTransfer * X * AccumulatedDamage;
 				STM.PlayerHit(Instigator, 10, False);						// 10 = Pulse Shaft
 				HitActor.TakeDamage(AccumulatedDamage * damage, instigator,HitLocation, // *2?...
-					(MomentumTransfer * X * AccumulatedDamage), MyDamageType);
+					Momentum, MyDamageType);
 				STM.PlayerClear();
 				AccumulatedDamage = 0;
-			}				
+			}
 			else if ( DamagedActor != HitActor )
 			{
+				if (Level.Game.GetPropertyText("NoLockdown") == "1")
+					Momentum = vect(0,0,0);
+				else
+					Momentum = MomentumTransfer * X * AccumulatedDamage;
 				STM.PlayerHit(Instigator, 10, False);						// 10 = Pulse Shaft
 				DamagedActor.TakeDamage(damage * AccumulatedDamage, instigator,HitLocation,
-					(MomentumTransfer * X * AccumulatedDamage), MyDamageType);
+					Momentum, MyDamageType);
 				STM.PlayerClear();
 				AccumulatedDamage = 0;
-			}				
+			}
 			LastHitTime = Level.TimeSeconds;
 			DamagedActor = HitActor;
 			AccumulatedDamage += DeltaTime;
@@ -47,9 +55,13 @@ simulated function CheckBeam(vector X, float DeltaTime)
 			{
 				if ( DamagedActor.IsA('Carcass') && (FRand() < 0.09) )
 					AccumulatedDamage = 35/damage;
+				if (int(Level.Game.GetPropertyText("NoLockdown")) > 0)
+					Momentum = vect(0,0,0);
+				else
+					Momentum = MomentumTransfer * X * AccumulatedDamage;
 				STM.PlayerHit(Instigator, 10, True);						// 10 = Pulse Shaft, Overload
 				DamagedActor.TakeDamage(damage * AccumulatedDamage, instigator,HitLocation,
-					(MomentumTransfer * X * AccumulatedDamage), MyDamageType);
+					Momentum, MyDamageType);
 				STM.PlayerClear();
 				AccumulatedDamage = 0;
 			}
@@ -63,7 +75,7 @@ simulated function CheckBeam(vector X, float DeltaTime)
 			WallEffect = Spawn(class'PlasmaHit',,, HitLocation - 5 * X);
 		else if ( !WallEffect.IsA('PlasmaHit') )
 		{
-			WallEffect.Destroy();	
+			WallEffect.Destroy();
 			WallEffect = Spawn(class'PlasmaHit',,, HitLocation - 5 * X);
 		}
 		else
@@ -83,22 +95,27 @@ simulated function CheckBeam(vector X, float DeltaTime)
 	}
 	else if ( (Level.Netmode != NM_Client) && (DamagedActor != None) )
 	{
+		if (Level.Game.GetPropertyText("NoLockdown") == "1")
+			Momentum = vect(0,0,0);
+		else
+			Momentum = MomentumTransfer * X * AccumulatedDamage;
+
 		STM.PlayerHit(Instigator, 10, True);								// 10 = Pulse Shaft
 		DamagedActor.TakeDamage(damage * AccumulatedDamage, instigator, DamagedActor.Location - X * 1.2 * DamagedActor.CollisionRadius,
-			(MomentumTransfer * X * AccumulatedDamage), MyDamageType);
+			Momentum, MyDamageType);
 		STM.PlayerClear();
 		AccumulatedDamage = 0;
 		DamagedActor = None;
-	}			
+	}
 
 
 	if ( Position >= 9 )
-	{	
+	{
 		if ( (WallEffect == None) || WallEffect.bDeleteMe )
 			WallEffect = Spawn(class'PlasmaCap',,, Location + (BeamSize - 4) * X);
 		else if ( WallEffect.IsA('PlasmaHit') )
 		{
-			WallEffect.Destroy();	
+			WallEffect.Destroy();
 			WallEffect = Spawn(class'PlasmaCap',,, Location + (BeamSize - 4) * X);
 		}
 		else

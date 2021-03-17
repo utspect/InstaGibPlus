@@ -97,11 +97,11 @@ function AltFire( float Value )
 		FireInterval = 0.130;		// Spinup
 		NextFireInterval = 0.08;	// Use Primary fire speed until completely spun up
 		Pawn(Owner).PlayRecoil(FiringSpeed);
-		SoundVolume = 255*Pawn(Owner).SoundDampening;		
-		ClientAltFire(value);	
-		GoToState('AltFiring');		
+		SoundVolume = 255*Pawn(Owner).SoundDampening;
+		ClientAltFire(value);
+		GoToState('AltFiring');
 	}
-	else GoToState('Idle');	
+	else GoToState('Idle');
 }
 
 simulated function Tick(float deltaTime)
@@ -112,7 +112,7 @@ simulated function Tick(float deltaTime)
 
 // Original code did: Sleep(0.13)
 // This would (depending on tickrate) get called on irregular intervals.
-// According to a 20 tickrate server, this would result in about 6.667 shots/sec, 
+// According to a 20 tickrate server, this would result in about 6.667 shots/sec,
 // 1/6.667 = 0.15s between, therefore...
 // Due to excessive whining, shots/sec is increased to 7.5
 // 1/7.5 = 0.13s between.
@@ -130,7 +130,7 @@ state NormalFire
 
 		if (P == None)
 			return;
-	
+
 		if (P.Weapon != Self)
 			AmbientSound = None;
 
@@ -143,7 +143,7 @@ state NormalFire
 			GenerateBullet();
 		}
 
-		if	( bFiredShot && ((P.bFire==0) || bOutOfAmmo) ) 
+		if	( bFiredShot && ((P.bFire==0) || bOutOfAmmo) )
 			GoToState('FinishFire');
 	}
 
@@ -160,7 +160,7 @@ Begin:
 
 // Original code did: Sleep(0.08)
 // This would (depending on tickrate) get called on irregular intervals.
-// According to a 20 tickrate server, this would result in about 10.000 shots/sec, 
+// According to a 20 tickrate server, this would result in about 10.000 shots/sec,
 // 1/10.000 = 0.10s between, therefore...
 // Due to excessive whining, shots/sec increased to 11
 // 1/11 = 0.091s between
@@ -191,14 +191,14 @@ state AltFiring
 			GenerateBullet();
 		}
 
-		if	( bFiredShot && ((P.bAltFire==0) || bOutOfAmmo) ) 
+		if	( bFiredShot && ((P.bAltFire==0) || bOutOfAmmo) )
 			GoToState('FinishFire');
 	}
 
 	function AnimEnd()
 	{
 		if ( (AnimSequence != 'Shoot2') || !bAnimLoop )
-		{	
+		{
 			AmbientSound = AltFireSound;
 			SoundVolume = 255*Pawn(Owner).SoundDampening;
 			LoopAnim('Shoot2',1.9);
@@ -221,7 +221,7 @@ State ClientDown
 		T = TournamentPlayer(Owner);
 		if ( T != None )
 		{
-			if ( (T.ClientPending != None) 
+			if ( (T.ClientPending != None)
 				&& (T.ClientPending.Owner == Owner) )
 			{
 				T.Weapon = T.ClientPending;
@@ -246,26 +246,28 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 
 	PawnOwner = Pawn(Owner);
-	
+
 	STM.PlayerFire(PawnOwner, 13);				// 13 = Minigun
 
-	if (Other == Level) 
+	if (Other == Level)
 		Spawn(class'UT_LightWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
-	else if ( (Other!=self) && (Other!=Owner) && (Other != None) ) 
+	else if ( (Other!=self) && (Other!=Owner) && (Other != None) )
 	{
 
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
-			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9); 
+			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 		else
 			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
 
 		if ( Other.IsA('Bot') && (FRand() < 0.2) )
 			Pawn(Other).WarnTarget(PawnOwner, 500, X);
 		rndDam = 5 + Rand(3);
-		if ( FRand() < 0.2 )
+		if ( Level.Game.GetPropertyText("NoLockdown") == "1" || FRand() >= 0.2 )
+			X = vect(0, 0, 0);
+		else
 			X *= 2.5;
 		STM.PlayerHit(PawnOwner, 13, False);			// 13 = Minigun
-		Other.TakeDamage(rndDam, PawnOwner, HitLocation, vect(0,0,0), MyDamageType);
+		Other.TakeDamage(rndDam, PawnOwner, HitLocation, rndDam*500.0*X, MyDamageType);
 		STM.PlayerClear();
 	}
 
@@ -311,7 +313,7 @@ function SetSwitchPriority(pawn Other)
 				carried = temp;
 			}
 		}
-	}		
+	}
 }
 
 simulated function TweenDown()
