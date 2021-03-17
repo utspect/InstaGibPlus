@@ -11,14 +11,14 @@ class ST_PureStats extends PureStats
 // Ind.	Weapon Name	Fired	Hit	Hit%	Given	Taken	Kills	Deaths	Suici	Kills	Special	Desc
 // 00	Unknown											x	Fall Damages
 // 01	IH											x	Deflections
-// 02	Transloc	(ok)	(kill)		-	-						
-// 03	Enforcer	25	12	48%	124	436	4	8			x	Dual Shots	
+// 02	Transloc	(ok)	(kill)		-	-
+// 03	Enforcer	25	12	48%	124	436	4	8			x	Dual Shots
 // 04	Bio											x	Direct
-// 05	Shock Pri										x	Excellent	
+// 05	Shock Pri										x	Excellent
 // 06	Shock Sec										x	Blocked (blocked shots?)
 // 07	Shock Combo										x	Standstill :X
 // 08	SuperShock										x	Duo Airgibs (both in air)
-// 09	Pulse Pri											
+// 09	Pulse Pri
 // 10	Pulse Sec										x	Overload
 // 11	Ripper Pri										x	Headshot
 // 12	Ripper Sec										x	Direct
@@ -29,7 +29,7 @@ class ST_PureStats extends PureStats
 // 17	Pipe											x	Flying (Direct without bounce)
 // 18	Sniper		135	55	40%	2520	1356	34	14			x	Headshot
 // 19	Redeemer										x	Driven
-// 
+//
 
 //	Stat Board:			Special
 // Ind. Item Name	Pickups	Spec.	Description
@@ -69,7 +69,7 @@ class ST_PureStats extends PureStats
 // Ind.	CTF Event	Count	Spec.	Description
 // 00	Flag Pickup	x	x	First Pickup	(ie, not takeover)
 // 01	Flag Drops	x	x	By Death
-// 02	Flag Kills	x	
+// 02	Flag Kills	x
 // 03	Flag Returns	x
 // 04	Flag Assists	x
 // 05	Flag Capture	x	x	Solo Run
@@ -188,8 +188,6 @@ replication
 simulated function DoScreenSetup(Canvas Canvas)
 {
 	local float cDelta;
-	local float fX;
-//	Canvas.StrLen("TEST", fX, FontHeight);
 
 	OldClipX = Canvas.ClipX;
 
@@ -313,9 +311,9 @@ simulated function WeaponStatDraw(Canvas Canvas, out float LocY)
 			Line++;
 			Continue;
 		}
-		
+
 		fY += FontHeight;	// Next line.
-		
+
 		if (WhichStat == 0) Disp = CurrentStats[Line];
 		else if (WhichStat == 1) Disp = MonthlyStats[Line];
 		else Disp = AllTimeStats[Line];
@@ -459,7 +457,7 @@ simulated function PickupStatDraw(Canvas Canvas, out float LocY)
 		Col = 1 - Col;
 		Canvas.SetPos(psName, fY);
 		Canvas.DrawTile(BGTex, psWidth, FontHeight, 0.0, 0.0, BGTex.USize, BGTex.VSize);
-		
+
 		Canvas.DrawColor = FontColor;
 		Canvas.SetPos(psName, fY);
 		Canvas.DrawText(PickupNames[Line]);
@@ -506,7 +504,7 @@ simulated function SpreeStatDraw(Canvas Canvas, out float LocY)
 		Col = 1 - Col;
 		Canvas.SetPos(spName, fY);
 		Canvas.DrawTile(BGTex, spWidth, FontHeight, 0.0, 0.0, BGTex.USize, BGTex.VSize);
-		
+
 		Canvas.DrawColor = FontColor;
 		Canvas.SetPos(spName, fY);
 		Canvas.DrawText(SpreeNames[Line]);
@@ -550,7 +548,7 @@ simulated function MultiStatDraw(Canvas Canvas, out float LocY)
 		Col = 1 - Col;
 		Canvas.SetPos(muName, fY);
 		Canvas.DrawTile(BGTex, muWidth, FontHeight, 0.0, 0.0, BGTex.USize, BGTex.VSize);
-		
+
 		Canvas.DrawColor = FontColor;
 		Canvas.SetPos(muName, fY);
 		Canvas.DrawText(MultiNames[Line]);
@@ -604,7 +602,7 @@ simulated function CTFStatDraw(Canvas Canvas, out float LocY)
 		Col = 1 - Col;
 		Canvas.SetPos(ctName, fY);
 		Canvas.DrawTile(BGTex, ctWidth, FontHeight, 0.0, 0.0, BGTex.USize, BGTex.VSize);
-		
+
 		Canvas.DrawColor = FontColor;
 		Canvas.SetPos(ctName, fY);
 		Canvas.DrawText(CTFNames[Line]);
@@ -626,7 +624,7 @@ simulated function PostRender(Canvas Canvas)
 {
 	local float YPos, YRem, YMax;
 	local string TopInfo;
-	local float tiOff, fY;
+	local float tiOff;
 	// Setup Style (Should perhaps use HUDs renderstyle?) ATM forced translucent
 	Canvas.Font = MyFonts.GetSmallestFont(Canvas.ClipX);
 	if (bTransparent)
@@ -636,7 +634,7 @@ simulated function PostRender(Canvas Canvas)
 
 	if (Canvas.ClipX != OldClipX)		// If screen size change, must recalc setup
 		DoScreenSetup(Canvas);
-	
+
 	Canvas.DrawColor = HeaderColor;
 	Canvas.SetPos(0, 0);
 	Canvas.DrawTile(BGTex, Canvas.ClipX, FontHeight, 0.0, 0.0, BGTex.USize, BGTex.VSize);
@@ -680,9 +678,9 @@ simulated function PostNetBeginPlay()
 {
 	// Here we will copy last game into recent month, recent month into all time high, and save.
 	local int x;
-	
+
 	PPOwner = PlayerPawn(Owner);
-	
+
 	// First load a nice clientside font. Helps displaying things.
 	MyFonts = FontInfo(spawn(Class<Actor>(DynamicLoadObject(class'ChallengeHUD'.default.FontInfoClass, class'Class'))));
 
@@ -785,7 +783,7 @@ simulated function Timer()
 	local bool bSaveNow;
 
 	bSaveNow = bSaveDataPending && bLastData;	// Pending save, and last data has arrived (HOPEFULLY!!!)
-		
+
 	if (!bShowStats && !bSaveNow)
 		return;
 
@@ -797,7 +795,7 @@ simulated function Timer()
 
 	for (x = 0; x < SprCount; x++)
 		CurrentSpreeCount[x] = SpreeCount[x];
-	
+
 	for (x = 0; x < MultCount; x++)
 		CurrentMultiCount[x] = MultiCount[x];
 
@@ -895,7 +893,7 @@ simulated function SaveStats()
 // These functions register stats. Since the WeaponStats array is too big, we have to provide functions to modify them :/
 function RegisterShot(int Index)
 {
-	WeaponStats[Index].Fired++;	
+	WeaponStats[Index].Fired++;
 }
 
 function UnregisterShot(int Index)

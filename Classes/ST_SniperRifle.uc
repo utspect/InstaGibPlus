@@ -108,8 +108,6 @@ function SetSwitchPriority(pawn Other)
 
 simulated function PlayFiring()
 {
-	local int r;
-
 	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*3.0);
 	PlayAnim(FireAnims[Rand(5)], 0.66666666 / ReloadTime, 0.05);
 
