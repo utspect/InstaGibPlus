@@ -8,12 +8,22 @@ class ST_SniperRifle extends SniperRifle;
 
 var ST_Mutator STM;
 
+var float ReloadTime;
+
+replication
+{
+	unreliable if (Role == ROLE_Authority)
+		ReloadTime;
+}
+
 function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
 	ForEach AllActors(Class'ST_Mutator', STM)
 		break;		// Find master :D
+
+	ReloadTime = STM.WeaponSettings.SniperReloadTime;
 }
 
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
@@ -25,32 +35,42 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	STM.PlayerFire(PawnOwner, 18);		// 18 = Sniper
 
 	s = Spawn(class'UT_ShellCase',, '', Owner.Location + CalcDrawOffset() + 30 * X + (2.8 * FireOffset.Y+5.0) * Y - Z * 1);
-	if ( s != None ) 
+	if ( s != None )
 	{
 		s.DrawScale = 2.0;
-		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);              
+		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
 	}
-	if (Other == Level) 
+	if (Other == Level)
 		Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
-	else if ( (Other != self) && (Other != Owner) && (Other != None) ) 
+	else if ( (Other != self) && (Other != Owner) && (Other != None) )
 	{
 		if ( Other.bIsPawn )
 			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
-		if ( Other.bIsPawn && (HitLocation.Z - Other.Location.Z > 0.62 * Other.CollisionHeight) 
+		if ( Other.bIsPawn && (HitLocation.Z - Other.Location.Z > 0.62 * Other.CollisionHeight)
 			&& (instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice)) )
 		{
 			STM.PlayerHit(PawnOwner, 18, True);		// 18 = Sniper, Headshot
-			Other.TakeDamage(100, PawnOwner, HitLocation, 35000 * X, AltDamageType);
+			Other.TakeDamage(
+				STM.WeaponSettings.SniperHeadshotDamage,
+				PawnOwner,
+				HitLocation,
+				STM.WeaponSettings.SniperHeadshotMomentum * 35000 * X,
+				AltDamageType);
 			STM.PlayerClear();
 		}
 		else
 		{
 			STM.PlayerHit(PawnOwner, 18, False);		// 18 = Sniper
-			Other.TakeDamage(45,  PawnOwner, HitLocation, 30000.0*X, MyDamageType);	
+			Other.TakeDamage(
+				STM.WeaponSettings.SniperDamage,
+				PawnOwner,
+				HitLocation,
+				STM.WeaponSettings.SniperMomentum * 30000.0*X,
+				MyDamageType);
 			STM.PlayerClear();
 		}
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
-			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);	
+			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}
 }
 
@@ -83,7 +103,19 @@ function SetSwitchPriority(pawn Other)
 				carried = temp;
 			}
 		}
-	}		
+	}
+}
+
+simulated function PlayFiring()
+{
+	local int r;
+
+	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*3.0);
+	PlayAnim(FireAnims[Rand(5)], 0.66666666 / ReloadTime, 0.05);
+
+	if ( (PlayerPawn(Owner) != None)
+		&& (PlayerPawn(Owner).DesiredFOV == PlayerPawn(Owner).DefaultFOV) )
+		bMuzzleFlash++;
 }
 
 simulated function TweenDown()

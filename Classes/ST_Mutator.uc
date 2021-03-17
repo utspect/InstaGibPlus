@@ -28,6 +28,9 @@ var Pawn Asses[64];			// Team*16, Who assisted in a cap
 var int AssCount[4];			// How many assisted.
 var Pawn NextCTFVictim;			// The Guy that just got killed who had flag
 
+var Object WeaponSettingsHelper;
+var WeaponSettings WeaponSettings;
+
 function ST_PureStats GetStats(Pawn P)
 {
 	local ST_PureStats Result;
@@ -759,11 +762,17 @@ function PreBeginPlay()
 		DMP.BotConfig = Spawn(DMP.BotConfigType);
 	}
 	bTranslocatorGame = DMP.bUseTranslocator;
+
 	SelfName = string(self.Class);
 	PreFix = Left(SelfName, InStr(SelfName, ".") + 1);
 	Log("ST_Mutator determined prefix="$PreFix, 'IGPlus');
  	Level.Game.RegisterMessageMutator(Self);
+
 	Class'bbCHSpectator'.Default.cStat = Class'ST_PureStatsSpec';
+
+	WeaponSettingsHelper = new(none, 'InstaGibPlus') class'Object';
+	WeaponSettings = new(WeaponSettingsHelper, 'WeaponSettingsOldNet') class'WeaponSettings';
+
 	Super.PreBeginPlay();
 }
 
