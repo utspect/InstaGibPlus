@@ -772,6 +772,7 @@ function PreBeginPlay()
 
 	WeaponSettingsHelper = new(none, 'InstaGibPlus') class'Object';
 	WeaponSettings = new(WeaponSettingsHelper, 'WeaponSettingsOldNet') class'WeaponSettings';
+	WeaponSettings.SaveConfig();
 
 	Super.PreBeginPlay();
 }
