@@ -1046,7 +1046,7 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 
 		return;
 	}
-	else if (ClassIsChildOf(Message, class'DecapitationMessage'))
+	else if (Message == class'DecapitationMessage')
 	{
 		xxSendHeadshotToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 	}

@@ -903,8 +903,7 @@ function UnregisterShot(int Index)
 
 function RegisterSpecial(int Index)
 {
-	if (PPOwner != None)
-		PPOwner.ReceiveLocalizedMessage(Class'ST_SpecialMessage', Index, , , Self);
+	SendSpecialMessage(Index);
 	WeaponStats[Index].Special++;
 }
 
@@ -1077,17 +1076,14 @@ function RegisterFlagReturn(float Distance)
 	CTFStats[3].Count++;
 	if (Distance < 900.0)
 	{
-		if (PPOwner != None)
-			PPOwner.ReceiveLocalizedMessage(Class'ST_SpecialMessage', 102, , , Self);
+		SendSpecialMessage(102);
 		CTFStats[3].Special++;
 	}
 }
 
 function RegisterFlagAssist()
 {
-	if (PPOwner != None)
-		PPOwner.ReceiveLocalizedMessage(Class'ST_SpecialMessage', 100, , , Self);
-
+	SendSpecialMessage(100);
 	CTFStats[4].Count++;
 }
 
@@ -1096,10 +1092,19 @@ function RegisterFlagCap(bool bSolo)
 	CTFStats[5].Count++;
 	if (bSolo)
 	{
-		if (PPOwner != None)
-			PPOwner.ReceiveLocalizedMessage(Class'ST_SpecialMessage', 101, , , Self);
+		SendSpecialMessage(101);
 		CTFStats[5].Special++;
 	}
+}
+
+function SendSpecialMessage(int Index) {
+	local Pawn P;
+	if (PPOwner != None)
+		PPOwner.ReceiveLocalizedMessage(Class'ST_SpecialMessage', Index, , , Self);
+
+	for (P = Level.PawnList; P != none; P = P.NextPawn)
+		if (P.IsA('PlayerPawn') && PlayerPawn(P).ViewTarget == PPOwner && P != PPOwner)
+			P.ReceiveLocalizedMessage(Class'ST_SpecialMessage', Index, , , Self);
 }
 
 defaultproperties {
