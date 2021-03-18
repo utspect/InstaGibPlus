@@ -84,6 +84,8 @@ var int zzAntiTimerListState;			// The state of the pickups, calculated each tic
 // Pause control (for Event PlayerCalcView)
 var bool	zzbPaused;			// Game has been paused at one time.
 var float	zzPauseCountdown;		// Give 120 seconds of "ignore FT"
+var string 	LastPauser;
+var float   LastPauseLength;
 var localized config int MaxPosError;
 var localized config int MaxHitError;
 var localized config float MaxJitterTime;
@@ -428,6 +430,9 @@ event Tick(float zzDelta)
 	if (Level.Pauser != "")		// This code is to avoid players being kicked when paused.
 	{
 		zzbPaused = True;
+		if (LastPauser == "")
+			LastPauseLength = 0.0;
+		LastPauseLength += zzDelta;
 		zzPauseCountdown = 45.0; // Give it 45 seconds to wear off
 		zzDMP.SentText = Max(zzDMP.SentText - 100, 0);	// Fix to avoid the "Pause text freeze bug"
 	}
@@ -438,6 +443,7 @@ event Tick(float zzDelta)
 		else
 			zzbPaused = False;
 	}
+	LastPauser = Level.Pauser;
 
 
 	// Prepare players that are warming up for a game that is about to start.
