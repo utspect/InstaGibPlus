@@ -74,8 +74,6 @@ class ST_PureStats extends PureStats
 // 04	Flag Assists	x
 // 05	Flag Capture	x	x	Solo Run
 
-#exec Texture Import File=Textures\smallwhitething.bmp Name=PureSWT Mips=Off
-
 // Let players choose some options
 var config bool bNewMessages;
 var config bool bTransparent;
