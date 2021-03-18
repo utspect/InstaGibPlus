@@ -2056,12 +2056,21 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 		TlocCounter = (TlocCounter + 1) & 3;
 	}
 
-	ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
-	if (ServerDeltaTime > 0.9)
-		ServerDeltaTime = FMin(ServerDeltaTime, SM.MoveDeltaTime);
-	DeltaTime = SM.TimeStamp - CurrentTimeStamp;
-	if (DeltaTime > 0.9)
-		DeltaTime = FMin(DeltaTime, SM.MoveDeltaTime);
+	if (ServerTimeStamp == 0.0) {
+		ServerDeltaTime = SM.MoveDeltaTime;
+		DeltaTime = SM.MoveDeltaTime;
+	} else {
+		ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
+		DeltaTime = SM.TimeStamp - CurrentTimeStamp;
+		if (zzUTPure.zzbPaused) {
+			if (SM.MoveDeltaTime > zzUTPure.LastPauseLength)
+				SM.MoveDeltaTime -= zzUTPure.LastPauseLength;
+			if (ServerDeltaTime > zzUTPure.LastPauseLength)
+				ServerDeltaTime = FMin(ServerDeltaTime, SM.MoveDeltaTime);
+			if (DeltaTime > zzUTPure.LastPauseLength)
+				DeltaTime = FMin(DeltaTime, SM.MoveDeltaTime);
+		}
+	}
 
 	ExtrapolationDelta += (ServerDeltaTime - DeltaTime);
 
