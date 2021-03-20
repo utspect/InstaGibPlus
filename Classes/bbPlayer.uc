@@ -5639,10 +5639,11 @@ state CountdownDying extends Dying
 	exec function Fire( optional float F ) {}
 
 	function EndState() {
-		Self.bBehindView = false;
+		bBehindView = false;
 		if (Player != none)
 			ServerReStartPlayer();
 		bJustRespawned = true;
+		bShowScores = false;
 		ClientUpdateTime = 0;
 	}
 
