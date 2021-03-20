@@ -6297,6 +6297,18 @@ function bool IsForcedSkinMale(int Skin) {
 	return Skin > 8 && Skin <= 17;
 }
 
+function FixFlipAnimation(PlayerReplicationInfo PRI, int Skin) {
+	if (PRI.Owner.AnimSequence == 'Flip') {
+		if (PRI.bIsFemale) {
+			if (IsForcedSkinMale(Skin))
+				PRI.Owner.AnimRate = 1.35*1.55 * FMax(0.35, PRI.Owner.Region.Zone.ZoneGravity.Z/PRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+		} else {
+			if (IsForcedSkinFemale(Skin))
+				PRI.Owner.AnimRate = 1.35/1.55 * FMax(0.35, PRI.Owner.Region.Zone.ZoneGravity.Z/PRI.Owner.Region.Zone.Default.ZoneGravity.Z);
+		}
+	}
+}
+
 function ApplyForcedSkins(PlayerReplicationInfo PRI) {
 	local int Skin;
 
@@ -6309,6 +6321,7 @@ function ApplyForcedSkins(PlayerReplicationInfo PRI) {
 	if (zzbForceModels) {
 		Skin = GetForcedSkinForPlayer(PRI);
 		SetForcedSkin(PRI.Owner, Skin, GameReplicationInfo.bTeamGame, PRI.Team);
+		FixFlipAnimation(PRI, Skin);
 	}
 }
 
