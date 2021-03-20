@@ -382,7 +382,7 @@ function string GetReplacementWeapon(Weapon W, bool bDamnEpic)
 		WStr = "ST_ShockRifle";
 		BitMap = (1 << 5) | (1 << 6) | (1 << 7);	// Shock Rifle = 05, 06, 07
 	}
-	else if (W.IsA('SuperShockRifle') && !W.IsA('ST_SuperShockRifle'))
+	else if (W.IsA('SuperShockRifle') && !W.IsA('ST_SuperShockRifle') && !W.IsA('NN_SuperShockRifle'))
 	{
 		WStr = "ST_SuperShockRifle";
 		BitMap = (1 << 8);				// Super Shock = 08
@@ -412,7 +412,7 @@ function string GetReplacementWeapon(Weapon W, bool bDamnEpic)
 		WStr = "ST_UT_Eightball";
 		BitMap = (1 << 16) | (1 << 17);			// Rocket Launcher = 16, 17
 	}
-	else if ((W.IsA('SniperRifle') && !W.IsA('ST_SniperRifle')) || W.IsA('Rifle'))
+	else if ((W.IsA('SniperRifle') && !W.IsA('ST_SniperRifle') && !W.IsA('NN_SniperRifle')) || W.IsA('Rifle'))
 	{
 		WStr = "ST_SniperRifle";
 		BitMap = (1 << 18);				// Sniper = 18
