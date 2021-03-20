@@ -1011,7 +1011,8 @@ function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 	}
 }
 
-function xxClientReStart(EPhysics phys) {
+function xxClientReStart(EPhysics phys, vector NewLocation, rotator NewRotation) {
+	ClientSetLocation(NewLocation, NewRotation);
 	ClientReStart();
 	SetPhysics(phys);
 }
@@ -5427,7 +5428,7 @@ state Dying
 			if ( Mesh != None )
 				PlayWaiting();
 
-			xxClientReStart(Physics);
+			xxClientReStart(Physics, Location, Rotation);
 
 			ChangedWeapon();
 			zzSpawnedTime = Level.TimeSeconds;
