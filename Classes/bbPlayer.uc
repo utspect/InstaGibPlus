@@ -2168,18 +2168,6 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 
 		bWasPaused = false;
 	}
-
-	if (SetPendingWeapon) {
-		xxSetPendingWeapon(PendingWeapon);
-		zzPendingWeapon = PendingWeapon;
-	} else {
-		if (zzPendingWeapon != PendingWeapon) {
-			xxSetPendingWeapon(PendingWeapon);
-			zzPendingWeapon = PendingWeapon;
-			if (PendingWeapon != None && PendingWeapon.Owner == Self && Weapon != None && !Weapon.IsInState('DownWeapon'))
-				Weapon.GotoState('DownWeapon');
-		}
-	}
 }
 
 function IGPlus_CheckClientError() {
