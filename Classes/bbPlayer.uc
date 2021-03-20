@@ -263,9 +263,6 @@ var ClientSettings Settings;
 
 var int FrameCount;
 
-var bool bPaused;
-var float GRISecondCountOffset;
-
 var int BrightskinMode;
 var NavigationPoint DelayedNavPoint;
 
@@ -6014,15 +6011,6 @@ function xxPlayerTickEvents(float DeltaTime)
 			if (zzClientTTarget != None)
 				xxServerReceiveStuff( zzClientTTarget.Location, zzClientTTarget.Velocity );
 			zzLastStuffUpdate = CurrentTime;
-		}
-	}
-
-	if (GameReplicationInfo != none && (bPaused ^^ (Level.Pauser != ""))) {
-		bPaused = !bPaused;
-		if (bPaused) {
-			GRISecondCountOffset = Level.TimeSeconds - GameReplicationInfo.SecondCount;
-		} else {
-			GameReplicationInfo.SecondCount = Level.TimeSeconds - GRISecondCountOffset;
 		}
 	}
 
