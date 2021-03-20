@@ -3,12 +3,24 @@ class PureHUDHelper extends Actor;
 var bool bInOvertime;
 var int OvertimeOffset;
 var int EndOfGameTime;
+var bool bPaused;
+var float GRISecondCountOffset;
 
 static function int GetClockTime(HUD H) {
 	local int Rem;
 	local TournamentGameReplicationInfo TGRI;
 
 	TGRI = TournamentGameReplicationInfo(H.PlayerOwner.GameReplicationInfo);
+
+	if (TGRI != none && (default.bPaused ^^ (H.Level.Pauser != ""))) {
+		default.bPaused = !default.bPaused;
+		if (default.bPaused) {
+			default.GRISecondCountOffset = H.Level.TimeSeconds - TGRI.SecondCount;
+		} else {
+			TGRI.SecondCount = H.Level.TimeSeconds - default.GRISecondCountOffset;
+		}
+	}
+
 	if (TGRI.GameEndedComments == "") {
 		// game hasnt ended yet
 		Rem = TGRI.RemainingTime;
