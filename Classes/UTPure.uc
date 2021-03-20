@@ -1410,11 +1410,11 @@ defaultproperties
 	ShowTouchedPackage=False
 	bRestrictTrading=True
 	MaxTradeTimeMargin=0.1
-	TradePingMargin=0.5
+	TradePingMargin=0.0
 	KillCamDelay=0.0
 	KillCamDuration=2.0
 	bJumpingPreservesMomentum=False
-	bEnableSingleButtonDodge=True
+	bEnableSingleButtonDodge=False
 	bUseFlipAnimation=True
 	bEnableWallDodging=False
 	bDodgePreserveZMomentum=False

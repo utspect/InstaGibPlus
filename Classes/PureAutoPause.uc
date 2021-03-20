@@ -453,7 +453,7 @@ function Unpause()
 
 defaultproperties
 {
-     PauseTotalTime=300
-     pausetime=60
+     PauseTotalTime=600
+     pausetime=300
      bAlwaysTick=True
 }
