@@ -7594,7 +7594,7 @@ simulated function ChangedWeapon()
 	if (Weapon != None && bUseFastWeaponSwitch)
 	{
 		Weapon.GotoState('');
-		Weapon.ClientPutDown(PendingWeapon);
+		ClientPutDown(none, PendingWeapon);
 	}
 	Super.ChangedWeapon();
 }
