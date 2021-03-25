@@ -211,8 +211,14 @@ var int CompressedViewRotation; // Compressed Pitch/Yaw
 
 var bool bWasPaused;
 
-var float LastAddVelocityTimeStamp[4];
+struct AddVelocityCall {
+	var vector Momentum;
+	var float TimeStamp;
+};
+
+var AddVelocityCall AddVelocityCalls[16];
 var int LastAddVelocityIndex;
+var int LastAddVelocityAppliedIndex;
 
 // EyeHeight related variables
 var bool bForceZSmoothing;
@@ -383,7 +389,6 @@ replication
 		xxCAPWalking,
 		xxCAPWalkingWalking,
 		xxCAPWalkingWalkingLevelBase,
-		xxClientAddVelocity,
 		xxClientResetPlayer,
 		xxFakeCAP;
 
@@ -1598,6 +1603,13 @@ function IGPlus_ClientReplayMove(bbSavedMove M) {
 
 	SetRotation(M.Rotation);
 	ViewRotation = M.IGPlus_SavedViewRotation;
+
+	if (M.Momentum != vect(0,0,0)) {
+		if (Physics == PHYS_Walking)
+			SetPhysics(PHYS_Falling);
+		Velocity += M.Momentum;
+	}
+
 	MergeCount = M.IGPlus_MergeCount + 1;
 	dt = M.Delta / MergeCount;
 	for (MoveIndex = 0; MoveIndex < MergeCount; MoveIndex++) {
@@ -1918,7 +1930,23 @@ function IGPlus_ApplyAllServerMoves() {
 	FirstServerMove = none;
 }
 
+function IGPlus_ApplyMomentum(vector Momentum) {
+	if ( Momentum == vect(0,0,0) )
+		return;
+
+	if (Physics == PHYS_Walking) {
+		Momentum.Z = FMax(Momentum.Z, 0.4 * VSize(Momentum));
+		SetPhysics(PHYS_Falling);
+	}
+
+	if ( (Velocity.Z > 380) && (Momentum.Z > 0) )
+		Momentum.Z *= 0.5;
+
+	Velocity += Momentum;
+}
+
 function IGPlus_ApplyServerMove(bbServerMove SM) {
+	local int i;
 	local float ServerDeltaTime;
 	local float DeltaTime;
 	local float SimStep;
@@ -1943,6 +1971,8 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	local byte ClientRoll;
 	local int MergeCount;
 	local int MoveIndex;
+
+	local int AddVelocityId;
 
 	local int JumpIndex;
 	local float JumpPos;
@@ -2001,6 +2031,7 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	DodgeMove      = GetDodgeDir((SM.MiscData & 0x00000F00) >> 8);
 	ClientRoll     =             (SM.MiscData & 0x000000FF);
 
+	AddVelocityId   = (SM.MiscData2 & 0x00F00000) >> 20;
 	DuckChangeIndex = (SM.MiscData2 & 0x000F8000) >> 15;
 	RunChangeIndex  = (SM.MiscData2 & 0x00007C00) >> 10;
 	DodgeIndex      = (SM.MiscData2 & 0x000003E0) >> 5;
@@ -2122,6 +2153,16 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	if (SM.ClientVelocity.Z < 0)
 		zzLastFallVelZ = SM.ClientVelocity.Z;
 
+	if (((AddVelocityId - LastAddVelocityAppliedIndex) & 0xF) > ((LastAddVelocityIndex - LastAddVelocityAppliedIndex) & 0xF))
+		AddVelocityId = LastAddVelocityIndex;
+
+	for (i = LastAddVelocityAppliedIndex; i != AddVelocityId; i = (i+1) & 0xF) {
+		IGPlus_ApplyMomentum(AddVelocityCalls[i].Momentum);
+		AddVelocityCalls[i].Momentum = vect(0,0,0);
+	}
+
+	LastAddVelocityAppliedIndex = AddVelocityId;
+
 	// Predict new position
 	if ((Level.Pauser == "") && bClientPaused == false && (DeltaTime > 0)) {
 		UndoExtrapolation();
@@ -2198,6 +2239,13 @@ function IGPlus_CheckClientError() {
 	if (LastServerMoveParams.Base != none)
 		ClientLocAbs += LastServerMoveParams.Base.Location;
 	ClientTlocCounter = LastServerMoveParams.TlocCounter;
+
+	while(LastAddVelocityAppliedIndex != LastAddVelocityIndex && AddVelocityCalls[LastAddVelocityAppliedIndex].TimeStamp < ServerTimeStamp) {
+		IGPlus_ApplyMomentum(AddVelocityCalls[LastAddVelocityAppliedIndex].Momentum);
+		AddVelocityCalls[LastAddVelocityAppliedIndex].Momentum = vect(0,0,0);
+		zzbForceUpdate = true;
+		LastAddVelocityAppliedIndex = (LastAddVelocityAppliedIndex+1) & 0xF;
+	}
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxLocError = 3.0;
@@ -3080,7 +3128,9 @@ function bool CanMergeMove(bbSavedMove Pending, vector Accel) {
 		return false;
 
 	if (bIs469Server || Pending.Delta >= 0.005)
-		return bForcePacketSplit == false && VSize(Accel - Pending.Acceleration) < 0.125 * AccelRate;
+		return bForcePacketSplit == false &&
+			VSize(Accel - Pending.Acceleration) < 0.125 * AccelRate &&
+			LastAddVelocityAppliedIndex == LastAddVelocityIndex;
 
 	return true;
 }
@@ -3096,6 +3146,7 @@ function xxReplicateMove(
 	local EPhysics OldPhys;
 	local float AdjustAlpha;
 	local float RealDelta;
+	local vector PrevVelocity;
 
 	// Higor: process smooth adjustment.
 	if (IGPlus_AdjustLocationAlpha > 0)
@@ -3191,26 +3242,43 @@ function xxReplicateMove(
 		OldMove = PickRedundantMove(OldMove, LastMove, NewAccel, DodgeMove);
 	}
 
-	NewMove = xxGetFreeMove();
-	NewMove.Delta = DeltaTime;
-	NewMove.Acceleration = NewAccel;
+	if ( PendingMove == None ) {
+		NewMove = xxGetFreeMove();
+		NewMove.Delta = DeltaTime;
+		NewMove.Acceleration = NewAccel;
 
-	// Set this move's data.
-	NewMove.DodgeMove = DodgeMove;
-	if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
-		NewMove.DodgeIndex = 0;
-	NewMove.TimeStamp = Level.TimeSeconds;
-	NewMove.bRun = (bRun > 0);
-	NewMove.bDuck = (bDuck > 0);
-	NewMove.bPressedJump = bPressedJump;
-	if (bPressedJump)
-		NewMove.JumpIndex = 0;
-	NewMove.bFire = (bJustFired || (bFire != 0));
-	NewMove.bAltFire = (bJustAltFired || (bAltFire != 0));
-	NewMove.bForceFire = bJustFired;
-	NewMove.bForceAltFire = bJustAltFired;
-	if ( Weapon != None ) // approximate pointing so don't have to replicate
-		Weapon.bPointing = ((bFire != 0) || (bAltFire != 0));
+		while (LastAddVelocityAppliedIndex != LastAddVelocityIndex) {
+			PrevVelocity = Velocity;
+			IGPlus_ApplyMomentum(AddVelocityCalls[LastAddVelocityAppliedIndex].Momentum);
+			AddVelocityCalls[LastAddVelocityAppliedIndex].Momentum = vect(0,0,0);
+			NewMove.Momentum += (Velocity - PrevVelocity);
+
+			LastAddVelocityAppliedIndex = (LastAddVelocityAppliedIndex+1) & 0xF;
+		}
+		NewMove.AddVelocityId = LastAddVelocityAppliedIndex;
+
+		// Set this move's data.
+		NewMove.DodgeMove = DodgeMove;
+		if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
+			NewMove.DodgeIndex = 0;
+		NewMove.TimeStamp = Level.TimeSeconds;
+		NewMove.bRun = (bRun > 0);
+		NewMove.bDuck = (bDuck > 0);
+		NewMove.bPressedJump = bPressedJump;
+		if (bPressedJump)
+			NewMove.JumpIndex = 0;
+		NewMove.bFire = (bJustFired || (bFire != 0));
+		NewMove.bAltFire = (bJustAltFired || (bAltFire != 0));
+		NewMove.bForceFire = bJustFired;
+		NewMove.bForceAltFire = bJustAltFired;
+		if ( Weapon != None ) // approximate pointing so don't have to replicate
+			Weapon.bPointing = ((bFire != 0) || (bAltFire != 0));
+
+		PendingMove = NewMove;
+	} else {
+		NewMove = bbSavedMove(PendingMove);
+	}
+
 	bJustFired = false;
 	bJustAltFired = false;
 	OldPhys = Physics;
@@ -3218,8 +3286,8 @@ function xxReplicateMove(
 	LastTouchedTeleporter = none;
 
 	// Simulate the movement locally.
-	ProcessMove(NewMove.Delta, NewMove.Acceleration, NewMove.DodgeMove, DeltaRot);
-	AutonomousPhysics(NewMove.Delta);
+	ProcessMove(DeltaTime, NewAccel, DodgeMove, DeltaRot);
+	AutonomousPhysics(DeltaTime);
 	if (Role < ROLE_Authority)
 	{
 		zzbValidFire = false;
@@ -3229,22 +3297,14 @@ function xxReplicateMove(
 
 	CorrectTeleporterVelocity();
 
-	// Decide whether to hold off on move
-	// send if dodge, jump, or fire unless really too soon, or if newmove.delta big enough
-	// on client side, save extra buffered time in LastUpdateTime
-	if ( PendingMove == None ) {
-		PendingMove = NewMove;
-	} else {
-		NewMove.NextMove = FreeMoves;
-		NewMove.Clear2();
-		FreeMoves = NewMove;
-		NewMove = bbSavedMove(PendingMove);
-	}
 	NewMove.SetRotation( Rotation );
 	NewMove.IGPlus_SavedViewRotation = ViewRotation;
 	NewMove.IGPlus_SavedLocation = Location;
 	NewMove.IGPlus_SavedVelocity = Velocity;
 
+	// Decide whether to hold off on move
+	// send if dodge, jump, or fire unless really too soon, or if newmove.delta big enough
+	// on client side, save extra buffered time in LastUpdateTime
 	RealDelta = PendingMove.Delta / Level.TimeDilation;
 
 	if (RealDelta < NetMoveDelta - ClientUpdateTime && bForcePacketSplit == false)
@@ -3294,6 +3354,7 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	if (Move.DodgeIndex > 0)      MiscData2 = MiscData2 | (Move.DodgeIndex & 0x1F) << 5;
 	if (Move.RunChangeIndex > 0)  MiscData2 = MiscData2 | (Move.RunChangeIndex & 0x1F) << 10;
 	if (Move.DuckChangeIndex > 0) MiscData2 = MiscData2 | (Move.DuckChangeIndex & 0x1F) << 15;
+	                              MiscData2 = MiscData2 | (Move.AddVelocityId & 0xF) << 20;
 
 	if (OldMove != none) {
 		OldMoveData1 = Min(0x3FF, int(OldMove.Age * 1000.0));
@@ -3849,39 +3910,12 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 		return false;
 }
 
-simulated function bool HaveAppliedVelocity(float TimeStamp) {
-	local int i;
-	local int greaterCount;
-	for(i = 0; i < arraycount(LastAddVelocityTimeStamp); i += 1) {
-		if (LastAddVelocityTimeStamp[i] == TimeStamp)
-			return true;
-		if (LastAddVelocityTimeStamp[i] > TimeStamp)
-			greaterCount += 1;
-	}
-
-	return (greaterCount == arraycount(LastAddVelocityTimeStamp));
-}
-
-simulated function AddAppliedVelocity(float TimeStamp) {
-	LastAddVelocityTimeStamp[LastAddVelocityIndex] = TimeStamp;
-	LastAddVelocityIndex = (LastAddVelocityIndex + 1) % arraycount(LastAddVelocityTimeStamp);
-}
-
 simulated function AddVelocity( vector NewVelocity )
 {
 	if (!bNewNet || Level.NetMode == NM_Client)
 		Super.AddVelocity(NewVelocity);
-	else
-		xxClientAddVelocity(NewVelocity, Level.TimeSeconds);
-}
-
-simulated function xxClientAddVelocity(vector NewVelocity, float TimeStamp) {
-	if (HaveAppliedVelocity(TimeStamp))
-		return;
-
-	super.AddVelocity(NewVelocity);
-	xxServerAddVelocity(NewVelocity);
-	AddAppliedVelocity(TimeStamp);
+	else if (Level.NetMode != NM_Client)
+		ServerAddMomentum(NewVelocity);
 }
 
 simulated function xxServerAddVelocity(vector NewVelocity) {
@@ -3889,12 +3923,34 @@ simulated function xxServerAddVelocity(vector NewVelocity) {
 		SetPhysics(PHYS_Falling);
 }
 
-simulated function ClientAddMomentum(vector Momentum, float TimeStamp) {
-	if (Physics == PHYS_Walking)
-		Momentum.Z = FMax(Momentum.Z, 0.4 * VSize(Momentum));
+simulated function ClientAddMomentum(vector Momentum, float TimeStamp, int Index) {
+	local int Next;
+	if (TimeStamp < AddVelocityCalls[LastAddVelocityAppliedIndex].TimeStamp)
+		return;
 
-	if (Momentum dot Momentum > 0)
-		xxClientAddVelocity(Momentum, TimeStamp);
+	Next = (Index+1) & 0xF;
+	if (((Next - LastAddVelocityAppliedIndex) & 0xF) > ((LastAddVelocityIndex - LastAddVelocityAppliedIndex) & 0xF))
+		LastAddVelocityIndex = Next;
+
+	AddVelocityCalls[Index].Momentum = Momentum;
+	AddVelocityCalls[Index].TimeStamp = TimeStamp;
+}
+
+function ServerAddMomentum(vector Momentum) {
+	local int Next;
+
+	if (Momentum == vect(0,0,0))
+		return;
+
+	Next = (LastAddVelocityIndex+1) & 0xF;
+	if (Next == LastAddVelocityAppliedIndex)
+		return; // full
+
+	AddVelocityCalls[LastAddVelocityIndex].Momentum = Momentum;
+	AddVelocityCalls[LastAddVelocityIndex].TimeStamp = Level.TimeSeconds + 0.5*Level.TimeDilation;
+	ClientAddMomentum(Momentum, Level.TimeSeconds, LastAddVelocityIndex);
+
+	LastAddVelocityIndex = Next;
 }
 
 simulated function NN_Momentum( Vector momentum, name DamageType )
@@ -3992,7 +4048,7 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 		}
 	}
 
-	ClientAddMomentum( momentum, Level.TimeSeconds );
+	ServerAddMomentum(momentum);
 	Health -= actualDamage;
 
 	if (CarriedDecoration != None)
@@ -5426,6 +5482,8 @@ state Dying
 
 	simulated function BeginState() {
 		local Carcass C;
+		local int i;
+
 		bJumpStatus = false;
 		bIsAlive = false;
 		zzIgnoreUpdateUntil = 0;
@@ -5471,6 +5529,12 @@ state Dying
 		RealTimeDead = 0.0;
 		RotationRate = rot(0,0,0);
 		bKillCamWanted = true;
+
+		for (i = 0; i < arraycount(AddVelocityCalls); ++i) {
+			AddVelocityCalls[i].Momentum = vect(0,0,0);
+		}
+		LastAddVelocityIndex = 0;
+		LastAddVelocityAppliedIndex = 0;
 	}
 
 	function PlayerMove(float DeltaTime)
