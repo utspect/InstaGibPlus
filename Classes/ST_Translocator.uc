@@ -26,7 +26,11 @@ function ReturnToPreviousWeapon()
 function Translocate()
 {
 	STM.PlayerHit(Pawn(Owner), 2, False);			// 2 = Translocator
+	if (Owner.IsA('bbPlayer'))
+		bbPlayer(Owner).IGPlus_BeforeTranslocate();
 	Super.Translocate();
+	if (Owner.IsA('bbPlayer'))
+		bbPlayer(Owner).IGPlus_AfterTranslocate();
 	STM.PlayerClear();
 }
 

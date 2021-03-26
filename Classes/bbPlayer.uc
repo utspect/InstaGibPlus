@@ -185,6 +185,7 @@ var bool bIs469Client;
 var vector IGPlus_PreAdjustLocation;
 var vector IGPlus_AdjustLocationOffset;
 var float IGPlus_AdjustLocationAlpha;
+var bool IGPlus_AdjustLocationOverride;
 
 struct ServerMoveParams {
 	var float ClientDeltaTime;
@@ -198,6 +199,8 @@ struct ServerMoveParams {
 var bool bHaveReceivedServerMove;
 var ServerMoveParams LastServerMoveParams;
 var int TlocCounter;
+var vector TlocPrevLocation;
+var bool IGPlus_DidTranslocate;
 
 // SSR Beam
 var float LastWeaponEffectCreated;
@@ -1529,6 +1532,7 @@ simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vecto
 		IGPlus_AdjustLocationAlpha = 0;
 		IGPlus_AdjustLocationOffset = vect(0,0,0);
 	}
+	IGPlus_AdjustLocationOverride = (TlocCounter != (MiscData&3));
 
 	SetPhysics(GetPhysics((MiscData >> 2) & 0xF));
 	if (Physics == PHYS_Walking) {
@@ -1687,7 +1691,7 @@ function ClientUpdatePosition()
 		IGPlus_AdjustLocationOffset = (Location - IGPlus_PreAdjustLocation);
 		AdjustDistance = VSize(IGPlus_AdjustLocationOffset);
 		IGPlus_AdjustLocationAlpha = 0;
-		if ((AdjustDistance < 50) && FastTrace(Location,IGPlus_PreAdjustLocation))
+		if ((AdjustDistance < 50) && FastTrace(Location,IGPlus_PreAdjustLocation) && IGPlus_AdjustLocationOverride == false)
 		{
 			// Undo adjustment and re-enact smoothly
 			PostAdjustLocation = Location;
@@ -1884,6 +1888,10 @@ function ExtrapolationRestoreData() {
 	}
 }
 
+function ExtrapolationDiscardData() {
+	bExtrapolatedLastUpdate = false;
+}
+
 function WarpCompensation(float DeltaTime) {
 	if (Level.Pauser == "" && !bWasPaused) {
 		if (class'UTPure'.default.bEnableServerExtrapolation &&
@@ -1945,6 +1953,16 @@ function IGPlus_ApplyMomentum(vector Momentum) {
 	Velocity += Momentum;
 }
 
+function IGPlus_BeforeTranslocate() {
+	TlocPrevLocation = Location;
+}
+
+function IGPlus_AfterTranslocate() {
+	IGPlus_DidTranslocate = (VSize(Location - TlocPrevLocation) > 1);
+	if (IGPlus_DidTranslocate)
+		ExtrapolationDiscardData();
+}
+
 function IGPlus_ApplyServerMove(bbServerMove SM) {
 	local int i;
 	local float ServerDeltaTime;
@@ -1952,7 +1970,6 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	local float SimStep;
 	local rotator DeltaRot;
 	local rotator Rot;
-	local vector TlocPrevLocation;
 	local int maxPitch;
 	local int ViewPitch;
 	local int ViewYaw;
@@ -2056,8 +2073,6 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	NewbPressedJump = (bJumpStatus != NewbJumpStatus);
 	bJumpStatus = NewbJumpStatus;
 
-	TlocPrevLocation = Location;
-
 	bClientDead = false;
 
 	if (bUseFastWeaponSwitch && PendingWeapon != None)
@@ -2084,8 +2099,9 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 		bAltFire = 0;
 	}
 
-	if (VSize(Location - TlocPrevLocation) > 1) {
+	if (IGPlus_DidTranslocate) {
 		TlocCounter = (TlocCounter + 1) & 3;
+		IGPlus_DidTranslocate = false;
 	}
 
 	if (ServerTimeStamp == 0.0) {
