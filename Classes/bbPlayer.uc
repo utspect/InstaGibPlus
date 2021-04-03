@@ -4713,7 +4713,7 @@ ignores SeePlayer, HearNoise, Bump;
 			Velocity *= JumpEndVelocity;
 		}
 
-		if (bDodging) {
+		if (bDodging || DodgeDir == DODGE_Done) {
 			DodgeDir = DODGE_Done;
 			DodgeClickTimer = 0.0;
 			bDodging = false;
