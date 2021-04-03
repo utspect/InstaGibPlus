@@ -1535,10 +1535,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vecto
 	IGPlus_AdjustLocationOverride = (TlocCounter != (MiscData&3));
 
 	SetPhysics(GetPhysics((MiscData >> 2) & 0xF));
-	if (Physics == PHYS_Walking) {
-		bDodging = false;
-		MultiDodgesRemaining = bbPlayerReplicationInfo(PlayerReplicationInfo).MaxMultiDodges;
-	}
 	TlocCounter = MiscData & 3;
 
 	SetBase(NewBase);
@@ -1548,8 +1544,7 @@ simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vecto
 	if ( !IsInState(newState) )
 		GotoState(newState);
 
-	// stijn: Backported hugely influential fix from UE2 here
-	// Remove acknowledged moves from the savedmoves list
+	// stijn: Remove acknowledged moves from the savedmoves list
 	CurrentMove = bbSavedMove(SavedMoves);
 	while (CurrentMove != None)
 	{
@@ -1692,13 +1687,18 @@ function ClientUpdatePosition()
 		IGPlus_AdjustLocationOffset = (Location - IGPlus_PreAdjustLocation);
 		AdjustDistance = VSize(IGPlus_AdjustLocationOffset);
 		IGPlus_AdjustLocationAlpha = 0;
-		if ((AdjustDistance < 50) && FastTrace(Location,IGPlus_PreAdjustLocation) && IGPlus_AdjustLocationOverride == false)
-		{
-			// Undo adjustment and re-enact smoothly
-			PostAdjustLocation = Location;
-			MoveSmooth( -IGPlus_AdjustLocationOffset);
-			IGPlus_AdjustLocationAlpha = 0.35;
-			IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location) / IGPlus_AdjustLocationAlpha;
+		if (AdjustDistance < VSize(Acceleration) && IGPlus_AdjustLocationOverride == false) {
+			if (AdjustDistance < 2) {
+				// Discard
+				MoveSmooth(-IGPlus_AdjustLocationOffset);
+			} else if ((AdjustDistance < 50) && FastTrace(Location,IGPlus_PreAdjustLocation)) {
+
+				// Undo adjustment and re-enact smoothly
+				PostAdjustLocation = Location;
+				MoveSmooth(-IGPlus_AdjustLocationOffset);
+				IGPlus_AdjustLocationAlpha = 0.35;
+				IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location) / IGPlus_AdjustLocationAlpha;
+			}
 		}
 	}
 	// Keep as is.
@@ -4901,8 +4901,10 @@ ignores SeePlayer, HearNoise, Bump;
 			DodgeClickTimer -= DeltaTime;
 			if (DodgeClickTimer < -0.35)
 			{
+				bDodging = false;
 				DodgeDir = DODGE_None;
 				DodgeClickTimer = DodgeClickTime;
+				MultiDodgesRemaining = bbPlayerReplicationInfo(PlayerReplicationInfo).MaxMultiDodges;
 			}
 		}
 
@@ -4970,7 +4972,7 @@ ignores SeePlayer, HearNoise, Bump;
 		zzTick = DeltaTime;
 		Super.PlayerTick(DeltaTime);
 
-		if (DodgeDir == DODGE_Active && MultiDodgesRemaining > 0) {
+		if (bCanWallDodge && DodgeDir == DODGE_Active && MultiDodgesRemaining > 0) {
 			MultiDodgesRemaining -= 1;
 			DodgeDir = DODGE_None;
 		}
