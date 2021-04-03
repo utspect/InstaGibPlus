@@ -2186,20 +2186,21 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 		MergeCount++;
 
 		SimStep = DeltaTime / float(MergeCount);
-		JumpPos = float(JumpIndex) / float(MergeCount);
-		DodgePos = float(DodgeIndex) / float(MergeCount);
-		RunChangePos = float(RunChangeIndex) / float(MergeCount);
-		DuckChangePos = float(DuckChangeIndex) / float(MergeCount);
 
-		if (SimStep < (1.0 / class'UTPure'.default.MaxNetUpdateRate)) {
-			MergeCount = int(DeltaTime * class'UTPure'.default.MaxNetUpdateRate * 0.5) + 1;
+		if (bIs469Server == false && SimStep < 0.005) {
+			JumpPos = float(JumpIndex) / float(MergeCount);
+			DodgePos = float(DodgeIndex) / float(MergeCount);
+			RunChangePos = float(RunChangeIndex) / float(MergeCount);
+			DuckChangePos = float(DuckChangeIndex) / float(MergeCount);
+
+			MergeCount = int(DeltaTime * 100) + 1;
 			SimStep = DeltaTime / float(MergeCount);
-		}
 
-		JumpIndex = int(JumpPos * MergeCount);
-		DodgeIndex = int(DodgePos * MergeCount);
-		RunChangeIndex = int(RunChangePos * MergeCount);
-		DuckChangeIndex = int(DuckChangePos * MergeCount);
+			JumpIndex = int(JumpPos * MergeCount);
+			DodgeIndex = int(DodgePos * MergeCount);
+			RunChangeIndex = int(RunChangePos * MergeCount);
+			DuckChangeIndex = int(DuckChangePos * MergeCount);
+		}
 
 		for (MoveIndex = 0; MoveIndex < MergeCount; MoveIndex++) {
 			if (MoveIndex == JumpIndex)
@@ -2365,7 +2366,7 @@ function IGPlus_CheckClientError() {
 		}
 	}
 
-	if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval) {
+	if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval && ServerTimeStamp >= NextRealCAPTime) {
 		xxFakeCAP(CurrentTimeStamp);
 		LastCAPTime = ServerTimeStamp;
 	}
@@ -3157,7 +3158,7 @@ function xxReplicateMove(
 	rotator DeltaRot
 ) {
 	local bbSavedMove NewMove, OldMove, LastMove, PendMove;
-	local float TotalTime, NetMoveDelta;
+	local float TotalTime;
 	local EPhysics OldPhys;
 	local float AdjustAlpha;
 	local float RealDelta;
@@ -3178,9 +3179,6 @@ function xxReplicateMove(
 		debugNewAccel = Normal(NewAccel);
 		debugPlayerLocation = Location;
 	}
-
-	if (Player.CurrentNetSpeed != 0)
-		NetMoveDelta = TimeBetweenNetUpdates;
 
 	// Get a SavedMove actor to store the movement in.
 	if ( PendingMove != None )
@@ -3322,14 +3320,14 @@ function xxReplicateMove(
 	// on client side, save extra buffered time in LastUpdateTime
 	RealDelta = PendingMove.Delta / Level.TimeDilation;
 
-	if (RealDelta < NetMoveDelta - ClientUpdateTime && bForcePacketSplit == false)
+	if (RealDelta < TimeBetweenNetUpdates - ClientUpdateTime && bForcePacketSplit == false)
 		return;
 
 	if (bIs469Server == false && PendingMove.Delta < 0.005) // pre-469 servers dont like updates for <5ms
 		return;
 
 	bForcePacketSplit = false;
-	ClientUpdateTime = FMin(NetMoveDelta, RealDelta - NetMoveDelta + ClientUpdateTime);
+	ClientUpdateTime = FClamp(RealDelta - TimeBetweenNetUpdates + ClientUpdateTime, 0, TimeBetweenNetUpdates);
 	if ( SavedMoves == None )
 		SavedMoves = PendingMove;
 	else
@@ -4719,7 +4717,7 @@ ignores SeePlayer, HearNoise, Bump;
 
 		if (bDodging || DodgeDir == DODGE_Done) {
 			DodgeDir = DODGE_Done;
-			DodgeClickTimer = 0.0;
+			DodgeClickTimer = FMin(DodgeClickTimer, 0.0);
 			bDodging = false;
 		} else {
 			DodgeDir = DODGE_None;
@@ -4792,7 +4790,7 @@ ignores SeePlayer, HearNoise, Bump;
 			Velocity = -DodgeXY*Y + (Velocity Dot X)*X;
 
 		Velocity.Z = FMax(DodgeZ, VelocityZ + DodgeZ);
-		PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, false, 800, 1.0 );
+		PlayOwnedSound(JumpSound, SLOT_Talk, 1.0, bUpdating, 800, 1.0 );
 		PlayDodge(DodgeMove);
 		DodgeDir = DODGE_Active;
 		bDodging = true;
