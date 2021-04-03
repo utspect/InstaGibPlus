@@ -811,8 +811,10 @@ Server settings can be found inside InstaGibPlus.ini.
 51. [MinNetUpdateRate](#minnetupdaterate)
 52. [MaxNetUpdateRate](#maxnetupdaterate)
 53. [bEnableServerExtrapolation](#benableserverextrapolation)
-54. [ShowTouchedPackage](#showtouchedpackage)
-55. [ExcludeMapsForKickers](#excludemapsforkickers)
+54. [bEnableServerPacketReordering](#benableserverpacketreordering)
+55. [bEnableLoosePositionCheck](#benableloosepositioncheck)
+56. [ShowTouchedPackage](#showtouchedpackage)
+57. [ExcludeMapsForKickers](#excludemapsforkickers)
 
 ## HeadshotDamage
 
@@ -1163,6 +1165,26 @@ Trade uncertainty relative to shooters ping. Reasonable values range from 0 to 1
 **Default: True**  
 
 If enabled the server will extrapolate client movement when the client's movement updates are too far behind the server's timepoint.
+
+Disable to restore default netcode behavior.
+
+## bEnableServerPacketReordering
+
+**Type: bool**  
+**Default: True**  
+
+If enabled, the server will try to reorder incoming ServerMove calls to extract the maximum amount of usable data. More relevant at lower TickRates.
+
+Disable to restore default netcode behavior.
+
+## bEnableLoosePositionCheck
+
+**Type: bool**  
+**Default: True**  
+
+If enabled the server will loosen the check of players position, by factoring in current movement The server will even use the players reported position instead of the calculated one, if the loose check is successful.
+
+Disable to restore default netcode behavior.
 
 ## KillCamDelay
 

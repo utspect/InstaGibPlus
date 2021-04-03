@@ -2260,7 +2260,7 @@ function IGPlus_CheckClientError() {
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxLocError = 3.0;
-	if (bNewNet && LastServerMoveParams.ClientDeltaTime > 0) {
+	if (class'UTPure'.default.bEnableLoosePositionCheck && LastServerMoveParams.ClientDeltaTime > 0) {
 		MaxLocError = CalculateLocError(
 			LastServerMoveParams.ClientDeltaTime,
 			LastServerMoveParams.Physics,
@@ -2273,19 +2273,21 @@ function IGPlus_CheckClientError() {
 	ClientLocError = LocDelta Dot LocDelta;
 	debugClientLocError = ClientLocError;
 
-	bServerOnMover = Mover(Base) != None;
-	bClientOnMover = Mover(LastServerMoveParams.Base) != none;
-	if ((bServerOnMover && bClientOnMover) || OtherPawnAtLocation(ClientLocAbs)) {
-		// Ping is in milliseconds, convert to seconds
-		// 10% slack to account for jitter
-		zzIgnoreUpdateUntil = ServerTimeStamp + (PlayerReplicationInfo.Ping * 0.0011 * Level.TimeDilation);
-	}
-	if (zzIgnoreUpdateUntil <= ServerTimeStamp &&
-		ServerTimeStamp - zzIgnoreUpdateUntil <= LastServerMoveParams.ServerDeltaTime &&
-		Physics == PHYS_Falling
-	) {
-		// extending ignore time until landing (probably from a lift jump)
-		zzIgnoreUpdateUntil = ServerTimeStamp;
+	if (class'UTPure'.default.bEnableLoosePositionCheck) {
+		bServerOnMover = Mover(Base) != None;
+		bClientOnMover = Mover(LastServerMoveParams.Base) != none;
+		if ((bServerOnMover && bClientOnMover) || OtherPawnAtLocation(ClientLocAbs)) {
+			// Ping is in milliseconds, convert to seconds
+			// 10% slack to account for jitter
+			zzIgnoreUpdateUntil = ServerTimeStamp + (PlayerReplicationInfo.Ping * 0.0011 * Level.TimeDilation);
+		}
+		if (zzIgnoreUpdateUntil <= ServerTimeStamp &&
+			ServerTimeStamp - zzIgnoreUpdateUntil <= LastServerMoveParams.ServerDeltaTime &&
+			Physics == PHYS_Falling
+		) {
+			// extending ignore time until landing (probably from a lift jump)
+			zzIgnoreUpdateUntil = ServerTimeStamp;
+		}
 	}
 
 	bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
@@ -2331,34 +2333,36 @@ function IGPlus_CheckClientError() {
 		return;
 	}
 
-	if (zzLastClientErr == 0 || ClientLocError < zzLastClientErr)
-		zzLastClientErr = ClientLocError;
+	if (class'UTPure'.default.bEnableLoosePositionCheck) {
+		if (zzLastClientErr == 0 || ClientLocError < zzLastClientErr)
+			zzLastClientErr = ClientLocError;
 
-	bCanTraceNewLoc = FastTrace(ClientLocAbs);
-	if (bCanTraceNewLoc) {
-		clientForcedPosition = ClientLocAbs;
-		zzLastClientErr = 0;
-		bMovedToNewLoc = xxNewMoveSmooth(ClientLocAbs);
-		if (bMovedToNewLoc && ClientPhysics == Physics)
-			Velocity = ClientVel;
-	}
-	if (bCanTraceNewLoc == false) {
-		Carried = CarriedDecoration;
-		OldLoc = Location;
-
-		bCanTeleport = false;
-		if (SetLocation(ClientLocAbs) && ClientPhysics == Physics)
-			Velocity = ClientVel;
-		bCanTeleport = true;
-
-		if (Carried != None) {
-			CarriedDecoration = Carried;
-			CarriedDecoration.SetLocation(ClientLocAbs + CarriedDecoration.Location - OldLoc);
-			CarriedDecoration.SetPhysics(PHYS_None);
-			CarriedDecoration.SetBase(self);
+		bCanTraceNewLoc = FastTrace(ClientLocAbs);
+		if (bCanTraceNewLoc) {
+			clientForcedPosition = ClientLocAbs;
+			zzLastClientErr = 0;
+			bMovedToNewLoc = xxNewMoveSmooth(ClientLocAbs);
+			if (bMovedToNewLoc && ClientPhysics == Physics)
+				Velocity = ClientVel;
 		}
+		if (bCanTraceNewLoc == false) {
+			Carried = CarriedDecoration;
+			OldLoc = Location;
 
-		zzLastClientErr = 0;
+			bCanTeleport = false;
+			if (SetLocation(ClientLocAbs) && ClientPhysics == Physics)
+				Velocity = ClientVel;
+			bCanTeleport = true;
+
+			if (Carried != None) {
+				CarriedDecoration = Carried;
+				CarriedDecoration.SetLocation(ClientLocAbs + CarriedDecoration.Location - OldLoc);
+				CarriedDecoration.SetPhysics(PHYS_None);
+				CarriedDecoration.SetBase(self);
+			}
+
+			zzLastClientErr = 0;
+		}
 	}
 
 	if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval) {

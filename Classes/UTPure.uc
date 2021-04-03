@@ -93,6 +93,7 @@ var localized config float MinNetUpdateRate;
 var localized config float MaxNetUpdateRate;
 var localized config bool bEnableServerExtrapolation;
 var localized config bool bEnableServerPacketReordering;
+var localized config bool bEnableLoosePositionCheck;
 var localized config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
@@ -1510,4 +1511,5 @@ defaultproperties
 	PlayerScale=1.0
 	bEnableServerExtrapolation=True
 	bEnableServerPacketReordering=True
+	bEnableLoosePositionCheck=True
 }
