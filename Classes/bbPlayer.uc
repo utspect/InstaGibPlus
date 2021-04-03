@@ -1675,15 +1675,16 @@ function ClientUpdatePosition()
 			CurrentMove = bbSavedMove(CurrentMove.NextMove);
 		}
 	}
-	// stijn: The original code was not replaying the pending move
-	// here. This was a huge oversight and caused non-stop resynchronizations
-	// because the playerpawn position would be off constantly until the player
-	// stopped moving!
-	if (!zzbFakeUpdate && PendingMove != none) {
-		IGPlus_ClientReplayMove(bbSavedMove(PendingMove));
-	}
 
 	if (zzbFakeUpdate == false) {
+		// stijn: The original code was not replaying the pending move
+		// here. This was a huge oversight and caused non-stop resynchronizations
+		// because the playerpawn position would be off constantly until the player
+		// stopped moving!
+		if (PendingMove != none) {
+			IGPlus_ClientReplayMove(bbSavedMove(PendingMove));
+		}
+
 		// Higor: evaluate location adjustment and see if we should either
 		// - Discard it
 		// - Negate and process over a certain amount of time.
