@@ -2272,21 +2272,19 @@ function IGPlus_CheckClientError() {
 	ClientLocError = LocDelta Dot LocDelta;
 	debugClientLocError = ClientLocError;
 
-	if (class'UTPure'.default.bEnableLoosePositionCheck) {
-		bServerOnMover = Mover(Base) != None;
-		bClientOnMover = Mover(LastServerMoveParams.Base) != none;
-		if ((bServerOnMover && bClientOnMover) || OtherPawnAtLocation(ClientLocAbs)) {
-			// Ping is in milliseconds, convert to seconds
-			// 10% slack to account for jitter
-			zzIgnoreUpdateUntil = ServerTimeStamp + (PlayerReplicationInfo.Ping * 0.0011 * Level.TimeDilation);
-		}
-		if (zzIgnoreUpdateUntil <= ServerTimeStamp &&
-			ServerTimeStamp - zzIgnoreUpdateUntil <= LastServerMoveParams.ServerDeltaTime &&
-			Physics == PHYS_Falling
-		) {
-			// extending ignore time until landing (probably from a lift jump)
-			zzIgnoreUpdateUntil = ServerTimeStamp;
-		}
+	bServerOnMover = Mover(Base) != None;
+	bClientOnMover = Mover(LastServerMoveParams.Base) != none;
+	if ((bServerOnMover && bClientOnMover) || OtherPawnAtLocation(ClientLocAbs)) {
+		// Ping is in milliseconds, convert to seconds
+		// 10% slack to account for jitter
+		zzIgnoreUpdateUntil = ServerTimeStamp + (PlayerReplicationInfo.Ping * 0.0011 * Level.TimeDilation);
+	}
+	if (zzIgnoreUpdateUntil <= ServerTimeStamp &&
+		ServerTimeStamp - zzIgnoreUpdateUntil <= LastServerMoveParams.ServerDeltaTime &&
+		Physics == PHYS_Falling
+	) {
+		// extending ignore time until landing (probably from a lift jump)
+		zzIgnoreUpdateUntil = ServerTimeStamp;
 	}
 
 	bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
