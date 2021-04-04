@@ -2298,7 +2298,7 @@ function IGPlus_CheckClientError() {
 
 	ClearLastServerMoveParams();
 
-	if (bForceUpdate)
+	if (bForceUpdate && ServerTimeStamp >= NextRealCAPTime)
 	{
 		debugClientForceUpdate = bForceUpdate;
 		debugNumOfForcedUpdates++;
