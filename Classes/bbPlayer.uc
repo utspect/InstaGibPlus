@@ -1684,21 +1684,19 @@ function ClientUpdatePosition()
 		// - Discard it
 		// - Negate and process over a certain amount of time.
 		// - Keep adjustment as is (instant relocation)
+		// Deaod: On second thought, lets never discard adjustments.
 		IGPlus_AdjustLocationOffset = (Location - IGPlus_PreAdjustLocation);
 		AdjustDistance = VSize(IGPlus_AdjustLocationOffset);
 		IGPlus_AdjustLocationAlpha = 0;
-		if (AdjustDistance < VSize(Acceleration) && IGPlus_AdjustLocationOverride == false) {
-			if (AdjustDistance < 2) {
-				// Discard
-				MoveSmooth(-IGPlus_AdjustLocationOffset);
-			} else if ((AdjustDistance < 50) && FastTrace(Location,IGPlus_PreAdjustLocation)) {
-
-				// Undo adjustment and re-enact smoothly
-				PostAdjustLocation = Location;
-				MoveSmooth(-IGPlus_AdjustLocationOffset);
-				IGPlus_AdjustLocationAlpha = 0.35;
-				IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location) / IGPlus_AdjustLocationAlpha;
-			}
+		if ((AdjustDistance < 50) &&
+			FastTrace(Location,IGPlus_PreAdjustLocation) &&
+			IGPlus_AdjustLocationOverride == false
+		) {
+			// Undo adjustment and re-enact smoothly
+			PostAdjustLocation = Location;
+			MoveSmooth(-IGPlus_AdjustLocationOffset);
+			IGPlus_AdjustLocationAlpha = FMax(0.1, PlayerReplicationInfo.Ping*0.001);
+			IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location) / IGPlus_AdjustLocationAlpha;
 		}
 	}
 	// Keep as is.
