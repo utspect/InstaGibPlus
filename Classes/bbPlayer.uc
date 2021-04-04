@@ -3143,9 +3143,11 @@ function bool CanMergeMove(bbSavedMove Pending, vector Accel) {
 	if (Pending.IGPlus_MergeCount >= 31)
 		return false;
 
-	if (bIs469Server || Pending.Delta >= 0.005)
+	if (bIs469Server || Pending.Delta >= 0.005) // only 469 servers like updates for <5ms
 		return bForcePacketSplit == false &&
-			VSize(Accel - Pending.Acceleration) < 0.125 * AccelRate &&
+			(VSize(Accel - Pending.Acceleration) < 1 || Normal(Accel) dot Normal(Pending.Acceleration) > 0.95) &&
+			Pending.bForceFire == false && Pending.bForceAltFire == false &&
+			Pending.bPressedJump == false && (Pending.DodgeMove == DODGE_None || Pending.DodgeMove >= DODGE_Active) &&
 			LastAddVelocityAppliedIndex == LastAddVelocityIndex;
 
 	return true;
@@ -3163,6 +3165,7 @@ function xxReplicateMove(
 	local float AdjustAlpha;
 	local float RealDelta;
 	local vector PrevVelocity;
+	local vector OldAccel;
 
 	// Higor: process smooth adjustment.
 	if (IGPlus_AdjustLocationAlpha > 0)
@@ -3174,6 +3177,7 @@ function xxReplicateMove(
 
 	if ( VSize(NewAccel) > 3072)
 		NewAccel = 3072 * Normal(NewAccel);
+	OldAccel = Acceleration;
 
 	if (bDrawDebugData) {
 		debugNewAccel = Normal(NewAccel);
@@ -3230,6 +3234,7 @@ function xxReplicateMove(
 			PendMove.Delta = TotalTime;
 		} else {
 			SendSavedMove(PendMove);
+			ClientUpdateTime = FClamp((PendMove.Delta/Level.TimeDilation) - TimeBetweenNetUpdates + ClientUpdateTime, -TimeBetweenNetUpdates, TimeBetweenNetUpdates);;
 
 			if (SavedMoves == none) {
 				SavedMoves = PendingMove;
@@ -3320,14 +3325,11 @@ function xxReplicateMove(
 	// on client side, save extra buffered time in LastUpdateTime
 	RealDelta = PendingMove.Delta / Level.TimeDilation;
 
-	if (RealDelta < TimeBetweenNetUpdates - ClientUpdateTime && bForcePacketSplit == false)
-		return;
-
-	if (bIs469Server == false && PendingMove.Delta < 0.005) // pre-469 servers dont like updates for <5ms
+	if (RealDelta < TimeBetweenNetUpdates - ClientUpdateTime && CanMergeMove(NewMove, OldAccel))
 		return;
 
 	bForcePacketSplit = false;
-	ClientUpdateTime = FClamp(RealDelta - TimeBetweenNetUpdates + ClientUpdateTime, 0, TimeBetweenNetUpdates);
+	ClientUpdateTime = FClamp(RealDelta - TimeBetweenNetUpdates + ClientUpdateTime, -TimeBetweenNetUpdates, TimeBetweenNetUpdates);
 	if ( SavedMoves == None )
 		SavedMoves = PendingMove;
 	else
