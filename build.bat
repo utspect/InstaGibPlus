@@ -35,6 +35,8 @@ popd
 
 if exist "PostBuildHook.bat" call "PostBuildHook.bat"
 
+echo Finished at %Date%%Time%
+
 :cleanup
 popd
 endlocal
