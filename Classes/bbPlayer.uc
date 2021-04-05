@@ -2288,13 +2288,13 @@ function IGPlus_CheckClientError() {
 	}
 
 	bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
-		((ClientLocError > MaxLocError) && (zzIgnoreUpdateUntil < ServerTimeStamp));
+		((ClientLocError > MaxLocError) && (zzIgnoreUpdateUntil < ServerTimeStamp) && ServerTimeStamp >= NextRealCAPTime);
 
 	clientLastUpdateTime = ServerTimeStamp;
 
 	ClearLastServerMoveParams();
 
-	if (bForceUpdate && ServerTimeStamp >= NextRealCAPTime)
+	if (bForceUpdate)
 	{
 		debugClientForceUpdate = bForceUpdate;
 		debugNumOfForcedUpdates++;
