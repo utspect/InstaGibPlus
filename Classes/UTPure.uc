@@ -454,7 +454,7 @@ event Tick(float zzDelta)
 			xxHideControlPoints();
 		if (Level.Game.IsA('Assault'))
 			xxHideFortStandards();
-		if (zzDMP.CountDown < 10)
+		if (zzDMP.CountDown < 10 || zzDMP.bTournament == false)
 			xxResetGame();
 
 		// Make sure first blood doesn't get triggered during warmup
