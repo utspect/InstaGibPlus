@@ -30,6 +30,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 {
 	local UT_Shellcase s;
 	local Pawn PawnOwner;
+	local vector Momentum;
 
 	PawnOwner = Pawn(Owner);
 	STM.PlayerFire(PawnOwner, 18);		// 18 = Sniper
@@ -60,12 +61,17 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		}
 		else
 		{
+			if (Other.bIsPawn)
+				Momentum = STM.WeaponSettings.SniperMomentum * 30000.0*X;
+			else
+				Momentum = 30000.0*X;
+
 			STM.PlayerHit(PawnOwner, 18, False);		// 18 = Sniper
 			Other.TakeDamage(
 				STM.WeaponSettings.SniperDamage,
 				PawnOwner,
 				HitLocation,
-				STM.WeaponSettings.SniperMomentum * 30000.0*X,
+				Momentum,
 				MyDamageType);
 			STM.PlayerClear();
 		}
