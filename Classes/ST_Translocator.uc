@@ -38,6 +38,9 @@ function ThrowTarget()
 {
 	STM.PlayerFire(Pawn(Owner), 2);		// 2 = Translocator
 	Super.ThrowTarget();
+	if (TTarget != none) {
+		TTarget.DisruptionThreshold = STM.WeaponSettings.TranslocatorHealth;
+	}
 }
 
 simulated function TweenDown()

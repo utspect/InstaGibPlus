@@ -12,6 +12,8 @@ var config float MinigunAlternateBulletInterval;
 var config float MinigunMinDamage;
 var config float MinigunMaxDamage;
 
+var config float TranslocatorHealth;
+
 defaultproperties
 {
 	SniperDamage=45
@@ -25,4 +27,6 @@ defaultproperties
 	MinigunAlternateBulletInterval=0.050
 	MinigunMinDamage=5
 	MinigunMaxDamage=7
+
+	TranslocatorHealth=65.0
 }
