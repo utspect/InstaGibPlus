@@ -451,7 +451,7 @@ replication
 	reliable if (bClientDemoRecording)
 		DemoReceiveWeaponEffect;
 
-	reliable if (Role == ROLE_AutonomousProxy || RemoteRole == ROLE_SimulatedProxy)
+	reliable if (Role == ROLE_AutonomousProxy || RemoteRole <= ROLE_SimulatedProxy)
 		bIs469Client;
 }
 
