@@ -30,26 +30,32 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	realLoc = Owner.Location + CalcDrawOffset();
 	s = Spawn(class'UT_ShellCase',, '', realLoc + 20 * X + FireOffset.Y * Y + Z);
 	if ( s != None )
-		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);              
-	if (Other == Level) 
+		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
+	if (Other == Level)
 	{
 		if ( bIsSlave || (SlaveEnforcer != None) )
 			Spawn(class'UT_LightWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
 		else
 			Spawn(class'UT_WallHit',,, HitLocation+HitNormal, Rotator(HitNormal));
 	}
-	else if ((Other != self) && (Other != Owner) && (Other != None) ) 
+	else if ((Other != self) && (Other != Owner) && (Other != None) )
 	{
 		if ( FRand() < 0.2 )
 			X *= 5;
 		STM.PlayerHit(PawnOwner, 3, False);	// 3 = Enforcer
-		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 3000.0*X, MyDamageType);
+		Other.TakeDamage(
+			STM.WeaponSettings.EnforcerDamage,
+			PawnOwner,
+			HitLocation,
+			STM.WeaponSettings.EnforcerMomentum*3000.0*X,
+			MyDamageType
+		);
 		STM.PlayerClear();
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 		else
 			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
-	}		
+	}
 }
 
 function SetSwitchPriority(pawn Other)
@@ -91,7 +97,7 @@ function SetSwitchPriority(pawn Other)
 			}
 		}
 
-	
+
 	}
 }
 

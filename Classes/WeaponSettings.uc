@@ -12,6 +12,9 @@ var config float MinigunAlternateBulletInterval;
 var config float MinigunMinDamage;
 var config float MinigunMaxDamage;
 
+var config float EnforcerDamage;
+var config float EnforcerMomentum;
+
 var config float HammerDamage;
 var config float HammerMomentum;
 var config float HammerSelfDamage;
@@ -37,13 +40,16 @@ defaultproperties
 	MinigunMinDamage=5
 	MinigunMaxDamage=7
 
-	HammerDamage=60.0
+	EnforcerDamage=17
+	EnforcerMomentum=1.0
+
+	HammerDamage=60
 	HammerMomentum=1.0
-	HammerSelfDamage=36.0
+	HammerSelfDamage=36
 	HammerSelfMomentum=1.0
-	HammerAltDamage=20.0
+	HammerAltDamage=20
 	HammerAltMomentum=1.0
-	HammerAltSelfDamage=24.0
+	HammerAltSelfDamage=24
 	HammerAltSelfMomentum=1.0
 
 	TranslocatorHealth=65.0
