@@ -31,7 +31,7 @@ State ClientDown
 		T = TournamentPlayer(Owner);
 		if ( T != None )
 		{
-			if ( (T.ClientPending != None) 
+			if ( (T.ClientPending != None)
 				&& (T.ClientPending.Owner == Owner) )
 			{
 				T.Weapon = T.ClientPending;
@@ -66,7 +66,13 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		if ( VSize(HitLocation - Owner.Location) < 80 )
 			Spawn(class'ImpactMark',,, HitLocation+HitNormal, Rotator(HitNormal));
 		STM.PlayerHit(PawnOwner, 1, False);	// 1 = Impact Hammer
-		Owner.TakeDamage(36.0, PawnOwner, HitLocation, -69000.0 * ChargeSize * X, MyDamageType);
+		Owner.TakeDamage(
+			STM.WeaponSettings.HammerSelfDamage,
+			PawnOwner,
+			HitLocation,
+			STM.WeaponSettings.HammerSelfMomentum * -69000.0 * ChargeSize * X,
+			MyDamageType
+		);
 		STM.PlayerClear();
 	}
 	if ( Other != Level )
@@ -74,7 +80,13 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		if ( Other.bIsPawn && (VSize(HitLocation - Owner.Location) > 90) )
 			return;
 		STM.PlayerHit(PawnOwner, 1, False);	// 1 = Impact Hammer
-		Other.TakeDamage(60.0 * ChargeSize, PawnOwner, HitLocation, 66000.0 * ChargeSize * X, MyDamageType);
+		Other.TakeDamage(
+			STM.WeaponSettings.HammerDamage * ChargeSize,
+			PawnOwner,
+			HitLocation,
+			STM.WeaponSettings.HammerMomentum * 66000.0 * ChargeSize * X,
+			MyDamageType
+		);
 		STM.PlayerClear();
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
@@ -93,9 +105,9 @@ function TraceAltFire()
 
 	Owner.MakeNoise(PawnOwner.SoundDampening);
 	GetAxes(PawnOwner.ViewRotation, X, Y, Z);
-	StartTrace = Owner.Location + CalcDrawOffset() + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z; 
-	AdjustedAim = PawnOwner.AdjustAim(1000000, StartTrace, AimError, False, False);	
-	EndTrace = StartTrace + 180 * vector(AdjustedAim); 
+	StartTrace = Owner.Location + CalcDrawOffset() + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z;
+	AdjustedAim = PawnOwner.AdjustAim(1000000, StartTrace, AimError, False, False);
+	EndTrace = StartTrace + 180 * vector(AdjustedAim);
 	Other = PawnOwner.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace);
 	ProcessAltTraceHit(Other, HitLocation, HitNormal, vector(AdjustedAim), Y, Z);
 
@@ -108,7 +120,7 @@ function TraceAltFire()
 			P.speed = VSize(P.Velocity);
 			if ( P.Velocity Dot Y > 0 )
 				P.Velocity = P.Speed * Normal(P.Velocity + (750 - VSize(P.Location - Owner.Location)) * Y);
-			else	
+			else
 				P.Velocity = P.Speed * Normal(P.Velocity - (750 - VSize(P.Location - Owner.Location)) * Y);
 		}
 }
@@ -129,13 +141,25 @@ function ProcessAltTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, V
 	if ( (Other == Level) || Other.IsA('Mover') )
 	{
 		STM.PlayerHit(PawnOwner, 1, False);	// 1 = IH!
-		Owner.TakeDamage(24.0 * scale, Pawn(Owner), HitLocation, -40000.0 * X * scale, MyDamageType);
+		Owner.TakeDamage(
+			STM.WeaponSettings.HammerAltSelfDamage * scale,
+			Pawn(Owner),
+			HitLocation,
+			STM.WeaponSettings.HammerAltSelfMomentum * -40000.0 * X * scale,
+			MyDamageType
+		);
 		STM.PlayerClear();
 	}
 	else
 	{
 		STM.PlayerHit(PawnOwner, 1, False);	// 1 = IH!
-		Other.TakeDamage(20 * scale, Pawn(Owner), HitLocation, 30000.0 * X * scale, MyDamageType);
+		Other.TakeDamage(
+			STM.WeaponSettings.HammerAltDamage * scale,
+			Pawn(Owner),
+			HitLocation,
+			STM.WeaponSettings.HammerAltMomentum * 30000.0 * X * scale,
+			MyDamageType
+		);
 		STM.PlayerClear();
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
@@ -171,7 +195,7 @@ function SetSwitchPriority(pawn Other)
 				carried = temp;
 			}
 		}
-	}		
+	}
 }
 
 simulated function TweenDown()
