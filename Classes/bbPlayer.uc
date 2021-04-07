@@ -425,7 +425,6 @@ replication
 		xxSendMultiKillToSpecs,
 		xxSendSpreeToSpecs,
 		xxServerAckScreenshot,
-		xxServerAddVelocity,
 		xxServerDemoReply,
 		xxServerReceiveConsole,
 		xxServerReceiveINT,
@@ -3927,11 +3926,6 @@ simulated function AddVelocity( vector NewVelocity )
 		Super.AddVelocity(NewVelocity);
 	else if (Level.NetMode != NM_Client)
 		ServerAddMomentum(NewVelocity);
-}
-
-simulated function xxServerAddVelocity(vector NewVelocity) {
-	if (Physics == PHYS_Walking)
-		SetPhysics(PHYS_Falling);
 }
 
 simulated function ClientAddMomentum(vector Momentum, float TimeStamp, int Index) {
