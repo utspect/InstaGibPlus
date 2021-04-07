@@ -3931,7 +3931,7 @@ simulated function AddVelocity( vector NewVelocity )
 simulated function ClientAddMomentum(vector Momentum, float TimeStamp, int Index) {
 	local int Next;
 	if (TimeStamp < AddVelocityCalls[LastAddVelocityAppliedIndex].TimeStamp)
-		return;
+		return; // too old
 
 	Next = (Index+1) & 0xF;
 	if (((Next - LastAddVelocityAppliedIndex) & 0xF) > ((LastAddVelocityIndex - LastAddVelocityAppliedIndex) & 0xF))
