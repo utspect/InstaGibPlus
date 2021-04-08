@@ -52,6 +52,7 @@ State ClientDown
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
 	local Pawn PawnOwner;
+	local vector Momentum;
 
 	PawnOwner = Pawn(Owner);
 	STM.PlayerFire(PawnOwner, 1);			// 1 = Impact Hammer.
@@ -79,12 +80,17 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	{
 		if ( Other.bIsPawn && (VSize(HitLocation - Owner.Location) > 90) )
 			return;
+
+		Momentum = 66000.0 * ChargeSize * X;
+		if (Other.bIsPawn)
+			Momentum *= STM.WeaponSettings.HammerMomentum;
+
 		STM.PlayerHit(PawnOwner, 1, False);	// 1 = Impact Hammer
 		Other.TakeDamage(
 			STM.WeaponSettings.HammerDamage * ChargeSize,
 			PawnOwner,
 			HitLocation,
-			STM.WeaponSettings.HammerMomentum * 66000.0 * ChargeSize * X,
+			Momentum,
 			MyDamageType
 		);
 		STM.PlayerClear();
@@ -130,6 +136,7 @@ function ProcessAltTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, V
 	local vector realLoc;
 	local float scale;
 	local Pawn PawnOwner;
+	local vector Momentum;
 
 	if ( (Other == None) || (Other == Owner) || (Other == self) || (Owner == None) )
 		return;
@@ -152,12 +159,16 @@ function ProcessAltTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, V
 	}
 	else
 	{
+		Momentum = 30000.0 * X * scale;
+		if (Other.bIsPawn)
+			Momentum *= STM.WeaponSettings.HammerAltMomentum;
+
 		STM.PlayerHit(PawnOwner, 1, False);	// 1 = IH!
 		Other.TakeDamage(
 			STM.WeaponSettings.HammerAltDamage * scale,
 			Pawn(Owner),
 			HitLocation,
-			STM.WeaponSettings.HammerAltMomentum * 30000.0 * X * scale,
+			Momentum,
 			MyDamageType
 		);
 		STM.PlayerClear();
