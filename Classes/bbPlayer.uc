@@ -415,7 +415,6 @@ replication
 		DropFlag,
 		Go,
 		Hold,
-		ServerEnterWarmup,
 		ShowStats,
 		xxExplodeOther,
 		xxNN_AltFire,
@@ -5211,13 +5210,6 @@ simulated function PlayRunning()
 		else
 			LoopAnim('RunLG', 1.1);
 	}
-}
-
-function ServerEnterWarmup() {
-	PlayerRestartState = default.PlayerRestartState;
-	GoToState(PlayerRestartState);
-	if (Level.Game.ReStartPlayer(self) == false)
-		GoToState('Dying');
 }
 
 function xxServerSetReadyToPlay()
