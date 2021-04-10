@@ -45,9 +45,6 @@ var int debugServerMoveCallsSent;
 var int debugServerMoveCallsReceived;
 
 // Control stuff
-var byte	zzbFire;		// Retain last fire value
-var byte	zzbAltFire;		// Retain last Alt Fire Value
-var bool	zzbValidFire;		// Tells when Fire() is valid
 var PureInfo zzInfoThing;	// Registers diverse stuff.
 var float	zzTick;			// The Length of Last Tick
 var bool	zzbNoMultiWeapon;	// Server-Side only! tells if multiweapon bug can be used.
@@ -836,8 +833,6 @@ simulated event PostNetBeginPlay()
 	{
 		return;
 	}
-
-	zzbValidFire = zzTrue;
 
 	if ( bIsMultiSkinned )
 	{
@@ -3302,12 +3297,6 @@ function xxReplicateMove(
 	// Simulate the movement locally.
 	ProcessMove(DeltaTime, NewAccel, DodgeMove, DeltaRot);
 	AutonomousPhysics(DeltaTime);
-	if (Role < ROLE_Authority)
-	{
-		zzbValidFire = false;
-		zzbFire = bFire;
-		zzbAltFire = bAltFire;
-	}
 
 	CorrectTeleporterVelocity();
 
@@ -4493,15 +4482,11 @@ state FeigningDeath
 
 	function BeginState()
 	{
-		local byte zzOldbfire, zzOldbAlt;
-
 		Super.BeginState();
 		// Stop weapon firing
 		//UsAaR33: prevent weapon from firing (brought on by missing bchangedweapon checks)
 		if (zzbNoMultiWeapon && Weapon != none && (baltfire>0||bfire>0) )
 		{ //could only be true on server
-			zzOldbfire=bfire;
-			zzOldbAlt=baltfire;
 			baltfire=0;
 			bfire=0;
 			//additional hacks to stop weapons:
@@ -4511,8 +4496,6 @@ state FeigningDeath
 				Weapon.Finish();
 			Weapon.Tick(0);
 			Weapon.AnimEnd();
-			zzbFire=zzOldbfire;
-			zzbAltFire=zzOldbAlt;
 		}
 	}
 
