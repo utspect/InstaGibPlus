@@ -1537,25 +1537,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vecto
 	if ( !IsInState(newState) )
 		GotoState(newState);
 
-	// stijn: Remove acknowledged moves from the savedmoves list
-	CurrentMove = bbSavedMove(SavedMoves);
-	while (CurrentMove != None)
-	{
-		if (CurrentMove.TimeStamp <= CurrentTimeStamp)
-		{
-			SavedMoves = bbSavedMove(CurrentMove.NextMove);
-			CurrentMove.NextMove = FreeMoves;
-			FreeMoves = CurrentMove;
-			CurrentMove.Clear2();
-			CurrentMove = bbSavedMove(SavedMoves);
-		}
-		else
-		{
-			// not yet acknowledged. break out of the loop
-			break;
-		}
-	}
-
 	Carried = CarriedDecoration;
 	OldLoc = Location;
 
@@ -1632,7 +1613,6 @@ function ClientUpdatePosition()
 	local bool bRealJump;
 	local rotator RealViewRotation, RealRotation;
 
-	local float TotalTime;
 	local float AdjustDistance;
 	local vector PostAdjustLocation;
 
@@ -1644,27 +1624,21 @@ function ClientUpdatePosition()
 	RealViewRotation = ViewRotation;
 	CurrentMove = bbSavedMove(SavedMoves);
 	bUpdating = true;
-	while ( CurrentMove != None )
-	{
-		if ( CurrentMove.TimeStamp <= CurrentTimeStamp )
-		{
-			SavedMoves = CurrentMove.NextMove;
-			CurrentMove.NextMove = FreeMoves;
-			FreeMoves = CurrentMove;
-			CurrentMove.Clear2();
-			CurrentMove = bbSavedMove(SavedMoves);
-		}
-		else
-		{
-			TotalTime += CurrentMove.Delta;
-			if (!zzbFakeUpdate) {
-				IGPlus_ClientReplayMove(CurrentMove);
-			}
-			CurrentMove = bbSavedMove(CurrentMove.NextMove);
-		}
+
+	while (CurrentMove != none && CurrentMove.TimeStamp <= CurrentTimeStamp) {
+		SavedMoves = CurrentMove.NextMove;
+		CurrentMove.NextMove = FreeMoves;
+		FreeMoves = CurrentMove;
+		CurrentMove.Clear2();
+		CurrentMove = bbSavedMove(SavedMoves);
 	}
 
 	if (zzbFakeUpdate == false) {
+		while (CurrentMove != none) {
+			IGPlus_ClientReplayMove(CurrentMove);
+			CurrentMove = bbSavedMove(CurrentMove.NextMove);
+		}
+
 		// stijn: The original code was not replaying the pending move
 		// here. This was a huge oversight and caused non-stop resynchronizations
 		// because the playerpawn position would be off constantly until the player
