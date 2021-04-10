@@ -8238,7 +8238,7 @@ function ClientShake(vector shake) {
 }
 
 exec function Ready() {
-	if (zzbIsWarmingUp == false)
+	if (IsInState('PlayerWaiting') == false && IsInState('PlayerWarmup') == false)
 		return;
 
 	bReadyToPlay = !bReadyToPlay;
