@@ -1511,7 +1511,6 @@ simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vecto
 {
 	local Decoration Carried;
 	local vector OldLoc;
-	local bbSavedMove CurrentMove;
 
 	if ( CurrentTimeStamp > TimeStamp )
 		return;
