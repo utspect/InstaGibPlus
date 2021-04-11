@@ -558,6 +558,9 @@ simulated function Touch( actor Other )
 			ClientDebugMessage("Touch forced updates");
 			zzForceUpdateUntil = Level.TimeSeconds + 0.15 + float(Other.GetPropertyText("ToggleTime"));
 			zzbForceUpdate = true;
+		} else if (Other.IsA('JumpPadDM')) {
+			ClientDebugMessage("Touch forced updates");
+			zzForceUpdateUntil = Level.TimeSeconds + 0.0011*PlayerReplicationInfo.Ping*Level.TimeDilation;
 		}
 	}
 	if (Other.IsA('Kicker') || Other.IsA('NN_swJumpPad'))
