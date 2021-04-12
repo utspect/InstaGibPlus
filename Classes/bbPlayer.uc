@@ -743,7 +743,7 @@ function ReplicateSwJumpPad(Teleporter T) {
 		if (string(Target.Tag) ~= T.URL && Target != T)
 			break;
 
-	if (string(Target.Tag) ~= T.URL && Target != T) {}
+	if (Target != none && string(Target.Tag) ~= T.URL && Target != T) {}
 	else {
 		// invalid target for swJumpPad
 		return;
