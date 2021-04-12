@@ -8219,15 +8219,26 @@ function ClientShake(vector shake) {
 		super.ClientShake(shake);
 }
 
-exec function Ready() {
-	if (IsInState('PlayerWaiting') == false && IsInState('PlayerWarmup') == false)
-		return;
+function string GetReadyMessage() {
+	if (Level.Game.IsA('DeathMatchPlus'))
+		return DeathMatchPlus(Level.Game).ReadyMessage;
 
+	return class'DeathMatchPlus'.default.ReadyMessage;
+}
+
+function string GetNotReadyMessage() {
+	if (Level.Game.IsA('DeathMatchPlus'))
+		return DeathMatchPlus(Level.Game).NotReadyMessage;
+
+	return class'DeathMatchPlus'.default.NotReadyMessage;
+}
+
+exec function Ready() {
 	bReadyToPlay = !bReadyToPlay;
 	if (bReadyToPlay)
-		ClientMessage(DeathMatchPlus(Level.Game).ReadyMessage);
+		ClientMessage(GetReadyMessage());
 	else
-		ClientMessage(DeathMatchPlus(Level.Game).NotReadyMessage);
+		ClientMessage(GetNotReadyMessage());
 }
 
 exec function TestHitMarker(optional int Dmg) {
