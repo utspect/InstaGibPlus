@@ -1619,7 +1619,7 @@ function ClientUpdatePosition()
 	local vector PostAdjustLocation;
 
 	bUpdatePosition = false;
-	realbRun= bRun;
+	realbRun = bRun;
 	realbDuck = bDuck;
 	bRealJump = bPressedJump;
 	RealRotation = Rotation;
@@ -5536,6 +5536,7 @@ state Dying
 		ClientUpdateTime += DeltaTime;
 		if (ClientUpdateTime > TimeBetweenNetUpdates) {
 			ClientUpdateTime = 0;
+			IGPlus_AdjustLocationAlpha = 0; // avoid adjustments persisting until respawn
 			xxServerMoveDead(Level.TimeSeconds, DeltaTime, ((ViewRotation.Pitch << 16) | (ViewRotation.Yaw & 0xFFFF)));
 		}
 	}
