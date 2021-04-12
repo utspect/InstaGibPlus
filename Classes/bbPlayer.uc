@@ -1677,7 +1677,6 @@ function ClientUpdatePosition()
 	SetRotation( RealRotation);
 	ViewRotation = RealViewRotation;
 	zzbFakeUpdate = true;
-	//log("Client adjusted "$self$" stamp "$CurrentTimeStamp$" location "$Location$" dodge "$DodgeDir);
 
 	UpdatePing();
 }
@@ -2131,6 +2130,7 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	if (SM.ClientVelocity.Z < 0)
 		zzLastFallVelZ = SM.ClientVelocity.Z;
 
+	// Apply momentum as it was applied on client
 	if (((AddVelocityId - LastAddVelocityAppliedIndex) & 0xF) > ((LastAddVelocityIndex - LastAddVelocityAppliedIndex) & 0xF))
 		AddVelocityId = LastAddVelocityIndex;
 
@@ -2219,6 +2219,11 @@ function IGPlus_CheckClientError() {
 		ClientLocAbs += LastServerMoveParams.Base.Location;
 	ClientTlocCounter = LastServerMoveParams.TlocCounter;
 
+	LocDelta = Location - ClientLocAbs;
+	ClientLocError = LocDelta Dot LocDelta;
+	debugClientLocError = ClientLocError;
+
+	// Apply momentum that the client never got around to
 	while(LastAddVelocityAppliedIndex != LastAddVelocityIndex && AddVelocityCalls[LastAddVelocityAppliedIndex].TimeStamp < ServerTimeStamp) {
 		IGPlus_ApplyMomentum(AddVelocityCalls[LastAddVelocityAppliedIndex].Momentum);
 		AddVelocityCalls[LastAddVelocityAppliedIndex].Momentum = vect(0,0,0);
@@ -2228,20 +2233,16 @@ function IGPlus_CheckClientError() {
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxLocError = 3.0;
-	if (class'UTPure'.default.bEnableLoosePositionCheck && LastServerMoveParams.ClientDeltaTime > 0) {
-		MaxLocError = CalculateLocError(
-			LastServerMoveParams.ClientDeltaTime,
-			LastServerMoveParams.Physics,
-			ClientVel
-		);
-		MaxLocError = MaxLocError * MaxLocError;
-	}
-
-	LocDelta = Location - ClientLocAbs;
-	ClientLocError = LocDelta Dot LocDelta;
-	debugClientLocError = ClientLocError;
-
 	if (class'UTPure'.default.bEnableLoosePositionCheck) {
+		if (LastServerMoveParams.ClientDeltaTime > 0) {
+			MaxLocError = CalculateLocError(
+				LastServerMoveParams.ClientDeltaTime,
+				LastServerMoveParams.Physics,
+				ClientVel
+			);
+			MaxLocError = MaxLocError * MaxLocError;
+		}
+
 		bServerOnMover = Mover(Base) != None;
 		bClientOnMover = Mover(LastServerMoveParams.Base) != none;
 		if ((bServerOnMover && bClientOnMover) || OtherPawnAtLocation(ClientLocAbs)) {
@@ -2256,10 +2257,14 @@ function IGPlus_CheckClientError() {
 			// extending ignore time until landing (probably from a lift jump)
 			zzIgnoreUpdateUntil = ServerTimeStamp;
 		}
+
+		bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
+			(ClientLocError > MaxLocError && zzIgnoreUpdateUntil < ServerTimeStamp);
+	} else {
+		bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
+			(ClientLocError > MaxLocError && ServerTimeStamp >= NextRealCAPTime);
 	}
 
-	bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
-		((ClientLocError > MaxLocError) && (zzIgnoreUpdateUntil < ServerTimeStamp) && ServerTimeStamp >= NextRealCAPTime);
 
 	clientLastUpdateTime = ServerTimeStamp;
 
