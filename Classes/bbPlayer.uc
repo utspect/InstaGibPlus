@@ -565,8 +565,8 @@ simulated function Touch( actor Other )
 	}
 	if (Other.IsA('Kicker') || Other.IsA('NN_swJumpPad'))
 		bForcePacketSplit = true;
-	if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0)
-		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
+	// if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0)
+	// 	zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
 	if (Other.IsA('Teleporter'))
 		IgnoreZChangeTicks = 2;
 	Super.Touch(Other);
