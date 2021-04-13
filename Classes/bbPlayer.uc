@@ -4961,9 +4961,9 @@ ignores SeePlayer, HearNoise, Bump;
 				DodgeMove = DODGE_Back;
 		}
 
-		if (DodgeDir == DODGE_Done || (bDodging && Base != None))
+		if (DodgeDir == DODGE_Done || (bDodging && (Base != None || Physics == PHYS_Walking)))
 		{
-			DodgeClickTimer -= DeltaTime;
+			DodgeClickTimer = FMin(-DeltaTime, DodgeClickTimer - DeltaTime);
 			if (DodgeClickTimer < -0.35)
 			{
 				bDodging = false;
@@ -6716,6 +6716,8 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.DrawText("EyeHeight:"@EyeHeight);
 	zzC.SetPos(zzx, zzY + 540);
 	zzC.DrawText("ServerMove calls"@debugServerMoveCallsSent@debugServerMoveCallsReceived);
+	zzC.SetPos(zzx, zzY + 560);
+	zzC.DrawText("bDodging"@bDodging@"DodgeDir"@DodgeDir);
 
 	zzC.Style = ERenderStyle.STY_Normal;
 }
