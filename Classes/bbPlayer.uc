@@ -2090,7 +2090,7 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
 		UndoExtrapolation();
 
-		if (bClientDead) {
+		if (bHidden && (IsInState('PlayerWalking') || IsInState('PlayerSwimming'))) {
 			bClientDead = false;
 			bHidden = false;
 			SetCollision(true, true, true);
