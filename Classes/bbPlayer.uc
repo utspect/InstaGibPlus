@@ -198,6 +198,8 @@ var ServerMoveParams LastServerMoveParams;
 var int TlocCounter;
 var vector TlocPrevLocation;
 var bool IGPlus_DidTranslocate;
+var bool IGPlus_NotifiedTranslocate;
+var bool IGPlus_WantCAP;
 
 // SSR Beam
 var float LastWeaponEffectCreated;
@@ -1888,7 +1890,11 @@ function ClearLastServerMoveParams() {
 
 function IGPlus_ProcessRemoteMovement() {
 	IGPlus_ApplyAllServerMoves();
-	IGPlus_CheckClientError();
+
+	if (class'UTPure'.default.bEnableLoosePositionCheck)
+		IGPlus_LooseCheckClientError();
+	else
+		IGPlus_CheckClientError();
 }
 
 function IGPlus_ApplyAllServerMoves() {
@@ -1926,8 +1932,10 @@ function IGPlus_BeforeTranslocate() {
 
 function IGPlus_AfterTranslocate() {
 	IGPlus_DidTranslocate = (VSize(Location - TlocPrevLocation) > 1);
-	if (IGPlus_DidTranslocate)
+	if (IGPlus_DidTranslocate) {
 		ExtrapolationDiscardData();
+		IGPlus_NotifiedTranslocate = false;
+	}
 }
 
 function IGPlus_ApplyServerMove(bbServerMove SM) {
@@ -2032,45 +2040,6 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 			LastCAPTime = Level.TimeSeconds;
 		}
 
-	// View components
-	CompressedViewRotation = SM.View;
-	ViewPitch = (SM.View >>> 16);
-	ViewYaw = (SM.View & 0xFFFF);
-
-	NewbPressedJump = (bJumpStatus != NewbJumpStatus);
-	bJumpStatus = NewbJumpStatus;
-
-	bClientDead = false;
-
-	if (bUseFastWeaponSwitch && PendingWeapon != None)
-		ChangedWeapon();
-
-	// handle firing and alt-firing
-	if (bFired) {
-		if (bForceFire && (Weapon != None))
-			Weapon.ForceFire();
-		else if (bFire == 0)
-			Fire(0);
-		bFire = 1;
-	} else {
-		bFire = 0;
-	}
-
-	if (bAltFired) {
-		if (bForceAltFire && (Weapon != None))
-			Weapon.ForceAltFire();
-		else if (bAltFire == 0)
-			AltFire(0);
-		bAltFire = 1;
-	} else {
-		bAltFire = 0;
-	}
-
-	if (IGPlus_DidTranslocate) {
-		TlocCounter = (TlocCounter + 1) & 3;
-		IGPlus_DidTranslocate = false;
-	}
-
 	if (ServerTimeStamp == 0.0) {
 		ServerDeltaTime = SM.MoveDeltaTime;
 		DeltaTime = SM.MoveDeltaTime;
@@ -2110,6 +2079,53 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	LastServerMoveParams.Physics = ClientPhysics;
 	LastServerMoveParams.TlocCounter = ClientTlocCounter;
 
+	// View components
+	CompressedViewRotation = SM.View;
+	ViewPitch = (SM.View >>> 16);
+	ViewYaw = (SM.View & 0xFFFF);
+
+	NewbPressedJump = (bJumpStatus != NewbJumpStatus);
+	bJumpStatus = NewbJumpStatus;
+
+	if ((Level.Pauser == "") && (DeltaTime > 0)) {
+		UndoExtrapolation();
+
+		if (bClientDead) {
+			bClientDead = false;
+			bHidden = false;
+			SetCollision(true, true, true);
+		}
+	}
+
+	if (bUseFastWeaponSwitch && PendingWeapon != None)
+		ChangedWeapon();
+
+	// handle firing and alt-firing
+	if (bFired) {
+		if (bForceFire && (Weapon != None))
+			Weapon.ForceFire();
+		else if (bFire == 0)
+			Fire(0);
+		bFire = 1;
+	} else {
+		bFire = 0;
+	}
+
+	if (bAltFired) {
+		if (bForceAltFire && (Weapon != None))
+			Weapon.ForceAltFire();
+		else if (bAltFire == 0)
+			AltFire(0);
+		bAltFire = 1;
+	} else {
+		bAltFire = 0;
+	}
+
+	if (IGPlus_DidTranslocate) {
+		TlocCounter = (TlocCounter + 1) & 3;
+		IGPlus_DidTranslocate = false;
+	}
+
 	CurrentTimeStamp = SM.TimeStamp;
 	ServerTimeStamp = Level.TimeSeconds;
 	Rot.Roll = ClientRoll << 8;
@@ -2143,13 +2159,6 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 
 	// Predict new position
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
-		UndoExtrapolation();
-
-		if (bHidden && (IsInState('PlayerWalking') || IsInState('PlayerSwimming'))) {
-			bHidden = false;
-			SetCollision(true, true, true);
-		}
-
 		MergeCount++;
 
 		SimStep = DeltaTime / float(MergeCount);
@@ -2188,6 +2197,11 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 
 		bWasPaused = false;
 	}
+
+	if (IGPlus_WantCAP || class'UTPure'.default.bEnableLoosePositionCheck == false)
+		return;
+
+	IGPlus_WantCAP = IGPlus_IsCAPNecessary();
 }
 
 function IGPlus_CheckClientError() {
@@ -2200,13 +2214,7 @@ function IGPlus_CheckClientError() {
 	local float ClientLocError;
 	local float MaxLocError;
 	local int CAPMiscData;
-	local bool bServerOnMover;
-	local bool bClientOnMover;
 	local bool bForceUpdate;
-	local bool bCanTraceNewLoc;
-	local bool bMovedToNewLoc;
-	local Decoration Carried;
-	local vector OldLoc;
 
 	if (bHaveReceivedServerMove == false)
 		return;
@@ -2233,38 +2241,10 @@ function IGPlus_CheckClientError() {
 
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxLocError = 3.0;
-	if (class'UTPure'.default.bEnableLoosePositionCheck) {
-		if (LastServerMoveParams.ClientDeltaTime > 0) {
-			MaxLocError = CalculateLocError(
-				LastServerMoveParams.ClientDeltaTime,
-				LastServerMoveParams.Physics,
-				ClientVel
-			);
-			MaxLocError = MaxLocError * MaxLocError;
-		}
 
-		bServerOnMover = Mover(Base) != None;
-		bClientOnMover = Mover(LastServerMoveParams.Base) != none;
-		if ((bServerOnMover && bClientOnMover) || OtherPawnAtLocation(ClientLocAbs)) {
-			// Ping is in milliseconds, convert to seconds
-			// 10% slack to account for jitter
-			zzIgnoreUpdateUntil = ServerTimeStamp + (PlayerReplicationInfo.Ping * 0.0011 * Level.TimeDilation);
-		}
-		if (zzIgnoreUpdateUntil <= ServerTimeStamp &&
-			ServerTimeStamp - zzIgnoreUpdateUntil <= LastServerMoveParams.ServerDeltaTime &&
-			Physics == PHYS_Falling
-		) {
-			// extending ignore time until landing (probably from a lift jump)
-			zzIgnoreUpdateUntil = ServerTimeStamp;
-		}
-
-		bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
-			(ClientLocError > MaxLocError && zzIgnoreUpdateUntil < ServerTimeStamp);
-	} else {
-		bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
-			(ClientLocError > MaxLocError && ServerTimeStamp >= NextRealCAPTime);
-	}
-
+	bForceUpdate = zzbForceUpdate || (zzForceUpdateUntil >= ServerTimeStamp) ||
+		(ClientLocError > MaxLocError && ServerTimeStamp >= NextRealCAPTime) ||
+		(ClientTlocCounter != TlocCounter && IGPlus_NotifiedTranslocate == false);
 
 	clientLastUpdateTime = ServerTimeStamp;
 
@@ -2303,45 +2283,171 @@ function IGPlus_CheckClientError() {
 		LastCAPTime = ServerTimeStamp;
 		NextRealCAPTime = ServerTimeStamp + PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation + AverageServerDeltaTime;
 		zzLastClientErr = 0;
+		IGPlus_NotifiedTranslocate = true;
 		return;
-	}
-
-	if (class'UTPure'.default.bEnableLoosePositionCheck) {
-		if (zzLastClientErr == 0 || ClientLocError < zzLastClientErr)
-			zzLastClientErr = ClientLocError;
-
-		bCanTraceNewLoc = FastTrace(ClientLocAbs);
-		if (bCanTraceNewLoc) {
-			clientForcedPosition = ClientLocAbs;
-			zzLastClientErr = 0;
-			bMovedToNewLoc = xxNewMoveSmooth(ClientLocAbs);
-			if (bMovedToNewLoc && ClientPhysics == Physics)
-				Velocity = ClientVel;
-		}
-		if (bCanTraceNewLoc == false) {
-			Carried = CarriedDecoration;
-			OldLoc = Location;
-
-			bCanTeleport = false;
-			if (SetLocation(ClientLocAbs) && ClientPhysics == Physics)
-				Velocity = ClientVel;
-			bCanTeleport = true;
-
-			if (Carried != None) {
-				CarriedDecoration = Carried;
-				CarriedDecoration.SetLocation(ClientLocAbs + CarriedDecoration.Location - OldLoc);
-				CarriedDecoration.SetPhysics(PHYS_None);
-				CarriedDecoration.SetBase(self);
-			}
-
-			zzLastClientErr = 0;
-		}
 	}
 
 	if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval && ServerTimeStamp >= NextRealCAPTime) {
 		xxFakeCAP(CurrentTimeStamp);
 		LastCAPTime = ServerTimeStamp;
 	}
+}
+
+function IGPlus_LooseCheckClientError() {
+	if (IGPlus_WantCAP) {
+		ClearLastServerMoveParams();
+		IGPlus_SendCAP();
+	} else  if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval && ServerTimeStamp >= NextRealCAPTime) {
+		xxFakeCAP(CurrentTimeStamp);
+		LastCAPTime = ServerTimeStamp;
+	}
+}
+
+function bool IGPlus_IsCAPNecessary() {
+	local vector ClientLoc;
+	local vector ClientVel;
+	local EPhysics ClientPhysics;
+	local vector ClientLocAbs;
+	local int ClientTlocCounter;
+	local vector LocDelta;
+	local float ClientLocError;
+	local float MaxLocError;
+	local bool bServerOnMover;
+	local bool bClientOnMover;
+	local bool bForceUpdate;
+	local bool bCanTraceNewLoc;
+	local bool bMovedToNewLoc;
+	local Decoration Carried;
+	local vector OldLoc;
+
+	if (bHaveReceivedServerMove == false)
+		return false;
+
+	ClientLoc = LastServerMoveParams.Location;
+	ClientVel = LastServerMoveParams.Velocity;
+	ClientPhysics = LastServerMoveParams.Physics;
+	ClientLocAbs = ClientLoc;
+	if (LastServerMoveParams.Base != none)
+		ClientLocAbs += LastServerMoveParams.Base.Location;
+	ClientTlocCounter = LastServerMoveParams.TlocCounter;
+
+	LocDelta = Location - ClientLocAbs;
+	ClientLocError = LocDelta Dot LocDelta;
+	debugClientLocError = ClientLocError;
+
+	// Apply momentum that the client never got around to
+	while(LastAddVelocityAppliedIndex != LastAddVelocityIndex && AddVelocityCalls[LastAddVelocityAppliedIndex].TimeStamp < ServerTimeStamp) {
+		IGPlus_ApplyMomentum(AddVelocityCalls[LastAddVelocityAppliedIndex].Momentum);
+		AddVelocityCalls[LastAddVelocityAppliedIndex].Momentum = vect(0,0,0);
+		zzbForceUpdate = true;
+		LastAddVelocityAppliedIndex = (LastAddVelocityAppliedIndex+1) & 0xF;
+	}
+
+	// Calculate how far off we allow the client to be from the predicted position
+	MaxLocError = 3.0;
+	if (LastServerMoveParams.ClientDeltaTime > 0) {
+		MaxLocError = CalculateLocError(
+			LastServerMoveParams.ClientDeltaTime,
+			LastServerMoveParams.Physics,
+			ClientVel
+		);
+		MaxLocError = MaxLocError * MaxLocError;
+	}
+
+	bServerOnMover = Mover(Base) != None;
+	bClientOnMover = Mover(LastServerMoveParams.Base) != none;
+	if ((bServerOnMover && bClientOnMover) || OtherPawnAtLocation(ClientLocAbs)) {
+		// Ping is in milliseconds, convert to seconds
+		// 10% slack to account for jitter
+		zzIgnoreUpdateUntil = ServerTimeStamp + (PlayerReplicationInfo.Ping * 0.0011 * Level.TimeDilation);
+	}
+	if (zzIgnoreUpdateUntil <= ServerTimeStamp &&
+		ServerTimeStamp - zzIgnoreUpdateUntil <= LastServerMoveParams.ServerDeltaTime &&
+		Physics == PHYS_Falling
+	) {
+		// extending ignore time until landing (probably from a lift jump)
+		zzIgnoreUpdateUntil = ServerTimeStamp;
+	}
+
+	bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
+		(ClientLocError > MaxLocError && zzIgnoreUpdateUntil < ServerTimeStamp);
+
+	clientLastUpdateTime = ServerTimeStamp;
+	debugClientForceUpdate = bForceUpdate;
+
+	ClearLastServerMoveParams();
+
+	if (bForceUpdate) {
+		ClientDebugMessage("Send CAP:"@CurrentTimeStamp@Physics@ClientPhysics@ClientLocError@MaxLocError);
+		return true;
+	}
+
+	if (zzLastClientErr == 0 || ClientLocError < zzLastClientErr)
+		zzLastClientErr = ClientLocError;
+
+	bCanTraceNewLoc = FastTrace(ClientLocAbs);
+	if (bCanTraceNewLoc) {
+		clientForcedPosition = ClientLocAbs;
+		zzLastClientErr = 0;
+		bMovedToNewLoc = xxNewMoveSmooth(ClientLocAbs);
+		if (bMovedToNewLoc && ClientPhysics == Physics)
+			Velocity = ClientVel;
+	}
+	if (bCanTraceNewLoc == false) {
+		Carried = CarriedDecoration;
+		OldLoc = Location;
+
+		bCanTeleport = false;
+		if (SetLocation(ClientLocAbs) && ClientPhysics == Physics)
+			Velocity = ClientVel;
+		bCanTeleport = true;
+
+		if (Carried != None) {
+			CarriedDecoration = Carried;
+			CarriedDecoration.SetLocation(ClientLocAbs + CarriedDecoration.Location - OldLoc);
+			CarriedDecoration.SetPhysics(PHYS_None);
+			CarriedDecoration.SetBase(self);
+		}
+
+		zzLastClientErr = 0;
+	}
+
+	return false;
+}
+
+function IGPlus_SendCAP() {
+	local vector ClientLoc;
+	local int CAPMiscData;
+
+	debugNumOfForcedUpdates++;
+	zzbForceUpdate = false;
+
+	if ( Mover(Base) != None )
+		ClientLoc = Location - Base.Location;
+	else
+		ClientLoc = Location;
+
+	CAPMiscData = TlocCounter & 0x0003;
+
+	if (GetStateName() == 'PlayerWalking') {
+		if (Physics == PHYS_Walking) {
+			if (Base == Level) {
+				xxCAPWalkingWalkingLevelBase(CurrentTimeStamp, CAPMiscData, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
+			} else {
+				xxCAPWalkingWalking(CurrentTimeStamp, CAPMiscData, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+			}
+		} else {
+			xxCAPWalking(CurrentTimeStamp, CAPMiscData | (Physics << 2), ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+		}
+	} else if (Base == Level)
+		xxCAPLevelBase(CurrentTimeStamp, GetStateName(), CAPMiscData | (Physics << 2), ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
+	else
+		xxCAP(CurrentTimeStamp, GetStateName(), CAPMiscData | (Physics << 2), ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
+
+	LastCAPTime = ServerTimeStamp;
+	NextRealCAPTime = ServerTimeStamp + PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation + AverageServerDeltaTime;
+	zzLastClientErr = 0;
+	IGPlus_WantCAP = false;
 }
 
 function UndoExtrapolation() {
