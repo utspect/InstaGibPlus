@@ -7,25 +7,10 @@
 class NN_SuperShockRifle extends SuperShockRifle;
 
 var bool bNewNet;				// Self-explanatory lol
-var Rotator GV;
 var Vector CDO;
 var float yMod;
-var bool bAltFired;
 var float LastFiredTime;
-var bool bDebugSuperShockRifle;
-var config sound CustImpactSound;
-var int BeamLength;
-var float BeamPitch,BeamAltPitch;
-var byte BeamFadeCurve;
-var float BeamDuration;
-var float ImpactSize;
-var float ImpactDuration;
-var float ImpactPitch;
 var name ST_MyDamageType;
-var int clientDamage;
-var bool bHitTimer;
-var bbPlayer globalbbP;
-var vector zzSmokeOffset;
 
 simulated function RenderOverlays(Canvas Canvas)
 {
@@ -49,9 +34,6 @@ simulated function yModInit()
 {
 	local bbPlayer P;
 	P = bbPlayer(Owner);
-
-	if (P != None && Owner.ROLE == ROLE_AutonomousProxy)
-		GV = P.ViewRotation;
 
 	if (P == None)
 		return;
@@ -146,7 +128,6 @@ function Fire( float Value )
 	}
 
 	bbP = bbPlayer(Owner);
-	bAltFired = false;
 	if (bbP != None && bNewNet && Value < 1)
 		return;
 	Super.Fire(Value);
@@ -175,7 +156,6 @@ function AltFire( float Value )
 	}
 
 	bbP = bbPlayer(Owner);
-	bAltFired = false;
 	if (bbP != None && bNewNet && Value < 1)
 		return;
 	Super.Fire(Value);
@@ -266,9 +246,9 @@ simulated function NN_TraceFire()
 	if (bbP == None)
 		return;
 
-	GetAxes(GV,X,Y,Z);
+	GetAxes(bbP.ViewRotation,X,Y,Z);
 	StartTrace = Owner.Location + CDO;
-	EndTrace = StartTrace + (100000 * vector(GV));
+	EndTrace = StartTrace + (100000 * vector(bbP.ViewRotation));
 
 	Other = bbP.NN_TraceShot(HitLocation,HitNormal,EndTrace,StartTrace,Pawn(Owner));
 
@@ -288,10 +268,10 @@ simulated function NN_TraceFire()
 		}
 	}
 
-	NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(GV),Y,Z);
+	NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(bbP.ViewRotation),Y,Z);
 	bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, false);
 	if (Other == bbP.zzClientTTarget)
-		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(GV), ST_MyDamageType);
+		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(bbP.ViewRotation), ST_MyDamageType);
 }
 
 simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
@@ -344,10 +324,9 @@ function TraceFire( float Accuracy )
 	}
 
 	bbP = bbPlayer(Owner);
-	if (bbP == None || !bNewNet || bAltFired)
+	if (bbP == None || !bNewNet)
 	{
 		Super.TraceFire(Accuracy);
-		bAltFired = false;
 		return;
 	}
 
@@ -397,6 +376,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local Pawn P;
 	local bbPlayer bbP;
 	local vector HitOffset;
+	local vector SmokeOffset;
 
 	if (Owner.IsA('Bot'))
 	{
@@ -417,8 +397,8 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		HitOffset = HitLocation - Other.Location;
 	}
 
-	zzSmokeOffset = CalcDrawOffset() + (FireOffset.X + 20) * X + FireOffset.Y * Y + FireOffset.Z * Z;
-	SpawnEffect(HitLocation, Owner.Location + zzSmokeOffset);
+	SmokeOffset = CalcDrawOffset() + (FireOffset.X + 20) * X + FireOffset.Y * Y + FireOffset.Z * Z;
+	SpawnEffect(HitLocation, Owner.Location + SmokeOffset);
 	if (Owner.IsA('Bot') == false) {
 		for (P = Level.PawnList; P != none; P = P.NextPawn) {
 			if (P == Owner) continue;
@@ -426,8 +406,8 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 				bbPlayer(P).SendWeaponEffect(
 					class'SuperShockRifleWeaponEffect',
 					Owner,
-					Owner.Location + zzSmokeOffset,
-					zzSmokeOffset,
+					Owner.Location + SmokeOffset,
+					SmokeOffset,
 					Other,
 					HitLocation,
 					HitOffset,
@@ -436,8 +416,8 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 				bbCHSpectator(P).SendWeaponEffect(
 					class'SuperShockRifleWeaponEffect',
 					Owner,
-					Owner.Location + zzSmokeOffset,
-					zzSmokeOffset,
+					Owner.Location + SmokeOffset,
+					SmokeOffset,
 					Other,
 					HitLocation,
 					HitOffset,
@@ -546,21 +526,8 @@ auto state Pickup
 
 defaultproperties
 {
-     bAlwaysRelevant=True
      bNewNet=True
      PickupViewMesh=LodMesh'Botpack.SASMD2hand'
      PickupViewScale=1.750000
-	 bDebugSuperShockRifle=False
-	 BeamLength=135
-	 clientDamage=1000
-     BeamPitch=1.25
-     BeamAltPitch=1.50
-     BeamFadeCurve=4
-     BeamDuration=0.75
-	 ImpactSize=1.00
-     ImpactDuration=1.20
-     ImpactPitch=1.25
-	 CustImpactSound=Sound'UnrealShare.General.Expla02'
 	 ST_MyDamageType=jolted
-	 bHitTimer=False
 }
