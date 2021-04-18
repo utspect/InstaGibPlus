@@ -567,8 +567,8 @@ simulated function Touch( actor Other )
 	}
 	if (Other.IsA('Kicker') || Other.IsA('NN_swJumpPad'))
 		bForcePacketSplit = true;
-	// if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0)
-	// 	zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
+	if (Other.IsA('bbPlayer') && bbPlayer(Other).Health > 0)
+		zzIgnoreUpdateUntil = ServerTimeStamp + 0.15;
 	if (Other.IsA('Teleporter'))
 		IgnoreZChangeTicks = 2;
 	Super.Touch(Other);
@@ -1677,7 +1677,6 @@ function ClientUpdatePosition()
 			IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location) / IGPlus_AdjustLocationAlpha;
 		}
 	}
-	// Keep as is.
 
 	bUpdating = false;
 	bDuck = realbDuck;
@@ -1902,6 +1901,11 @@ function IGPlus_ProcessRemoteMovement() {
 		IGPlus_LooseCheckClientError();
 	else
 		IGPlus_CheckClientError();
+
+	if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval && ServerTimeStamp >= NextRealCAPTime) {
+		xxFakeCAP(CurrentTimeStamp);
+		LastCAPTime = ServerTimeStamp;
+	}
 }
 
 function IGPlus_ApplyAllServerMoves() {
@@ -2220,7 +2224,6 @@ function IGPlus_CheckClientError() {
 	local vector LocDelta;
 	local float ClientLocError;
 	local float MaxLocError;
-	local int CAPMiscData;
 	local bool bForceUpdate;
 
 	if (bHaveReceivedServerMove == false)
@@ -2260,20 +2263,12 @@ function IGPlus_CheckClientError() {
 
 	if (bForceUpdate)
 		IGPlus_SendCAP();
-
-	if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval && ServerTimeStamp >= NextRealCAPTime) {
-		xxFakeCAP(CurrentTimeStamp);
-		LastCAPTime = ServerTimeStamp;
-	}
 }
 
 function IGPlus_LooseCheckClientError() {
 	if (IGPlus_WantCAP) {
 		ClearLastServerMoveParams();
 		IGPlus_SendCAP();
-	} else  if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval && ServerTimeStamp >= NextRealCAPTime) {
-		xxFakeCAP(CurrentTimeStamp);
-		LastCAPTime = ServerTimeStamp;
 	}
 }
 
@@ -2603,7 +2598,7 @@ function xxServerMoveDead(
 	float TimeStamp,
 	float MoveDeltaTime,
 	int View
-){
+) {
 	local float ServerDeltaTime;
 	local float DeltaTime;
 
