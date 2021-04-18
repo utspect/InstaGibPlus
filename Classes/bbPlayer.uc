@@ -6672,13 +6672,15 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	y = zzY + 20;
 	foreach AllActors(class'Pawn', P) {
 		if (P.PlayerReplicationInfo == none) continue;
+		if (P.PlayerReplicationInfo.bIsSpectator) continue;
+		if (P.PlayerReplicationInfo.bIsABot) continue;
 		zzC.SetPos(zzx+500, y);
 		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"State:"@GetStateName()@"Physics:"@P.Physics@"Anim:"@P.AnimSequence@"DuckFraction:"@bbPlayer(P).DuckFraction);
 		y += 20;
 	}
-	zzC.SetPos(zzx+20, zzY + 460);
+	zzC.SetPos(zzx, zzY + 460);
 	zzC.DrawText("Base:"@Base);
-	zzC.SetPos(zzx, zzY + 480);
+	zzC.SetPos(zzx+20, zzY + 480);
 	if (Base != none)
 		zzC.DrawText("Velocity:"@Base.Velocity@"State:"@Base.GetStateName());
 	else
