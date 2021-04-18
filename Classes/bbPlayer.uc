@@ -2249,50 +2249,17 @@ function IGPlus_CheckClientError() {
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxLocError = 3.0;
 
+	clientLastUpdateTime = ServerTimeStamp;
+	ClearLastServerMoveParams();
+
 	bForceUpdate = zzbForceUpdate || (zzForceUpdateUntil >= ServerTimeStamp) ||
 		(ClientLocError > MaxLocError && ServerTimeStamp >= NextRealCAPTime) ||
 		(ClientTlocCounter != TlocCounter && IGPlus_NotifiedTranslocate == false);
 
-	clientLastUpdateTime = ServerTimeStamp;
-
-	ClearLastServerMoveParams();
+	debugClientForceUpdate = bForceUpdate;
 
 	if (bForceUpdate)
-	{
-		debugClientForceUpdate = bForceUpdate;
-		debugNumOfForcedUpdates++;
-		zzbForceUpdate = false;
-
-		if ( Mover(Base) != None )
-			ClientLoc = Location - Base.Location;
-		else
-			ClientLoc = Location;
-
-		CAPMiscData = TlocCounter & 0x0003;
-
-		if (GetStateName() == 'PlayerWalking') {
-			if (Physics == PHYS_Walking) {
-				if (Base == Level) {
-					xxCAPWalkingWalkingLevelBase(CurrentTimeStamp, CAPMiscData, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
-				} else {
-					xxCAPWalkingWalking(CurrentTimeStamp, CAPMiscData, ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
-				}
-			} else {
-				xxCAPWalking(CurrentTimeStamp, CAPMiscData | (Physics << 2), ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
-			}
-		} else if (Base == Level)
-			xxCAPLevelBase(CurrentTimeStamp, GetStateName(), CAPMiscData | (Physics << 2), ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z);
-		else
-			xxCAP(CurrentTimeStamp, GetStateName(), CAPMiscData | (Physics << 2), ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
-
-		ClientDebugMessage("Send CAP:"@CurrentTimeStamp@Physics@ClientPhysics@ClientLocError@MaxLocError);
-
-		LastCAPTime = ServerTimeStamp;
-		NextRealCAPTime = ServerTimeStamp + PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation + AverageServerDeltaTime;
-		zzLastClientErr = 0;
-		IGPlus_NotifiedTranslocate = true;
-		return;
-	}
+		IGPlus_SendCAP();
 
 	if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval && ServerTimeStamp >= NextRealCAPTime) {
 		xxFakeCAP(CurrentTimeStamp);
