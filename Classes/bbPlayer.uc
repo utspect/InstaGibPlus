@@ -1610,6 +1610,19 @@ function IGPlus_ClientReplayMove(bbSavedMove M) {
 	M.IGPlus_SavedVelocity = Velocity;
 }
 
+function IGPlus_CleanSavedMoves(float TimeStamp) {
+	local bbSavedMove CurrentMove;
+	CurrentMove = bbSavedMove(SavedMoves);
+
+	while (CurrentMove != none && CurrentMove.TimeStamp <= TimeStamp) {
+		SavedMoves = CurrentMove.NextMove;
+		CurrentMove.NextMove = FreeMoves;
+		FreeMoves = CurrentMove;
+		CurrentMove.Clear2();
+		CurrentMove = bbSavedMove(SavedMoves);
+	}
+}
+
 function ClientUpdatePosition()
 {
 	local bbSavedMove CurrentMove;
@@ -1626,18 +1639,12 @@ function ClientUpdatePosition()
 	bRealJump = bPressedJump;
 	RealRotation = Rotation;
 	RealViewRotation = ViewRotation;
-	CurrentMove = bbSavedMove(SavedMoves);
 	bUpdating = true;
 
-	while (CurrentMove != none && CurrentMove.TimeStamp <= CurrentTimeStamp) {
-		SavedMoves = CurrentMove.NextMove;
-		CurrentMove.NextMove = FreeMoves;
-		FreeMoves = CurrentMove;
-		CurrentMove.Clear2();
-		CurrentMove = bbSavedMove(SavedMoves);
-	}
+	IGPlus_CleanSavedMoves(CurrentTimeStamp);
 
 	if (zzbFakeUpdate == false) {
+		CurrentMove = bbSavedMove(SavedMoves);
 		while (CurrentMove != none) {
 			IGPlus_ClientReplayMove(CurrentMove);
 			CurrentMove = bbSavedMove(CurrentMove.NextMove);
