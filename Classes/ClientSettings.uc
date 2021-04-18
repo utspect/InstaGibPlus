@@ -309,7 +309,7 @@ defaultproperties
 	SSRRingType=1
 	DesiredNetUpdateRate=250.0
 	DesiredNetspeed=25000
-	bNoSmoothing=False
+	bNoSmoothing=True
 	bNoOwnFootsteps=False
 	bLogClientMessages=True
 	bDebugMovement=False
