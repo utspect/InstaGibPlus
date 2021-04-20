@@ -53,7 +53,7 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		xxSetTimes, xxReceivePosition; //, xxClientActivateMover;
+		xxSetTimes; //, xxClientActivateMover;
 
 	reliable if ( (!bDemoRecording || (bClientDemoRecording && bClientDemoNetFunc) || (Level.NetMode==NM_Standalone)) && Role == ROLE_Authority )
 		ReceiveWeaponEffect;
@@ -83,43 +83,6 @@ function SendWeaponEffect(
 	vector HitNormal
 ) {
 	ReceiveWeaponEffect(Effect, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
-}
-
-simulated function xxReceivePosition( bbPlayer Other, vector Loc, vector Vel, bool bSet )
-{
-	local vector Diff;
-	local float VS;
-
-	if (Level.NetMode != NM_Client || Other == None)
-		return;
-
-	Diff = Loc - Other.Location;
-	VS = VSize(Diff);
-	if (VS < 50)
-	{
-		Other.zzLastLocDiff = 0;
-		Other.Velocity = Vel;
-	}
-	else
-	{
-		Other.zzLastLocDiff += VS;
-		if (bSet || Other.zzLastLocDiff > 9000 || !Other.FastTrace(Loc))	// IT'S OVER 9000!
-		{
-			Other.SetLocation(Loc);
-			Other.Velocity = Vel;
-			Other.zzLastLocDiff = 0;
-		}
-		else if (Other.zzLastLocDiff > 900)
-		{
-			Other.MoveSmooth(Diff);
-			Other.Velocity = Vel;
-			Other.zzLastLocDiff = 0;
-		}
-		else
-		{
-			Other.Velocity = Vel + Diff * 5;
-		}
-	}
 }
 
 function int NormRotDiff(int diff) {
