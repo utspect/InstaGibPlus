@@ -104,12 +104,6 @@ var int		zzSMCnt;		// ServerMove Count
 var bool	bMenuFixed;		// Fixed Menu item
 var float	zzCVTO;			// CenterView Time out.
 
-// Anti Timing Variables
-var Inventory	zzAntiTimerList[32];
-var int		zzAntiTimerListState;
-var int		zzAntiTimerListCount;
-var int		zzAntiTimerFlippedCount;
-
 // duh:
 var bool zzTrue,zzFalse;		// True & False
 var int zzNull;				// == 0
@@ -312,9 +306,6 @@ replication
 		KillCamDelay,
 		KillCamDuration,
 		LastKiller,
-		zzAntiTimerList,
-		zzAntiTimerListCount,
-		zzAntiTimerListState,
 		zzCVDelay,
 		zzCVDeny,
 		zzMaximumNetspeed,
@@ -5991,29 +5982,6 @@ simulated function FootStepping()
 	super.FootStepping();
 }
 
-function xxShowItems()
-{
-	local int zzx;
-
-	for (zzx = 0; zzx < zzAntiTimerListCount; zzx++)
-	{
-		if (zzAntiTimerList[zzx] != None)
-			zzAntiTimerList[zzx].bHidden = (zzAntiTimerListState & (1 << zzx)) != zzNull;	// Bitmapped
-	}
-
-}
-
-function xxHideItems()
-{
-	for (zzAntiTimerFlippedCount = 0; zzAntiTimerFlippedCount < zzAntiTimerListCount; zzAntiTimerFlippedCount++)
-	{
-		if (zzAntiTimerList[zzAntiTimerFlippedCount] != None)
-		{
-			zzAntiTimerList[zzAntiTimerFlippedCount].bHidden = zzFalse;
-		}
-	}
-}
-
 function xxDoShot()
 {
 	local string zzS;
@@ -6118,8 +6086,6 @@ function xxPlayerTickEvents(float DeltaTime)
 
 	if (zzbReportScreenshot)
 		xxDoShot();
-
-	xxHideItems();
 
 	zzInfoThing.zzTickOff++;
 	zzInfoThing.zzLastTick = 0.0;
@@ -6423,8 +6389,6 @@ event PreRender( canvas zzCanvas )
 			ApplyBrightskins(zzPRI);
 		}
 	}
-
-	xxShowItems();
 }
 
 event PostRender( canvas zzCanvas )
@@ -6440,8 +6404,6 @@ event PostRender( canvas zzCanvas )
 		ViewRotation.Roll = 0;
 		EyeHeight = zzRepVREye;
 	}
-
-	xxHideItems();
 
 	if ( bBehindView )
 	{

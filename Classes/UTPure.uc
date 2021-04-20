@@ -78,11 +78,6 @@ var bool bDidEndWarn;				// True if screenshot warning has been sent to players.
 var bool bDidShot;
 var float EndWarnDelay;
 
-// Anti-Timer
-var Inventory zzAntiTimerList[32];		// This holds the inventory on the map that should be protected
-var int zzAntiTimerListCount;			// How many in the list
-var int zzAntiTimerListState;			// The state of the pickups, calculated each tick
-
 // Pause control (for Event PlayerCalcView)
 var bool	zzbPaused;			// Game has been paused at one time.
 var float	zzPauseCountdown;		// Give 120 seconds of "ignore FT"
@@ -261,8 +256,6 @@ function PostBeginPlay()
 	for (MLH = NextMLH; MLH != None; MLH = MLH.NextMLH)
 		MLH.Accepted();
 
-	xxBuildAntiTimerList();
-
 	//Log("bAutoPause:"@bAutoPause@"bTeamGame:"@zzDMP.bTeamGame@"bTournament:"@zzDMP.bTournament);
 	if (bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
 		zzAutoPauser = Spawn(Class'PureAutoPause');
@@ -416,19 +409,10 @@ function xxReplaceTeamInfo()
 // TICK!!! And it's not the bug kind. Sorta :/
 event Tick(float zzDelta)
 {
-	local int zzx;
 	local bool zzb, zzbDoShot;
 	local Pawn zzP;
 	local bbPlayer zzbP;
 	local bbCHSpectator zzbS;
-
-	// Build visible/hidden list for pickups.
-	zzAntiTimerListState = 0;
-	for (zzx = 0; zzx < zzAntiTimerListCount; zzx++)
-	{
-		if (zzAntiTimerList[zzx] != None && zzAntiTimerList[zzx].bHidden)
-			zzAntiTimerListState = zzAntiTimerListState | (1 << zzx);
-	}
 
 	if (Level.Pauser != "")		// This code is to avoid players being kicked when paused.
 	{
@@ -482,7 +466,6 @@ event Tick(float zzDelta)
 		zzbP = bbPlayer(zzP);
 		if (zzbP != None)
 		{
-			zzbP.zzAntiTimerListState = zzAntiTimerListState;	// Copy the visible/hidden list for pickups.
 			if (zzbP.zzOldNetspeed != zzbP.zzNetspeed)
 			{
 				zzbP.xxSetNetUpdateRate(1.0/zzbP.TimeBetweenNetUpdates, zzbP.zzNetspeed);
@@ -544,35 +527,6 @@ function xxHideFortStandards()
 		FS.Disable('Touch');
 		FS.Disable('Trigger');
 		FS.SetCollision(false, false, false);
-	}
-}
-
-function bool xxAntiTimeThis(Inventory zzInv)	// These thing should be hidden from timer.
-{
-	Switch(zzInv.Class.Name)
-	{
-		Case 'Armor2':
-		Case 'ThighPads':
-		Case 'HealthPack':
-		Case 'UDamage':
-		Case 'UT_Invisibility':
-		case 'UT_ShieldBelt':
-		Case 'WarheadLauncher':		return True;
-	}
-	return False;
-}
-
-function xxBuildAntiTimerList()
-{
-	local Inventory zzInv;
-
-	ForEach Level.AllActors(Class'Inventory',zzInv)
-	{
-		if (zzInv != None && xxAntiTimeThis(zzInv))
-		{
-			zzAntiTimerList[zzAntiTimerListCount++] = zzInv;
-		}
-		if (zzAntiTimerListCount == 32) break;
 	}
 }
 
@@ -830,7 +784,6 @@ function ModifyLogout(Pawn Exiting) {
 //"Hack" for variables that only need to be set once.
 function bool AlwaysKeep(Actor Other)
 {
-	local int zzx;
 	local UTPlayerChunks PC;
 
 	ForEach AllActors(class'UTPlayerChunks', PC)
@@ -840,11 +793,6 @@ function bool AlwaysKeep(Actor Other)
 
 	if ( bbPlayer(Other) != None )
 	{
-		for (zzx = 0; zzx < zzAntiTimerListCount; zzx++)
-		{
-			bbPlayer(Other).zzAntiTimerList[zzx] = zzAntiTimerList[zzx];
-		}
-		bbPlayer(Other).zzAntiTimerListCount = zzAntiTimerListCount;
 		bbPlayer(Other).zzUTPure = Self;
 		bbPlayer(Other).zzThrowVelocity = ThrowVelocity;
 	}
