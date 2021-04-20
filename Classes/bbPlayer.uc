@@ -412,7 +412,6 @@ replication
 		xxServerReceiveINT,
 		xxServerReceiveKeys,
 		xxServerReceiveMenuItems,
-		xxServerReceiveStuff,
 		xxServerSetForceModels,
 		xxServerSetMinDodgeClickTime,
 		xxServerSetReadyToPlay,
@@ -1684,32 +1683,6 @@ function UpdatePing() {
 		PingRunningAverageCount++;
 		PingRunningAverage = PingRunningAverage / PingRunningAverageCount;
 	}
-}
-
-function xxServerReceiveStuff( vector TeleLoc, vector TeleVel )
-{
-	local Inventory inv;
-	local Translocator TLoc;
-
-	if (Level.NetMode == NM_Client || IsInState('Dying'))
-		return;
-
-	if ((TeleLoc dot TeleLoc) > 0 && TTarget != None && VSize(TeleLoc - TTarget.Location) < class'UTPure'.default.MaxPosError)
-	{
-		TLoc = Translocator(Weapon);
-		if (TLoc == None)
-		{
-			for (inv=Inventory; inv!=None; inv=inv.Inventory)
-			{
-				TLoc = Translocator(inv);
-				if (TLoc != None)
-					break;
-			}
-		}
-		TTarget.MoveSmooth(TeleLoc - TTarget.Location);
-		TTarget.Velocity = TeleVel;
-	}
-
 }
 
 function TakeFallingDamage()
@@ -6054,9 +6027,6 @@ function xxPlayerTickEvents(float DeltaTime)
 		if (Player.CurrentNetSpeed != 0 && CurrentTime - zzLastStuffUpdate > 500.0/Player.CurrentNetSpeed)
 		{
 			xxGetDemoPlaybackSpec();
-
-			if (zzClientTTarget != None)
-				xxServerReceiveStuff( zzClientTTarget.Location, zzClientTTarget.Velocity );
 			zzLastStuffUpdate = CurrentTime;
 		}
 	}
