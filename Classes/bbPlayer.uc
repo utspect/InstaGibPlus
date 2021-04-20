@@ -54,6 +54,7 @@ var bool	zzbGotDemoPlaybackSpec;
 var CHSpectator zzDemoPlaybackSpec;
 var bbClientDemoSN zzDemoPlaybackSN;
 var bool bIsAlive;
+var bool bDemoStarted;
 
 // Stuff
 var float	zzDesiredFOV;		// Needed ?
@@ -8073,6 +8074,8 @@ simulated function xxClientDemoRec()
 {
 	local string zzS;
 
+	if (bDemoStarted) return;
+	bDemoStarted = true;
 	zzS = ConsoleCommand("DemoRec"@xxCreateDemoName(Settings.DemoMask));
 	ClientMessage(zzS);
 	if (zzbForceDemo)
