@@ -293,8 +293,7 @@ replication
 		xxReplicateVRToDemo;
 
 	reliable if (bClientDemoRecording && !bClientDemoNetFunc)
-		xxClientDemoFix,
-		xxClientDemoBolt;
+		xxClientDemoFix;
 
 	reliable if ((Role == ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ClientProjExplode;
@@ -7920,16 +7919,6 @@ simulated function xxClientDemoFix(Actor zzA, class<Actor> C, Vector L, optional
 	if((S != none) && UT_SeekingRocket(zzA) != none)
 		UT_SeekingRocket(zzA).Seeking = S;
 
-}
-
-simulated function xxClientDemoBolt(Actor A, optional Vector V, optional Rotator R, optional Vector X, optional float Delta)
-{
-	xxGetDemoPlaybackSpec();
-	if (A == none)
-		return;
-	A.SetLocation(V);
-	A.SetRotation(R);
-	PBolt(A).CheckBeam(X, Delta);
 }
 
 function string xxFindClanTags() {
