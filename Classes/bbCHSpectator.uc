@@ -28,6 +28,7 @@ struct PIDController {
 
 var PIDController PitchController;
 var PIDController YawController;
+var rotator LastTargetViewRotation;
 var rotator LastRotation;
 var Actor LastViewTarget;
 
@@ -310,11 +311,13 @@ function SmoothRotation(float DeltaTime)
 			LastRotation = TargetViewRotation;
 			LastViewTarget = P;
 		}
-		if (LastRotation.Pitch != TargetViewRotation.Pitch || LastRotation.Yaw != TargetViewRotation.Yaw)
+		if (LastRotation.Pitch != TargetViewRotation.Pitch || LastRotation.Yaw != TargetViewRotation.Yaw) {
+			LastTargetViewRotation = TargetViewRotation;
 			TargetViewRotation = LastRotation;
+		}
 
-		Pitch = P.CompressedViewRotation >>> 16;
-		Yaw = P.CompressedViewRotation & 0xFFFF;
+		Pitch = LastTargetViewRotation.Pitch;
+		Yaw = LastTargetViewRotation.Yaw;
 
 		DeltaPitch = TickPID(PitchController, DeltaTime, NormRotDiff(Pitch - TargetViewRotation.Pitch));
 		DeltaYaw = TickPID(YawController, DeltaTime, NormRotDiff(Yaw - TargetViewRotation.Yaw));

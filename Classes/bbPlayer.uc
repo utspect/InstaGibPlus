@@ -198,12 +198,6 @@ var bool IGPlus_WantCAP;
 // SSR Beam
 var float LastWeaponEffectCreated;
 
-//
-var int CompressedViewRotation; // Compressed Pitch/Yaw
-// 31               16               0
-// +----------------+----------------+
-// |     Pitch      |      Yaw       |
-// +----------------+----------------+
 
 var bool bWasPaused;
 
@@ -429,10 +423,6 @@ replication
 		xxNN_ProjExplode,
 		xxNN_ReleaseAltFire,
 		xxNN_ReleaseFire;
-
-	// Server->Client
-	unreliable if (Role == ROLE_Authority && RemoteRole < ROLE_AutonomousProxy && bViewTarget)
-		CompressedViewRotation;
 
 	reliable if ( (!bDemoRecording || (bClientDemoRecording && bClientDemoNetFunc) || (Level.NetMode==NM_Standalone)) && Role == ROLE_Authority )
 		ReceiveWeaponEffect;
@@ -2081,7 +2071,6 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	LastServerMoveParams.TlocCounter = ClientTlocCounter;
 
 	// View components
-	CompressedViewRotation = SM.View;
 	ViewPitch = (SM.View >>> 16);
 	ViewYaw = (SM.View & 0xFFFF);
 
@@ -3717,7 +3706,6 @@ function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation,
 event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator CameraRotation )
 {
 	local Pawn PTarget;
-	local bbPlayer bbP;
 
 	if (zzInfoThing != None)
 			zzInfoThing.zzPlayerCalcViewCalls--;
@@ -3733,14 +3721,7 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 			if ( Level.NetMode == NM_Client )
 			{
 				if ( PTarget.bIsPlayer ) {
-					bbP = bbPlayer(PTarget);
-					if (bbp != none) {
-						PTarget.ViewRotation.Pitch = bbP.CompressedViewRotation >>> 16;
-						PTarget.ViewRotation.Yaw = bbP.CompressedViewRotation & 0xFFFF;
-						PTarget.ViewRotation.Roll = 0;
-					} else {
-						PTarget.ViewRotation = TargetViewRotation;
-					}
+					PTarget.ViewRotation = TargetViewRotation;
 				}
 				PTarget.EyeHeight = TargetEyeHeight;
 				if ( PTarget.Weapon != None )
