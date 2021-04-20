@@ -3990,18 +3990,22 @@ simulated function ClientAddMomentum(vector Momentum, float TimeStamp, int Index
 function ServerAddMomentum(vector Momentum) {
 	local int Next;
 
-	if (Momentum == vect(0,0,0))
-		return;
+	if (class'UTPure'.default.bEnableLoosePositionCheck) {
+		if (Momentum == vect(0,0,0))
+			return;
 
-	Next = (LastAddVelocityIndex+1) & 0xF;
-	if (Next == LastAddVelocityAppliedIndex)
-		return; // full
+		Next = (LastAddVelocityIndex+1) & 0xF;
+		if (Next == LastAddVelocityAppliedIndex)
+			return; // full
 
-	AddVelocityCalls[LastAddVelocityIndex].Momentum = Momentum;
-	AddVelocityCalls[LastAddVelocityIndex].TimeStamp = Level.TimeSeconds + 0.5*Level.TimeDilation;
-	ClientAddMomentum(Momentum, Level.TimeSeconds, LastAddVelocityIndex);
+		AddVelocityCalls[LastAddVelocityIndex].Momentum = Momentum;
+		AddVelocityCalls[LastAddVelocityIndex].TimeStamp = Level.TimeSeconds + 0.5*Level.TimeDilation;
+		ClientAddMomentum(Momentum, Level.TimeSeconds, LastAddVelocityIndex);
 
-	LastAddVelocityIndex = Next;
+		LastAddVelocityIndex = Next;
+	} else {
+		Super.AddVelocity(Momentum);
+	}
 }
 
 simulated function NN_Momentum( Vector momentum, name DamageType )
