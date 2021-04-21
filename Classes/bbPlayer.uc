@@ -3949,6 +3949,8 @@ function ServerAddMomentum(vector Momentum) {
 
 		LastAddVelocityIndex = Next;
 	} else {
+		if (Physics == PHYS_Walking)
+			Momentum.Z = FMax(Momentum.Z, 0.4 * VSize(Momentum));
 		Super.AddVelocity(Momentum);
 	}
 }
