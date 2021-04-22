@@ -2211,8 +2211,10 @@ function IGPlus_CheckClientError() {
 
 	debugClientForceUpdate = bForceUpdate;
 
-	if (bForceUpdate)
+	if (bForceUpdate) {
+		ClientDebugMessage("Send CAP:"@CurrentTimeStamp@Physics@ClientPhysics@ClientLocError@MaxLocError);
 		IGPlus_SendCAP();
+	}
 }
 
 function IGPlus_LooseCheckClientError() {
