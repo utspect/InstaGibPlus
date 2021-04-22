@@ -1590,7 +1590,7 @@ function IGPlus_ClientReplayMove(bbSavedMove M) {
 	M.IGPlus_SavedVelocity = Velocity;
 }
 
-function IGPlus_CleanSavedMoves(float TimeStamp) {
+function IGPlus_FreeAcknowledgedMoves(float TimeStamp) {
 	local bbSavedMove FirstMove;
 	local bbSavedMove CurrentMove;
 
@@ -1626,7 +1626,7 @@ function ClientUpdatePosition()
 	RealViewRotation = ViewRotation;
 	bUpdating = true;
 
-	IGPlus_CleanSavedMoves(CurrentTimeStamp);
+	IGPlus_FreeAcknowledgedMoves(CurrentTimeStamp);
 
 	if (zzbFakeUpdate == false) {
 		CurrentMove = bbSavedMove(SavedMoves);
