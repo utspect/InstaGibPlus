@@ -35,7 +35,6 @@ ignores Touch, Timer, BeginState, EndState;
 
 defaultproperties
 {
-     bAlwaysRelevant=True
      Skin=Texture'PureFlag'
      bCollideWorld=False
      LightType=LT_None
