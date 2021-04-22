@@ -1591,16 +1591,21 @@ function IGPlus_ClientReplayMove(bbSavedMove M) {
 }
 
 function IGPlus_CleanSavedMoves(float TimeStamp) {
+	local bbSavedMove FirstMove;
 	local bbSavedMove CurrentMove;
-	CurrentMove = bbSavedMove(SavedMoves);
 
-	while (CurrentMove != none && CurrentMove.TimeStamp <= TimeStamp) {
-		SavedMoves = CurrentMove.NextMove;
-		CurrentMove.NextMove = FreeMoves;
-		FreeMoves = CurrentMove;
-		CurrentMove.Clear2();
-		CurrentMove = bbSavedMove(SavedMoves);
+	if (SavedMoves.TimeStamp > TimeStamp) return;
+
+	CurrentMove = bbSavedMove(SavedMoves);
+	FirstMove = CurrentMove;
+
+	while (CurrentMove.NextMove != none && CurrentMove.NextMove.TimeStamp <= TimeStamp) {
+		CurrentMove = bbSavedMove(CurrentMove.NextMove);
 	}
+
+	SavedMoves = CurrentMove.NextMove;
+	CurrentMove.NextMove = FreeMoves;
+	FreeMoves = FirstMove;
 }
 
 function ClientUpdatePosition()
