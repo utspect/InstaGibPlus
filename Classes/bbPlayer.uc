@@ -2199,14 +2199,6 @@ function IGPlus_CheckClientError() {
 	ClientLocError = LocDelta Dot LocDelta;
 	debugClientLocError = ClientLocError;
 
-	// Apply momentum that the client never got around to
-	while(LastAddVelocityAppliedIndex != LastAddVelocityIndex && AddVelocityCalls[LastAddVelocityAppliedIndex].TimeStamp < ServerTimeStamp) {
-		IGPlus_ApplyMomentum(AddVelocityCalls[LastAddVelocityAppliedIndex].Momentum);
-		AddVelocityCalls[LastAddVelocityAppliedIndex].Momentum = vect(0,0,0);
-		zzbForceUpdate = true;
-		LastAddVelocityAppliedIndex = (LastAddVelocityAppliedIndex+1) & 0xF;
-	}
-
 	// Calculate how far off we allow the client to be from the predicted position
 	MaxLocError = 3.0;
 
