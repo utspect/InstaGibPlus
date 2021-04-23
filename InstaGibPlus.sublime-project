@@ -3,6 +3,7 @@
 	[
 		{
 			"path": ".",
+            "folder_exclude_patterns": ["Build/Temp"],
 		}
 	],
     "settings":
