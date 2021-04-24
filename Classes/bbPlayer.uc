@@ -8150,6 +8150,9 @@ function PlayInAir() {
 	local vector X,Y,Z, Dir;
 	local float f, TweenTime;
 
+	if (Level.NetMode != NM_DedicatedServer && Settings.bReduceEyeHeightInAir)
+		BaseEyeHeight = 0.7 * default.BaseEyeHeight;
+
 	if ( (GetAnimGroup(AnimSequence) == 'Landing') && !bLastJumpAlt )
 	{
 		GetAxes(Rotation, X,Y,Z);

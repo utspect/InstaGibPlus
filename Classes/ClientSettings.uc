@@ -66,6 +66,7 @@ var config bool   bShowFPS;
 var config int    FPSDetail;
 var config int    FPSCounterSmoothingStrength;
 var config float  KillCamMinDelay;
+var config bool   bReduceEyeHeightInAir;
 var config bool   bAllowWeaponShake;
 var config bool   bAutoReady;
 
@@ -253,6 +254,7 @@ simulated function string DumpSettings() {
 		GetSetting("FPSDetail")$
 		GetSetting("FPSCounterSmoothingStrength")$
 		GetSetting("KillCamMinDelay")$
+		GetSetting("bReduceEyeHeightInAir")$
 		GetSetting("bAllowWeaponShake")$
 		GetSetting("bAutoReady")$
 		GetSetting("bEnableHitMarker")$
@@ -322,6 +324,7 @@ defaultproperties
 	FPSDetail=0
 	FPSCounterSmoothingStrength=1000
 	KillCamMinDelay=0.0
+	bReduceEyeHeightInAir=False
 	bAllowWeaponShake=True
 	bAutoReady=True
 	bEnableHitMarker=False
