@@ -1972,8 +1972,11 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	zzKickReady = Max(zzKickReady - 1,0);
 	bJustRespawned = false;
 
-	if (SM.TimeStamp > Level.TimeSeconds)
-		SM.TimeStamp = Level.TimeSeconds;
+	// The following code causes severe lags for some players. Probably because
+	// their clock is inaccurate enough that they catch up and overtake the
+	// servers Level.TimeSeconds during a match.
+	// if (SM.TimeStamp > Level.TimeSeconds)
+	// 	SM.TimeStamp = Level.TimeSeconds;
 
 	if (CurrentTimeStamp >= SM.TimeStamp) {
 		ClientDebugMessage("Reject Outdated Move:"@CurrentTimeStamp@SM.TimeStamp);
