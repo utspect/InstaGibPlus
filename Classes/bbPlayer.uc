@@ -1547,6 +1547,9 @@ function xxFakeCAP(float TimeStamp)
 		return;
 	CurrentTimeStamp = TimeStamp;
 
+	IGPlus_AdjustLocationAlpha = 0;
+	IGPlus_AdjustLocationOffset = vect(0,0,0);
+
 	bUpdatePosition = true;
 }
 
