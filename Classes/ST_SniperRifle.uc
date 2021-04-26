@@ -127,5 +127,29 @@ simulated function TweenDown()
 	PlayAnim('Down', 100.0, 0.0);
 }
 
+state ClientFiring {
+	simulated function bool ClientAltFire(float Value) {
+		return false;
+	}
+}
+
+state NormalFire {
+	function Fire(float Value) {}
+}
+
+state Zooming {
+	simulated function bool ClientFire(float Value) {
+		if ( (PlayerPawn(Owner) != None) && PlayerPawn(Owner).Player.IsA('ViewPort') )
+            PlayerPawn(Owner).StopZoom();
+		return global.ClientFire(Value);
+	}
+
+	function Fire(float Value) {
+		if ( (PlayerPawn(Owner) != None) && PlayerPawn(Owner).Player.IsA('ViewPort') )
+            PlayerPawn(Owner).StopZoom();
+		global.Fire(Value);
+	}
+}
+
 defaultproperties {
 }
