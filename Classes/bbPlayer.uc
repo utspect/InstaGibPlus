@@ -6228,7 +6228,7 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SkinActor.Mesh = class'bbTBoss'.Default.Mesh;
 			break;
 		default:
-			if (P.bAppearanceChanged) {
+			if (P != none && P.bAppearanceChanged) {
 				PRI = bbPlayerReplicationInfo(P.PlayerReplicationInfo);
 				SkinActor.Mesh = SkinActor.default.Mesh;
 				P.static.SetMultiSkin(SkinActor, PRI.SkinName, PRI.FaceName, TeamNum);
@@ -6236,7 +6236,8 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			}
 			return;
 	}
-	P.bAppearanceChanged = true;
+	if (P != none)
+		P.bAppearanceChanged = true;
 }
 
 function int GetForcedSkinForPlayer(PlayerReplicationInfo PRI) {
