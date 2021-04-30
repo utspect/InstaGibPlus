@@ -6088,7 +6088,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.aphe4Indina", "FCommandoSkins.aphe");
 			// Set the Mesh
-			SkinActor.Mesh = class'bbTFemale1'.Default.Mesh;
 			break;
 		case 1: // Female Commando Anna
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.cmdo1"$suffix, "FCommandoSkins.cmdo");
@@ -6096,7 +6095,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.cmdo4Anna", "FCommandoSkins.anna");
 			// Set the Mesh
-			SkinActor.Mesh = class'bbTFemale1'.Default.Mesh;
 			break;
 		case 2: // Female Commando Mercenary
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.daco1"$suffix, "FCommandoSkins.daco");
@@ -6104,7 +6102,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.daco4Jayce", "FCommandoSkins.daco");
 			// Set the Mesh
-			SkinActor.Mesh = class'bbTFemale1'.Default.Mesh;
 			break;
 		case 3: // Female Commando Necris
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.goth1"$suffix, "FCommandoSkins.goth");
@@ -6112,7 +6109,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.goth4Cryss", "FCommandoSkins.goth");
 			// Set the Mesh
-			SkinActor.Mesh = class'bbTFemale1'.Default.Mesh;
 			break;
 		case 4: // Female Soldier Marine
 			SetSkinElement(SkinActor, 0, "SGirlSkins.fbth1"$suffix, "SGirlSkins.fbth");
@@ -6121,7 +6117,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.fbth4Annaka", "SGirlSkins.fbth");
 			// Set the Mesh
-			SkinActor.Mesh = class'bbTFemale2'.Default.Mesh;
 			break;
 		case 5: // Female Soldier Metal Guard
 			SetSkinElement(SkinActor, 0, "SGirlSkins.Garf1"$suffix, "SGirlSkins.Garf");
@@ -6129,7 +6124,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SGirlSkins.Garf3", "SGirlSkins.Garf");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.Garf4Isis", "SGirlSkins.Garf");
-			SkinActor.Mesh = class'bbTFemale2'.Default.Mesh;
 			break;
 		case 6: // Female Soldier Soldier
 			SetSkinElement(SkinActor, 0, "SGirlSkins.army1"$suffix, "SGirlSkins.army");
@@ -6137,7 +6131,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SGirlSkins.army3", "SGirlSkins.army");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.army4Lauren", "SGirlSkins.army");
-			SkinActor.Mesh = class'bbTFemale2'.Default.Mesh;
 			break;
 		case 7: // Female Soldier Venom
 			SetSkinElement(SkinActor, 0, "SGirlSkins.Venm1"$suffix, "SGirlSkins.Venm");
@@ -6145,7 +6138,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SGirlSkins.Venm3", "SGirlSkins.Venm");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.Venm4Athena", "SGirlSkins.Venm");
-			SkinActor.Mesh = class'bbTFemale2'.Default.Mesh;
 			break;
 		case 8: // Female Soldier War Machine
 			SetSkinElement(SkinActor, 0, "SGirlSkins.fwar1"$suffix, "SGirlSkins.fwar");
@@ -6153,7 +6145,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SGirlSkins.fwar3", "SGirlSkins.fwar");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.fwar4Cathode", "SGirlSkins.fwar");
-			SkinActor.Mesh = class'bbTFemale2'.Default.Mesh;
 			break;
 		case 9: // Male Commando Commando
 			SetSkinElement(SkinActor, 3, "CommandoSkins.cmdo4"$suffix, "CommandoSkins.cmdo");
@@ -6161,7 +6152,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 0, "CommandoSkins.cmdo1", "CommandoSkins.cmdo");
 			// Set the face
 			SetSkinElement(SkinActor, 1, "CommandoSkins.cmdo2Blake", "CommandoSkins.cmdo");
-			SkinActor.Mesh = class'bbTMale1'.Default.Mesh;
 			break;
 		case 10: // Male Commando Mercenary
 			SetSkinElement(SkinActor, 3, "CommandoSkins.daco4"$suffix, "CommandoSkins.daco");
@@ -6169,7 +6159,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 0, "CommandoSkins.daco1", "CommandoSkins.daco");
 			// Set the face
 			SetSkinElement(SkinActor, 1, "CommandoSkins.daco2Boris", "CommandoSkins.daco");
-			SkinActor.Mesh = class'bbTMale1'.Default.Mesh;
 			break;
 		case 11: // Male Commando Necris
 			SetSkinElement(SkinActor, 3, "CommandoSkins.goth4"$suffix, "CommandoSkins.goth");
@@ -6177,7 +6166,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 0, "CommandoSkins.goth1", "CommandoSkins.goth");
 			// Set the face
 			SetSkinElement(SkinActor, 1, "CommandoSkins.goth2Grail", "CommandoSkins.goth");
-			SkinActor.Mesh = class'bbTMale1'.Default.Mesh;
 			break;
 		case 12: // Male Soldier Marine
 			SetSkinElement(SkinActor, 0, "SoldierSkins.blkt1"$suffix, "SoldierSkins.blkt");
@@ -6185,7 +6173,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SoldierSkins.blkt3", "SoldierSkins.blkt");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.blkt4Malcom", "SoldierSkins.blkt");
-			SkinActor.Mesh = class'bbTMale2'.Default.Mesh;
 			break;
 		case 13: // Male Soldier Metal Guard
 			SetSkinElement(SkinActor, 0, "SoldierSkins.Gard1"$suffix, "SoldierSkins.Gard");
@@ -6193,7 +6180,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SoldierSkins.Gard3", "SoldierSkins.Gard");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.Gard4Drake", "SoldierSkins.Gard");
-			SkinActor.Mesh = class'bbTMale2'.Default.Mesh;
 			break;
 		case 14: // Male Soldier Raw Steel
 			SetSkinElement(SkinActor, 0, "SoldierSkins.RawS1"$suffix, "SoldierSkins.RawS");
@@ -6201,7 +6187,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SoldierSkins.RawS3", "SoldierSkins.RawS");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.RawS4Arkon", "SoldierSkins.RawS");
-			SkinActor.Mesh = class'bbTMale2'.Default.Mesh;
 			break;
 		case 15: // Male Soldier Soldier
 			SetSkinElement(SkinActor, 0, "SoldierSkins.sldr1"$suffix, "SoldierSkins.sldr");
@@ -6209,7 +6194,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SoldierSkins.sldr3", "SoldierSkins.sldr");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.sldr4Brock", "SoldierSkins.sldr");
-			SkinActor.Mesh = class'bbTMale2'.Default.Mesh;
 			break;
 		case 16: // Male Soldier War Machine
 			SetSkinElement(SkinActor, 0, "SoldierSkins.hkil1"$suffix, "SoldierSkins.hkil");
@@ -6217,7 +6201,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SoldierSkins.hkil3", "SoldierSkins.hkil");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SoldierSkins.hkil4Matrix", "SoldierSkins.hkil");
-			SkinActor.Mesh = class'bbTMale2'.Default.Mesh;
 			break;
 		case 17: // Boss
 			SetSkinElement(SkinActor, 0, "BossSkins.Boss1"$suffix, "BossSkins.Boss");
@@ -6225,12 +6208,10 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "BossSkins.Boss3"$suffix, "BossSkins.Boss");
 			// Set the face (Xan has different head colours? Makes sense, he's a robot.)
 			SetSkinElement(SkinActor, 3, "BossSkins.Boss4"$suffix, "BossSkins.Boss");
-			SkinActor.Mesh = class'bbTBoss'.Default.Mesh;
 			break;
 		default:
 			if (P != none && P.bAppearanceChanged) {
 				PRI = bbPlayerReplicationInfo(P.PlayerReplicationInfo);
-				SkinActor.Mesh = SkinActor.default.Mesh;
 				P.static.SetMultiSkin(SkinActor, PRI.SkinName, PRI.FaceName, TeamNum);
 				P.bAppearanceChanged = false;
 			}
@@ -6290,6 +6271,18 @@ function bool IsForcedSkinMale(int Skin) {
 	return Skin > 8 && Skin <= 17;
 }
 
+function SetForcedMesh(PlayerReplicationInfo PRI, int Skin) {
+	if (Skin >= 0 && Skin <= 17) {
+		if (PRI.bIsFemale == IsForcedSkinFemale(Skin)) {
+			PRI.Owner.Mesh = class'IGPlus_ModelImport'.default.DefaultMesh[Skin];
+		} else {
+			PRI.Owner.Mesh = class'IGPlus_ModelImport'.default.RateCorrectedMesh[Skin];
+		}
+	} else {
+		PRI.Owner.Mesh = PRI.Owner.default.Mesh;
+	}
+}
+
 function ApplyForcedSkins(PlayerReplicationInfo PRI) {
 	local int Skin;
 
@@ -6301,6 +6294,7 @@ function ApplyForcedSkins(PlayerReplicationInfo PRI) {
 
 	if (zzbForceModels) {
 		Skin = GetForcedSkinForPlayer(PRI);
+		SetForcedMesh(PRI, Skin);
 		SetForcedSkin(PRI.Owner, Skin, GameReplicationInfo.bTeamGame, PRI.Team);
 	}
 }
