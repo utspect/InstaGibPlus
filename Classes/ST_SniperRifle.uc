@@ -9,6 +9,9 @@ class ST_SniperRifle extends SniperRifle;
 var ST_Mutator STM;
 
 var float ReloadTime;
+var bool bIsZooming;
+var bool bZoomed;
+var bool bResetZoom;
 
 replication
 {
@@ -125,29 +128,45 @@ simulated function PlayFiring()
 simulated function TweenDown()
 {
 	PlayAnim('Down', 100.0, 0.0);
-}
-
-state ClientFiring {
-	simulated function bool ClientAltFire(float Value) {
-		return false;
+	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
+		bZoomed = false;
+		bIsZooming = false;
+		PlayerPawn(Owner).EndZoom();
 	}
 }
 
-state NormalFire {
-	function Fire(float Value) {}
-}
-
-state Zooming {
-	simulated function bool ClientFire(float Value) {
-		if ( (PlayerPawn(Owner) != None) && PlayerPawn(Owner).Player.IsA('ViewPort') )
-            PlayerPawn(Owner).StopZoom();
-		return global.ClientFire(Value);
+simulated function bool ClientAltFire(float Value) {
+	if (Owner.IsA('PlayerPawn') == false) {
+		Pawn(Owner).bFire = 1;
+		Pawn(Owner).bAltFire = 0;
+		Global.Fire(0);
 	}
 
-	function Fire(float Value) {
-		if ( (PlayerPawn(Owner) != None) && PlayerPawn(Owner).Player.IsA('ViewPort') )
-            PlayerPawn(Owner).StopZoom();
-		global.Fire(Value);
+	return true;
+}
+
+simulated function Tick(float DeltaTime) {
+	if (Owner.IsA('PlayerPawn') && IsInState('ClientDown') == false && IsInState('DownWeapon') == false) {
+		if (bIsZooming == false && bResetZoom == false && Pawn(Owner).bAltFire != 0) {
+			bZoomed = !bZoomed;
+			if (bZoomed) {
+				bIsZooming = true;
+				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
+					PlayerPawn(Owner).StartZoom();
+				SetTimer(0.2, true);
+			} else {
+				bResetZoom = true;
+				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
+					PlayerPawn(Owner).EndZoom();
+				SetTimer(0.0, false);
+			}
+		} else if (bZoomed && bIsZooming && Pawn(Owner).bAltFire == 0) {
+			bIsZooming = false;
+			if (PlayerPawn(Owner).Player.IsA('ViewPort'))
+				PlayerPawn(Owner).StopZoom();
+		} else if (bZoomed == false && bResetZoom && Pawn(Owner).bAltFire == 0) {
+			bResetZoom = false;
+		}
 	}
 }
 
