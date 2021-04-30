@@ -36,11 +36,31 @@ function Translocate()
 
 function ThrowTarget()
 {
+	local Vector Start, X,Y,Z;
+
 	STM.PlayerFire(Pawn(Owner), 2);		// 2 = Translocator
-	Super.ThrowTarget();
-	if (TTarget != none) {
+
+	if (Level.Game.LocalLog != None)
+		Level.Game.LocalLog.LogSpecialEvent("throw_translocator", Pawn(Owner).PlayerReplicationInfo.PlayerID);
+	if (Level.Game.WorldLog != None)
+		Level.Game.WorldLog.LogSpecialEvent("throw_translocator", Pawn(Owner).PlayerReplicationInfo.PlayerID);
+
+	if ( Owner.IsA('Bot') )
+		bBotMoveFire = true;
+	Start = Owner.Location + CalcDrawOffset() + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z;
+	Pawn(Owner).ViewRotation = Pawn(Owner).AdjustToss(TossForce, Start, 0, true, true);
+	GetAxes(Pawn(owner).ViewRotation,X,Y,Z);
+	TTarget = Spawn(class'ST_TranslocatorTarget',,, Start);
+	if (TTarget!=None)
+	{
+		bTTargetOut = true;
+		TTarget.Master = self;
 		TTarget.DisruptionThreshold = STM.WeaponSettings.TranslocatorHealth;
+		if ( Owner.IsA('Bot') )
+			TTarget.SetCollisionSize(0,0);
+		TTarget.Throw(Pawn(Owner), MaxTossForce, Start);
 	}
+	else GotoState('Idle');
 }
 
 simulated function TweenDown()
