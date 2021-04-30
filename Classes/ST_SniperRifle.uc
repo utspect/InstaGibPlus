@@ -148,7 +148,12 @@ simulated function bool ClientAltFire(float Value) {
 }
 
 simulated function Tick(float DeltaTime) {
-	if (Owner.IsA('PlayerPawn') && IsInState('ClientDown') == false && IsInState('DownWeapon') == false && Pawn(Owner).Weapon == self) {
+	if (Owner != none &&
+		Owner.IsA('PlayerPawn') &&
+		IsInState('ClientDown') == false &&
+		IsInState('DownWeapon') == false &&
+		Pawn(Owner).Weapon == self
+	) {
 		if (bIsZooming == false && bResetZoom == false && Pawn(Owner).bAltFire != 0) {
 			bZoomed = !bZoomed;
 			if (bZoomed) {
