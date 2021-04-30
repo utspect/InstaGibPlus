@@ -17,7 +17,7 @@ function class<bot> CHGetBotClass(int n)
 
 	if (Left(BotClassName, 8) ~= "BotPack.")
 	{
-		BotClassName = Class'ST_Mutator'.Default.PreFix$Class'UTPure'.Default.ThisVer$".ST_"$Mid(BotClassName, 8);
+		BotClassName = Class'StringUtils'.static.GetPackage()$".ST_"$Mid(BotClassName, 8);
 		BotClassNew = Class<Bot>(DynamicLoadObject(BotClassName, Class'Class'));
 		if (BotClassNew != None)
 			BotClass = BotClassNew;
