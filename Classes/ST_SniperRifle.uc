@@ -9,9 +9,13 @@ class ST_SniperRifle extends SniperRifle;
 var ST_Mutator STM;
 
 var float ReloadTime;
-var bool bIsZooming;
-var bool bZoomed;
-var bool bResetZoom;
+enum EZoomState {
+	ZS_None,
+	ZS_Zooming,
+	ZS_Zoomed,
+	ZS_Reset
+};
+var EZoomState ZoomState;
 
 replication
 {
@@ -129,8 +133,7 @@ simulated function TweenDown()
 {
 	PlayAnim('Down', 100.0, 0.0);
 	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
-		bZoomed = false;
-		bIsZooming = false;
+		ZoomState = ZS_None;
 		PlayerPawn(Owner).EndZoom();
 	}
 }
@@ -150,29 +153,37 @@ simulated function bool ClientAltFire(float Value) {
 simulated function Tick(float DeltaTime) {
 	if (Owner != none &&
 		Owner.IsA('PlayerPawn') &&
-		IsInState('ClientDown') == false &&
-		IsInState('DownWeapon') == false &&
-		Pawn(Owner).Weapon == self
+		bCanClientFire
 	) {
-		if (bIsZooming == false && bResetZoom == false && Pawn(Owner).bAltFire != 0) {
-			bZoomed = !bZoomed;
-			if (bZoomed) {
-				bIsZooming = true;
+		switch (ZoomState) {
+		case ZS_None:
+			if (Pawn(Owner).bAltFire != 0) {
 				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
 					PlayerPawn(Owner).StartZoom();
 				SetTimer(0.2, true);
-			} else {
-				bResetZoom = true;
+				ZoomState = ZS_Zooming;
+			}
+			break;
+		case ZS_Zooming:
+			if (Pawn(Owner).bAltFire == 0) {
+				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
+					PlayerPawn(Owner).StopZoom();
+				ZoomState = ZS_Zoomed;
+			}
+			break;
+		case ZS_Zoomed:
+			if (Pawn(Owner).bAltFire != 0) {
 				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
 					PlayerPawn(Owner).EndZoom();
 				SetTimer(0.0, false);
+				ZoomState = ZS_Reset;
 			}
-		} else if (bZoomed && bIsZooming && Pawn(Owner).bAltFire == 0) {
-			bIsZooming = false;
-			if (PlayerPawn(Owner).Player.IsA('ViewPort'))
-				PlayerPawn(Owner).StopZoom();
-		} else if (bZoomed == false && bResetZoom && Pawn(Owner).bAltFire == 0) {
-			bResetZoom = false;
+			break;
+		case ZS_Reset:
+			if (Pawn(Owner).bAltFire == 0) {
+				ZoomState = ZS_None;
+			}
+			break;
 		}
 	}
 }
