@@ -15,6 +15,13 @@ var float HeadDamage;
 var float BodyHeight;
 var float SniperSpeed;
 var int zzWin;
+enum EZoomState {
+	ZS_None,
+	ZS_Zooming,
+	ZS_Zoomed,
+	ZS_Reset
+};
+var EZoomState ZoomState;
 
 simulated function RenderOverlays(Canvas Canvas)
 {
@@ -81,17 +88,16 @@ simulated function bool ClientFire(float Value)
 	return Super.ClientFire(Value);
 }
 
-simulated function bool ClientAltFire( float Value )
-{
-	local bbPlayer bbP;
+simulated function bool ClientAltFire( float Value ) {
+	if (Owner.IsA('PlayerPawn') == false) {
+		Pawn(Owner).bFire = 1;
+		Pawn(Owner).bAltFire = 0;
+		Global.Fire(0);
+	} else {
+		GotoState('Idle');
+	}
 
-	if (Owner.IsA('Bot'))
-		return Super.ClientAltFire(Value);
-
-	bbP = bbPlayer(Owner);
-	if (bbP.ClientCannotShoot() || bbP.Weapon != Self)
-		return false;
-	return Super.ClientAltFire(Value);
+	return true;
 }
 
 function Fire ( float Value )
@@ -420,6 +426,11 @@ simulated function PlaySelect ()
 simulated function TweenDown ()
 {
 	Class'NN_WeaponFunctions'.static.TweenDown( self);
+
+	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
+		ZoomState = ZS_None;
+		PlayerPawn(Owner).EndZoom();
+	}
 }
 
 simulated function AnimEnd ()
@@ -471,6 +482,44 @@ auto state Pickup
 	simulated function Landed(Vector HitNormal)
 	{
 		Super(Inventory).Landed(HitNormal);
+	}
+}
+
+simulated function Tick(float DeltaTime) {
+	if (Owner != none &&
+		Owner.IsA('PlayerPawn') &&
+		bCanClientFire
+	) {
+		switch (ZoomState) {
+		case ZS_None:
+			if (Pawn(Owner).bAltFire != 0) {
+				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
+					PlayerPawn(Owner).StartZoom();
+				SetTimer(0.2, true);
+				ZoomState = ZS_Zooming;
+			}
+			break;
+		case ZS_Zooming:
+			if (Pawn(Owner).bAltFire == 0) {
+				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
+					PlayerPawn(Owner).StopZoom();
+				ZoomState = ZS_Zoomed;
+			}
+			break;
+		case ZS_Zoomed:
+			if (Pawn(Owner).bAltFire != 0) {
+				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
+					PlayerPawn(Owner).EndZoom();
+				SetTimer(0.0, false);
+				ZoomState = ZS_Reset;
+			}
+			break;
+		case ZS_Reset:
+			if (Pawn(Owner).bAltFire == 0) {
+				ZoomState = ZS_None;
+			}
+			break;
+		}
 	}
 }
 
