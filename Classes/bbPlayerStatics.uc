@@ -17,6 +17,7 @@ static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float Delt
 	local string FPS;
 	local float X,Y;
 	local float Variance;
+	local float PosY;
 
 	if (Settings.bShowFPS == false) return;
 
@@ -28,16 +29,19 @@ static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float Delt
 	C.DrawColor = ChallengeHud(MyHud).WhiteColor;
 	C.Font = ChallengeHud(MyHud).MyFonts.GetSmallFont(C.ClipX);
 
+	C.TextSize("TEST", X, Y);
+	PosY = Settings.FPSLocationY * (C.SizeY - (Y * (1 + Clamp(Settings.FPSDetail, 0, 3)));
+
 	FPS = class'StringUtils'.static.FormatFloat(MyHud.Level.TimeDilation/default.AverageDeltaTime, 1);
 	C.TextSize(FPS, X, Y);
-	C.SetPos(C.ClipX - X, 0);
+	C.SetPos(Settings.FPSLocationX * (C.SizeX - X), PosY);
 	C.DrawText(FPS);
 
 	if (Settings.FPSDetail <= 0) goto end;
 
 	FPS = class'StringUtils'.static.FormatFloat(default.AverageDeltaTime*1000.0/MyHud.Level.TimeDilation, 2) $ " ms";
 	C.TextSize(FPS, X, Y);
-	C.SetPos(C.ClipX - X, Y);
+	C.SetPos(Settings.FPSLocationX * (C.SizeX - X), PosY + Y);
 	C.DrawText(FPS);
 
 	if (Settings.FPSDetail <= 1) goto end;
@@ -47,7 +51,7 @@ static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float Delt
 
 	FPS = class'StringUtils'.static.FormatFloat(Sqrt(default.DeltaTimeVariance)*1000.0/MyHud.Level.TimeDilation, 2) $ " ms";
 	C.TextSize(FPS, X, Y);
-	C.SetPos(C.ClipX - X, 2*Y);
+	C.SetPos(Settings.FPSLocationX * (C.SizeX - X), PosY + 2*Y);
 	C.DrawText(FPS);
 
 	if (Settings.FPSDetail <= 2) goto end;
@@ -65,7 +69,7 @@ static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float Delt
 
 	FPS = "Min:"@class'StringUtils'.static.FormatFloat(default.MinDeltaTime*1000/MyHud.Level.TimeDilation, 2)$"ms Max:"@class'StringUtils'.static.FormatFloat(default.MaxDeltaTime*1000/MyHud.Level.TimeDilation, 2)$"ms";
 	C.TextSize(FPS, X, Y);
-	C.SetPos(C.ClipX - X, 3*Y);
+	C.SetPos(Settings.FPSLocationX * (C.SizeX - X), PosY + 3*Y);
 	C.DrawText(FPS);
 
 end:

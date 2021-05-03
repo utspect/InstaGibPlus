@@ -76,23 +76,25 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 48. [bUseOldMouseInput](#buseoldmouseinput)
 49. [SmoothVRController](#smoothvrcontroller)
 50. [bShowFPS](#bshowfps)
-51. [FPSDetail](#fpsdetail)
-52. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
-53. [KillCamMinDelay](#killcammindelay)
-54. [bAllowWeaponShake](#ballowweaponshake)
-55. [bAutoReady](#bautoready)
-56. [bEnableHitMarker](#benablehitmarker)
-57. [bEnableTeamHitMarker](#benableteamhitmarker)
-58. [HitMarkerColorMode](#hitmarkercolormode)
-59. [HitMarkerColor](#hitmarkercolor)
-60. [HitMarkerTeamColor](#hitmarkerteamcolor)
-61. [HitMarkerSize](#hitmarkersize)
-62. [HitMarkerOffset](#hitmarkeroffset)
-63. [HitMarkerDuration](#hitmarkerduration)
-64. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-65. [HitMarkerSource](#hitmarkersource)
-66. [bUseCrosshairFactory](#busecrosshairfactory)
-67. [CrosshairLayers](#crosshairlayers)
+51. [FPSLocationX](#fpslocationx)
+52. [FPSLocationY](#fpslocationy)
+53. [FPSDetail](#fpsdetail)
+54. [FPSCounterSmoothingStrength](#fpscountersmoothingstrength)
+55. [KillCamMinDelay](#killcammindelay)
+56. [bAllowWeaponShake](#ballowweaponshake)
+57. [bAutoReady](#bautoready)
+58. [bEnableHitMarker](#benablehitmarker)
+59. [bEnableTeamHitMarker](#benableteamhitmarker)
+60. [HitMarkerColorMode](#hitmarkercolormode)
+61. [HitMarkerColor](#hitmarkercolor)
+62. [HitMarkerTeamColor](#hitmarkerteamcolor)
+63. [HitMarkerSize](#hitmarkersize)
+64. [HitMarkerOffset](#hitmarkeroffset)
+65. [HitMarkerDuration](#hitmarkerduration)
+66. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+67. [HitMarkerSource](#hitmarkersource)
+68. [bUseCrosshairFactory](#busecrosshairfactory)
+69. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -427,6 +429,20 @@ This holds the PID settings for the controller thats smoothing the view of playe
 **Default: False**  
 
 If `True`, show averaged FPS information in top right corner. If `False`, show nothing.
+
+## FPSLocationX
+
+**Type: float**  
+**Default: 1.0**  
+
+Placement of the FPS information on the horizontal axis. `0.0` is left edge, `1.0` is right edge.
+
+## FPSLocationY
+
+**Type: float**  
+**Default: 0.0**  
+
+Placement of the FPS information on the vertical axis. `0.0` is top edge, `1.0` is bottom edge.
 
 ## FPSDetail
 **Type: int**  

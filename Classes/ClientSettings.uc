@@ -63,6 +63,8 @@ var config float  MinDodgeClickTime; // Minimum time between two presses of the 
 var config bool   bUseOldMouseInput;
 var config PIDControllerSettings SmoothVRController;
 var config bool   bShowFPS;
+var config float  FPSLocationX;
+var config float  FPSLocationY;
 var config int    FPSDetail;
 var config int    FPSCounterSmoothingStrength;
 var config float  KillCamMinDelay;
@@ -251,6 +253,8 @@ simulated function string DumpSettings() {
 		GetSetting("bUseOldMouseInput")$
 		GetSetting("SmoothVRController")$
 		GetSetting("bShowFPS")$
+		GetSetting("FPSLocationX")$
+		GetSetting("FPSLocationY")$
 		GetSetting("FPSDetail")$
 		GetSetting("FPSCounterSmoothingStrength")$
 		GetSetting("KillCamMinDelay")$
@@ -321,6 +325,8 @@ defaultproperties
 	bUseOldMouseInput=False
 	SmoothVRController=(p=0.09,i=0.05,d=0.00)
 	bShowFPS=False
+	FPSLocationX=1.0
+	FPSLocationY=0.0
 	FPSDetail=0
 	FPSCounterSmoothingStrength=1000
 	KillCamMinDelay=0.0
