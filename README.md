@@ -839,10 +839,7 @@ Controls damage of body hits by sniper rifle.
 
 ## SetPendingWeapon
 
-**Type: bool**  
-**Default: False**  
-
-???
+**removed**
 
 ## NNAnnouncer
 

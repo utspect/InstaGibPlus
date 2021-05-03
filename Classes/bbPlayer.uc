@@ -35,11 +35,7 @@ var vector clientForcedPosition;
 var bool bClientPawnHit;
 var float debugClientLocError;
 var bool debugClientForceUpdate;
-var bool debugClientbMoveSmooth;
-var vector debugPlayerServerLocation;
 var int debugNumOfForcedUpdates;
-var int debugNumOfIgnoredForceUpdates;
-var int debugClientPing;
 var float clientLastUpdateTime;
 var int debugServerMoveCallsSent;
 var int debugServerMoveCallsReceived;
@@ -53,7 +49,6 @@ var bool	zzbDemoPlayback;	// Is currently a demo playback (via xxServerMove dete
 var bool	zzbGotDemoPlaybackSpec;
 var CHSpectator zzDemoPlaybackSpec;
 var bbClientDemoSN zzDemoPlaybackSN;
-var bool bIsAlive;
 var bool bDemoStarted;
 
 // Stuff
@@ -105,10 +100,6 @@ var int		zzSMCnt;		// ServerMove Count
 var bool	bMenuFixed;		// Fixed Menu item
 var float	zzCVTO;			// CenterView Time out.
 
-// duh:
-var bool zzTrue,zzFalse;		// True & False
-var int zzNull;				// == 0
-
 // Avoiding spam:		// How many times has name been changed
 var Class<ChallengeVoicePack> zzDelayedVoice;
 var float zzDelayedStartTime;
@@ -148,7 +139,6 @@ var PlayerPawn LocalPlayer;
 var TranslocatorTarget zzClientTTarget, TTarget;
 var float LastTick, AvgTickDiff;
 
-var bool SetPendingWeapon;
 var bool bUseFastWeaponSwitch;
 
 // Net Updates
@@ -281,84 +271,73 @@ var bbPlayerStatics PlayerStatics;
 
 replication
 {
-	//	Client->Demo
-	unreliable if ( bClientDemoRecording )
-		ClientDemoMessage,
-		xxClientLogToDemo,
-		xxReplicateVRToDemo;
-
-	reliable if (bClientDemoRecording && !bClientDemoNetFunc)
-		xxClientDemoFix;
-
-	reliable if ((Role == ROLE_Authority) && !bClientDemoRecording)
-		xxNN_ClientProjExplode;
-
-	// Server->Client
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Variables Server -> Client
 	unreliable if ( bNetOwner && Role == ROLE_Authority )
+		bCanWallDodge,
+		bDodgePreserveZMomentum,
 		bEnableSingleButtonDodge,
 		bIs469Server,
+		bJumpingPreservesMomentum,
+		BrightskinMode,
+		bUseFastWeaponSwitch,
+		bUseFlipAnimation,
+		HUDInfo,
 		KillCamDelay,
 		KillCamDuration,
 		LastKiller,
+		RespawnDelay,
+		TimeBetweenNetUpdates,
+		zzbForceDemo,
+		zzbGameStarted,
+		zzbForceModels,
+		zzbIsWarmingUp,
 		zzCVDelay,
 		zzCVDeny,
+		zzForceSettingsLevel,
 		zzMaximumNetspeed,
 		zzMinimumNetspeed,
 		zzStat,
 		zzTrackFOV,
 		zzWaitTime;
 
-	// Server->Client
-	reliable if ( bNetOwner && Role == ROLE_Authority )
-		HUDInfo,
-		zzbForceDemo,
-		zzbGameStarted,
-		zzForceSettingsLevel;
+	unreliable if ( Role == ROLE_Authority )
+		DuckFraction;
 
-	// Server->Client
+	unreliable if ( bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
+		clientForcedPosition,
+		clientLastUpdateTime,
+		debugClientForceUpdate,
+		debugClientLocError,
+		debugNumOfForcedUpdates,
+		debugServerMoveCallsReceived,
+		ExtrapolationDelta;
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Variables Client -> Server
+	unreliable if ( Role == ROLE_AutonomousProxy )
+		bDrawDebugData,
+		bIsFinishedLoading,
+		FakeCAPInterval,
+		PingAverage,
+		zzbDemoRecording,
+		zzNetspeed;
+
+	unreliable if (Role == ROLE_AutonomousProxy || RemoteRole <= ROLE_SimulatedProxy)
+		bIs469Client;
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Functions Server -> Client
 	reliable if ( Role == ROLE_Authority )
-		bCanWallDodge,
-		bDodgePreserveZMomentum,
-		bIsAlive,
-		bJumpingPreservesMomentum,
-		BrightskinMode,
-		bUseFastWeaponSwitch,
-		bUseFlipAnimation,
-		DuckFraction,
 		Ready,
-		RespawnDelay,
-		SetPendingWeapon,
-		TimeBetweenNetUpdates,
 		xxClientKicker,
 		xxClientSwJumpPad,
 		xxSetDefaultWeapon,
 		xxSetPendingWeapon,
 		xxSetSniperSpeed,
 		xxSetTeleRadius,
-		xxSetTimes,
-		zzbForceModels,
-		zzbIsWarmingUp;
+		xxSetTimes;
 
-	// Client->Server
-	reliable if ( Role == ROLE_AutonomousProxy )
-		bDrawDebugData,
-		FakeCAPInterval;
-
-	// Server->Client debug data
-	unreliable if ( Role == ROLE_Authority && bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
-		ClientDebugMessage,
-		clientForcedPosition,
-		clientLastUpdateTime,
-		debugClientbMoveSmooth,
-		debugClientForceUpdate,
-		debugClientLocError,
-		debugClientPing,
-		debugNumOfForcedUpdates,
-		debugPlayerServerLocation,
-		debugServerMoveCallsReceived,
-		ExtrapolationDelta;
-
-	// Server->Client function reliable.. no demo propogate! .. bNetOwner? ...
 	reliable if ( RemoteRole == ROLE_AutonomousProxy && !bDemoRecording )
 		xxCheatFound,
 		xxClientConsole,
@@ -368,7 +347,12 @@ replication
 		xxClientReadINT,
 		xxClientSet;
 
-	// Server->Client function.
+	reliable if ((Role == ROLE_Authority) && !bClientDemoRecording)
+		xxNN_ClientProjExplode;
+
+	reliable if (RemoteRole == ROLE_AutonomousProxy)
+		xxClientReStart;
+
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
 		ClientAddMomentum,
 		xxCAP,
@@ -379,22 +363,16 @@ replication
 		xxClientResetPlayer,
 		xxFakeCAP;
 
-	reliable if (RemoteRole == ROLE_AutonomousProxy)
-		xxClientReStart;
+	unreliable if (bDrawDebugData && RemoteRole == ROLE_AutonomousProxy)
+		ClientDebugMessage;
 
-	// Client->Server
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Functions Client -> Server
 	unreliable if ( Role < ROLE_Authority )
-		bIsFinishedLoading,
-		PingAverage,
 		xxServerCheater,
 		xxServerMove,
-		xxServerMoveDead,
-		zzbDemoRecording,
-		zzFalse,
-		zzNetspeed,
-		zzTrue;
+		xxServerMoveDead;
 
-	// Client->Server
 	reliable if ( Role < ROLE_Authority )
 		DropFlag,
 		Go,
@@ -424,13 +402,21 @@ replication
 		xxNN_ReleaseAltFire,
 		xxNN_ReleaseFire;
 
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Functions Client -> Demo
+	// Client->Demo
+	unreliable if ( bClientDemoRecording )
+		ClientDemoMessage,
+		xxClientLogToDemo,
+		xxReplicateVRToDemo;
+
+	reliable if (bClientDemoRecording && !bClientDemoNetFunc)
+		xxClientDemoFix;
+
 	reliable if ( (!bDemoRecording || (bClientDemoRecording && bClientDemoNetFunc) || (Level.NetMode==NM_Standalone)) && Role == ROLE_Authority )
 		ReceiveWeaponEffect;
 	reliable if (bClientDemoRecording)
 		DemoReceiveWeaponEffect;
-
-	reliable if (Role == ROLE_AutonomousProxy || RemoteRole <= ROLE_SimulatedProxy)
-		bIs469Client;
 }
 
 //XC_Engine interface
@@ -791,7 +777,6 @@ event PostBeginPlay()
 		zzMaximumNetspeed = Class'UTPure'.Default.MaxClientRate;
 		zzWaitTime = 5.0;
 	}
-	SetPendingWeapon = class'UTPure'.Default.SetPendingWeapon;
 
 	TickRate = int(ConsoleCommand("get ini:Engine.Engine.NetworkDevice NetServerMaxTickRate"));
 	TickRate = ++TickRate / 2;
@@ -867,7 +852,6 @@ event Possess()
 	{	// Only do this for clients.
 		SetTimer(3, false);
 		Log("Possessed PlayerPawn (bbPlayer) by InstaGib Plus");
-		zzTrue = !zzFalse;
 		zzInfoThing = Spawn(Class'PureInfo');
 		SetNetUpdateRate(Settings.DesiredNetUpdateRate);
 		xxServerSetForceModels(Settings.bForceModels);
@@ -4975,7 +4959,6 @@ ignores SeePlayer, HearNoise, Bump;
 		bIsCrouching = false;
 		bIsTurning = false;
 		bPressedJump = false;
-		bIsAlive = true;
 		bExtrapolatedLastUpdate = false;
 		if (Physics != PHYS_Falling) SetPhysics(PHYS_Walking);
 		if ( !IsAnimating() )
@@ -5479,7 +5462,6 @@ state Dying
 		local int i;
 
 		bJumpStatus = false;
-		bIsAlive = false;
 		zzIgnoreUpdateUntil = 0;
 		if (zzClientTTarget != None)
 			zzClientTTarget.Destroy();
@@ -5952,7 +5934,7 @@ function xxDoShot()
 		xxServerAckScreenshot(zzS, zzMagicCode);
 		zzMagicCode = "";
 	}
-	zzbReportScreenshot = zzFalse;
+	zzbReportScreenshot = false;
 }
 
 simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode, optional bool bIgnoreFireTime)
@@ -6450,7 +6432,7 @@ exec simulated Function TellConsole()
 simulated function xxClientDoScreenshot(string zzMagic)
 {
 	zzMagicCode = zzMagic;
-	zzbDoScreenshot = zzTrue;
+	zzbDoScreenshot = true;
 }
 
 simulated function xxDrawLogo(canvas zzC, float zzx, float zzY, float zzFadeValue)
@@ -6483,8 +6465,8 @@ simulated function xxRenderLogo(canvas zzC)
 	{
 		if (zzMagicCode != "")
 			xxDrawLogo(zzC, 10, zzC.ClipY - 128, 0.75);
-		zzbDoScreenshot = zzFalse;
-		zzbReportScreenshot = zzTrue;
+		zzbDoScreenshot = false;
+		zzbReportScreenshot = true;
 	}
 
 	if (zzbLogoDone) {
@@ -6542,7 +6524,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.SetPos(zzx, zzY + 60);
 	zzC.DrawText("ClientLoc:"@debugPlayerLocation);
 	zzC.SetPos(zzx, zzY + 80);
-	zzC.DrawText("ServerLoc:"@debugPlayerServerLocation);
+	// empty line
 	zzC.SetPos(zzx, zzY + 100);
 	zzC.DrawText("HitLocation:"@debugClientHitLocation);
 	zzC.SetPos(zzx, zzY + 120);
@@ -6558,13 +6540,13 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.SetPos(zzx, zzY + 220);
 	zzC.DrawText("zzbForceUpdate:"@debugClientForceUpdate);
 	zzC.SetPos(zzx, zzY + 240);
-	zzC.DrawText("ForcedUpdates:"@debugNumOfForcedUpdates@"-"@debugNumOfIgnoredForceUpdates@"="@(debugNumOfForcedUpdates - debugNumOfIgnoredForceUpdates));
+	zzC.DrawText("ForcedUpdates:"@debugNumOfForcedUpdates);
 	zzC.SetPos(zzx, zzY + 260);
-	zzC.DrawText("bMoveSmooth:"@debugClientbMoveSmooth);
+	// empty line
 	zzC.SetPos(zzx, zzY + 280);
-	zzC.DrawText("ClientPing:"@debugClientPing);
+	// empty line
 	zzC.SetPos(zzx, zzY + 300);
-	zzC.DrawText("Is Alive?"@bIsAlive);
+	// empty line
 	zzC.SetPos(zzx, zzY + 320);
 	zzC.DrawText("LastUpdateTime:"@clientLastUpdateTime);
 	zzC.SetPos(zzx, zzY + 340);
@@ -6587,7 +6569,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 		if (P.PlayerReplicationInfo.bIsSpectator) continue;
 		if (P.PlayerReplicationInfo.bIsABot) continue;
 		zzC.SetPos(zzx+500, y);
-		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"State:"@GetStateName()@"Physics:"@P.Physics@"Anim:"@P.AnimSequence@"DuckFraction:"@bbPlayer(P).DuckFraction);
+		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"Anim:"@P.AnimSequence@"Frame:"@P.AnimFrame@"Rate:"@P.AnimRate@"DuckFraction:"@bbPlayer(P).DuckFraction);
 		y += 20;
 	}
 	zzC.SetPos(zzx, zzY + 460);
@@ -7828,10 +7810,10 @@ function bool xxCanFire()
 
 function xxCleanAvars()
 {
-	aMouseX = zzNull;
-	aMouseY = zzNull;
-	aTurn = zzNull;
-	aUp = zzNull;
+	aMouseX = 0.0;
+	aMouseY = 0.0;
+	aTurn = 0.0;
+	aUp = 0.0;
 }
 
 simulated function xxGetDemoPlaybackSpec()
