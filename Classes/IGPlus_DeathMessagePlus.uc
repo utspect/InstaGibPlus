@@ -1,4 +1,4 @@
-class DDeathMessagePlus extends LocalMessagePlus;
+class IGPlus_DeathMessagePlus extends LocalMessagePlus;
 
 var localized string KilledString;
 
@@ -92,40 +92,39 @@ static function ClientReceive(
     optional Object OptionalObject
     )
 {
-    if (RelatedPRI_1 == P.PlayerReplicationInfo)
+    if (RelatedPRI_1 == P.PlayerReplicationInfo || P.ViewTarget == RelatedPRI_1.Owner)
     {
         // Interdict and send the child message instead.
-        if ( TournamentPlayer(P).myHUD != None )
+        if ( P.myHUD != None )
         {
-            TournamentPlayer(P).myHUD.LocalizedMessage( Default.ChildMessage, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject );
-            TournamentPlayer(P).myHUD.LocalizedMessage( Default.Class, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject );
+            P.myHUD.LocalizedMessage( Default.ChildMessage, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject );
+            P.myHUD.LocalizedMessage( Default.Class, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject );
         }
 
         if ( Default.bIsConsoleMessage )
         {
-            TournamentPlayer(P).Player.Console.AddString(Static.GetString( Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject ));
+            P.Player.Console.AddString(Static.GetString( Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject ));
         }
 
         if (( RelatedPRI_1 != RelatedPRI_2 ) && ( RelatedPRI_2 != None ))
         {
-            if ( (TournamentPlayer(P).Level.TimeSeconds - TournamentPlayer(P).LastKillTime < 3) && (Switch != 1) )
+            if ( (P.Level.TimeSeconds - TournamentPlayer(RelatedPRI_1.Owner).LastKillTime < 3) && (Switch != 1) )
             {
-                TournamentPlayer(P).MultiLevel++;
-                //TournamentPlayer(P).ReceiveLocalizedMessage( class'MMultiKillMessage', TournamentPlayer(P).MultiLevel );
-                TournamentPlayer(P).ReceiveLocalizedMessage( class'MultiKillMessage', TournamentPlayer(P).MultiLevel );
+                TournamentPlayer(RelatedPRI_1.Owner).MultiLevel++;
+                P.ReceiveLocalizedMessage( class'MultiKillMessage', TournamentPlayer(RelatedPRI_1.Owner).MultiLevel );
             }
             else
-                TournamentPlayer(P).MultiLevel = 0;
-            TournamentPlayer(P).LastKillTime = TournamentPlayer(P).Level.TimeSeconds;
+                TournamentPlayer(RelatedPRI_1.Owner).MultiLevel = 0;
+            TournamentPlayer(RelatedPRI_1.Owner).LastKillTime = P.Level.TimeSeconds;
         }
         else
-            TournamentPlayer(P).MultiLevel = 0;
+            TournamentPlayer(RelatedPRI_1.Owner).MultiLevel = 0;
         if ( ChallengeHUD(P.MyHUD) != None )
-            ChallengeHUD(P.MyHUD).ScoreTime = TournamentPlayer(P).Level.TimeSeconds;
+            ChallengeHUD(P.MyHUD).ScoreTime = P.Level.TimeSeconds;
     }
     else if (RelatedPRI_2 == P.PlayerReplicationInfo)
     {
-        TournamentPlayer(P).ReceiveLocalizedMessage( class'VictimMessage', 0, RelatedPRI_1 );
+        P.ReceiveLocalizedMessage( class'VictimMessage', 0, RelatedPRI_1 );
         Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
     }
     else
@@ -136,5 +135,5 @@ defaultproperties
 {
      KilledString="was killed by"
      ChildMessage=Class'Botpack.KillerMessagePlus'
-     DrawColor=(G=0,B=0)
+     DrawColor=(R=255,G=0,B=0)
 }
