@@ -30,7 +30,7 @@ static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float Delt
 	C.Font = ChallengeHud(MyHud).MyFonts.GetSmallFont(C.ClipX);
 
 	C.TextSize("TEST", X, Y);
-	PosY = Settings.FPSLocationY * (C.SizeY - (Y * (1 + Clamp(Settings.FPSDetail, 0, 3)));
+	PosY = Settings.FPSLocationY * (C.SizeY - (Y * (1 + Clamp(Settings.FPSDetail, 0, 3))));
 
 	FPS = class'StringUtils'.static.FormatFloat(MyHud.Level.TimeDilation/default.AverageDeltaTime, 1);
 	C.TextSize(FPS, X, Y);
