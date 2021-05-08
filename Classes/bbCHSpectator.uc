@@ -39,6 +39,10 @@ var bool bPaused;
 var float GRISecondCountOffset;
 var float LastDeltaTime;
 
+var bool bFollowFlag;
+var CTFFlag FlagToFollow;
+var Pawn FlagCarrierToFollow;
+
 replication
 {
 	// Server -> Client
@@ -438,6 +442,50 @@ function NewCAP(float TimeStamp, name NewState, EPhysics NewPhysics) {
 	bUpdatePosition = true;
 }
 
+function FollowFlag() {
+	local Pawn P;
+
+	if (bFollowFlag == false) return;
+	if (ViewTarget == none) { bFollowFlag = false; return; }
+
+	if (ViewTarget == FlagToFollow) {
+		if (FlagToFollow.IsInState('Held'))
+			for (P = Level.PawnList; P != none; P = P.NextPawn)
+				if (P.PlayerReplicationInfo != none && P.PlayerReplicationInfo.HasFlag == FlagToFollow) {
+					ViewTarget = P;
+					FlagCarrierToFollow = P;
+
+					bBehindView = ( ViewTarget != None );
+					if ( bBehindView )
+						ViewTarget.BecomeViewTarget();
+				}
+		return;
+	}
+
+	if (ViewTarget != FlagCarrierToFollow) { bFollowFlag = false; return; }
+	if (Pawn(ViewTarget).PlayerReplicationInfo.HasFlag == FlagToFollow) return;
+
+	if (FlagToFollow.IsInState('Held')) {
+		for (P = Level.PawnList; P != none; P = P.NextPawn) {
+			if (P.PlayerReplicationInfo != none && P.PlayerReplicationInfo.HasFlag == FlagToFollow) {
+				ViewTarget = P;
+				FlagCarrierToFollow = P;
+
+				bBehindView = ( ViewTarget != None );
+				if ( bBehindView )
+					ViewTarget.BecomeViewTarget();
+			}
+		}
+	} else {
+		ViewTarget = FlagToFollow;
+		FlagCarrierToFollow = none;
+
+		bBehindView = ( ViewTarget != None );
+		if ( bBehindView )
+			ViewTarget.BecomeViewTarget();
+	}
+}
+
 auto state CheatFlying
 {
 	ignores Speech,ShowInventory,ShowPath,Profile,ServerTaunt;
@@ -548,6 +596,8 @@ auto state CheatFlying
 		SetLocation(ClientLoc);
 
 		NewCAP(TimeStamp, GetStateName(), Physics);
+
+		FollowFlag();
 	}
 }
 
@@ -646,6 +696,10 @@ exec function ViewClass( class<actor> aClass, optional bool bQuiet )
 {
 	if (zzLastView2 != Level.TimeSeconds)
 	{
+		bFollowFlag = false;
+		FlagToFollow = none;
+		FlagCarrierToFollow = none;
+
 		DoViewClass(aClass,bQuiet);
 		zzLastView2 = Level.TimeSeconds;
 	}
@@ -654,11 +708,13 @@ exec function ViewClass( class<actor> aClass, optional bool bQuiet )
 function DoViewClass( class<actor> aClass, optional bool bQuiet )
 {
 	local actor other, first;
+	local Pawn P;
 	local bool bFound;
 
 	if ( (Level.Game != None) && !Level.Game.bCanViewOthers )
 		return;
 
+	bFollowFlag = ClassIsChildOf(aClass, class'CTFFlag');
 	first = None;
 	ForEach AllActors( aClass, other )
 	{
@@ -668,7 +724,22 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 			first = other;
 			bFound = true;
 		}
-		if ( other == ViewTarget )
+
+		if ( bFollowFlag && other.IsInState('Held') )
+		{
+			for ( P = Level.PawnList; P != none; P = P.NextPawn )
+			{
+				if ( P.IsA('Spectator') ) continue;
+				if ( P.PlayerReplicationInfo == none ) continue;
+
+				if ( P.PlayerReplicationInfo.HasFlag == other )
+				{
+					first = P;
+				}
+			}
+		}
+
+		if ( first == ViewTarget )
 			first = None;
 	}
 
@@ -682,6 +753,12 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 				ClientMessage(ViewingFrom@first, 'Event', true);
 		}
 		ViewTarget = first;
+
+		if ( bFollowFlag && Pawn(ViewTarget) != none && Pawn(ViewTarget).PlayerReplicationInfo != none )
+		{
+			FlagToFollow = CTFFlag(Pawn(ViewTarget).PlayerReplicationInfo.HasFlag);
+			FlagCarrierToFollow = Pawn(ViewTarget);
+		}
 	}
 	else
 	{
@@ -693,6 +770,7 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 				ClientMessage(FailedView, 'Event', true);
 		}
 		ViewTarget = None;
+		bFollowFlag = false;
 	}
 
 	bBehindView = ( ViewTarget != None );
