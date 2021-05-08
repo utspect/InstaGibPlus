@@ -96,7 +96,7 @@ function ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Swit
 {
 	switch(Message)
 	{
-		Case Class'DDeathMessagePlus':	switch(Switch)
+		Case Class'IGPlus_DeathMessagePlus':	switch(Switch)
 						{
 							Case 0:
 							Case 8:

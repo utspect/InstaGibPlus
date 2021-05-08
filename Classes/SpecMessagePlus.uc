@@ -1,4 +1,4 @@
-class SpecMessagePlus extends DDeathMessagePlus;
+class SpecMessagePlus extends IGPlus_DeathMessagePlus;
 
 static function ClientReceive(
 	PlayerPawn P,

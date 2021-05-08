@@ -6,5 +6,5 @@ class NNAnnouncer expands Mutator;
 function PostBeginPlay ()
 {
          super.PostBeginPlay();
-         Level.Game.DeathMessageClass = class'DDeathMessagePlus';
+         Level.Game.DeathMessageClass = class'IGPlus_DeathMessagePlus';
 }

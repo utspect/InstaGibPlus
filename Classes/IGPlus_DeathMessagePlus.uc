@@ -92,7 +92,7 @@ static function ClientReceive(
     optional Object OptionalObject
     )
 {
-    if (RelatedPRI_1 == P.PlayerReplicationInfo || P.ViewTarget == RelatedPRI_1.Owner)
+    if (P == RelatedPRI_1.Owner || P.ViewTarget == RelatedPRI_1.Owner)
     {
         // Interdict and send the child message instead.
         if ( P.myHUD != None )
@@ -122,7 +122,7 @@ static function ClientReceive(
         if ( ChallengeHUD(P.MyHUD) != None )
             ChallengeHUD(P.MyHUD).ScoreTime = P.Level.TimeSeconds;
     }
-    else if (RelatedPRI_2 == P.PlayerReplicationInfo)
+    else if (P == RelatedPRI_2.Owner || P.ViewTarget == RelatedPRI_2.Owner)
     {
         P.ReceiveLocalizedMessage( class'VictimMessage', 0, RelatedPRI_1 );
         Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);

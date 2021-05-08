@@ -1014,17 +1014,26 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 
 		return;
 	}
-	else if (Message == class'DecapitationMessage')
+
+	if (Message == class'DecapitationMessage')
 	{
 		xxSendHeadshotToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 	}
-	else if (RelatedPRI_1 == PlayerReplicationInfo || RelatedPRI_2 == PlayerReplicationInfo)
+
+	// We know exactly what Botpack.DeathMessagePlus does, so replace it with our own
+	if (Message == class'Botpack.DeathMessagePlus')
+		Message = class'IGPlus_DeathMessagePlus';
+
+	// This is here to deal with mods that change the messages we receive, and
+	// gracefully (or not) fall back to something that kind of works for
+	// spectators.
+	if (RelatedPRI_1 == PlayerReplicationInfo || RelatedPRI_2 == PlayerReplicationInfo)
 	{
-		if (ClassIsChildOf(Message, class'DeathMessagePlus') || Message.Name == 'DDeathMessagePlus')
+		if (ClassIsChildOf(Message, class'Botpack.DeathMessagePlus') || Message.Name == 'DDeathMessagePlus')
 			xxSendDeathMessageToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-		else if (ClassIsChildOf(Message, class'MultiKillMessage') || Message.Name == 'MMultiKillMessage')
+		else if (ClassIsChildOf(Message, class'Botpack.MultiKillMessage') || Message.Name == 'MMultiKillMessage')
 			xxSendMultiKillToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-		else if (ClassIsChildOf(Message, class'KillingSpreeMessage'))
+		else if (ClassIsChildOf(Message, class'Botpack.KillingSpreeMessage'))
 			xxSendSpreeToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 	}
 
