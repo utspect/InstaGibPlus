@@ -4971,7 +4971,7 @@ ignores SeePlayer, HearNoise, Bump;
 		bExtrapolatedLastUpdate = false;
 		if (Physics != PHYS_Falling) SetPhysics(PHYS_Walking);
 		if ( !IsAnimating() )
-			PlayWaiting();
+			PlaySpawn();
 	}
 
 	function EndState()
@@ -5416,7 +5416,7 @@ state Dying
 			Enemy = None;
 			Level.Game.StartPlayer(self);
 			if ( Mesh != None )
-				PlayWaiting();
+				PlaySpawn();
 
 			xxClientReStart(Physics, Location, Rotation);
 
@@ -7356,6 +7356,7 @@ function ClientReStart()
 	zzSpawnedTime = Level.TimeSeconds;
 
 	Super.ClientReStart();
+	PlaySpawn();
 
 	if (PendingTouch != none) {
 		PendingTouch.PendingTouch = none;
@@ -8185,6 +8186,16 @@ function PlayInAir() {
 		TweenAnim('JumpSMFR', TweenTime);
 	else
 		TweenAnim('JumpLGFR', TweenTime);
+}
+
+function PlaySpawn() {
+	local name NextSeq;
+	if ((Weapon == None) || (Weapon.Mass < 20)) {
+		NextSeq = 'Breath1';
+	} else {
+		NextSeq = 'Breath1L';
+	}
+	PlayAnim(NextSeq, 0.6);
 }
 
 exec function ShowOwnBeam() {
