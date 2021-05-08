@@ -6511,6 +6511,7 @@ exec function ShowFPS() {
 simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	local Pawn P;
 	local int y;
+	local float Rate;
 
 	/**
 	 * @Author: spect
@@ -6577,8 +6578,14 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 		if (P.PlayerReplicationInfo == none) continue;
 		if (P.PlayerReplicationInfo.bIsSpectator) continue;
 		if (P.PlayerReplicationInfo.bIsABot) continue;
+
+		if (P.AnimFrame >= 0.0)
+			Rate = P.AnimRate;
+		else
+			Rate = P.TweenRate;
+
 		zzC.SetPos(zzx+500, y);
-		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"Anim:"@P.AnimSequence@"Frame:"@P.AnimFrame@"Rate:"@P.AnimRate@"DuckFraction:"@bbPlayer(P).DuckFraction);
+		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"Anim:"@P.AnimSequence@"Frame:"@P.AnimFrame@"Rate:"@Rate@"DuckFraction:"@bbPlayer(P).DuckFraction);
 		y += 20;
 	}
 	zzC.SetPos(zzx, zzY + 460);
