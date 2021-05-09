@@ -140,5 +140,11 @@ simulated function TweenDown()
 	PlayAnim('Down', 100.0, 0.0);
 }
 
+simulated function PlayPostSelect()
+{
+	PlayAnim('Loading', 100.0, 0.0);
+	Owner.PlayOwnedSound(Misc2Sound, SLOT_None,1.3*Pawn(Owner).SoundDampening);
+}
+
 defaultproperties {
 }
