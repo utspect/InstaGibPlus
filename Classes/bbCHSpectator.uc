@@ -710,6 +710,7 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 	local actor other, first;
 	local Pawn P;
 	local bool bFound;
+	local int i;
 
 	if ( (Level.Game != None) && !Level.Game.bCanViewOthers )
 		return;
@@ -727,6 +728,7 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 
 		if ( bFollowFlag && other.IsInState('Held') )
 		{
+			i = 0;
 			for ( P = Level.PawnList; P != none; P = P.NextPawn )
 			{
 				if ( P.IsA('Spectator') ) continue;
@@ -735,6 +737,10 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 				if ( P.PlayerReplicationInfo.HasFlag == other )
 				{
 					first = P;
+				}
+				if (i++ > 100) {
+					Log("Aborted DoViewClass loop for safety.", 'IGPlus');
+					break; // safety
 				}
 			}
 		}
