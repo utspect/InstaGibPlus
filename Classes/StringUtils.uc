@@ -82,7 +82,16 @@ static function string Trim(string source)
 static function string FormatFloat(float F, optional int Decimals) {
 	local string Result;
 	local int T;
-	if (Decimals <= 0) return string(int(F));
+
+	if (Decimals <= 0)
+		return string(int(F));
+
+	if (Decimals <= 6) {
+		Result = string(F);
+		Result = Left(Result, Len(Result) - 6 + Decimals);
+		return Result;
+	}
+
 	Result = int(F) $ ".";
 	F -= int(F);
 	while(Decimals > 0) {
