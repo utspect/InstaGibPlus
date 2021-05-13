@@ -13,6 +13,7 @@ enum EHitSoundSource {
 	HSSRC_Client
 };
 
+var config bool   bInitialized;
 var config bool   bForceModels; // if Client wishes models forced to his own. (default false)
 var config bool   bTeamInfo;    // if Client wants extra team info.
 var config bool   bShootDead;

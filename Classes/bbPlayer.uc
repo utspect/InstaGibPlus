@@ -269,6 +269,18 @@ var Utilities Utils;
 var StringUtils StringUtils;
 var bbPlayerStatics PlayerStatics;
 
+struct ForcedSettingsEntry {
+	var int Mode;
+	var string Key;
+	var string NewValue;
+	var string OldValue;
+};
+
+var ForcedSettingsEntry ForcedSettings[128];
+var int ForcedSettingsCounter;
+var int ForcedSettingsIndex;
+var bool bForcedSettingsApplied;
+
 replication
 {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -351,6 +363,9 @@ replication
 		xxNN_ClientProjExplode;
 
 	reliable if (RemoteRole == ROLE_AutonomousProxy)
+		IGPlus_ForcedSettingsInit,
+		IGPlus_ForcedSettingRegister,
+		IGPlus_ForcedSettingsApply,
 		xxClientReStart;
 
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
@@ -377,6 +392,8 @@ replication
 		DropFlag,
 		Go,
 		Hold,
+		IGPlus_ForcedSettingsRetry,
+		IGPlus_ForcedSettingsOK,
 		ShowStats,
 		xxExplodeOther,
 		xxNN_AltFire,
@@ -489,6 +506,9 @@ exec function Ghost()
 simulated event Destroyed() {
 	if (Role == ROLE_Authority && zzUTPure != none) {
 		zzUTPure.ModifyLogout(self);
+	}
+	if ((Level.NetMode == NM_Client && Role == ROLE_AutonomousProxy) || Role == ROLE_Authority) {
+		IGPlus_ForcedSettingsRestore();
 	}
 	super.Destroyed();
 }
@@ -940,9 +960,99 @@ event Possess()
 		bIs469Server = int(Level.EngineVersion) >= 469;
 		if (RemoteRole != ROLE_AutonomousProxy)
 			bIs469Client = bIs469Server;
+
+		IGPlus_ForcedSettingsInit();
 	}
 
 	Super.Possess();
+}
+
+function IGPlus_ForcedSettingsInit() {
+	ForcedSettingsCounter = 0;
+	ClientMessage("Forced Settings initialized", 'IGPlus');
+}
+
+function IGPlus_ForcedSettingRegister(string Key, string Value, int Mode) {
+	ForcedSettings[ForcedSettingsCounter].Mode = Mode;
+	ForcedSettings[ForcedSettingsCounter].Key = Key;
+	ForcedSettings[ForcedSettingsCounter].NewValue = Value;
+	ForcedSettingsCounter++;
+	ClientMessage("Forcing ("$Mode$")"@Key$"="$Value, 'IGPlus');
+}
+
+function IGPlus_ForcedSettingRestore(int Index) {
+	switch(ForcedSettings[Index].Mode) {
+	case 0:
+		// dont restore
+		break;
+	case 1:
+		Settings.SetPropertyText(ForcedSettings[Index].Key, ForcedSettings[Index].OldValue);
+		break;
+	case 2:
+		// dick move ...
+		break;
+	}
+}
+
+function IGPlus_ForcedSettingsRestore() {
+	local int i;
+	for (i = 0; i < ForcedSettingsCounter; ++i) {
+		IGPlus_ForcedSettingRestore(i);
+	}
+}
+
+function IGPlus_ForcedSettingApply(int Index) {
+	ForcedSettings[Index].OldValue = Settings.GetPropertyText(ForcedSettings[Index].Key);
+	switch(ForcedSettings[Index].Mode) {
+	case 0:
+		if (Settings.bInitialized) break;
+	case 1:
+	case 2:
+		Settings.SetPropertyText(ForcedSettings[Index].Key, ForcedSettings[Index].NewValue);
+		break;
+	}
+}
+
+function IGPlus_ForcedSettingsApply(int Counter) {
+	local int i;
+
+	if (ForcedSettingsCounter != Counter) {
+		IGPlus_ForcedSettingsRetry();
+		return;
+	}
+
+	for (i = 0; i < ForcedSettingsCounter; ++i) {
+		IGPlus_ForcedSettingApply(i);
+	}
+	Settings.bInitialized = true;
+	bForcedSettingsApplied = true;
+
+	IGPlus_ForcedSettingsOK();
+}
+
+function IGPlus_ForcedSettingsRetry() {
+	ForcedSettingsIndex = 0;
+	ForcedSettingsCounter = 0;
+	ClientMessage("Retrying Forced Settings ...", 'IGPlus');
+	IGPlus_ForcedSettingsInit();
+}
+
+function IGPlus_ForcedSettingsOK() {
+	bForcedSettingsApplied = true;
+	ClientMessage("Forced Settings applied!", 'IGPlus');
+}
+
+function IGPlus_SaveSettings() {
+	local int i;
+	local string Current;
+	if (bForcedSettingsApplied) {
+		for (i = 0; i < ForcedSettingsCounter; ++i) {
+			Current = Settings.GetPropertyText(ForcedSettings[i].Key);
+			if (Current != ForcedSettings[i].NewValue && Current != ForcedSettings[i].OldValue)
+				IGPlus_ForcedSettingApply(i);
+		}
+	}
+	Settings.SaveConfig();
 }
 
 function Timer() {
@@ -3518,7 +3628,7 @@ exec function enableDebugData(bool b) {
 
 exec function EnableHitSound(bool b) {
 	Settings.bEnableHitSounds = b;
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 	if (b) {
 		ClientMessage("HitSound: on");
 	} else {
@@ -3528,7 +3638,7 @@ exec function EnableHitSound(bool b) {
 
 exec function EnableTeamHitSound(bool b) {
 	Settings.bEnableTeamHitSounds = b;
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 	if (b) {
 		ClientMessage("Team HitSound: on");
 	} else {
@@ -3554,7 +3664,7 @@ exec function setForcedSkins(int maleSkin, int femaleSkin) {
 
 	Settings.desiredSkin = maleSkin - 1;
 	Settings.desiredSkinFemale = femaleSkin - 1;
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 	ClientMessage("Forced enemy skin set!");
 }
 
@@ -3576,7 +3686,7 @@ exec function setForcedTeamSkins(int maleSkin, int femaleSkin) {
 
 	Settings.desiredTeamSkin = maleSkin - 1;
 	Settings.desiredTeamSkinFemale = femaleSkin - 1;
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 	ClientMessage("Forced team skin set!");
 }
 
@@ -3584,7 +3694,7 @@ exec function SetHitSound(byte hs) {
 	if (hs >= 0 && hs < 16) {
 		Settings.SelectedHitSound = hs;
 		class'bbPlayerStatics'.default.PlayedHitSound = none;
-		Settings.SaveConfig();
+		IGPlus_SaveSettings();
 		ClientMessage("HitSound set!");
 	} else {
 		ClientMessage("Please input a value from 0 to 15");
@@ -3595,7 +3705,7 @@ exec function SetTeamHitSound(byte hs) {
 	if (hs >= 0 && hs < 16) {
 		Settings.SelectedTeamHitSound = hs;
 		class'bbPlayerStatics'.default.PlayedTeamHitSound = none;
-		Settings.SaveConfig();
+		IGPlus_SaveSettings();
 		ClientMessage("Team HitSound set!");
 	} else {
 		ClientMessage("Please input a value from 0 to 15");
@@ -3605,7 +3715,7 @@ exec function SetTeamHitSound(byte hs) {
 exec function setShockBeam(int sb) {
 	if (sb > 0 && sb <= 4) {
 		Settings.cShockBeam = sb;
-		Settings.SaveConfig();
+		IGPlus_SaveSettings();
 		ClientMessage("Shock beam set!");
 	} else
 		ClientMessage("Please input a value between 1 and 4");
@@ -3614,7 +3724,7 @@ exec function setShockBeam(int sb) {
 exec function setBeamScale(float bs) {
 	if (bs >= 0.1 && bs <= 1.0) {
 		Settings.BeamScale = bs;
-		Settings.SaveConfig();
+		IGPlus_SaveSettings();
 		ClientMessage("Beam scale set!");
 	} else
 		ClientMessage("Please input a value between 0.1 and 1.0");
@@ -4396,6 +4506,19 @@ event ServerTick(float DeltaTime) {
 			ReplicateSwJumpPad(Teleporter(DelayedNavPoint));
 
 		DelayedNavPoint = DelayedNavPoint.NextNavigationPoint;
+	}
+
+	if (ForcedSettingsIndex < arraycount(ForcedSettings)) {
+		if (class'UTPure'.static.GetForcedSettingKey(ForcedSettingsIndex) != "") {
+			ForcedSettingsCounter++;
+			IGPlus_ForcedSettingRegister(
+				class'UTPure'.static.GetForcedSettingKey(ForcedSettingsIndex),
+				class'UTPure'.static.GetForcedSettingValue(ForcedSettingsIndex),
+				class'UTPure'.static.GetForcedSettingMode(ForcedSettingsIndex));
+		}
+		ForcedSettingsIndex++;
+		if (ForcedSettingsIndex == arraycount(ForcedSettings))
+			IGPlus_ForcedSettingsApply(ForcedSettingsCounter);
 	}
 
 	if (bIsCrouching) {
@@ -6501,7 +6624,7 @@ simulated function xxRenderLogo(canvas zzC)
 
 exec function ShowFPS() {
 	Settings.bShowFPS = !Settings.bShowFPS;
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 	if (Settings.bShowFPS)
 		ClientMessage("FPS shown!", 'IGPlus');
 	else
@@ -7080,7 +7203,7 @@ exec function ForceModels(bool b)
 
 	Settings.bForceModels = b;
 	xxServerSetForceModels(b);
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 	ClientMessage("ForceModels :"@b);
 	if (!b) {
 		ClientMessage("You will be reconnected in 3 seconds...");
@@ -7098,7 +7221,7 @@ exec function TeamInfo(bool b)
 {
 	Settings.bTeamInfo = b;
 	xxServerSetTeamInfo(b);
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 	ClientMessage("TeamInfo :"@b);
 }
 
@@ -7110,14 +7233,14 @@ exec function mdct( float f )
 exec function SetMinDodgeClickTime( float f )
 {
 	Settings.MinDodgeClickTime = f;
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 	ClientMessage("MinDodgeClickTime:"@f);
 }
 
 exec function SetMouseSmoothing(bool b)
 {
 	Settings.bNoSmoothing = !b;
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 	if (b) ClientMessage("Mouse Smoothing enabled!");
 	else   ClientMessage("Mouse Smoothing disabled!");
 }
@@ -7157,7 +7280,7 @@ function xxServerSetMinDodgeClickTime(float f)
 
 exec function SetKillCamEnabled(bool b) {
 	Settings.bEnableKillCam = b;
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 	if (b)
 		ClientMessage("KillCam enabled!", 'IGPlus');
 	else
@@ -7168,7 +7291,7 @@ exec function EndShot(optional bool b)
 {
 	Settings.bDoEndShot = b;
 	ClientMessage("Screenshot at end of match:"@b);
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 }
 
 exec function Hold()
@@ -8034,7 +8157,7 @@ exec function AutoDemo(bool zzb)
 {
 	Settings.bAutoDemo = zzb;
 	ClientMessage("Record demos automatically after countdown:"@zzb);
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 }
 
 exec function ShootDead()
@@ -8044,7 +8167,7 @@ exec function ShootDead()
 		ClientMessage("Shooting carcasses enabled.");
 	else
 		ClientMessage("Shooting carcasses disabled.");
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 }
 
 exec function SetDemoMask(optional string zzMask)
@@ -8052,7 +8175,7 @@ exec function SetDemoMask(optional string zzMask)
 	if (zzMask != "")
 	{
 		Settings.DemoMask = zzMask;
-		Settings.SaveConfig();
+		IGPlus_SaveSettings();
 	}
 
 	ClientMessage("Current demo mask:"@Settings.DemoMask);
@@ -8090,7 +8213,7 @@ function xxSetNetUpdateRate(float NewVal, int netspeed) {
 exec function SetNetUpdateRate(float NewVal) {
 	Settings.DesiredNetUpdateRate = NewVal;
 	xxSetNetUpdateRate(NewVal, Player.CurrentNetSpeed);
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 }
 
 function xxServerDemoReply(string zzS)
@@ -8207,7 +8330,7 @@ function PlaySpawn() {
 
 exec function ShowOwnBeam() {
 	Settings.bHideOwnBeam = !Settings.bHideOwnBeam;
-	Settings.SaveConfig();
+	IGPlus_SaveSettings();
 	if (Settings.bHideOwnBeam)
 		ClientMessage("Own beam hidden!", 'IGPlus');
 	else

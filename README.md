@@ -831,6 +831,7 @@ Server settings can be found inside InstaGibPlus.ini.
 55. [bEnableLoosePositionCheck](#benableloosepositioncheck)
 56. [ShowTouchedPackage](#showtouchedpackage)
 57. [ExcludeMapsForKickers](#excludemapsforkickers)
+58. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1276,6 +1277,27 @@ What brightskin mode is allowed for clients.
 
 Scale factor for player models. Scales both DrawScale (visuals) and CollisionRadius/-Height (hitbox).
 
+## ForcedSettings
+
+**Type: ForcedSettingsEntry\[128\]**
+**Default: (Key="",Value="",Mode=0)**
+
+Type `ForcedSettingsEntry` is defined like this:  
+```unrealscript
+struct ForceSettingsEntry{
+    var string Key;
+    var string Value;
+    var int Mode;
+};
+```
+
+Each entry can be used to force a setting on clients:
+* `Key` is the name of the setting to force
+* `Value` is the value to force the setting to
+* `Mode` describes how to force the setting:
+  * `0` ➜ Initial only
+  * `1` ➜ Always, but reset after leaving server
+  * `2` ➜ Always, but don't reset (should not be used)
 
 # Building
 

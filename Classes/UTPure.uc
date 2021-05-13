@@ -102,6 +102,13 @@ var bool bExludeKickers;
 
 var bbPlayerReplicationInfo SkinIndexToPRIMap[64];
 
+struct ForceSettingsEntry{
+	var string Key;
+	var string Value;
+	var int Mode;
+};
+var localized config ForceSettingsEntry ForcedSettings[128];
+
 replication
 {
 	unreliable if (Role == ROLE_Authority)
@@ -1401,6 +1408,18 @@ event Destroyed()	// Make sure config is stored. (Don't think this is ever calle
 {
 	SaveConfig();
 	Super.Destroyed();
+}
+
+static function string GetForcedSettingKey(int Index) {
+	return default.ForcedSettings[Index].Key;
+}
+
+static function string GetForcedSettingValue(int Index) {
+	return default.ForcedSettings[Index].Value;
+}
+
+static function int GetForcedSettingMode(int Index) {
+	return default.ForcedSettings[Index].Mode;
 }
 
 defaultproperties
