@@ -306,6 +306,7 @@ defaultproperties
 	sHitSound(0)="InstaGibPlus7.HitSound"
 	sHitSound(1)="UnrealShare.StingerFire"
 	sHitSound(2)="InstaGibPlus7.HitSoundFriendly"
+	sHitSound(3)="InstaGibPlus7.HitSound1"
 	cShockBeam=1
 	bHideOwnBeam=False
 	BeamScale=0.45
