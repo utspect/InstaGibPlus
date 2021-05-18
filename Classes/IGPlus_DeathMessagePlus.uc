@@ -90,45 +90,39 @@ static function ClientReceive(
     optional PlayerReplicationInfo RelatedPRI_1,
     optional PlayerReplicationInfo RelatedPRI_2,
     optional Object OptionalObject
-    )
-{
-    if (P == RelatedPRI_1.Owner || P.ViewTarget == RelatedPRI_1.Owner)
-    {
+) {
+    if (P == RelatedPRI_1.Owner || (P.ViewTarget != none && P.ViewTarget == RelatedPRI_1.Owner)) {
         // Interdict and send the child message instead.
-        if ( P.myHUD != None )
-        {
-            P.myHUD.LocalizedMessage( Default.ChildMessage, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject );
-            P.myHUD.LocalizedMessage( Default.Class, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject );
+        if ( P.myHUD != None ) {
+            P.myHUD.LocalizedMessage(Default.ChildMessage, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+            P.myHUD.LocalizedMessage(Default.Class, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
         }
 
-        if ( Default.bIsConsoleMessage )
-        {
+        if (Default.bIsConsoleMessage) {
             P.Player.Console.AddString(Static.GetString( Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject ));
         }
 
-        if (( RelatedPRI_1 != RelatedPRI_2 ) && ( RelatedPRI_2 != None ))
-        {
-            if ( (P.Level.TimeSeconds - TournamentPlayer(RelatedPRI_1.Owner).LastKillTime < 3) && (Switch != 1) )
-            {
-                TournamentPlayer(RelatedPRI_1.Owner).MultiLevel++;
-                P.ReceiveLocalizedMessage( class'MultiKillMessage', TournamentPlayer(RelatedPRI_1.Owner).MultiLevel );
-            }
-            else
+        if (RelatedPRI_1.Owner.IsA('TournamentPlayer')) { // ie. not a Bot
+            if ((RelatedPRI_1 != RelatedPRI_2) && (RelatedPRI_2 != None)) {
+                if ((P.Level.TimeSeconds - TournamentPlayer(RelatedPRI_1.Owner).LastKillTime < 3) && (Switch != 1)) {
+                    TournamentPlayer(RelatedPRI_1.Owner).MultiLevel++;
+                    P.ReceiveLocalizedMessage( class'MultiKillMessage', TournamentPlayer(RelatedPRI_1.Owner).MultiLevel );
+                } else {
+                    TournamentPlayer(RelatedPRI_1.Owner).MultiLevel = 0;
+                }
+                TournamentPlayer(RelatedPRI_1.Owner).LastKillTime = P.Level.TimeSeconds;
+            } else {
                 TournamentPlayer(RelatedPRI_1.Owner).MultiLevel = 0;
-            TournamentPlayer(RelatedPRI_1.Owner).LastKillTime = P.Level.TimeSeconds;
+            }
         }
-        else
-            TournamentPlayer(RelatedPRI_1.Owner).MultiLevel = 0;
-        if ( ChallengeHUD(P.MyHUD) != None )
+        if (ChallengeHUD(P.MyHUD) != None)
             ChallengeHUD(P.MyHUD).ScoreTime = P.Level.TimeSeconds;
-    }
-    else if (P == RelatedPRI_2.Owner || P.ViewTarget == RelatedPRI_2.Owner)
-    {
-        P.ReceiveLocalizedMessage( class'VictimMessage', 0, RelatedPRI_1 );
+    } else if (P == RelatedPRI_2.Owner || (P.ViewTarget != none && P.ViewTarget == RelatedPRI_2.Owner)) {
+        P.ReceiveLocalizedMessage(class'VictimMessage', 0, RelatedPRI_1);
+        Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+    } else {
         Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
     }
-    else
-        Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 }
 
 defaultproperties
