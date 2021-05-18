@@ -351,6 +351,7 @@ function bool MutatorBroadcastLocalizedMessage( Actor Sender, Pawn Receiver, out
 
 // END OF STAT CODE, BELOW IS SETUP CODE
 
+// Returns empty string if no replacement is possible or desired
 function string GetReplacementWeapon(Weapon W, bool bDamnEpic)
 {	// Damn EPIC is because EPIC for some reason, spawns DefaultWeapon (ImpactHammer) AT THE LOCATION OF THE PLAYER
 	// UNLIKE EVERYTHING ELSE THAT WILL BE GIVEN TO THE PLAYER. YES. EPIC ROX! (And don't get me started on translocator!)
@@ -359,67 +360,80 @@ function string GetReplacementWeapon(Weapon W, bool bDamnEpic)
 
 	if ((W.IsA('ImpactHammer') && !W.IsA('ST_ImpactHammer')) || W.IsA('DispersionPistol') && !bDamnEPIC)
 	{
-		WStr = "ST_ImpactHammer";
+		if (WeaponSettings.bReplaceImpactHammer)
+			WStr = "ST_ImpactHammer";
 		BitMap = (1 << 1);				// IH = 01
 	}
 	else if (W.IsA('Translocator') && !W.IsA('ST_Translocator'))
 	{
-		WStr = "ST_Translocator";
+		if (WeaponSettings.bReplaceTranslocator)
+			WStr = "ST_Translocator";
 		BitMap = (1 << 2);				// TLoc = 02
 	}
 	else if ((W.IsA('enforcer') && !W.IsA('ST_enforcer')) || W.IsA('AutoMag'))
 	{
-		WStr = "ST_enforcer";
+		if (WeaponSettings.bReplaceEnforcer)
+			WStr = "ST_enforcer";
 		BitMap = (1 << 3);				// Enforcer = 03
 	}
 	else if ((W.IsA('ut_biorifle') && !W.IsA('ST_ut_biorifle')) || W.IsA('GesBioRifle'))
 	{
-		WStr = "ST_ut_biorifle";
+		if (WeaponSettings.bReplaceBioRifle)
+			WStr = "ST_ut_biorifle";
 		BitMap = (1 << 4);				// BioRifle = 04
 	}
 	else if ((W.IsA('ShockRifle') && !W.IsA('SuperShockRifle') && !W.IsA('ST_ShockRifle')) || W.IsA('ASMD'))
 	{
-		WStr = "ST_ShockRifle";
+		if (WeaponSettings.bReplaceShockRifle)
+			WStr = "ST_ShockRifle";
 		BitMap = (1 << 5) | (1 << 6) | (1 << 7);	// Shock Rifle = 05, 06, 07
 	}
 	else if (W.IsA('SuperShockRifle') && !W.IsA('ST_SuperShockRifle') && !W.IsA('NN_SuperShockRifle'))
 	{
-		WStr = "ST_SuperShockRifle";
+		if (WeaponSettings.bReplaceSuperShockRifle)
+			WStr = "ST_SuperShockRifle";
 		BitMap = (1 << 8);				// Super Shock = 08
 	}
 	else if ((W.IsA('PulseGun') && !W.IsA('ST_PulseGun')) || W.IsA('Stinger'))
 	{
-		WStr = "ST_PulseGun";
+		if (WeaponSettings.bReplacePulseGun)
+			WStr = "ST_PulseGun";
 		BitMap = (1 << 9) | (1 << 10);			// Pulse Gun = 09, 10
 	}
 	else if ((W.IsA('ripper') && !W.IsA('ST_ripper')) || W.IsA('Razorjack'))
 	{
-		WStr = "ST_ripper";
+		if (WeaponSettings.bReplaceRipper)
+			WStr = "ST_ripper";
 		BitMap = (1 << 11) | (1 << 12);			// Ripper = 11, 12
 	}
 	else if ((W.IsA('minigun2') && !W.IsA('ST_minigun2')) || W.IsA('Minigun'))
 	{
-		WStr = "ST_minigun2";
+		if (WeaponSettings.bReplaceMinigun)
+			WStr = "ST_minigun2";
 		BitMap = (1 << 13);				// Minigun2 = 13
 	}
 	else if ((W.IsA('UT_FlakCannon') && !W.IsA('ST_UT_FlakCannon')) || W.IsA('FlakCannon'))
 	{
-		WStr = "ST_UT_FlakCannon";
+		if (WeaponSettings.bReplaceFlakCannon)
+			WStr = "ST_UT_FlakCannon";
 		BitMap = (1 << 14) | (1 << 15);			// Flak Cannon = 14, 15
 	}
 	else if ((W.IsA('UT_Eightball') && !W.IsA('ST_UT_Eightball')) || W.IsA('Eightball'))
 	{
-		WStr = "ST_UT_Eightball";
+		if (WeaponSettings.bReplaceRocketLauncher)
+			WStr = "ST_UT_Eightball";
 		BitMap = (1 << 16) | (1 << 17);			// Rocket Launcher = 16, 17
 	}
 	else if ((W.IsA('SniperRifle') && !W.IsA('ST_SniperRifle') && !W.IsA('NN_SniperRifle')) || W.IsA('Rifle'))
 	{
-		WStr = "ST_SniperRifle";
+		if (WeaponSettings.bReplaceSniperRifle)
+			WStr = "ST_SniperRifle";
 		BitMap = (1 << 18);				// Sniper = 18
 	}
 	else if (W.IsA('WarheadLauncher') && !W.IsA('ST_WarheadLauncher'))
 	{
-		WStr = "ST_WarheadLauncher";
+		if (WeaponSettings.bReplaceWarheadLauncher)
+			WStr = "ST_WarheadLauncher";
 		BitMap = (1 << 19);				// Redeemer = 19
 	}
 
