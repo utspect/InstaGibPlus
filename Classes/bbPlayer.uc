@@ -8377,7 +8377,6 @@ exec function TestHitSound(optional int Dmg) {
 
 defaultproperties
 {
-	bAlwaysRelevant=True
 	bNewNet=True
 	HUDInfo=1
 	TeleRadius=210

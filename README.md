@@ -829,9 +829,10 @@ Server settings can be found inside InstaGibPlus.ini.
 53. [bEnableServerExtrapolation](#benableserverextrapolation)
 54. [bEnableServerPacketReordering](#benableserverpacketreordering)
 55. [bEnableLoosePositionCheck](#benableloosepositioncheck)
-56. [ShowTouchedPackage](#showtouchedpackage)
-57. [ExcludeMapsForKickers](#excludemapsforkickers)
-58. [ForcedSettings](#forcedsettings)
+56. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
+57. [ShowTouchedPackage](#showtouchedpackage)
+58. [ExcludeMapsForKickers](#excludemapsforkickers)
+59. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1197,6 +1198,15 @@ Disable to restore default netcode behavior.
 **Default: True**  
 
 If enabled the server will loosen the check of players position, by factoring in current movement The server will even use the players reported position instead of the calculated one, if the loose check is successful.
+
+Disable to restore default netcode behavior.
+
+## bPlayersAlwaysRelevant
+
+**Type: bool**  
+**Default: True**  
+
+If enabled the server will always replicate all players to each other, increasing network traffic in order to make sure players always appear on screen.
 
 Disable to restore default netcode behavior.
 
