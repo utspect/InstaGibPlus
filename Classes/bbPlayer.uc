@@ -934,6 +934,7 @@ event Possess()
 		bCanWallDodge = class'UTPure'.default.bEnableWallDodging;
 		bDodgePreserveZMomentum = class'UTPure'.default.bDodgePreserveZMomentum;
 		bUseFastWeaponSwitch = class'UTPure'.default.bUseFastWeaponSwitch;
+		bAlwaysRelevant = class'UTPure'.default.bPlayersAlwaysRelevant;
 
 		if(!zzUTPure.bExludeKickers)
 		{
