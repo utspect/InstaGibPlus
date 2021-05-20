@@ -71,6 +71,8 @@ var bool    zzbIsWarmingUp, zzbFakeUpdate, zzbForceUpdate, zzbNN_Special, zzbNN_
 var float   zzNN_Accuracy, zzLastStuffUpdate, zzNextTimeTime, zzLastFallVelZ, zzLastClientErr, zzForceUpdateUntil, zzIgnoreUpdateUntil, zzLastLocDiff, zzSpawnedTime;
 var TournamentWeapon zzGrappling;
 var float zzGrappleTime;
+var float LastFireTimeStamp;
+var float LastAltFireTimeStamp;
 var Weapon zzKilledWithWeapon;
 var Pawn zzLastKilled;
 var vector zzLast10Positions[10];	// every 50ms for half a second of backtracking
@@ -2938,13 +2940,17 @@ exec function Fire( optional float F )
 	xxDisableCarcasses();
 }
 
-function xxNN_Fire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator ViewRot, optional actor HitActor, optional vector HitLoc, optional vector HitDiff, optional bool bSpecial, optional int ClientFRVI, optional float ClientAccuracy )
+function xxNN_Fire( float TimeStamp, int ProjIndex, vector ClientLoc, vector ClientVel, rotator ViewRot, optional actor HitActor, optional vector HitLoc, optional vector HitDiff, optional bool bSpecial, optional int ClientFRVI, optional float ClientAccuracy )
 {
 	local ImpactHammer IH;
 	local float TradeTimeMargin;
 
 	if (!bNewNet || !xxWeaponIsNewNet() || Role < ROLE_Authority)
 		return;
+
+	if (TimeStamp <= LastFireTimeStamp)
+		return;
+	LastFireTimeStamp = TimeStamp;
 
 	xxEnableCarcasses();
 	zzNN_ProjIndex = ProjIndex;
@@ -3017,10 +3023,14 @@ exec function AltFire( optional float F )
 	xxDisableCarcasses();
 }
 
-function xxNN_AltFire( int ProjIndex, vector ClientLoc, vector ClientVel, rotator ViewRot, optional actor HitActor, optional vector HitLoc, optional vector HitDiff, optional bool bSpecial, optional int ClientFRVI, optional float ClientAccuracy )
+function xxNN_AltFire( float TimeStamp, int ProjIndex, vector ClientLoc, vector ClientVel, rotator ViewRot, optional actor HitActor, optional vector HitLoc, optional vector HitDiff, optional bool bSpecial, optional int ClientFRVI, optional float ClientAccuracy )
 {
 	if (!bNewNet || !xxWeaponIsNewNet(true) || Role < ROLE_Authority)
 		return;
+
+	if (TimeStamp <= LastAltFireTimeStamp)
+		return;
+	LastAltFireTimeStamp = TimeStamp;
 
 	xxEnableCarcasses();
 	zzNN_ProjIndex = ProjIndex;
