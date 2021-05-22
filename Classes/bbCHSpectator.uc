@@ -726,7 +726,7 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 			bFound = true;
 		}
 
-		if ( bFollowFlag && other.IsInState('Held') )
+		if ( bFollowFlag && first == other && other.IsInState('Held') )
 		{
 			i = 0;
 			for ( P = Level.PawnList; P != none; P = P.NextPawn )
@@ -735,9 +735,8 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 				if ( P.PlayerReplicationInfo == none ) continue;
 
 				if ( P.PlayerReplicationInfo.HasFlag == other )
-				{
 					first = P;
-				}
+
 				if (i++ > 100) {
 					Log("Aborted DoViewClass loop for safety.", 'IGPlus');
 					break; // safety
@@ -745,7 +744,7 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 			}
 		}
 
-		if ( first == ViewTarget )
+		if ( other == ViewTarget || first == ViewTarget )
 			first = None;
 	}
 
@@ -760,10 +759,17 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 		}
 		ViewTarget = first;
 
-		if ( bFollowFlag && Pawn(ViewTarget) != none && Pawn(ViewTarget).PlayerReplicationInfo != none )
+		if ( bFollowFlag )
 		{
-			FlagToFollow = CTFFlag(Pawn(ViewTarget).PlayerReplicationInfo.HasFlag);
-			FlagCarrierToFollow = Pawn(ViewTarget);
+			if ( ViewTarget.IsA('CTFFlag') )
+			{
+				FlagToFollow = CTFFlag(ViewTarget);
+			}
+			if ( ViewTarget.IsA('Pawn') && Pawn(ViewTarget).PlayerReplicationInfo != none )
+			{
+				FlagToFollow = CTFFlag(Pawn(ViewTarget).PlayerReplicationInfo.HasFlag);
+				FlagCarrierToFollow = Pawn(ViewTarget);
+			}
 		}
 	}
 	else
