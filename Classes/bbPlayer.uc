@@ -2500,6 +2500,7 @@ function IGPlus_SendCAP() {
 	NextRealCAPTime = ServerTimeStamp + PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation + AverageServerDeltaTime;
 	zzLastClientErr = 0;
 	IGPlus_WantCAP = false;
+	IGPlus_NotifiedTranslocate = true;
 }
 
 function UndoExtrapolation() {
