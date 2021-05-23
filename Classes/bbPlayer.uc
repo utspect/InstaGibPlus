@@ -1028,11 +1028,17 @@ function IGPlus_ForcedSettingApply(int Index) {
 
 function IGPlus_ForcedSettingsApply(int Counter) {
 	local int i;
+	local bool bInitialized;
 
 	if (ForcedSettingsCounter != Counter) {
 		IGPlus_ForcedSettingsRetry();
 		return;
 	}
+
+	bInitialized = Settings.bInitialized;
+	Settings.bInitialized = true;
+	Settings.SaveConfig();
+	Settings.bInitialized = bInitialized;
 
 	for (i = 0; i < ForcedSettingsCounter; ++i) {
 		IGPlus_ForcedSettingApply(i);
@@ -1057,15 +1063,18 @@ function IGPlus_ForcedSettingsOK() {
 
 function IGPlus_SaveSettings() {
 	local int i;
-	local string Current;
+
+	if (bForcedSettingsApplied) {
+		IGPlus_ForcedSettingsRestore();
+	}
+
+	Settings.SaveConfig();
+
 	if (bForcedSettingsApplied) {
 		for (i = 0; i < ForcedSettingsCounter; ++i) {
-			Current = Settings.GetPropertyText(ForcedSettings[i].Key);
-			if (Current != ForcedSettings[i].NewValue && Current != ForcedSettings[i].OldValue)
-				IGPlus_ForcedSettingApply(i);
+			IGPlus_ForcedSettingApply(i);
 		}
 	}
-	Settings.SaveConfig();
 }
 
 function Timer() {
