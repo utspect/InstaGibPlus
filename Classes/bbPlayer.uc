@@ -283,6 +283,12 @@ var int ForcedSettingsCounter;
 var int ForcedSettingsIndex;
 var bool bForcedSettingsApplied;
 
+var IGPlus_DamageEvent IGPlus_DamageEvent_First;
+var IGPlus_DamageEvent IGPlus_DamageEvent_Latest;
+var IGPlus_DamageEvent IGPlus_DamageEvent_FreeList;
+var float IGPlus_DamageEvent_PrevHealth;
+var bool IGPlus_DamageEvent_ShowOnDeath;
+
 replication
 {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -333,6 +339,7 @@ replication
 		bDrawDebugData,
 		bIsFinishedLoading,
 		FakeCAPInterval,
+		IGPlus_DamageEvent_ShowOnDeath,
 		PingAverage,
 		zzbDemoRecording,
 		zzNetspeed;
@@ -910,6 +917,7 @@ event Possess()
 		}
 		SetPropertyText("PureLevel", GetPropertyText("xLevel"));
 		FakeCAPInterval = Settings.FakeCAPInterval;
+		IGPlus_DamageEvent_ShowOnDeath = Settings.bShowDeathReport;
 		ClientSetMusic( Level.Song, Level.SongSection, Level.CdTrack, MTRAN_Fade );
 
 		bIs469Client = int(Level.EngineVersion) >= 469;
@@ -961,8 +969,10 @@ event Possess()
 		}
 
 		bIs469Server = int(Level.EngineVersion) >= 469;
-		if (RemoteRole != ROLE_AutonomousProxy)
+		if (RemoteRole != ROLE_AutonomousProxy) {
 			bIs469Client = bIs469Server;
+			IGPlus_DamageEvent_ShowOnDeath = Settings.bShowDeathReport;
+		}
 
 		IGPlus_ForcedSettingsInit();
 	}
@@ -4089,6 +4099,130 @@ simulated function NN_Momentum( Vector momentum, name DamageType )
 		AddVelocity( momentum );
 }
 
+function IGPlus_DamageEvent IGPlus_DamageEvent_Alloc() {
+	local IGPlus_DamageEvent DE;
+
+	if (IGPlus_DamageEvent_FreeList == none) {
+		DE = Spawn(class'IGPlus_DamageEvent', self);
+	} else {
+		DE = IGPlus_DamageEvent_FreeList;
+		IGPlus_DamageEvent_FreeList = DE.Next;
+		DE.Next = none;
+	}
+
+	return DE;
+}
+
+function IGPlus_DamageEvent_Free(IGPlus_DamageEvent First, optional IGPlus_DamageEvent Last) {
+	if (First == none) return;
+	if (Last == none) {
+		Last = First;
+		while (Last.Next != none)
+			Last = Last.Next;
+	}
+
+	Last.Next = IGPlus_DamageEvent_FreeList;
+	IGPlus_DamageEvent_FreeList = First;
+}
+
+function IGPlus_DamageEvent_Insert(IGPlus_DamageEvent Event) {
+	if (IGPlus_DamageEvent_Latest == none) {
+		IGPlus_DamageEvent_First = Event;
+		IGPlus_DamageEvent_Latest = Event;
+	} else {
+		IGPlus_DamageEvent_Latest.Next = Event;
+		IGPlus_DamageEvent_Latest = Event;
+	}
+}
+
+function float IGPlus_DamageEvent_GetHealth() {
+	local float CurrentHealth;
+	local Inventory I;
+	local int Count;
+
+	CurrentHealth += Health;
+	for (I = Inventory; I != none; I = I.Inventory) {
+		if (I.bIsAnArmor)
+			CurrentHealth += I.Charge;
+
+		if (Count++ > 255) break;
+	}
+
+	return CurrentHealth;
+}
+
+function IGPlus_DamageEvent_CheckHealth() {
+	local float CurrentHealth;
+
+	CurrentHealth = IGPlus_DamageEvent_GetHealth();
+
+	if (IGPlus_DamageEvent_PrevHealth < CurrentHealth) {
+		IGPlus_DamageEvent_Free(IGPlus_DamageEvent_First, IGPlus_DamageEvent_Latest);
+		IGPlus_DamageEvent_First = none;
+		IGPlus_DamageEvent_Latest = none;
+	}
+}
+
+function IGPlus_DamageEvent_SaveHealth() {
+	IGPlus_DamageEvent_PrevHealth = IGPlus_DamageEvent_GetHealth();
+}
+
+function IGPlus_DamageEvent_Add(PlayerReplicationInfo Enemy, int Damage, name DamageType) {
+	local IGPlus_DamageEvent Event;
+
+	Event = IGPlus_DamageEvent_Alloc();
+
+	Event.Enemy = Enemy;
+	Event.Damage = Damage;
+	Event.DamageType = DamageType;
+	Event.TimeStamp = Level.TimeSeconds;
+
+	IGPlus_DamageEvent_Insert(Event);
+}
+
+function IGPlus_DamageEvent_ReportLine(PlayerReplicationInfo Enemy, name DamageType, int Damage, int Merges) {
+	if (Enemy == none) return;
+	if (DamageType == '') return;
+	if (Damage <= 0) return;
+
+	if (Merges > 0)
+		ClientMessage(Enemy.PlayerName@DamageType@"(x"$(Merges+1)$")"@Damage);
+	else
+		ClientMessage(Enemy.PlayerName@DamageType@Damage);
+}
+
+function IGPlus_DamageEvent_SendReport() {
+	local IGPlus_DamageEvent DE;
+
+	local int DamageSum;
+	local name CurrentType;
+	local PlayerReplicationInfo Enemy;
+	local int Merges;
+
+	DE = IGPlus_DamageEvent_First;
+
+	while (DE != none) {
+		if (DE.Enemy != Enemy || DE.DamageType != CurrentType) {
+			IGPlus_DamageEvent_ReportLine(Enemy, CurrentType, DamageSum, Merges);
+			DamageSum = DE.Damage;
+			CurrentType = DE.DamageType;
+			Enemy = DE.Enemy;
+			Merges = 0;
+		} else { // merge
+			DamageSum += DE.Damage;
+			Merges += 1;
+		}
+
+		DE = DE.Next;
+	}
+
+	IGPlus_DamageEvent_ReportLine(Enemy, CurrentType, DamageSum, Merges);
+
+	IGPlus_DamageEvent_Free(IGPlus_DamageEvent_First, IGPlus_DamageEvent_Latest);
+	IGPlus_DamageEvent_First = none;
+	IGPlus_DamageEvent_Latest = none;
+}
+
 function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 						Vector momentum, name damageType)
 {
@@ -4117,6 +4251,8 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 						// ReduceDamage handles HardCore mode (*1.5) and Damage Scaling (Amp, etc)
 	ModifiedDamage1 = actualDamage;		// In team games it also handles team scaling.
 
+	IGPlus_DamageEvent_CheckHealth();
+
 	if ( bIsPlayer )
 	{
 		if (ReducedDamageType == 'All') //God mode
@@ -4137,6 +4273,7 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 
 	if ( Level.Game.DamageMutator != None )
 		Level.Game.DamageMutator.MutatorTakeDamage( ActualDamage, Self, InstigatedBy, HitLocation, Momentum, DamageType );
+	IGPlus_DamageEvent_Add(InstigatedBy.PlayerReplicationInfo, ModifiedDamage1, DamageType);
 
 	if (zzStatMut != None)
 	{	// Damn epic. Damn Damn. Why is armor handled before mutator gets it? Instead of doing it simple, I now have
@@ -4169,6 +4306,8 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 
 	ServerAddMomentum(momentum);
 	Health -= actualDamage;
+
+	IGPlus_DamageEvent_SaveHealth();
 
 	if (CarriedDecoration != None)
 		DropDecoration();
@@ -4505,6 +4644,9 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 		ClientDying(DamageType, HitLocation);
 	LastKiller = Killer;
 	GotoState('Dying');
+
+	if (IGPlus_DamageEvent_ShowOnDeath)
+		IGPlus_DamageEvent_SendReport();
 }
 
 event ServerTick(float DeltaTime) {

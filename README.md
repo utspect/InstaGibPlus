@@ -83,18 +83,19 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 55. [KillCamMinDelay](#killcammindelay)
 56. [bAllowWeaponShake](#ballowweaponshake)
 57. [bAutoReady](#bautoready)
-58. [bEnableHitMarker](#benablehitmarker)
-59. [bEnableTeamHitMarker](#benableteamhitmarker)
-60. [HitMarkerColorMode](#hitmarkercolormode)
-61. [HitMarkerColor](#hitmarkercolor)
-62. [HitMarkerTeamColor](#hitmarkerteamcolor)
-63. [HitMarkerSize](#hitmarkersize)
-64. [HitMarkerOffset](#hitmarkeroffset)
-65. [HitMarkerDuration](#hitmarkerduration)
-66. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-67. [HitMarkerSource](#hitmarkersource)
-68. [bUseCrosshairFactory](#busecrosshairfactory)
-69. [CrosshairLayers](#crosshairlayers)
+58. [bShowDeathReport](#bshowdeathreport)
+59. [bEnableHitMarker](#benablehitmarker)
+60. [bEnableTeamHitMarker](#benableteamhitmarker)
+61. [HitMarkerColorMode](#hitmarkercolormode)
+62. [HitMarkerColor](#hitmarkercolor)
+63. [HitMarkerTeamColor](#hitmarkerteamcolor)
+64. [HitMarkerSize](#hitmarkersize)
+65. [HitMarkerOffset](#hitmarkeroffset)
+66. [HitMarkerDuration](#hitmarkerduration)
+67. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+68. [HitMarkerSource](#hitmarkersource)
+69. [bUseCrosshairFactory](#busecrosshairfactory)
+70. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -479,6 +480,12 @@ If `True`, weapons can shake view. If `False` weapons can't shake view.
 **Default: True**  
 
 If `True`, you ready up when spawning for the first time during warmup. If `False` you have to manually ready up using the [Ready](#ready) command, or using `mutate ready`, or by saying one of `ready`, `rdy`, `r`, `!ready`, `!rdy`.
+
+## bShowDeathReport
+**Type: bool**  
+**Default: False** 
+
+If `True`, show a report of damage taken that lead to death. The report starts from the last time you gained health or armor.
 
 ## bEnableHitMarker
 **Type: bool**  
