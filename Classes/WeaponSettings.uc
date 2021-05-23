@@ -20,6 +20,19 @@ var config float SniperMomentum;
 var config float SniperHeadshotMomentum;
 var config float SniperReloadTime;
 
+var config float RocketDamage;
+var config float RocketHurtRadius;
+var config float RocketMomentum;
+var config float GrenadeDamage;
+var config float GrenadeHurtRadius;
+var config float GrenadeMomentum;
+
+var config float FlakChunkDamage;
+var config float FlakChunkMomentum;
+var config float FlakSlugDamage;
+var config float FlakSlugHurtRadius;
+var config float FlakSlugMomentum;
+
 var config float MinigunSpinUpTime;
 var config float MinigunBulletInterval;
 var config float MinigunAlternateBulletInterval;
@@ -61,6 +74,19 @@ defaultproperties
 	SniperMomentum=1.0
 	SniperHeadshotMomentum=1.0
 	SniperReloadTime=0.6666666666
+
+	RocketDamage=75
+	RocketHurtRadius=220
+	RocketMomentum=1.0
+	GrenadeDamage=80
+	GrenadeHurtRadius=200
+	GrenadeMomentum=1.0
+
+	FlakChunkDamage=16
+	FlakChunkMomentum=1.0
+	FlakSlugDamage=70
+	FlakSlugHurtRadius=150
+	FlakSlugMomentum=1.0
 
 	MinigunSpinUpTime=0.130
 	MinigunBulletInterval=0.080

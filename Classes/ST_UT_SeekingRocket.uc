@@ -23,7 +23,12 @@ auto state Flying
 	function BlowUp(vector HitLocation)
 	{
 		STM.PlayerHit(Instigator, 16, bDirect);		// 16 = Rockets. No special for seeking, a seeker just means it has a larger chance of direct (yeah rite :P)
-		HurtRadius(Damage,220.0, MyDamageType, MomentumTransfer, HitLocation );
+		HurtRadius(
+			STM.WeaponSettings.RocketDamage,
+			STM.WeaponSettings.RocketHurtRadius,
+			MyDamageType,
+			STM.WeaponSettings.RocketMomentum * MomentumTransfer,
+			HitLocation);
 		STM.PlayerClear();
 		MakeNoise(1.0);
 	}

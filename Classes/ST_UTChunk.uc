@@ -19,8 +19,12 @@ simulated function ProcessTouch (Actor Other, vector HitLocation)
 			if ( Role == ROLE_Authority )
 			{
 				Chunkie.HitSomething(Self, Other);
-				Other.TakeDamage(damage, instigator,HitLocation,
-					(MomentumTransfer * Velocity/speed), MyDamageType );
+				Other.TakeDamage(
+					Chunkie.STM.WeaponSettings.FlakChunkDamage,
+					instigator,
+					HitLocation,
+					Chunkie.STM.WeaponSettings.FlakChunkMomentum * (MomentumTransfer * Velocity/speed),
+					MyDamageType);
 				Chunkie.EndHit();
 			}
 			if ( FRand() < 0.5 )
