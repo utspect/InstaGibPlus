@@ -31,19 +31,30 @@ simulated function CheckBeam(vector X, float DeltaTime)
 			{
 				PlasmaBeam = Spawn(class'ST_PBolt',,, Location + BeamSize * X);
 				PlasmaBeam.Position = Position + 1;
-				ST_PBolt(PlasmaBeam).GrowthAccumulator = GrowthAccumulator - 0.050;		// This causing extra damage?
+				ST_PBolt(PlasmaBeam).GrowthAccumulator = GrowthAccumulator - GrowthDelay;
 				ST_PBolt(PlasmaBeam).STM = STM;
 				ST_PBolt(PlasmaBeam).GrowthDelay = GrowthDelay;
 				ST_PBolt(PlasmaBeam).MaxSegments = MaxSegments;
 				GrowthAccumulator = 0.0;
 
 				if (GrowthDelay < 0.0)
-					PlasmaBeam.UpdateBeam(self, X, DeltaTime);
+					PlasmaBeam.CheckBeam(X, DeltaTime);
 			}
 		} else {
-			PlasmaBeam.UpdateBeam(self, X, DeltaTime);
+			PlasmaBeam.CheckBeam(X, DeltaTime);
 		}
 	}
+}
+
+simulated function UpdateBeam(PBolt ParentBolt, vector Dir, float DeltaTime)
+{
+	SpriteFrame = ParentBolt.SpriteFrame;
+	Skin = SpriteAnim[SpriteFrame];
+	SetLocation(ParentBolt.Location + BeamSize * Dir);
+	SetRotation(ParentBolt.Rotation);
+
+	if (PlasmaBeam != none)
+		PlasmaBeam.UpdateBeam(self, Dir, DeltaTime);
 }
 
 defaultproperties {

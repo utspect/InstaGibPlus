@@ -54,6 +54,7 @@ simulated function Tick(float DeltaTime)
 	local int YawErr;
 	local float dAdjust;
 	local Bot MyBot;
+	local vector Origin;
 
 	if (ROLE == ROLE_Authority)
 	{
@@ -167,26 +168,30 @@ simulated function Tick(float DeltaTime)
 			else
 				FireOffset.Y = -1 * Default.FireOffset.Y;
 		}
-		SetLocation(Instigator.Location + DrawOffset + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z);
+		Origin = Instigator.Location + DrawOffset;
+		SetLocation(Origin + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z);
 	}
-	else
+	else {
 		GetAxes(Rotation,X,Y,Z);
+		Origin = Location;
+	}
 
-	CheckBeam(X, DeltaTime);
+	TraceBeam(Origin, X, DeltaTime);
 }
 
-simulated function CheckBeam(vector X, float DeltaTime)
+simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 {
 	local actor HitActor;
 	local vector HitLocation, HitNormal, Momentum;
 	local int BeamLen;
+	local vector BeamDir;
 
-	super.CheckBeam(X, DeltaTime); // spawn or orient child, potentially lengthens the beam
+	CheckBeam(X, DeltaTime); // potentially lengthens the beam
 
 	BeamLen = BeamLength();
 
 	// check to see if hits something
-	HitActor = Trace(HitLocation, HitNormal, Location + BeamLen * BeamSize * X, Location, true);
+	HitActor = Trace(HitLocation, HitNormal, Origin + BeamLen * BeamSize * X, Origin, true);
 	if ( (HitActor != None)	&& (HitActor != Instigator)
 		&& (HitActor.bProjTarget || (HitActor == Level) || (HitActor.bBlockActors && HitActor.bBlockPlayers))
 		&& ((Pawn(HitActor) == None) || Pawn(HitActor).AdjustHitLocation(HitLocation, Velocity)) )
@@ -274,7 +279,7 @@ simulated function CheckBeam(vector X, float DeltaTime)
 			}
 		}
 
-		CutDownBeam(HitLocation);
+		CutDownBeam(HitLocation); // potentially shortens beam
 	} else {
 		HitLocation = Location + BeamLen * BeamSize * X;
 
@@ -308,6 +313,12 @@ simulated function CheckBeam(vector X, float DeltaTime)
 				WallEffect.SetLocation(HitLocation - 4 * X);
 		}
 	}
+
+	// reposition beam
+	BeamDir = Normal(HitLocation - Location);
+	SetRotation(rotator(BeamDir));
+	if (PlasmaBeam != none)
+		PlasmaBeam.UpdateBeam(self, BeamDir, 0.0);
 }
 
 simulated function int BeamLength() {
