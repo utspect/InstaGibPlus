@@ -13,11 +13,17 @@ var float AnimTime;
 // Count "shots" using this.
 var float ShootAccum;
 
+var float DamageCarry;
+var float DecalInterval;
+var float DecalMinInterval;
+
 replication
 {
 	// Things the server should send to the client.
 	unreliable if( Role==ROLE_Authority )
-		AimError, NewError, AimRotation;
+		AimError,
+		NewError,
+		AimRotation;
 }
 
 simulated function PostBeginPlay()
@@ -37,6 +43,8 @@ simulated function PostBeginPlay()
 	if (ROLE == ROLE_Authority)
 		ForEach AllActors(Class'ST_Mutator', STM)
 			break;		// Find master :D
+
+	MaxSegments = STM.WeaponSettings.PulseBoltMaxSegments;
 }
 
 simulated function Tick(float DeltaTime)
@@ -166,6 +174,190 @@ simulated function Tick(float DeltaTime)
 	CheckBeam(X, DeltaTime);
 }
 
+simulated function CheckBeam(vector X, float DeltaTime)
+{
+	local actor HitActor;
+	local vector HitLocation, HitNormal, Momentum;
+	local int BeamLen;
+
+	super.CheckBeam(X, DeltaTime); // spawn or orient child, potentially lengthens the beam
+
+	BeamLen = BeamLength();
+
+	// check to see if hits something
+	HitActor = Trace(HitLocation, HitNormal, Location + BeamLen * BeamSize * X, Location, true);
+	if ( (HitActor != None)	&& (HitActor != Instigator)
+		&& (HitActor.bProjTarget || (HitActor == Level) || (HitActor.bBlockActors && HitActor.bBlockPlayers))
+		&& ((Pawn(HitActor) == None) || Pawn(HitActor).AdjustHitLocation(HitLocation, Velocity)) )
+	{
+		if ( Level.Netmode != NM_Client )
+		{
+			if ( DamagedActor == None )
+			{
+				AccumulatedDamage = FMin(
+					0.5 * (Level.TimeSeconds - LastHitTime),
+					STM.WeaponSettings.PulseBoltMaxAccumulate
+				);
+				if (Level.Game.GetPropertyText("NoLockdown") == "1")
+					Momentum = vect(0,0,0);
+				else
+					Momentum = MomentumTransfer * X * AccumulatedDamage;
+				STM.PlayerHit(Instigator, 10, False);						// 10 = Pulse Shaft
+				HitActor.TakeDamage(
+					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+					instigator,
+					HitLocation,
+					STM.WeaponSettings.PulseBoltMomentum * Momentum,
+					MyDamageType);
+				STM.PlayerClear();
+				AccumulatedDamage = 0;
+			}
+			else if ( DamagedActor != HitActor )
+			{
+				if (Level.Game.GetPropertyText("NoLockdown") == "1")
+					Momentum = vect(0,0,0);
+				else
+					Momentum = MomentumTransfer * X * AccumulatedDamage;
+				STM.PlayerHit(Instigator, 10, False);						// 10 = Pulse Shaft
+				DamagedActor.TakeDamage(
+					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+					instigator,
+					HitLocation,
+					STM.WeaponSettings.PulseBoltMomentum * Momentum,
+					MyDamageType);
+				STM.PlayerClear();
+				AccumulatedDamage = 0;
+			}
+			LastHitTime = Level.TimeSeconds;
+			DamagedActor = HitActor;
+			AccumulatedDamage += DeltaTime;
+			if ( AccumulatedDamage > 0.22 )
+			{
+				if ( DamagedActor.IsA('Carcass') && (FRand() < 0.09) )
+					AccumulatedDamage = 35/damage;
+				if (int(Level.Game.GetPropertyText("NoLockdown")) > 0)
+					Momentum = vect(0,0,0);
+				else
+					Momentum = MomentumTransfer * X * AccumulatedDamage;
+				STM.PlayerHit(Instigator, 10, True);						// 10 = Pulse Shaft, Overload
+				DamagedActor.TakeDamage(
+					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+					instigator,
+					HitLocation,
+					STM.WeaponSettings.PulseBoltMomentum * Momentum,
+					MyDamageType);
+				STM.PlayerClear();
+				AccumulatedDamage = 0;
+			}
+		}
+		if ( HitActor.bIsPawn && Pawn(HitActor).bIsPlayer )
+		{
+			if ( WallEffect != None )
+				WallEffect.Destroy();
+		}
+		else if ( (WallEffect == None) || WallEffect.bDeleteMe )
+			WallEffect = Spawn(class'PlasmaHit',,, HitLocation - 5 * X);
+		else if ( !WallEffect.IsA('PlasmaHit') )
+		{
+			WallEffect.Destroy();
+			WallEffect = Spawn(class'PlasmaHit',,, HitLocation - 5 * X);
+		}
+		else
+			WallEffect.SetLocation(HitLocation - 5 * X);
+
+		if ( (WallEffect != None) && (Level.NetMode != NM_DedicatedServer) ) {
+			DecalInterval -= DeltaTime;
+			if (DecalInterval <= 0) {
+				Spawn(ExplosionDecal,,,HitLocation,rotator(HitNormal));
+				DecalInterval = FClamp(DecalInterval + DecalMinInterval, -DecalMinInterval, DecalMinInterval);
+			}
+		}
+
+		CutDownBeam(HitLocation);
+	} else {
+		HitLocation = Location + BeamLen * BeamSize * X;
+
+		if (DamagedActor != None && Level.Netmode != NM_Client) {
+			if (Level.Game.GetPropertyText("NoLockdown") == "1")
+				Momentum = vect(0,0,0);
+			else
+				Momentum = MomentumTransfer * X * AccumulatedDamage;
+
+			STM.PlayerHit(Instigator, 10, True);								// 10 = Pulse Shaft
+			DamagedActor.TakeDamage(
+				CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+				instigator,
+				DamagedActor.Location - X * 1.2 * DamagedActor.CollisionRadius,
+				STM.WeaponSettings.PulseBoltMomentum * Momentum,
+				MyDamageType);
+			STM.PlayerClear();
+			AccumulatedDamage = 0;
+			DamagedActor = None;
+		}
+
+		if (BeamLen == MaxSegments) {
+			if ( (WallEffect == None) || WallEffect.bDeleteMe )
+				WallEffect = Spawn(class'PlasmaCap',,, HitLocation - 4 * X);
+			else if ( WallEffect.IsA('PlasmaHit') )
+			{
+				WallEffect.Destroy();
+				WallEffect = Spawn(class'PlasmaCap',,, HitLocation - 4 * X);
+			}
+			else
+				WallEffect.SetLocation(HitLocation - 4 * X);
+		}
+	}
+}
+
+simulated function int BeamLength() {
+	local int Result;
+	local PBolt Beam;
+
+	Result = 1;
+	Beam = PlasmaBeam;
+
+	while(Beam != none) {
+		Result++;
+		Beam = Beam.PlasmaBeam;
+	}
+
+	return Result;
+}
+
+// This function makes sure only even amounts of damage are applied
+// Level.Game.ReduceDamage multiplies damage by 1.5
+// The problem is that damage is applied on potentially every Tick, and rounding
+// losses become significant at that frequency.
+simulated function int CalcDamage(float Damage) {
+	local float Temp;
+	local int Result;
+
+	Temp = Damage + DamageCarry;
+	Result = int(Temp) & ~1;
+	DamageCarry = Temp - float(Result);
+
+	return Result;
+}
+
+simulated function CutDownBeam(vector HitLocation) {
+	local PBolt Beam;
+	local float Length;
+
+	Length = VSize(HitLocation - Location);
+	Beam = self;
+
+	while (Beam.PlasmaBeam != none && Length >= BeamSize) {
+		Length -= BeamSize;
+		Beam = Beam.PlasmaBeam;
+	}
+	ST_PBolt(Beam).GrowthAccumulator = 0.0;
+
+	if (Beam.PlasmaBeam != none) {
+		Beam.PlasmaBeam.Destroy();
+		Beam.PlasmaBeam = none;
+	}
+}
+
 defaultproperties
 {
      StartError=0.500000
@@ -181,4 +373,5 @@ defaultproperties
      LightHue=83
      LightSaturation=50
      LightRadius=5
+     DecalMinInterval=0.02
 }

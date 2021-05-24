@@ -8,126 +8,19 @@ class ST_PBolt extends PBolt;
 
 var ST_Mutator STM;
 var float GrowthAccumulator;
+var int MaxSegments;
+
+replication
+{
+	// Things the server should send to the client.
+	unreliable if( Role==ROLE_Authority )
+		MaxSegments;
+}
 
 simulated function CheckBeam(vector X, float DeltaTime)
 {
-	local actor HitActor;
-	local vector HitLocation, HitNormal, Momentum;
-
-	// check to see if hits something, else spawn or orient child
-
-	HitActor = Trace(HitLocation, HitNormal, Location + BeamSize * X, Location, true);
-	if ( (HitActor != None)	&& (HitActor != Instigator)
-		&& (HitActor.bProjTarget || (HitActor == Level) || (HitActor.bBlockActors && HitActor.bBlockPlayers))
-		&& ((Pawn(HitActor) == None) || Pawn(HitActor).AdjustHitLocation(HitLocation, Velocity)) )
+	if ( Position < MaxSegments-1 )
 	{
-		if ( Level.Netmode != NM_Client )
-		{
-			if ( DamagedActor == None )
-			{
-				AccumulatedDamage = FMin(0.5 * (Level.TimeSeconds - LastHitTime), 0.08);	// Was 0.1, reduced to 80%.
-				if (Level.Game.GetPropertyText("NoLockdown") == "1")
-					Momentum = vect(0,0,0);
-				else
-					Momentum = MomentumTransfer * X * AccumulatedDamage;
-				STM.PlayerHit(Instigator, 10, False);						// 10 = Pulse Shaft
-				HitActor.TakeDamage(AccumulatedDamage * damage, instigator,HitLocation, // *2?...
-					Momentum, MyDamageType);
-				STM.PlayerClear();
-				AccumulatedDamage = 0;
-			}
-			else if ( DamagedActor != HitActor )
-			{
-				if (Level.Game.GetPropertyText("NoLockdown") == "1")
-					Momentum = vect(0,0,0);
-				else
-					Momentum = MomentumTransfer * X * AccumulatedDamage;
-				STM.PlayerHit(Instigator, 10, False);						// 10 = Pulse Shaft
-				DamagedActor.TakeDamage(damage * AccumulatedDamage, instigator,HitLocation,
-					Momentum, MyDamageType);
-				STM.PlayerClear();
-				AccumulatedDamage = 0;
-			}
-			LastHitTime = Level.TimeSeconds;
-			DamagedActor = HitActor;
-			AccumulatedDamage += DeltaTime;
-			if ( AccumulatedDamage > 0.22 )
-			{
-				if ( DamagedActor.IsA('Carcass') && (FRand() < 0.09) )
-					AccumulatedDamage = 35/damage;
-				if (int(Level.Game.GetPropertyText("NoLockdown")) > 0)
-					Momentum = vect(0,0,0);
-				else
-					Momentum = MomentumTransfer * X * AccumulatedDamage;
-				STM.PlayerHit(Instigator, 10, True);						// 10 = Pulse Shaft, Overload
-				DamagedActor.TakeDamage(damage * AccumulatedDamage, instigator,HitLocation,
-					Momentum, MyDamageType);
-				STM.PlayerClear();
-				AccumulatedDamage = 0;
-			}
-		}
-		if ( HitActor.bIsPawn && Pawn(HitActor).bIsPlayer )
-		{
-			if ( WallEffect != None )
-				WallEffect.Destroy();
-		}
-		else if ( (WallEffect == None) || WallEffect.bDeleteMe )
-			WallEffect = Spawn(class'PlasmaHit',,, HitLocation - 5 * X);
-		else if ( !WallEffect.IsA('PlasmaHit') )
-		{
-			WallEffect.Destroy();
-			WallEffect = Spawn(class'PlasmaHit',,, HitLocation - 5 * X);
-		}
-		else
-			WallEffect.SetLocation(HitLocation - 5 * X);
-
-		if ( (WallEffect != None) && (Level.NetMode != NM_DedicatedServer) )
-			Spawn(ExplosionDecal,,,HitLocation,rotator(HitNormal));
-
-		if ( PlasmaBeam != None )
-		{
-			AccumulatedDamage = PlasmaBeam.AccumulatedDamage;
-			PlasmaBeam.Destroy();
-			PlasmaBeam = None;
-		}
-
-		return;
-	}
-	else if ( (Level.Netmode != NM_Client) && (DamagedActor != None) )
-	{
-		if (Level.Game.GetPropertyText("NoLockdown") == "1")
-			Momentum = vect(0,0,0);
-		else
-			Momentum = MomentumTransfer * X * AccumulatedDamage;
-
-		STM.PlayerHit(Instigator, 10, True);								// 10 = Pulse Shaft
-		DamagedActor.TakeDamage(damage * AccumulatedDamage, instigator, DamagedActor.Location - X * 1.2 * DamagedActor.CollisionRadius,
-			Momentum, MyDamageType);
-		STM.PlayerClear();
-		AccumulatedDamage = 0;
-		DamagedActor = None;
-	}
-
-
-	if ( Position >= 9 )
-	{
-		if ( (WallEffect == None) || WallEffect.bDeleteMe )
-			WallEffect = Spawn(class'PlasmaCap',,, Location + (BeamSize - 4) * X);
-		else if ( WallEffect.IsA('PlasmaHit') )
-		{
-			WallEffect.Destroy();
-			WallEffect = Spawn(class'PlasmaCap',,, Location + (BeamSize - 4) * X);
-		}
-		else
-			WallEffect.SetLocation(Location + (BeamSize - 4) * X);
-	}
-	else
-	{
-		if ( WallEffect != None )
-		{
-			WallEffect.Destroy();
-			WallEffect = None;
-		}
 		if ( PlasmaBeam == None )
 		{
 			// Originally, it spawned a new segment every tick, meaning higher tickrate = faster growth of beam
@@ -140,6 +33,7 @@ simulated function CheckBeam(vector X, float DeltaTime)
 				PlasmaBeam.Position = Position + 1;
 				ST_PBolt(PlasmaBeam).GrowthAccumulator = GrowthAccumulator - 0.050;		// This causing extra damage?
 				ST_PBolt(PlasmaBeam).STM = STM;
+				ST_PBolt(PlasmaBeam).MaxSegments = MaxSegments;
 				GrowthAccumulator = 0.0;
 			}
 		}

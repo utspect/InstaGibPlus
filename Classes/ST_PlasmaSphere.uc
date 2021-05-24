@@ -31,7 +31,12 @@ simulated function ProcessTouch (Actor Other, vector HitLocation)
 		if ( Role == ROLE_Authority )
 		{
 			STM.PlayerHit(Instigator, 9, False);	// 9 = Plasma Sphere
-			Other.TakeDamage( Damage, instigator, HitLocation, MomentumTransfer*Vector(Rotation), MyDamageType);	
+			Other.TakeDamage(
+				STM.WeaponSettings.PulseSphereDamage,
+				instigator,
+				HitLocation,
+				STM.WeaponSettings.PulseSphereMomentum * MomentumTransfer * Vector(Rotation),
+				MyDamageType);
 			STM.PlayerClear();
 		}
 		Explode(HitLocation, vect(0,0,1));
