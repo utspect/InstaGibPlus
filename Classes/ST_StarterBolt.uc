@@ -44,6 +44,7 @@ simulated function PostBeginPlay()
 		ForEach AllActors(Class'ST_Mutator', STM)
 			break;		// Find master :D
 
+	GrowthDelay = STM.WeaponSettings.PulseBoltGrowthDelay;
 	MaxSegments = STM.WeaponSettings.PulseBoltMaxSegments;
 }
 

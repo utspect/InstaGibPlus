@@ -44,6 +44,7 @@ var config float PulseSphereMomentum;
 var config float PulseBoltDPS;
 var config float PulseBoltMomentum;
 var config float PulseBoltMaxAccumulate;
+var config float PulseBoltGrowthDelay;
 var config int   PulseBoltMaxSegments;
 
 var config float EnforcerDamage;
@@ -106,6 +107,7 @@ defaultproperties
 	PulseBoltDPS=72
 	PulseBoltMomentum=1.0
 	PulseBoltMaxAccumulate=0.08
+	PulseBoltGrowthDelay=0.05
 	PulseBoltMaxSegments=10
 
 	EnforcerDamage=17
