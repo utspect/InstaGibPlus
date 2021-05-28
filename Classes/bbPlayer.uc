@@ -1729,6 +1729,7 @@ function IGPlus_FreeAcknowledgedMoves(float TimeStamp) {
 	local bbSavedMove FirstMove;
 	local bbSavedMove CurrentMove;
 
+	if (SavedMoves == none) return;
 	if (SavedMoves.TimeStamp > TimeStamp) return;
 
 	CurrentMove = bbSavedMove(SavedMoves);
@@ -7670,7 +7671,8 @@ function ClientReStart()
 	}
 
 	IgnoreZChangeTicks = 1;
-	MultiDodgesRemaining = bbPlayerReplicationInfo(PlayerReplicationInfo).MaxMultiDodges;
+	if (PlayerReplicationInfo != none)
+		MultiDodgesRemaining = bbPlayerReplicationInfo(PlayerReplicationInfo).MaxMultiDodges;
 }
 
 exec function GetWeapon(class<Weapon> NewWeaponClass )
