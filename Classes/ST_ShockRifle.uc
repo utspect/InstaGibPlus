@@ -63,7 +63,12 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	if ( (Other != self) && (Other != Owner) && (Other != None) ) 
 	{
 		STM.PlayerHit(PawnOwner, 5, False);			// 5 = Shock Beam
-		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
+		Other.TakeDamage(
+			STM.WeaponSettings.ShockBeamDamage,
+			PawnOwner,
+			HitLocation,
+			STM.WeaponSettings.ShockBeamMomentum*60000.0*X,
+			MyDamageType);
 		STM.PlayerClear();
 	}
 

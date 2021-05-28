@@ -47,6 +47,15 @@ var config float PulseBoltMaxAccumulate;
 var config float PulseBoltGrowthDelay;
 var config int   PulseBoltMaxSegments;
 
+var config float ShockBeamDamage;
+var config float ShockBeamMomentum;
+var config float ShockProjectileDamage;
+var config float ShockProjectileHurtRadius;
+var config float ShockProjectileMomentum;
+var config float ShockComboDamage;
+var config float ShockComboMomentum;
+var config float ShockComboHurtRadius;
+
 var config float EnforcerDamage;
 var config float EnforcerMomentum;
 
@@ -109,6 +118,15 @@ defaultproperties
 	PulseBoltMaxAccumulate=0.08
 	PulseBoltGrowthDelay=0.05
 	PulseBoltMaxSegments=10
+
+	ShockBeamDamage=40
+	ShockBeamMomentum=1.0
+	ShockProjectileDamage=55
+	ShockProjectileHurtRadius=70
+	ShockProjectileMomentum=1.0
+	ShockComboDamage=165
+	ShockComboHurtRadius=250
+	ShockComboMomentum=1.0
 
 	EnforcerDamage=17
 	EnforcerMomentum=1.0
