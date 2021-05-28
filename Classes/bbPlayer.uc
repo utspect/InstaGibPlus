@@ -8498,6 +8498,9 @@ function PlayInAir() {
 
 function PlaySpawn() {
 	local name NextSeq;
+
+	if (Mesh == none) return;
+
 	if ((Weapon == None) || (Weapon.Mass < 20)) {
 		NextSeq = 'Breath1';
 	} else {
