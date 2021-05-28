@@ -1,5 +1,6 @@
 class ClientSuperShockBeam extends Effects;
 
+// Settings
 var int Team;
 var float Size;
 var byte Curve;
@@ -7,12 +8,18 @@ var float Duration;
 var vector MoveAmount;
 var int NumPuffs;
 
+//
+var float TimeLeft;
+
+var ClientSuperShockBeam Next;
+var ClientSuperShockBeam Free;
+
 simulated function Tick(float DeltaTime) {
     local byte x;
     local float d;
 
     if (Level.NetMode != NM_DedicatedServer) {
-        d = Lifespan / Duration;
+        d = TimeLeft / Duration;
 
         ScaleGlow = 1;
         for (x = 0; x < Curve; x++)
@@ -21,6 +28,10 @@ simulated function Tick(float DeltaTime) {
         AmbientGlow = ScaleGlow * 210;
         if (Team >= 0)
             LightBrightness = ScaleGlow * 128;
+
+        TimeLeft -= DeltaTime;
+        if (TimeLeft <= 0.0)
+            FreeBeam(self);
     }
 }
 
@@ -76,23 +87,54 @@ simulated function SetProperties(int pTeam, float pSize, float pCurve, float pDu
             break;
     }
     DrawScale = 0.44 * Size;
-    LifeSpan = Duration;
+    TimeLeft = Duration;
 }
 
 simulated function Timer() {
     local ClientSuperShockBeam r;
 
     if (NumPuffs > 0) {
-        r = Spawn(Class, Owner, , Location + MoveAmount);
+        r = AllocBeam(PlayerPawn(Owner));
+        r.SetLocation(Location + MoveAmount);
+        r.SetRotation(Rotation);
         r.SetProperties(Team,Size,Curve,Duration,MoveAmount, NumPuffs - 1);
     }
+}
+
+static final function ClientSuperShockBeam AllocBeam(PlayerPawn P) {
+    local ClientSuperShockBeam Beam;
+
+    if (default.Free != none) {
+        Beam = default.Free;
+        default.Free = Beam.Next;
+        Beam.Next = none;
+
+        Beam.bHidden = false;
+        Beam.Enable('Tick');
+    } else {
+        Beam = P.Spawn(class'ClientSuperShockBeam', P);
+    }
+
+    return Beam;
+}
+
+static final function FreeBeam(ClientSuperShockBeam Beam) {
+    Beam.bHidden = true;
+    Beam.Disable('Tick');
+
+    Beam.Next = default.Free;
+    default.Free = Beam;
+}
+
+static final function Cleanup() {
+    default.Free = none;
 }
 
 defaultproperties
 {
      Physics=PHYS_Rotating
      RemoteRole=ROLE_None
-     LifeSpan=0.270000
+     LifeSpan=0.000000
      Rotation=(Roll=20000)
      DrawType=DT_Mesh
      Style=STY_Translucent

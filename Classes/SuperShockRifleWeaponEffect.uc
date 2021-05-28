@@ -60,8 +60,10 @@ static function PlayBeam(
 		Player.bBehindView == false)
 		return;
 
-	Smoke = Player.Spawn(class'ClientSuperShockBeam',Source,, SmokeLocation, SmokeRotation);
+	Smoke = class'ClientSuperShockBeam'.static.AllocBeam(Player);
 	if (Smoke == none) return;
+	Smoke.SetLocation(SmokeLocation);
+	Smoke.SetRotation(SmokeRotation);
 	MoveAmount = DVector / NumPoints;
 
 	if (Settings.cShockBeam == 1) {
@@ -93,8 +95,10 @@ static function PlayBeam(
 
 		for (NumPoints = NumPoints - 1; NumPoints > 0; NumPoints--) {
 			SmokeLocation += MoveAmount;
-			Smoke = Player.Spawn(class'ClientSuperShockBeam',Source,, SmokeLocation, SmokeRotation);
+			Smoke = class'ClientSuperShockBeam'.static.AllocBeam(Player);
 			if (Smoke == None) break;
+			Smoke.SetLocation(SmokeLocation);
+			Smoke.SetRotation(SmokeRotation);
 			Smoke.SetProperties(
 				PlayerPawn(Source).PlayerReplicationInfo.Team,
 				Settings.BeamScale,
