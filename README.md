@@ -632,6 +632,7 @@ Parameters marked `optional` do not have to be supplied.
 28. [ShowFPS](#showfps)
 29. [ShowOwnBeam](#showownbeam)
 30. [Ready](#ready)
+31. [ZoomToggle](#zoomtoggle)
 
 ## EnableDebugData
 **Parameters: (bool b)**  
@@ -747,6 +748,18 @@ Toggles showing your own beam when firing the SuperShockRifle. See [bHideOwnBeam
 
 ## Ready
 Toggles ready state during warmup.
+
+## ZoomToggle
+**Parameters: (float SensitivityX, optional float SensitivityY)**
+
+Toggles between FOV 80 and the players desired FOV.  
+`SensitivityX` and `SensitivityY` are multiplicative factors on mouse sensitivity in their respective directions (X is side-to-side / yaw, Y is up-down / pitch) while zooming.
+
+If `SensitivityY` is not provided by the user, it is assumed to be the same as `SensitivityX`.
+
+### Examples
+- Same sensitivity as un-zoomed: `ZoomToggle 1.0`
+- Half the sensitivity as un-zoomed: `ZoomToggle 0.5`
 
 # Server Installation
 

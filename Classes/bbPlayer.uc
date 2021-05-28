@@ -291,6 +291,10 @@ var IGPlus_DamageEvent IGPlus_DamageEvent_FreeList;
 var float IGPlus_DamageEvent_PrevHealth;
 var bool IGPlus_DamageEvent_ShowOnDeath;
 
+var float IGPlus_ZoomToggle_RestoreFOV;
+var float IGPlus_ZoomToggle_SensitivityFactorX;
+var float IGPlus_ZoomToggle_SensitivityFactorY;
+
 replication
 {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -3947,14 +3951,14 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 
 	DesiredRotation = ViewRotation; //save old rotation
 
-	PitchDelta = 32.0 * DeltaTime * aLookUp + LookUpFractionalPart;
+	PitchDelta = 32.0 * DeltaTime * aLookUp * IGPlus_ZoomToggle_SensitivityFactorY + LookUpFractionalPart;
 	ViewRotation.Pitch += int(PitchDelta);
 	if (!Settings.bUseOldMouseInput)
 		LookUpFractionalPart = PitchDelta - int(PitchDelta);
 
 	ViewRotation.Pitch = Utils.RotS2U(Clamp(Utils.RotU2S(ViewRotation.Pitch), -16384, 16383));
 
-	YawDelta = 32.0 * DeltaTime * aTurn + TurnFractionalPart;
+	YawDelta = 32.0 * DeltaTime * aTurn * IGPlus_ZoomToggle_SensitivityFactorX + TurnFractionalPart;
 	ViewRotation.Yaw += int(YawDelta);
 	if (!Settings.bUseOldMouseInput)
 		TurnFractionalPart = YawDelta - int(YawDelta);
@@ -8547,6 +8551,26 @@ exec function TestHitSound(optional int Dmg) {
 		HitMarkerTestTeam = 0;
 }
 
+exec function ZoomToggle(float SensitivityX, optional float SensitivityY) {
+	if (IGPlus_ZoomToggle_RestoreFOV != 0) {
+		DefaultFOV = IGPlus_ZoomToggle_RestoreFOV;
+		DesiredFOV = DefaultFOV;
+		IGPlus_ZoomToggle_RestoreFOV = 0;
+		IGPlus_ZoomToggle_SensitivityFactorX = 1.0;
+		IGPlus_ZoomToggle_SensitivityFactorY = 1.0;
+	} else {
+		IGPlus_ZoomToggle_RestoreFOV = DefaultFOV;
+		DefaultFOV = 80;
+		DesiredFOV = DefaultFOV;
+
+		IGPlus_ZoomToggle_SensitivityFactorX = SensitivityX * IGPlus_ZoomToggle_RestoreFOV/DefaultFOV;
+		if (SensitivityY == 0)
+			IGPlus_ZoomToggle_SensitivityFactorY = IGPlus_ZoomToggle_SensitivityFactorX;
+		else
+			IGPlus_ZoomToggle_SensitivityFactorY = SensitivityY * IGPlus_ZoomToggle_RestoreFOV/DefaultFOV;
+	}
+}
+
 defaultproperties
 {
 	bNewNet=True
@@ -8567,4 +8591,7 @@ defaultproperties
 	LastWeaponEffectCreated=-1
 	RespawnDelay=1.0
 	PlayerReplicationInfoClass=Class'bbPlayerReplicationInfo'
+
+	IGPlus_ZoomToggle_SensitivityFactorX=1.0
+	IGPlus_ZoomToggle_SensitivityFactorY=1.0
 }
