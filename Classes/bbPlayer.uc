@@ -4123,7 +4123,7 @@ simulated function NN_Momentum( Vector momentum, name DamageType )
 		AddVelocity( momentum );
 }
 
-function IGPlus_DamageEvent IGPlus_DamageEvent_Alloc() {
+final function IGPlus_DamageEvent IGPlus_DamageEvent_Alloc() {
 	local IGPlus_DamageEvent DE;
 
 	if (IGPlus_DamageEvent_FreeList == none) {
@@ -4137,7 +4137,7 @@ function IGPlus_DamageEvent IGPlus_DamageEvent_Alloc() {
 	return DE;
 }
 
-function IGPlus_DamageEvent_Free(IGPlus_DamageEvent First, optional IGPlus_DamageEvent Last) {
+final function IGPlus_DamageEvent_Free(IGPlus_DamageEvent First, optional IGPlus_DamageEvent Last) {
 	if (First == none) return;
 	if (Last == none) {
 		Last = First;
@@ -4149,7 +4149,7 @@ function IGPlus_DamageEvent_Free(IGPlus_DamageEvent First, optional IGPlus_Damag
 	IGPlus_DamageEvent_FreeList = First;
 }
 
-function IGPlus_DamageEvent_Insert(IGPlus_DamageEvent Event) {
+final function IGPlus_DamageEvent_Insert(IGPlus_DamageEvent Event) {
 	if (IGPlus_DamageEvent_Latest == none) {
 		IGPlus_DamageEvent_First = Event;
 		IGPlus_DamageEvent_Latest = Event;
@@ -4159,7 +4159,7 @@ function IGPlus_DamageEvent_Insert(IGPlus_DamageEvent Event) {
 	}
 }
 
-function float IGPlus_DamageEvent_GetHealth() {
+final function float IGPlus_DamageEvent_GetHealth() {
 	local float CurrentHealth;
 	local Inventory I;
 	local int Count;
@@ -4175,7 +4175,7 @@ function float IGPlus_DamageEvent_GetHealth() {
 	return CurrentHealth;
 }
 
-function IGPlus_DamageEvent_CheckHealth() {
+final function IGPlus_DamageEvent_CheckHealth() {
 	local float CurrentHealth;
 
 	CurrentHealth = IGPlus_DamageEvent_GetHealth();
@@ -4187,11 +4187,11 @@ function IGPlus_DamageEvent_CheckHealth() {
 	}
 }
 
-function IGPlus_DamageEvent_SaveHealth() {
+final function IGPlus_DamageEvent_SaveHealth() {
 	IGPlus_DamageEvent_PrevHealth = IGPlus_DamageEvent_GetHealth();
 }
 
-function IGPlus_DamageEvent_Add(PlayerReplicationInfo Enemy, int Damage, name DamageType) {
+final function IGPlus_DamageEvent_Add(PlayerReplicationInfo Enemy, int Damage, name DamageType) {
 	local IGPlus_DamageEvent Event;
 
 	Event = IGPlus_DamageEvent_Alloc();
@@ -4204,7 +4204,7 @@ function IGPlus_DamageEvent_Add(PlayerReplicationInfo Enemy, int Damage, name Da
 	IGPlus_DamageEvent_Insert(Event);
 }
 
-function IGPlus_DamageEvent_ReportLine(PlayerReplicationInfo Enemy, name DamageType, int Damage, int Merges) {
+final function IGPlus_DamageEvent_ReportLine(PlayerReplicationInfo Enemy, name DamageType, int Damage, int Merges) {
 	if (Enemy == none) return;
 	if (DamageType == '') return;
 	if (Damage <= 0) return;
@@ -4215,7 +4215,7 @@ function IGPlus_DamageEvent_ReportLine(PlayerReplicationInfo Enemy, name DamageT
 		ClientMessage(Enemy.PlayerName@DamageType@Damage);
 }
 
-function IGPlus_DamageEvent_SendReport() {
+final function IGPlus_DamageEvent_SendReport() {
 	local IGPlus_DamageEvent DE;
 
 	local int DamageSum;
