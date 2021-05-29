@@ -222,6 +222,7 @@ var transient float LastTimeForward, LastTimeBack, LastTimeLeft, LastTimeRight;
 var transient float TurnFractionalPart, LookUpFractionalPart;
 var float DuckFraction; // 0 = Not Ducking, 1 = Ducking
 var float DuckTransitionTime; // Time to go from ducking to not-ducking
+var byte DuckFractionRepl; // Replicated to all players
 
 var float AverageServerDeltaTime;
 var float TimeDead;
@@ -328,7 +329,7 @@ replication
 		zzWaitTime;
 
 	unreliable if ( Role == ROLE_Authority )
-		DuckFraction;
+		DuckFractionRepl;
 
 	unreliable if ( bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
 		clientForcedPosition,
@@ -4015,7 +4016,10 @@ simulated function bool AdjustHitLocation(out vector HitLocation, vector TraceDi
 	TraceDir = Normal(TraceDir);
 	HitLocation = HitLocation + 0.5 * CollisionRadius * TraceDir;
 
-	maxZ = Location.Z + (1.0 - 0.7 * DuckFraction) * CollisionHeight;
+	if (Role != ROLE_Authority)
+		maxZ = Location.Z + (1.0 - 0.7 * DuckFractionRepl/255.0) * CollisionHeight;
+	else
+		maxZ = Location.Z + (1.0 - 0.7 * DuckFraction) * CollisionHeight;
 	if ( HitLocation.Z <= maxZ )
 		return true;
 
@@ -4045,7 +4049,11 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	local float adjZ, maxZ;
 	local vector delta;
 
-	maxZ = Location.Z + (1.0 - 0.7 * DuckFraction) * CollisionHeight; // default game is 0.25
+
+	if (Role != ROLE_Authority)
+		maxZ = Location.Z + (1.0 - 0.7 * DuckFractionRepl/255.0) * CollisionHeight;
+	else
+		maxZ = Location.Z + (1.0 - 0.7 * DuckFraction) * CollisionHeight;// default game is 0.25
 	if ( HitLocation.Z <= maxZ )
 		return true;
 
@@ -4703,6 +4711,7 @@ event ServerTick(float DeltaTime) {
 	} else {
 		DuckFraction = FClamp(DuckFraction - DeltaTime/DuckTransitionTime, 0.0, 1.0);
 	}
+	DuckFractionRepl = byte(DuckFraction * 255.0);
 }
 
 /** STATES
