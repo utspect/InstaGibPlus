@@ -6894,7 +6894,13 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 			Rate = P.TweenRate;
 
 		zzC.SetPos(zzx+500, y);
-		zzC.DrawText("Player"$P.PlayerReplicationInfo.PlayerID@"Anim:"@P.AnimSequence@"Frame:"@P.AnimFrame@"Rate:"@Rate@"DuckFraction:"@bbPlayer(P).DuckFraction);
+		zzC.DrawText(
+			"Player"$P.PlayerReplicationInfo.PlayerID@
+			"Anim:"@P.AnimSequence@
+			"Frame:"@P.AnimFrame@
+			"Rate:"@Rate@
+			"Duck:"@bbPlayer(P).DuckFractionRepl
+		);
 		y += 20;
 	}
 	zzC.SetPos(zzx, zzY + 460);
