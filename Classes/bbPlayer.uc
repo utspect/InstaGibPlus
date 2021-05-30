@@ -1323,15 +1323,7 @@ event UpdateEyeHeight(float DeltaTime)
 
 	// teleporters affect your FOV, so adjust it back down
 	if (FOVAngle != DesiredFOV) {
-		if (FOVAngle > DesiredFOV) {
-			FOVAngle -= (210 * DeltaTime);
-			if (FOVAngle < DesiredFOV)
-				FOVAngle = DesiredFOV;
-		} else {
-			FOVAngle += (210 * DeltaTime);
-			if (FOVAngle > DesiredFOV)
-				FOVAngle = DesiredFOV;
-		}
+		FOVAngle = DesiredFOV - (Exp(-9.0 * DeltaTime) * (DesiredFOV-FOVAngle));
 	}
 
 	// adjust FOV for weapon zooming
