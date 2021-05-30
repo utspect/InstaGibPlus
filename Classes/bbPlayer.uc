@@ -1321,9 +1321,15 @@ event UpdateEyeHeight(float DeltaTime)
 	EyeHeightOffset = EyeHeightOffset * Exp(-9.0 * DeltaTime);
 	EyeHeight = ShakeVert + BaseEyeHeight - EyeHeightOffset;
 
-	// teleporters affect your FOV, so adjust it back down
-	if (FOVAngle != DesiredFOV) {
-		FOVAngle = DesiredFOV - (Exp(-9.0 * DeltaTime) * (DesiredFOV-FOVAngle));
+	if (Settings.bSmoothFOVChanges) {
+		// The following events change your FOV:
+		//   - Spawning
+		//   - Zooming with Sniper Rifle
+		//   - Teleporters
+		// This smooths out FOV changes so they arent as jarring
+		if (FOVAngle != DesiredFOV) {
+			FOVAngle = DesiredFOV - (Exp(-9.0 * DeltaTime) * (DesiredFOV-FOVAngle));
+		}
 	}
 
 	// adjust FOV for weapon zooming

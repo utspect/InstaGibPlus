@@ -84,18 +84,19 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 56. [bAllowWeaponShake](#ballowweaponshake)
 57. [bAutoReady](#bautoready)
 58. [bShowDeathReport](#bshowdeathreport)
-59. [bEnableHitMarker](#benablehitmarker)
-60. [bEnableTeamHitMarker](#benableteamhitmarker)
-61. [HitMarkerColorMode](#hitmarkercolormode)
-62. [HitMarkerColor](#hitmarkercolor)
-63. [HitMarkerTeamColor](#hitmarkerteamcolor)
-64. [HitMarkerSize](#hitmarkersize)
-65. [HitMarkerOffset](#hitmarkeroffset)
-66. [HitMarkerDuration](#hitmarkerduration)
-67. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-68. [HitMarkerSource](#hitmarkersource)
-69. [bUseCrosshairFactory](#busecrosshairfactory)
-70. [CrosshairLayers](#crosshairlayers)
+59. [bSmoothFOVChanges](#bsmoothfovchanges)
+60. [bEnableHitMarker](#benablehitmarker)
+61. [bEnableTeamHitMarker](#benableteamhitmarker)
+62. [HitMarkerColorMode](#hitmarkercolormode)
+63. [HitMarkerColor](#hitmarkercolor)
+64. [HitMarkerTeamColor](#hitmarkerteamcolor)
+65. [HitMarkerSize](#hitmarkersize)
+66. [HitMarkerOffset](#hitmarkeroffset)
+67. [HitMarkerDuration](#hitmarkerduration)
+68. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+69. [HitMarkerSource](#hitmarkersource)
+70. [bUseCrosshairFactory](#busecrosshairfactory)
+71. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -486,6 +487,13 @@ If `True`, you ready up when spawning for the first time during warmup. If `Fals
 **Default: False** 
 
 If `True`, show a report of damage taken that lead to death. The report starts from the last time you gained health or armor.
+
+## bSmoothFOVChanges
+**Type: bool**  
+**Default: False** 
+
+If `True`, smooth changes to your FOV, which can happen when spawning, teleporting or zooming.  
+If `False`, your FOV immediately changes to the desired FOV without a smooth transition.
 
 ## bEnableHitMarker
 **Type: bool**  

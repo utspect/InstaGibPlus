@@ -73,6 +73,7 @@ var config bool   bReduceEyeHeightInAir;
 var config bool   bAllowWeaponShake;
 var config bool   bAutoReady;
 var config bool   bShowDeathReport;
+var config bool   bSmoothFOVChanges;
 
 enum EHitMarkerSource {
 	HMSRC_Server,
@@ -264,6 +265,7 @@ simulated function string DumpSettings() {
 		GetSetting("bAllowWeaponShake")$
 		GetSetting("bAutoReady")$
 		GetSetting("bShowDeathReport")$
+		GetSetting("bSmoothFOVChanges")$
 		GetSetting("bEnableHitMarker")$
 		GetSetting("bEnableTeamHitMarker")$
 		GetSetting("HitMarkerColorMode")$
@@ -338,6 +340,7 @@ defaultproperties
 	bAllowWeaponShake=True
 	bAutoReady=True
 	bShowDeathReport=False
+	bSmoothFOVChanges=False
 	bEnableHitMarker=False
 	bEnableTeamHitMarker=False
 	HitMarkerColorMode=HMCM_FriendOrFoe
