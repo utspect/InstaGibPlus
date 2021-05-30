@@ -91,6 +91,7 @@ var localized config bool bEnableServerExtrapolation;
 var localized config bool bEnableServerPacketReordering;
 var localized config bool bEnableLoosePositionCheck;
 var localized config bool bPlayersAlwaysRelevant;
+var localized config bool bEnablePingCompensatedSpawn;
 var localized config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
@@ -763,8 +764,12 @@ function ModifyPlayer(Pawn Other)
 				zzP.zzbForceDemo = bForceDemo;
 				zzP.zzbGameStarted = True;
 			}
-			zzP.bHidden = true;
-			zzP.SetCollision(false, false, false);
+			if (default.bEnablePingCompensatedSpawn) {
+				zzP.bHidden = true;
+				zzP.SetCollision(false, false, false);
+				// we are not undoing the effects because we cant "unplay" a sound
+				// see DeathMatchPlus.PlayTeleportEffect
+			}
 		}
 	}
 
@@ -1482,4 +1487,5 @@ defaultproperties
 	bEnableServerPacketReordering=True
 	bEnableLoosePositionCheck=True
 	bPlayersAlwaysRelevant=True
+	bEnablePingCompensatedSpawn=True
 }

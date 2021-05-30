@@ -850,9 +850,10 @@ Server settings can be found inside InstaGibPlus.ini.
 54. [bEnableServerPacketReordering](#benableserverpacketreordering)
 55. [bEnableLoosePositionCheck](#benableloosepositioncheck)
 56. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
-57. [ShowTouchedPackage](#showtouchedpackage)
-58. [ExcludeMapsForKickers](#excludemapsforkickers)
-59. [ForcedSettings](#forcedsettings)
+57. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
+58. [ShowTouchedPackage](#showtouchedpackage)
+59. [ExcludeMapsForKickers](#excludemapsforkickers)
+60. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1230,6 +1231,16 @@ If enabled the server will always replicate all players to each other, increasin
 
 Disable to restore default netcode behavior.
 
+## bEnablePingCompensatedSpawn
+
+**Type: bool**  
+**Default: True**  
+
+If enabled, players will not become visible to others until they can actually move on their end.  
+If disabled, players will stand on their spawn-point visible to other players without being able to move for the duration of their ping.
+
+Disable to restore default netcode behavior.
+
 ## KillCamDelay
 
 **Type: float**  
@@ -1314,7 +1325,7 @@ Scale factor for player models. Scales both DrawScale (visuals) and CollisionRad
 
 Type `ForcedSettingsEntry` is defined like this:  
 ```unrealscript
-struct ForceSettingsEntry{
+struct ForceSettingsEntry {
     var string Key;
     var string Value;
     var int Mode;

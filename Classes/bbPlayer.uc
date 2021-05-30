@@ -383,7 +383,8 @@ replication
 		IGPlus_ForcedSettingsInit,
 		IGPlus_ForcedSettingRegister,
 		IGPlus_ForcedSettingsApply,
-		xxClientReStart;
+		IGPlus_ClientReStart,
+		IGPlus_NotifyPlayerRestart;
 
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
 		ClientAddMomentum,
@@ -1129,10 +1130,31 @@ function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 	}
 }
 
-function xxClientReStart(EPhysics phys, vector NewLocation, rotator NewRotation) {
+function IGPlus_ClientReStart(EPhysics phys, vector NewLocation, rotator NewRotation) {
 	ClientSetLocation(NewLocation, NewRotation);
 	ClientReStart();
 	SetPhysics(phys);
+
+	SetFOVAngle(135);
+	IGPlus_NotifyPlayerRestart(NewLocation, NewRotation, self);
+}
+
+// Notification of other player respawning, play effects locally
+function IGPlus_NotifyPlayerRestart(vector Loc, rotator Dir, bbPlayer Other) {
+	local UTTeleportEffect PTE;
+
+	PTE = Spawn(class'UTTeleportEffect', self, , Loc, Dir);
+	PTE.Initialize(Other, true);
+	PTE.PlaySound(sound'Resp2A',, 10.0);
+	PTE.RemoteRole = ROLE_None;
+}
+
+function IGPlus_SendRespawnNoficiation() {
+	local bbPlayer P;
+
+	foreach AllActors(class'bbPlayer', P)
+		if (P != self)
+			P.IGPlus_NotifyPlayerRestart(Location, Rotation, self);
 }
 
 event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject )
@@ -2204,10 +2226,13 @@ function IGPlus_ApplyServerMove(bbServerMove SM) {
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
 		UndoExtrapolation();
 
-		if (bHidden && (IsInState('PlayerWalking') || IsInState('PlayerSwimming'))) {
-			bClientDead = false;
-			bHidden = false;
-			SetCollision(true, true, true);
+		if (class'UTPure'.default.bEnablePingCompensatedSpawn) {
+			if (bHidden && (IsInState('PlayerWalking') || IsInState('PlayerSwimming'))) {
+				bClientDead = false;
+				bHidden = false;
+				SetCollision(true, true, true);
+				IGPlus_SendRespawnNoficiation();
+			}
 		}
 	}
 
@@ -5711,6 +5736,23 @@ state PlayerWaking
 	}
 }
 
+function bool GameRestartPlayer() {
+	local bool bDeathMatchSave;
+	local bool Result;
+
+	if (class'UTPure'.default.bEnablePingCompensatedSpawn) {
+		bDeathMatchSave = Level.Game.bDeathMatch;
+		Level.Game.bDeathMatch = false;
+	}
+
+	Result = Level.Game.RestartPlayer(self);
+
+	if (class'UTPure'.default.bEnablePingCompensatedSpawn)
+		Level.Game.bDeathMatch = bDeathMatchSave;
+
+	return Result;
+}
+
 state Dying
 {
 	function ServerReStartPlayer()
@@ -5718,7 +5760,7 @@ state Dying
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
 			return;
 
-		if ( Level.Game.RestartPlayer(self) )
+		if ( GameRestartPlayer() )
 		{
 			ServerTimeStamp = 0;
 			TimeMargin = 0;
@@ -5727,7 +5769,7 @@ state Dying
 			if ( Mesh != None )
 				PlaySpawn();
 
-			xxClientReStart(Physics, Location, Rotation);
+			IGPlus_ClientReStart(Physics, Location, Rotation);
 
 			ChangedWeapon();
 			zzSpawnedTime = Level.TimeSeconds;
