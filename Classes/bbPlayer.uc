@@ -6617,15 +6617,22 @@ function bool IsForcedSkinMale(int Skin) {
 }
 
 function SetForcedMesh(PlayerReplicationInfo PRI, int Skin) {
+	local Mesh NewMesh;
+
+	if (PRI.Owner == none) return;
+
 	if (Skin >= 0 && Skin <= 17) {
 		if (PRI.bIsFemale == IsForcedSkinFemale(Skin)) {
-			PRI.Owner.Mesh = class'IGPlus_ModelImport'.default.DefaultMesh[Skin];
+			NewMesh = class'IGPlus_ModelImport'.default.DefaultMesh[Skin];
 		} else {
-			PRI.Owner.Mesh = class'IGPlus_ModelImport'.default.RateCorrectedMesh[Skin];
+			NewMesh = class'IGPlus_ModelImport'.default.RateCorrectedMesh[Skin];
 		}
 	} else {
-		PRI.Owner.Mesh = PRI.Owner.default.Mesh;
+		NewMesh = PRI.Owner.default.Mesh;
 	}
+
+	if (PRI.Owner.Mesh != NewMesh)
+		PRI.Owner.Mesh = NewMesh;
 }
 
 function ApplyForcedSkins(PlayerReplicationInfo PRI) {
