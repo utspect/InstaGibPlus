@@ -2785,8 +2785,10 @@ function xxServerMoveDead(
 	Acceleration = vect(0,0,0);
 	Velocity = vect(0,0,0);
 
-	ViewRotation.Yaw = View & 0xFFFF;
-	ViewRotation.Pitch = View >>> 16;
+	if (IsInState('Dying')) {
+		ViewRotation.Yaw = View & 0xFFFF;
+		ViewRotation.Pitch = View >>> 16;
+	}
 }
 
 function float CalculateLocError(float DeltaTime, EPhysics Phys, vector ClientVel) {
