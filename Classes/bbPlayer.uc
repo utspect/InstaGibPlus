@@ -1330,6 +1330,8 @@ event UpdateEyeHeight(float DeltaTime)
 		if (FOVAngle != DesiredFOV) {
 			FOVAngle = DesiredFOV - (Exp(-9.0 * DeltaTime) * (DesiredFOV-FOVAngle));
 		}
+	} else {
+		FOVAngle = DesiredFOV;
 	}
 
 	// adjust FOV for weapon zooming
