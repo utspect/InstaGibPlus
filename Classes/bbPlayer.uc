@@ -6719,12 +6719,6 @@ event PostRender( canvas zzCanvas )
 		EyeHeight = zzRepVREye;
 	}
 
-	if ( bBehindView )
-	{
-		if ( Weapon != None )
-			Weapon.RenderOverlays(zzCanvas);
-	}
-
 	if (Settings.bUseCrosshairFactory) {
 		CH = MyHud.Crosshair;
 		MyHud.Crosshair = ChallengeHUD(MyHud).CrosshairCount;
