@@ -9,6 +9,12 @@ class ST_BioGlob extends ST_UT_BioGel;
 var int NumSplash;
 var vector SpawnPoint;
 
+function PostBeginPlay() {
+	super.PostBeginPlay();
+	Damage = STM.WeaponSettings.BioAltDamage;
+	MomentumTransfer = default.MomentumTransfer * STM.WeaponSettings.BioAltMomentum;
+}
+
 auto state Flying
 {
 	function ProcessTouch (Actor Other, vector HitLocation) 

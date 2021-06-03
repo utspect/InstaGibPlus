@@ -15,6 +15,8 @@ function PostBeginPlay()
 		break;
 	STM.PlayerFire(Instigator, 4);			// 4 = Bio. (Each Potential Damage giver is 1 shot! Not ammo!)
 	Super.PostBeginPlay();
+	Damage = STM.WeaponSettings.BioDamage;
+	MomentumTransfer = default.MomentumTransfer * STM.WeaponSettings.BioMomentum;
 }
 
 
@@ -31,7 +33,12 @@ function Timer()
 		Base.TakeDamage( Damage, instigator, Location, MomentumTransfer * Normal(Velocity), MyDamageType);
 
 	STM.PlayerHit(Instigator, 4, bDirect);		// 4 = Bio.
-	HurtRadius(damage * Drawscale, FMin(250, DrawScale * 75), MyDamageType, MomentumTransfer * Drawscale, Location);
+	HurtRadius(
+		Damage * DrawScale,
+		FMin(STM.WeaponSettings.BioHurtRadiusMax, DrawScale * STM.WeaponSettings.BioHurtRadiusBase),
+		MyDamageType,
+		MomentumTransfer * DrawScale,
+		Location);
 	STM.PlayerClear();
 	Destroy();	
 }

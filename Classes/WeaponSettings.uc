@@ -56,6 +56,13 @@ var config float ShockComboDamage;
 var config float ShockComboMomentum;
 var config float ShockComboHurtRadius;
 
+var config float BioDamage;
+var config float BioMomentum;
+var config float BioAltDamage;
+var config float BioAltMomentum;
+var config float BioHurtRadiusBase;
+var config float BioHurtRadiusMax;
+
 var config float EnforcerDamage;
 var config float EnforcerMomentum;
 
@@ -127,6 +134,13 @@ defaultproperties
 	ShockComboDamage=165
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
+
+	BioDamage=20
+	BioMomentum=1.0
+	BioAltDamage=75
+	BioAltMomentum=1.0
+	BioHurtRadiusBase=75
+	BioHurtRadiusMax=250
 
 	EnforcerDamage=17
 	EnforcerMomentum=1.0
