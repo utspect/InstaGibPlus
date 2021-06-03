@@ -807,6 +807,11 @@ event PostBeginPlay()
 {
 	local int TickRate;
 	Super.PostBeginPlay();
+
+	Utils = new(none) class'Utilities';
+	StringUtils = new(none) class'StringUtils';
+	PlayerStatics = Spawn(class'bbPlayerStatics');
+
 	InitSettings();
 
 	if ( Level.NetMode != NM_Client )
@@ -835,6 +840,10 @@ event PostBeginPlay()
 // called after PostBeginPlay on net client
 simulated event PostNetBeginPlay()
 {
+	Utils = new(none) class'Utilities';
+	StringUtils = new(none) class'StringUtils';
+	PlayerStatics = Spawn(class'bbPlayerStatics');
+
 	InitSettings();
 
 	if ( Role != ROLE_SimulatedProxy )	// Other players are Simulated, local player is Autonomous or Authority (if listen server which pure doesn't support anyway :P)
