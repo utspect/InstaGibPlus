@@ -1336,9 +1336,7 @@ event UpdateEyeHeight(float DeltaTime)
 		//   - Zooming with Sniper Rifle
 		//   - Teleporters
 		// This smooths out FOV changes so they arent as jarring
-		if (FOVAngle != DesiredFOV) {
-			FOVAngle = DesiredFOV - (Exp(-9.0 * DeltaTime) * (DesiredFOV-FOVAngle));
-		}
+		FOVAngle = DesiredFOV - (Exp(-9.0 * DeltaTime) * (DesiredFOV-FOVAngle));
 	} else {
 		FOVAngle = DesiredFOV;
 	}
