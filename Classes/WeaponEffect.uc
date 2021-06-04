@@ -4,7 +4,7 @@ class WeaponEffect extends Object
 static function Play(
 	PlayerPawn Player,
 	ClientSettings Settings,
-	Actor Source,
+	PlayerReplicationInfo SourcePRI,
 	vector SourceLocation,
 	vector SourceOffset,
 	Actor Target,

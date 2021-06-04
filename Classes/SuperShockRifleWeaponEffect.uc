@@ -4,7 +4,7 @@ class SuperShockRifleWeaponEffect extends WeaponEffect
 static function Play(
 	PlayerPawn Player,
 	ClientSettings Settings,
-	Actor Source,
+	PlayerReplicationInfo SourcePRI,
 	vector SourceLocation,
 	vector SourceOffset,
 	Actor Target,
@@ -17,8 +17,8 @@ static function Play(
 
 	if (Player.Level.NetMode == NM_DedicatedServer) return;
 
-	if (Source != none && Settings.BeamOriginMode == 1) {
-		SmokeLocation = Source.Location + SourceOffset;
+	if (SourcePRI.Owner != none && Settings.BeamOriginMode == 1) {
+		SmokeLocation = SourcePRI.Owner.Location + SourceOffset;
 	} else {
 		SmokeLocation = SourceLocation;
 	}
@@ -29,14 +29,14 @@ static function Play(
 		HitLocation = TargetLocation;
 	}
 
-	PlayBeam(Player, Settings, Source, SmokeLocation, HitLocation, HitNormal);
-	PlayRing(Player, Settings, Source, HitLocation, HitNormal);
+	PlayBeam(Player, Settings, SourcePRI, SmokeLocation, HitLocation, HitNormal);
+	PlayRing(Player, Settings, SourcePRI, HitLocation, HitNormal);
 }
 
 static function PlayBeam(
 	PlayerPawn Player,
 	ClientSettings Settings,
-	Actor Source,
+	PlayerReplicationInfo SourcePRI,
 	vector SmokeLocation,
 	vector HitLocation,
 	vector HitNormal
@@ -56,7 +56,7 @@ static function PlayBeam(
 
 	if (Settings.cShockBeam == 3) return;
 	if (Settings.bHideOwnBeam &&
-		(Source == Player || Source == Player.ViewTarget) &&
+		(SourcePRI.Owner == Player || SourcePRI.Owner == Player.ViewTarget) &&
 		Player.bBehindView == false)
 		return;
 
@@ -77,7 +77,7 @@ static function PlayBeam(
 
 	} else if (Settings.cShockBeam == 2) {
 		Smoke.SetProperties(
-			PlayerPawn(Source).PlayerReplicationInfo.Team,
+			SourcePRI.Team,
 			Settings.BeamScale,
 			Settings.BeamFadeCurve,
 			Settings.BeamDuration,
@@ -86,7 +86,7 @@ static function PlayBeam(
 
 	} else if (Settings.cShockBeam == 4) {
 		Smoke.SetProperties(
-			PlayerPawn(Source).PlayerReplicationInfo.Team,
+			SourcePRI.Team,
 			Settings.BeamScale,
 			Settings.BeamFadeCurve,
 			Settings.BeamDuration,
@@ -100,7 +100,7 @@ static function PlayBeam(
 			Smoke.SetLocation(SmokeLocation);
 			Smoke.SetRotation(SmokeRotation);
 			Smoke.SetProperties(
-				PlayerPawn(Source).PlayerReplicationInfo.Team,
+				SourcePRI.Team,
 				Settings.BeamScale,
 				Settings.BeamFadeCurve,
 				Settings.BeamDuration,
@@ -113,7 +113,7 @@ static function PlayBeam(
 static function PlayRing(
 	PlayerPawn Player,
 	ClientSettings Settings,
-	Actor Source,
+	PlayerReplicationInfo SourcePRI,
 	vector HitLocation,
 	vector HitNormal
 ) {
@@ -132,7 +132,7 @@ static function PlayRing(
 			A.RemoteRole = ROLE_None;
 			break;
 		case 2:
-			if (PlayerPawn(Source).PlayerReplicationInfo.Team == 1) {
+			if (SourcePRI.Team == 1) {
 				A = Player.Spawn(class'NN_UT_RingExplosion',,, HitLocation+HitNormal*8,rotator(HitNormal));
 				A.RemoteRole = ROLE_None;
 				A = Player.Spawn(class'EnergyImpact',,, HitLocation,rotator(HitNormal));

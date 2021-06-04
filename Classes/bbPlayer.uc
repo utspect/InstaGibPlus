@@ -459,7 +459,7 @@ native(1719) final function bool IsInPackageMap( optional string PkgName, option
 
 function ReceiveWeaponEffect(
 	class<WeaponEffect> Effect,
-	Actor Source,
+	PlayerReplicationInfo SourcePRI,
 	vector SourceLocation,
 	vector SourceOffset,
 	Actor Target,
@@ -467,12 +467,12 @@ function ReceiveWeaponEffect(
 	vector TargetOffset,
 	vector HitNormal
 ) {
-	Effect.static.Play(self, Settings, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
+	Effect.static.Play(self, Settings, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
 }
 
 simulated function DemoReceiveWeaponEffect(
 	class<WeaponEffect> Effect,
-	Actor Source,
+	PlayerReplicationInfo SourcePRI,
 	vector SourceLocation,
 	vector SourceOffset,
 	Actor Target,
@@ -481,12 +481,12 @@ simulated function DemoReceiveWeaponEffect(
 	vector HitNormal
 ) {
 	if (LastWeaponEffectCreated >= 0) return;
-	Effect.static.Play(self, Settings, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
+	Effect.static.Play(self, Settings, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
 }
 
 function SendWeaponEffect(
 	class<WeaponEffect> Effect,
-	Actor Source,
+	PlayerReplicationInfo SourcePRI,
 	vector SourceLocation,
 	vector SourceOffset,
 	Actor Target,
@@ -494,9 +494,9 @@ function SendWeaponEffect(
 	vector TargetOffset,
 	vector HitNormal
 ) {
-	ReceiveWeaponEffect(Effect, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
+	ReceiveWeaponEffect(Effect, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
 	LastWeaponEffectCreated = Level.TimeSeconds;
-	DemoReceiveWeaponEffect(Effect, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
+	DemoReceiveWeaponEffect(Effect, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
 }
 
 /* More crash fix bs */

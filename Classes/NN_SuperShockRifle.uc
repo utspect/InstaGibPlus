@@ -296,9 +296,9 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	if (bbP == none) return false;
 
 	Offset = CDO + (FireOffset.X + 20) * X + Y * yMod + FireOffset.Z * Z;
-	bbPlayer(Owner).SendWeaponEffect(
+	bbP.SendWeaponEffect(
 		class'SuperShockRifleWeaponEffect',
-		Owner,
+		bbP.PlayerReplicationInfo,
 		Owner.Location + Offset,
 		Offset,
 		Other,
@@ -405,7 +405,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			if (bbPlayer(P) != none)
 				bbPlayer(P).SendWeaponEffect(
 					class'SuperShockRifleWeaponEffect',
-					Owner,
+					Pawn(Owner).PlayerReplicationInfo,
 					Owner.Location + SmokeOffset,
 					SmokeOffset,
 					Other,
@@ -415,7 +415,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			else if (bbCHSpectator(P) != none)
 				bbCHSpectator(P).SendWeaponEffect(
 					class'SuperShockRifleWeaponEffect',
-					Owner,
+					Pawn(Owner).PlayerReplicationInfo,
 					Owner.Location + SmokeOffset,
 					SmokeOffset,
 					Other,
