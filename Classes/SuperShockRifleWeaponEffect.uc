@@ -17,7 +17,7 @@ static function Play(
 
 	if (Player.Level.NetMode == NM_DedicatedServer) return;
 
-	if (Settings.BeamOriginMode == 1) {
+	if (Source != none && Settings.BeamOriginMode == 1) {
 		SmokeLocation = Source.Location + SourceOffset;
 	} else {
 		SmokeLocation = SourceLocation;
