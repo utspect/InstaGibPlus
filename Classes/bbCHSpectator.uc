@@ -399,7 +399,7 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 		}
 		CameraRotation.Roll = 0;
 
-		if ( bBehindView )
+		if ( bBehindView || ViewTarget.bHidden )
 			xxCalcBehindView(CameraLocation, CameraRotation, 180);
 		return;
 	}
