@@ -1468,7 +1468,7 @@ defaultproperties
 	MaxHitError=10000
 	MaxJitterTime=0.1
 	MinNetUpdateRate=60.0
-	MaxNetUpdateRate=250.0
+	MaxNetUpdateRate=200.0
 	ShowTouchedPackage=False
 	bRestrictTrading=True
 	MaxTradeTimeMargin=0.1
@@ -1484,7 +1484,7 @@ defaultproperties
 	BrightskinMode=1
 	PlayerScale=1.0
 	bEnableServerExtrapolation=True
-	bEnableServerPacketReordering=True
+	bEnableServerPacketReordering=False
 	bEnableLoosePositionCheck=True
 	bPlayersAlwaysRelevant=True
 	bEnablePingCompensatedSpawn=True
