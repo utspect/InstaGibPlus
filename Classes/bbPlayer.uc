@@ -275,17 +275,17 @@ var Utilities Utils;
 var StringUtils StringUtils;
 var bbPlayerStatics PlayerStatics;
 
-struct ForcedSettingsEntry {
+struct IGPlus_ForcedSettings_Entry {
 	var int Mode;
 	var string Key;
 	var string NewValue;
 	var string OldValue;
 };
 
-var ForcedSettingsEntry ForcedSettings[128];
-var int ForcedSettingsCounter;
-var int ForcedSettingsIndex;
-var bool bForcedSettingsApplied;
+var IGPlus_ForcedSettings_Entry IGPlus_ForcedSettings[128];
+var int IGPlus_ForcedSettings_Counter;
+var int IGPlus_ForcedSettings_Index;
+var bool IGPlus_ForcedSettings_Applied;
 
 var IGPlus_DamageEvent IGPlus_DamageEvent_First;
 var IGPlus_DamageEvent IGPlus_DamageEvent_Latest;
@@ -1001,25 +1001,25 @@ event Possess()
 }
 
 function IGPlus_ForcedSettingsInit() {
-	ForcedSettingsCounter = 0;
+	IGPlus_ForcedSettings_Counter = 0;
 	ClientMessage("Forced Settings initialized", 'IGPlus');
 }
 
 function IGPlus_ForcedSettingRegister(string Key, string Value, int Mode) {
-	ForcedSettings[ForcedSettingsCounter].Mode = Mode;
-	ForcedSettings[ForcedSettingsCounter].Key = Key;
-	ForcedSettings[ForcedSettingsCounter].NewValue = Value;
-	ForcedSettingsCounter++;
+	IGPlus_ForcedSettings[IGPlus_ForcedSettings_Counter].Mode = Mode;
+	IGPlus_ForcedSettings[IGPlus_ForcedSettings_Counter].Key = Key;
+	IGPlus_ForcedSettings[IGPlus_ForcedSettings_Counter].NewValue = Value;
+	IGPlus_ForcedSettings_Counter++;
 	ClientMessage("Forcing ("$Mode$")"@Key$"="$Value, 'IGPlus');
 }
 
 function IGPlus_ForcedSettingRestore(int Index) {
-	switch(ForcedSettings[Index].Mode) {
+	switch(IGPlus_ForcedSettings[Index].Mode) {
 	case 0:
 		// dont restore
 		break;
 	case 1:
-		Settings.SetPropertyText(ForcedSettings[Index].Key, ForcedSettings[Index].OldValue);
+		Settings.SetPropertyText(IGPlus_ForcedSettings[Index].Key, IGPlus_ForcedSettings[Index].OldValue);
 		break;
 	case 2:
 		// dick move ...
@@ -1029,19 +1029,19 @@ function IGPlus_ForcedSettingRestore(int Index) {
 
 function IGPlus_ForcedSettingsRestore() {
 	local int i;
-	for (i = 0; i < ForcedSettingsCounter; ++i) {
+	for (i = 0; i < IGPlus_ForcedSettings_Counter; ++i) {
 		IGPlus_ForcedSettingRestore(i);
 	}
 }
 
 function IGPlus_ForcedSettingApply(int Index) {
-	ForcedSettings[Index].OldValue = Settings.GetPropertyText(ForcedSettings[Index].Key);
-	switch(ForcedSettings[Index].Mode) {
+	IGPlus_ForcedSettings[Index].OldValue = Settings.GetPropertyText(IGPlus_ForcedSettings[Index].Key);
+	switch(IGPlus_ForcedSettings[Index].Mode) {
 	case 0:
 		if (Settings.bInitialized) break;
 	case 1:
 	case 2:
-		Settings.SetPropertyText(ForcedSettings[Index].Key, ForcedSettings[Index].NewValue);
+		Settings.SetPropertyText(IGPlus_ForcedSettings[Index].Key, IGPlus_ForcedSettings[Index].NewValue);
 		break;
 	}
 }
@@ -1050,7 +1050,7 @@ function IGPlus_ForcedSettingsApply(int Counter) {
 	local int i;
 	local bool bInitialized;
 
-	if (ForcedSettingsCounter != Counter) {
+	if (IGPlus_ForcedSettings_Counter != Counter) {
 		IGPlus_ForcedSettingsRetry();
 		return;
 	}
@@ -1060,38 +1060,38 @@ function IGPlus_ForcedSettingsApply(int Counter) {
 	Settings.SaveConfig();
 	Settings.bInitialized = bInitialized;
 
-	for (i = 0; i < ForcedSettingsCounter; ++i) {
+	for (i = 0; i < IGPlus_ForcedSettings_Counter; ++i) {
 		IGPlus_ForcedSettingApply(i);
 	}
 	Settings.bInitialized = true;
-	bForcedSettingsApplied = true;
+	IGPlus_ForcedSettings_Applied = true;
 
 	IGPlus_ForcedSettingsOK();
 }
 
 function IGPlus_ForcedSettingsRetry() {
-	ForcedSettingsIndex = 0;
-	ForcedSettingsCounter = 0;
+	IGPlus_ForcedSettings_Index = 0;
+	IGPlus_ForcedSettings_Counter = 0;
 	ClientMessage("Retrying Forced Settings ...", 'IGPlus');
 	IGPlus_ForcedSettingsInit();
 }
 
 function IGPlus_ForcedSettingsOK() {
-	bForcedSettingsApplied = true;
+	IGPlus_ForcedSettings_Applied = true;
 	ClientMessage("Forced Settings applied!", 'IGPlus');
 }
 
 function IGPlus_SaveSettings() {
 	local int i;
 
-	if (bForcedSettingsApplied) {
+	if (IGPlus_ForcedSettings_Applied) {
 		IGPlus_ForcedSettingsRestore();
 	}
 
 	Settings.SaveConfig();
 
-	if (bForcedSettingsApplied) {
-		for (i = 0; i < ForcedSettingsCounter; ++i) {
+	if (IGPlus_ForcedSettings_Applied) {
+		for (i = 0; i < IGPlus_ForcedSettings_Counter; ++i) {
 			IGPlus_ForcedSettingApply(i);
 		}
 	}
@@ -4750,17 +4750,17 @@ event ServerTick(float DeltaTime) {
 		DelayedNavPoint = DelayedNavPoint.NextNavigationPoint;
 	}
 
-	if (ForcedSettingsIndex < arraycount(ForcedSettings)) {
-		if (class'UTPure'.static.GetForcedSettingKey(ForcedSettingsIndex) != "") {
-			ForcedSettingsCounter++;
+	if (IGPlus_ForcedSettings_Index < arraycount(IGPlus_ForcedSettings)) {
+		if (class'UTPure'.static.GetForcedSettingKey(IGPlus_ForcedSettings_Index) != "") {
+			IGPlus_ForcedSettings_Counter++;
 			IGPlus_ForcedSettingRegister(
-				class'UTPure'.static.GetForcedSettingKey(ForcedSettingsIndex),
-				class'UTPure'.static.GetForcedSettingValue(ForcedSettingsIndex),
-				class'UTPure'.static.GetForcedSettingMode(ForcedSettingsIndex));
+				class'UTPure'.static.GetForcedSettingKey(IGPlus_ForcedSettings_Index),
+				class'UTPure'.static.GetForcedSettingValue(IGPlus_ForcedSettings_Index),
+				class'UTPure'.static.GetForcedSettingMode(IGPlus_ForcedSettings_Index));
 		}
-		ForcedSettingsIndex++;
-		if (ForcedSettingsIndex == arraycount(ForcedSettings))
-			IGPlus_ForcedSettingsApply(ForcedSettingsCounter);
+		IGPlus_ForcedSettings_Index++;
+		if (IGPlus_ForcedSettings_Index == arraycount(IGPlus_ForcedSettings))
+			IGPlus_ForcedSettingsApply(IGPlus_ForcedSettings_Counter);
 	}
 
 	if (bIsCrouching) {
