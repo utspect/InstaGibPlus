@@ -262,6 +262,7 @@ var float OffsetZBeforeTeleporter;
 var vector VelocityBeforeTeleporter;
 var rotator RotationBeforeTeleporter;
 var Teleporter LastTouchedTeleporter;
+var string LastTeleporterURL;
 
 var int HitMarkerTestDamage;
 var int HitMarkerTestTeam;
@@ -547,6 +548,7 @@ simulated event bool PreTeleport(Teleporter T) {
 	VelocityBeforeTeleporter = Velocity;
 	RotationBeforeTeleporter = Rotation;
 	LastTouchedTeleporter = T;
+	LastTeleporterURL = T.URL;
 	bForcePacketSplit = true;
 	return false;
 }
@@ -1894,6 +1896,9 @@ function xxSetPendingWeapon(Weapon W)
 function CorrectTeleporterVelocity() {
 	local rotator Delta;
 	local Teleporter T;
+	local float Dist;
+	local Teleporter Best;
+	local float MinDist;
 
 	if (LastTouchedTeleporter != none &&
 		(
@@ -1905,15 +1910,36 @@ function CorrectTeleporterVelocity() {
 		// other classes might do weird custom stuff
 
 		// find destination
-		foreach RadiusActors(class'Teleporter', T, 32.0)
-			break;
+		foreach AllActors(class'Teleporter', T) {
+			if (string(T.Tag) ~= LastTeleporterURL) {
+				if (Best == none) {
+					Best = T;
+					MinDist = VSize(T.Location - Location);
+				} else {
+					Dist = VSize(T.Location - Location);
+					if (Dist < MinDist) {
+						MinDist = Dist;
+						Best = T;
+					}
+				}
+			}
+		}
 
-		T.Disable('Touch');
+		if (Best == none) {
+			if (Level.NetMode == NM_Client) {
+				ClientMessage("Teleporter target could not be determined (bStatic not set to True?)");
+			} else {
+				ClientMessage("No teleporter found with tag '"$LastTeleporterURL$"'");
+			}
+			return;
+		}
+
+		Best.Disable('Touch');
 		MoveSmooth(vect(0,0,1)*OffsetZBeforeTeleporter);
-		T.Enable('Touch');
+		Best.Enable('Touch');
 
-		if (T.bChangesVelocity) {
-			Velocity = T.TargetVelocity;
+		if (Best.bChangesVelocity) {
+			Velocity = Best.TargetVelocity;
 		} else {
 			Delta = rotator(VelocityBeforeTeleporter) - RotationBeforeTeleporter;
 			// Teleporter doesnt change velocity, so we can do it ourselves
