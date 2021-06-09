@@ -8685,6 +8685,7 @@ defaultproperties
 	DuckTransitionTime=0.25
 	LastWeaponEffectCreated=-1
 	RespawnDelay=1.0
+	NetUpdateFrequency=200
 	PlayerReplicationInfoClass=Class'bbPlayerReplicationInfo'
 
 	IGPlus_ZoomToggle_SensitivityFactorX=1.0
