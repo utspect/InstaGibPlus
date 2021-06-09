@@ -297,6 +297,8 @@ var float IGPlus_ZoomToggle_RestoreFOV;
 var float IGPlus_ZoomToggle_SensitivityFactorX;
 var float IGPlus_ZoomToggle_SensitivityFactorY;
 
+var ReplicationInfo IGPlus_AdditionalReplicationInfo;
+
 replication
 {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -330,7 +332,8 @@ replication
 		zzWaitTime;
 
 	unreliable if ( Role == ROLE_Authority )
-		DuckFractionRepl;
+		DuckFractionRepl,
+		IGPlus_AdditionalReplicationInfo;
 
 	unreliable if ( bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
 		clientForcedPosition,
