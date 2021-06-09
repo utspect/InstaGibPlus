@@ -253,7 +253,7 @@ var bool bClientDead;
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
 
-var int FrameCount;
+var int IGPlus_FrameCount;
 
 var int BrightskinMode;
 var NavigationPoint DelayedNavPoint;
@@ -1270,7 +1270,7 @@ event ClientMessage(coerce string zzS, optional Name zzType, optional bool zzbBe
 		if (zzType == 'IGPlusDebug') {
 			Log(zzS, zzType);
 		} else {
-			Log("["$FrameCount@Level.TimeSeconds$"]"@zzS, zzType);
+			Log("["$IGPlus_FrameCount@Level.TimeSeconds$"]"@zzS, zzType);
 		}
 	}
 }
@@ -1283,9 +1283,9 @@ function ClientDebugMessage(coerce string S, optional name Type, optional bool b
 		Type = 'IGPlusDebug';
 
 	if (bDrawDebugData) {
-		ClientMessage("["$FrameCount@Level.TimeSeconds$"] "$S, Type, bBeep);
+		ClientMessage("["$IGPlus_FrameCount@Level.TimeSeconds$"] "$S, Type, bBeep);
 	} else {
-		zzPrevClientMessage = "["$FrameCount@Level.TimeSeconds$"] "$S;
+		zzPrevClientMessage = "["$IGPlus_FrameCount@Level.TimeSeconds$"] "$S;
 		ClientDemoMessage(zzPrevClientMessage, Type, bBeep);
 		zzPrevClientMessage = "";
 	}
@@ -6817,7 +6817,7 @@ event PostRender( canvas zzCanvas )
 			HitMarkerTestTeam = 0;
 	}
 
-	FrameCount += 1;
+	IGPlus_FrameCount += 1;
 }
 
 exec simulated Function TellConsole()
