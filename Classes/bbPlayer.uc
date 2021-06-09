@@ -258,11 +258,11 @@ var int IGPlus_FrameCount;
 var int BrightskinMode;
 var NavigationPoint DelayedNavPoint;
 
-var float OffsetZBeforeTeleporter;
-var vector VelocityBeforeTeleporter;
-var rotator RotationBeforeTeleporter;
-var Teleporter LastTouchedTeleporter;
-var string LastTeleporterURL;
+var float IGPlus_TPFix_OffsetZ;
+var vector IGPlus_TPFix_Velocity;
+var rotator IGPlus_TPFix_Rotation;
+var Teleporter IGPlus_TPFix_LastTouched;
+var string IGPlus_TPFix_URL;
 
 var int HitMarkerTestDamage;
 var int HitMarkerTestTeam;
@@ -547,11 +547,11 @@ simulated event bool PreTeleport(Teleporter T) {
 		return true;
 	}
 
-	OffsetZBeforeTeleporter = Location.Z - T.Location.Z;
-	VelocityBeforeTeleporter = Velocity;
-	RotationBeforeTeleporter = Rotation;
-	LastTouchedTeleporter = T;
-	LastTeleporterURL = T.URL;
+	IGPlus_TPFix_OffsetZ = Location.Z - T.Location.Z;
+	IGPlus_TPFix_Velocity = Velocity;
+	IGPlus_TPFix_Rotation = Rotation;
+	IGPlus_TPFix_LastTouched = T;
+	IGPlus_TPFix_URL = T.URL;
 	bForcePacketSplit = true;
 	return false;
 }
@@ -1903,10 +1903,10 @@ function CorrectTeleporterVelocity() {
 	local Teleporter Best;
 	local float MinDist;
 
-	if (LastTouchedTeleporter != none &&
+	if (IGPlus_TPFix_LastTouched != none &&
 		(
-			LastTouchedTeleporter.Class == class'Teleporter' ||
-			LastTouchedTeleporter.Class == class'VisibleTeleporter'
+			IGPlus_TPFix_LastTouched.Class == class'Teleporter' ||
+			IGPlus_TPFix_LastTouched.Class == class'VisibleTeleporter'
 		)
 	) {
 		// only deal with base game teleporters
@@ -1914,7 +1914,7 @@ function CorrectTeleporterVelocity() {
 
 		// find destination
 		foreach AllActors(class'Teleporter', T) {
-			if (string(T.Tag) ~= LastTeleporterURL) {
+			if (string(T.Tag) ~= IGPlus_TPFix_URL) {
 				if (Best == none) {
 					Best = T;
 					MinDist = VSize(T.Location - Location);
@@ -1932,22 +1932,22 @@ function CorrectTeleporterVelocity() {
 			if (Level.NetMode == NM_Client) {
 				ClientMessage("Teleporter target could not be determined (bStatic not set to True?)");
 			} else {
-				ClientMessage("No teleporter found with tag '"$LastTeleporterURL$"'");
+				ClientMessage("No teleporter found with tag '"$IGPlus_TPFix_URL$"'");
 			}
 			return;
 		}
 
 		Best.Disable('Touch');
-		MoveSmooth(vect(0,0,1)*OffsetZBeforeTeleporter);
+		MoveSmooth(vect(0,0,1)*IGPlus_TPFix_OffsetZ);
 		Best.Enable('Touch');
 
 		if (Best.bChangesVelocity) {
 			Velocity = Best.TargetVelocity;
 		} else {
-			Delta = rotator(VelocityBeforeTeleporter) - RotationBeforeTeleporter;
+			Delta = rotator(IGPlus_TPFix_Velocity) - IGPlus_TPFix_Rotation;
 			// Teleporter doesnt change velocity, so we can do it ourselves
-			Velocity = vector(Rotation+Delta) * VSize(VelocityBeforeTeleporter*vect(1,1,0)) * vect(1,1,0);
-			Velocity.Z = VelocityBeforeTeleporter.Z;
+			Velocity = vector(Rotation+Delta) * VSize(IGPlus_TPFix_Velocity*vect(1,1,0)) * vect(1,1,0);
+			Velocity.Z = IGPlus_TPFix_Velocity.Z;
 		}
 	}
 }
@@ -1961,7 +1961,7 @@ function IGPlus_MoveAutonomous(
 	vector newAccel,
 	rotator DeltaRot
 ) {
-	LastTouchedTeleporter = none;
+	IGPlus_TPFix_LastTouched = none;
 	MoveAutonomous(DeltaTime, NewbRun, NewbDuck, NewbPressedJump, DodgeMove, newAccel, DeltaRot);
 	CorrectTeleporterVelocity();
 }
@@ -3512,7 +3512,7 @@ function xxReplicateMove(
 	bJustAltFired = false;
 	OldPhys = Physics;
 
-	LastTouchedTeleporter = none;
+	IGPlus_TPFix_LastTouched = none;
 
 	// Simulate the movement locally.
 	ProcessMove(DeltaTime, NewAccel, DodgeMove, DeltaRot);
