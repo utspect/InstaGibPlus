@@ -2,8 +2,8 @@ class NewNetSA expands Arena;
 
 defaultproperties
 {
-     WeaponName=ST_SniperArenaRifle
+     WeaponName=NN_SniperArenaRifle
      AmmoName=BulletBox
      AmmoString="Botpack.BulletBox"
-     DefaultWeapon=class'ST_SniperArenaRifle'
+     DefaultWeapon=class'NN_SniperArenaRifle'
 }

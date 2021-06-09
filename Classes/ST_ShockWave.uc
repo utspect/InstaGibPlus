@@ -6,6 +6,20 @@
 
 class ST_ShockWave extends ShockWave;
 
+// Redeemer BIG BANG thingie.
+
+var ST_Mutator STM;
+
+simulated function PostBeginPlay()
+{
+	if (ROLE == ROLE_Authority)
+	{
+		ForEach AllActors(Class'ST_Mutator', STM)
+			break;
+	}
+	Super.PostBeginPlay();
+}
+
 simulated function Timer()
 {
 
@@ -57,6 +71,7 @@ simulated function Timer()
 				Pawn(Victims).AddVelocity(dir * (MoScale + 20));
 			else
 				Victims.Velocity = Victims.Velocity + dir * (MoScale + 20);
+			STM.PlayerHit(Instigator, 19, False);		// 19 = Redeemer
 			Victims.TakeDamage
 			(
 				MoScale,
@@ -65,6 +80,7 @@ simulated function Timer()
 				(1000 * dir),
 				'RedeemerDeath'
 			);
+			STM.PlayerClear();
 		}
 	}	
 	OldShockDistance = ShockSize*29;	

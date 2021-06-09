@@ -1,6 +1,6 @@
 class StringUtils extends Object;
 
-static function string PackageOfClass(class C) {
+static final function string PackageOfClass(class C) {
 	local string Result;
 	local int DotPos;
 
@@ -12,15 +12,15 @@ static function string PackageOfClass(class C) {
 	return Left(Result, DotPos);
 }
 
-static function string PackageOfObject(Object O) {
+static final function string PackageOfObject(Object O) {
 	return PackageOfClass(O.Class);
 }
 
-static function string GetPackage() {
+static final function string GetPackage() {
 	return PackageOfClass(class'StringUtils');
 }
 
-static function string RepeatString(int Length, string S) {
+static final function string RepeatString(int Length, string S) {
 	local string result;
 
 	if (Length <= 0 || Len(S) == 0) return "";
@@ -36,12 +36,12 @@ static function string RepeatString(int Length, string S) {
 	return result;
 }
 
-static function string RepeatChar(int Length, int Char) {
+static final function string RepeatChar(int Length, int Char) {
 	if (Char == 0) return "";
 	return RepeatString(Length, Chr(Char));
 }
 
-static function string CenteredString(coerce string Content, int Length, optional string Fill) {
+static final function string CenteredString(coerce string Content, int Length, optional string Fill) {
 	local string Dummy;
 
 	if (Len(Fill) == 0) Fill = " ";
@@ -54,7 +54,7 @@ static function string CenteredString(coerce string Content, int Length, optiona
 	return Left(Dummy, (Length - Len(Content)) >> 1) $ Content $ Left(Dummy, (Length + 1 - Len(Content)) >> 1);
 }
 
-static function string Trim(string source)
+static final function string Trim(string source)
 {
 	local int index;
 	local string result;
@@ -79,10 +79,19 @@ static function string Trim(string source)
 	return result;
 }
 
-static function string FormatFloat(float F, optional int Decimals) {
+static final function string FormatFloat(float F, optional int Decimals) {
 	local string Result;
 	local int T;
-	if (Decimals <= 0) return string(int(F));
+
+	if (Decimals <= 0)
+		return string(int(F));
+
+	if (Decimals <= 6) {
+		Result = string(F);
+		Result = Left(Result, Len(Result) - 6 + Decimals);
+		return Result;
+	}
+
 	Result = int(F) $ ".";
 	F -= int(F);
 	while(Decimals > 0) {
@@ -95,7 +104,7 @@ static function string FormatFloat(float F, optional int Decimals) {
 	return Result;
 }
 
-static function string CommonPrefix(string A, string B) {
+static final function string CommonPrefix(string A, string B) {
 	local int Common;
 	local int Length;
 
@@ -108,7 +117,7 @@ static function string CommonPrefix(string A, string B) {
 	return Left(A, Common);
 }
 
-static function string CommonSuffix(string A, string B) {
+static final function string CommonSuffix(string A, string B) {
 	local int Common;
 	local int Length;
 
@@ -121,7 +130,7 @@ static function string CommonSuffix(string A, string B) {
 	return Right(A, Common);
 }
 
-static function string MergeAffixes(string Prefix, string Suffix) {
+static final function string MergeAffixes(string Prefix, string Suffix) {
 	if (Prefix == Suffix)
 		return Prefix;
 

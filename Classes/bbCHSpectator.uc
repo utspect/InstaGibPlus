@@ -28,6 +28,7 @@ struct PIDController {
 
 var PIDController PitchController;
 var PIDController YawController;
+var rotator LastTargetViewRotation;
 var rotator LastRotation;
 var Actor LastViewTarget;
 
@@ -37,6 +38,10 @@ var ClientSettings Settings;
 var bool bPaused;
 var float GRISecondCountOffset;
 var float LastDeltaTime;
+
+var bool bFollowFlag;
+var CTFFlag FlagToFollow;
+var Pawn FlagCarrierToFollow;
 
 replication
 {
@@ -52,7 +57,7 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		xxSetTimes, xxReceivePosition; //, xxClientActivateMover;
+		xxSetTimes; //, xxClientActivateMover;
 
 	reliable if ( (!bDemoRecording || (bClientDemoRecording && bClientDemoNetFunc) || (Level.NetMode==NM_Standalone)) && Role == ROLE_Authority )
 		ReceiveWeaponEffect;
@@ -60,7 +65,7 @@ replication
 
 function ReceiveWeaponEffect(
 	class<WeaponEffect> Effect,
-	Actor Source,
+	PlayerReplicationInfo SourcePRI,
 	vector SourceLocation,
 	vector SourceOffset,
 	Actor Target,
@@ -68,12 +73,12 @@ function ReceiveWeaponEffect(
 	vector TargetOffset,
 	vector HitNormal
 ) {
-	Effect.static.Play(self, Settings, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
+	Effect.static.Play(self, Settings, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
 }
 
 function SendWeaponEffect(
 	class<WeaponEffect> Effect,
-	Actor Source,
+	PlayerReplicationInfo SourcePRI,
 	vector SourceLocation,
 	vector SourceOffset,
 	Actor Target,
@@ -81,44 +86,7 @@ function SendWeaponEffect(
 	vector TargetOffset,
 	vector HitNormal
 ) {
-	ReceiveWeaponEffect(Effect, Source, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
-}
-
-simulated function xxReceivePosition( bbPlayer Other, vector Loc, vector Vel, bool bSet )
-{
-	local vector Diff;
-	local float VS;
-
-	if (Level.NetMode != NM_Client || Other == None)
-		return;
-
-	Diff = Loc - Other.Location;
-	VS = VSize(Diff);
-	if (VS < 50)
-	{
-		Other.zzLastLocDiff = 0;
-		Other.Velocity = Vel;
-	}
-	else
-	{
-		Other.zzLastLocDiff += VS;
-		if (bSet || Other.zzLastLocDiff > 9000 || !Other.FastTrace(Loc))	// IT'S OVER 9000!
-		{
-			Other.SetLocation(Loc);
-			Other.Velocity = Vel;
-			Other.zzLastLocDiff = 0;
-		}
-		else if (Other.zzLastLocDiff > 900)
-		{
-			Other.MoveSmooth(Diff);
-			Other.Velocity = Vel;
-			Other.zzLastLocDiff = 0;
-		}
-		else
-		{
-			Other.Velocity = Vel + Diff * 5;
-		}
-	}
+	ReceiveWeaponEffect(Effect, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
 }
 
 function int NormRotDiff(int diff) {
@@ -310,11 +278,13 @@ function SmoothRotation(float DeltaTime)
 			LastRotation = TargetViewRotation;
 			LastViewTarget = P;
 		}
-		if (LastRotation.Pitch != TargetViewRotation.Pitch || LastRotation.Yaw != TargetViewRotation.Yaw)
+		if (LastRotation.Pitch != TargetViewRotation.Pitch || LastRotation.Yaw != TargetViewRotation.Yaw) {
+			LastTargetViewRotation = TargetViewRotation;
 			TargetViewRotation = LastRotation;
+		}
 
-		Pitch = P.CompressedViewRotation >>> 16;
-		Yaw = P.CompressedViewRotation & 0xFFFF;
+		Pitch = LastTargetViewRotation.Pitch;
+		Yaw = LastTargetViewRotation.Yaw;
 
 		DeltaPitch = TickPID(PitchController, DeltaTime, NormRotDiff(Pitch - TargetViewRotation.Pitch));
 		DeltaYaw = TickPID(YawController, DeltaTime, NormRotDiff(Yaw - TargetViewRotation.Yaw));
@@ -429,7 +399,7 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 		}
 		CameraRotation.Roll = 0;
 
-		if ( bBehindView )
+		if ( bBehindView || ViewTarget.bHidden || (ViewTarget.IsA('Pawn') && Pawn(ViewTarget).Health <= 0) )
 			xxCalcBehindView(CameraLocation, CameraRotation, 180);
 		return;
 	}
@@ -470,6 +440,50 @@ function NewCAP(float TimeStamp, name NewState, EPhysics NewPhysics) {
 	SetPhysics(NewPhysics);
 
 	bUpdatePosition = true;
+}
+
+function FollowFlag() {
+	local Pawn P;
+
+	if (bFollowFlag == false) return;
+	if (ViewTarget == none) { bFollowFlag = false; return; }
+
+	if (ViewTarget == FlagToFollow) {
+		if (FlagToFollow.IsInState('Held'))
+			for (P = Level.PawnList; P != none; P = P.NextPawn)
+				if (P.PlayerReplicationInfo != none && P.PlayerReplicationInfo.HasFlag == FlagToFollow) {
+					ViewTarget = P;
+					FlagCarrierToFollow = P;
+
+					bBehindView = ( ViewTarget != None );
+					if ( bBehindView )
+						ViewTarget.BecomeViewTarget();
+				}
+		return;
+	}
+
+	if (ViewTarget != FlagCarrierToFollow) { bFollowFlag = false; return; }
+	if (Pawn(ViewTarget).PlayerReplicationInfo.HasFlag == FlagToFollow) return;
+
+	if (FlagToFollow.IsInState('Held')) {
+		for (P = Level.PawnList; P != none; P = P.NextPawn) {
+			if (P.PlayerReplicationInfo != none && P.PlayerReplicationInfo.HasFlag == FlagToFollow) {
+				ViewTarget = P;
+				FlagCarrierToFollow = P;
+
+				bBehindView = ( ViewTarget != None );
+				if ( bBehindView )
+					ViewTarget.BecomeViewTarget();
+			}
+		}
+	} else {
+		ViewTarget = FlagToFollow;
+		FlagCarrierToFollow = none;
+
+		bBehindView = ( ViewTarget != None );
+		if ( bBehindView )
+			ViewTarget.BecomeViewTarget();
+	}
 }
 
 auto state CheatFlying
@@ -582,6 +596,8 @@ auto state CheatFlying
 		SetLocation(ClientLoc);
 
 		NewCAP(TimeStamp, GetStateName(), Physics);
+
+		FollowFlag();
 	}
 }
 
@@ -680,6 +696,10 @@ exec function ViewClass( class<actor> aClass, optional bool bQuiet )
 {
 	if (zzLastView2 != Level.TimeSeconds)
 	{
+		bFollowFlag = false;
+		FlagToFollow = none;
+		FlagCarrierToFollow = none;
+
 		DoViewClass(aClass,bQuiet);
 		zzLastView2 = Level.TimeSeconds;
 	}
@@ -688,11 +708,14 @@ exec function ViewClass( class<actor> aClass, optional bool bQuiet )
 function DoViewClass( class<actor> aClass, optional bool bQuiet )
 {
 	local actor other, first;
+	local Pawn P;
 	local bool bFound;
+	local int i;
 
 	if ( (Level.Game != None) && !Level.Game.bCanViewOthers )
 		return;
 
+	bFollowFlag = ClassIsChildOf(aClass, class'CTFFlag');
 	first = None;
 	ForEach AllActors( aClass, other )
 	{
@@ -702,7 +725,26 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 			first = other;
 			bFound = true;
 		}
-		if ( other == ViewTarget )
+
+		if ( bFollowFlag && first == other && other.IsInState('Held') )
+		{
+			i = 0;
+			for ( P = Level.PawnList; P != none; P = P.NextPawn )
+			{
+				if ( P.IsA('Spectator') ) continue;
+				if ( P.PlayerReplicationInfo == none ) continue;
+
+				if ( P.PlayerReplicationInfo.HasFlag == other )
+					first = P;
+
+				if (i++ > 100) {
+					Log("Aborted DoViewClass loop for safety.", 'IGPlus');
+					break; // safety
+				}
+			}
+		}
+
+		if ( other == ViewTarget || first == ViewTarget )
 			first = None;
 	}
 
@@ -716,6 +758,19 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 				ClientMessage(ViewingFrom@first, 'Event', true);
 		}
 		ViewTarget = first;
+
+		if ( bFollowFlag )
+		{
+			if ( ViewTarget.IsA('CTFFlag') )
+			{
+				FlagToFollow = CTFFlag(ViewTarget);
+			}
+			if ( ViewTarget.IsA('Pawn') && Pawn(ViewTarget).PlayerReplicationInfo != none )
+			{
+				FlagToFollow = CTFFlag(Pawn(ViewTarget).PlayerReplicationInfo.HasFlag);
+				FlagCarrierToFollow = Pawn(ViewTarget);
+			}
+		}
 	}
 	else
 	{
@@ -727,6 +782,7 @@ function DoViewClass( class<actor> aClass, optional bool bQuiet )
 				ClientMessage(FailedView, 'Event', true);
 		}
 		ViewTarget = None;
+		bFollowFlag = false;
 	}
 
 	bBehindView = ( ViewTarget != None );

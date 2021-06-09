@@ -1,4 +1,4 @@
-class ST_ShockProjGib extends ST_ShockProj;
+class ST_ShockProjGib extends NN_ShockProj;
 
 function SuperExplosion()	// aka, combo.
 {

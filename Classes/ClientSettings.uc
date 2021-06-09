@@ -13,6 +13,7 @@ enum EHitSoundSource {
 	HSSRC_Client
 };
 
+var config bool   bInitialized;
 var config bool   bForceModels; // if Client wishes models forced to his own. (default false)
 var config bool   bTeamInfo;    // if Client wants extra team info.
 var config bool   bShootDead;
@@ -25,6 +26,10 @@ var config int    DesiredSkin;
 var config int    DesiredSkinFemale;
 var config int    DesiredTeamSkin;
 var config int    DesiredTeamSkinFemale;
+var config int    SkinEnemyIndexMap[16];
+var config int    SkinTeamIndexMap[16];
+var config bool   bSkinEnemyUseIndexMap;
+var config bool   bSkinTeamUseIndexMap;
 var config bool   bUnlitSkins;
 var config int    HitSound;     // if Client wishes hitsounds (default 2, must be enabled on server)
 var config int    TeamHitSound; // if Client wishes team hitsounds (default 3, must be enabled on server)
@@ -59,11 +64,16 @@ var config float  MinDodgeClickTime; // Minimum time between two presses of the 
 var config bool   bUseOldMouseInput;
 var config PIDControllerSettings SmoothVRController;
 var config bool   bShowFPS;
+var config float  FPSLocationX;
+var config float  FPSLocationY;
 var config int    FPSDetail;
 var config int    FPSCounterSmoothingStrength;
 var config float  KillCamMinDelay;
+var config bool   bReduceEyeHeightInAir;
 var config bool   bAllowWeaponShake;
 var config bool   bAutoReady;
+var config bool   bShowDeathReport;
+var config bool   bSmoothFOVChanges;
 
 enum EHitMarkerSource {
 	HMSRC_Server,
@@ -151,6 +161,19 @@ simulated function string GetSetting(string Name) {
 	return Name$":"@GetPropertyText(Name)$Chr(10);
 }
 
+simulated function string DumpSkinIndexMaps() {
+	local int i;
+	local string Result;
+
+	Result = "";
+	for (i = 0; i < arraycount(SkinEnemyIndexMap); ++i)
+		Result = Result$"SkinEnemyIndexMap["$i$"]:"@SkinEnemyIndexMap[i]$Chr(10);
+	for (i = 0; i < arraycount(SkinTeamIndexMap); ++i)
+		Result = Result$"SkinTeamIndexMap["$i$"]:"@SkinTeamIndexMap[i]$Chr(10);
+
+	return Result;
+}
+
 simulated function string DumpHitSounds() {
 	local int i;
 	local string Result;
@@ -197,6 +220,9 @@ simulated function string DumpSettings() {
 		GetSetting("DesiredSkinFemale")$
 		GetSetting("DesiredTeamSkin")$
 		GetSetting("DesiredTeamSkinFemale")$
+		DumpSkinIndexMaps()$
+		GetSetting("bSkinEnemyUseIndexMap")$
+		GetSetting("bSkinTeamUseIndexMap")$
 		GetSetting("bUnlitSkins")$
 		GetSetting("HitSound")$
 		GetSetting("TeamHitSound")$
@@ -230,11 +256,16 @@ simulated function string DumpSettings() {
 		GetSetting("bUseOldMouseInput")$
 		GetSetting("SmoothVRController")$
 		GetSetting("bShowFPS")$
+		GetSetting("FPSLocationX")$
+		GetSetting("FPSLocationY")$
 		GetSetting("FPSDetail")$
 		GetSetting("FPSCounterSmoothingStrength")$
 		GetSetting("KillCamMinDelay")$
+		GetSetting("bReduceEyeHeightInAir")$
 		GetSetting("bAllowWeaponShake")$
 		GetSetting("bAutoReady")$
+		GetSetting("bShowDeathReport")$
+		GetSetting("bSmoothFOVChanges")$
 		GetSetting("bEnableHitMarker")$
 		GetSetting("bEnableTeamHitMarker")$
 		GetSetting("HitMarkerColorMode")$
@@ -276,9 +307,10 @@ defaultproperties
 	SelectedTeamHitSound=2
 	HitSoundVolume=4
 	HitSoundTeamVolume=4
-	sHitSound(0)="InstaGibPlus6.HitSound"
+	sHitSound(0)="InstaGibPlus7.HitSound"
 	sHitSound(1)="UnrealShare.StingerFire"
-	sHitSound(2)="InstaGibPlus6.HitSoundFriendly"
+	sHitSound(2)="InstaGibPlus7.HitSoundFriendly"
+	sHitSound(3)="InstaGibPlus7.HitSound1"
 	cShockBeam=1
 	bHideOwnBeam=False
 	BeamScale=0.45
@@ -289,7 +321,7 @@ defaultproperties
 	SSRRingType=1
 	DesiredNetUpdateRate=250.0
 	DesiredNetspeed=25000
-	bNoSmoothing=False
+	bNoSmoothing=True
 	bNoOwnFootsteps=False
 	bLogClientMessages=True
 	bDebugMovement=False
@@ -299,11 +331,16 @@ defaultproperties
 	bUseOldMouseInput=False
 	SmoothVRController=(p=0.09,i=0.05,d=0.00)
 	bShowFPS=False
+	FPSLocationX=1.0
+	FPSLocationY=0.0
 	FPSDetail=0
 	FPSCounterSmoothingStrength=1000
 	KillCamMinDelay=0.0
+	bReduceEyeHeightInAir=False
 	bAllowWeaponShake=True
 	bAutoReady=True
+	bShowDeathReport=False
+	bSmoothFOVChanges=False
 	bEnableHitMarker=False
 	bEnableTeamHitMarker=False
 	HitMarkerColorMode=HMCM_FriendOrFoe

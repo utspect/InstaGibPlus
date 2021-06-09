@@ -1,4 +1,4 @@
-class NN_ShockProjOwnerHidden extends ST_ShockProj;
+class NN_ShockProjOwnerHidden extends NN_ShockProj;
 
 var bool bAlreadyHidden;
 var float NN_OwnerPing, NN_EndAccelTime;
@@ -12,12 +12,12 @@ replication
 simulated function Tick(float DeltaTime)
 {
 	local bbPlayer bbP;
-	
+
 	if ( Owner == None )
 		return;
-	
+
 	if (Level.NetMode == NM_Client) {
-	
+
 		if (!bAlreadyHidden && Owner.IsA('bbPlayer') && bbPlayer(Owner).Player != None) {
 			Texture = None;
 			LightType = LT_None;
@@ -28,7 +28,7 @@ simulated function Tick(float DeltaTime)
 			Destroy();
 			return;
 		}
-		
+
 		if (NN_OwnerPing > 0)
 		{
 			if (NN_EndAccelTime == 0)
@@ -46,29 +46,29 @@ simulated function Tick(float DeltaTime)
 				NN_OwnerPing = 0;
 			}
 		}
-		
+
 	}
-	
+
 }
 
 simulated function Explode(vector HitLocation,vector HitNormal)
 {
 	local bbPlayer bbP;
-	
+
 	if (bDeleteMe)
 		return;
 	if (!bbPlayer(Owner).bNewNet)
 		HurtRadius(Damage, 70, MyDamageType, MomentumTransfer, Location );
-	
+
 	DoExplode(Damage, HitLocation, HitNormal);
 	PlayOwnedSound(ImpactSound, SLOT_Misc, 0.5,,, 0.5+FRand());
-	
+
 	bbP = bbPlayer(Instigator);
 	if (bbP != None && Level.NetMode != NM_Client)
 	{
 		bbP.xxNN_ClientProjExplode(zzNN_ProjIndex, HitLocation, HitNormal);
 	}
-	
+
 	Destroy();
 }
 
@@ -91,18 +91,18 @@ simulated function DoExplode(int Dmg, vector HitLocation,vector HitNormal)
 }
 
 function SuperExplosion()	// aka, combo.
-{	
+{
 	if (!bbPlayer(Owner).bNewNet)
 		HurtRadius(Damage*3, 250, MyDamageType, MomentumTransfer*2, Location );
-	
+
 	DoSuperExplosion();
 	PlayOwnedSound(ExploSound,,20.0,,2000,0.6);
 	//Spawn(Class'ut_ComboRing',,'',Location, Instigator.ViewRotation);
 	//PlaySound(ExploSound,,20.0,,2000,0.6);
 	if (bbPlayer(Instigator) != None)
 		bbPlayer(Instigator).xxNN_ClientProjExplode(-1*(zzNN_ProjIndex + 1));
-	
-	Destroy(); 
+
+	Destroy();
 }
 
 simulated function DoSuperExplosion()
@@ -121,7 +121,7 @@ simulated function DoSuperExplosion()
 }
 
 function SuperDuperExplosion()	// aka, combo.
-{	
+{
 	if (!bbPlayer(Owner).bNewNet)
 		HurtRadius(Damage*9, 750, MyDamageType, MomentumTransfer*6, Location );
 	DoSuperDuperExplosion();
@@ -130,8 +130,8 @@ function SuperDuperExplosion()	// aka, combo.
 	//PlaySound(ExploSound,,20.0,,2000,0.6);
 	if (bbPlayer(Instigator) != None)
 		bbPlayer(Instigator).xxNN_ClientProjExplode(-1*(zzNN_ProjIndex + 1));
-	
-	Destroy(); 
+
+	Destroy();
 }
 
 simulated function DoSuperDuperExplosion()

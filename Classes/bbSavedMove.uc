@@ -9,7 +9,8 @@ var int JumpIndex;
 var int DodgeIndex;
 var int RunChangeIndex;
 var int DuckChangeIndex;
-var float Age;
+var int AddVelocityId;
+var vector Momentum;
 
 function Clear2() {
     Clear();
@@ -18,7 +19,7 @@ function Clear2() {
     DodgeIndex = -1;
     RunChangeIndex = -1;
     DuckChangeIndex = -1;
-    Age = 0.0;
+    Momentum = vect(0,0,0);
 }
 
 defaultproperties

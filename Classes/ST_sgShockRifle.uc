@@ -4,7 +4,7 @@
 // Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
 // ===============================================================
 
-class ST_sgShockRifle extends ST_ShockRifle;
+class ST_sgShockRifle extends NN_ShockRifle;
 
 simulated function NN_TraceFire()
 {
@@ -49,9 +49,9 @@ simulated function NN_TraceFire()
 
 	zzbNN_Combo = NN_ProcessTraceHit(Other, HitLocation, HitNormal, vector(GV),Y,Z);
 	if (zzbNN_Combo)
-		bbP.xxNN_Fire(ST_sgShockProj(Other).zzNN_ProjIndex, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, true);
+		bbP.xxNN_Fire(Level.TimeSeconds, ST_sgShockProj(Other).zzNN_ProjIndex, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, true);
 	else
-		bbP.xxNN_Fire(-1, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, false);
+		bbP.xxNN_Fire(Level.TimeSeconds, -1, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, false);
 	if (Other == bbP.zzClientTTarget)
 		bbP.zzClientTTarget.TakeDamage(0, Pawn(Owner), HitLocation, 60000.0*vector(GV), MyDamageType);
 }
@@ -166,7 +166,7 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	ProjIndex = bbP.xxNN_AddProj(Proj);
 	if (ST_Proj != None)
 		ST_Proj.zzNN_ProjIndex = ProjIndex;
-	bbP.xxNN_AltFire(ProjIndex, bbP.Location, bbP.Velocity, bbP.ViewRotation);
+	bbP.xxNN_AltFire(Level.TimeSeconds, ProjIndex, bbP.Location, bbP.Velocity, bbP.ViewRotation);
 	bbP.xxClientDemoFix(ST_Proj, Class'ShockProj', Start, ST_Proj.Velocity, Proj.Acceleration, GV);
 }
 

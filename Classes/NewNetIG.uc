@@ -8,12 +8,12 @@ function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 		return false;
 
 	return Super.CheckReplacement( Other, bSuperRelevant );
-	
+
 }
 
 defaultproperties
 {
-     WeaponName=ST_SuperShockRifle
+     WeaponName=NN_SuperShockRifle
      AmmoName=SuperShockCore
-     DefaultWeapon=class'ST_SuperShockRifle'
+     DefaultWeapon=class'NN_SuperShockRifle'
 }

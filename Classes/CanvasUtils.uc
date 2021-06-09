@@ -17,16 +17,17 @@ const MaxCanvasCallDepth = 10;
 var CanvasState CanvasCallStates[MaxCanvasCallDepth];
 var int CanvasCallDepth;
 
-static function SaveCanvas(Canvas C) {
+static final function bool SaveCanvas(Canvas C) {
 	if (default.CanvasCallDepth >= MaxCanvasCallDepth) {
 		Log("Exceeded Maximum Canvas Call Depth!", 'IGPlus');
-		return;
+		return false;
 	}
 
 	SaveCanvasState(C, default.CanvasCallStates[default.CanvasCallDepth++]);
+	return true;
 }
 
-static function RestoreCanvas(Canvas C) {
+static final function RestoreCanvas(Canvas C) {
 	if (default.CanvasCallDepth <= 0) {
 		Log("Exceeded Minimum Canvas Call Depth!", 'IGPlus');
 		return;
@@ -35,7 +36,7 @@ static function RestoreCanvas(Canvas C) {
 	RestoreCanvasState(C, default.CanvasCallStates[--default.CanvasCallDepth]);
 }
 
-static function SaveCanvasState(Canvas C, out CanvasState S) {
+static final function SaveCanvasState(Canvas C, out CanvasState S) {
 	S.Font = C.Font;
 	S.SpaceX = C.SpaceX;
 	S.SpaceY = C.SpaceY;
@@ -51,7 +52,7 @@ static function SaveCanvasState(Canvas C, out CanvasState S) {
 	S.bNoSmooth = C.bNoSmooth;
 }
 
-static function RestoreCanvasState(Canvas C, out CanvasState S) {
+static final function RestoreCanvasState(Canvas C, out CanvasState S) {
 	C.Font = S.Font;
 	C.SpaceX = S.SpaceX;
 	C.SpaceY = S.SpaceY;

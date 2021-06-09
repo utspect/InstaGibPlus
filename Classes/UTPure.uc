@@ -6,6 +6,7 @@ class UTPure extends Mutator config(InstaGibPlus);
 #exec Texture Import File=Textures\smallwhitething.pcx Name=PureSWT Mips=Off
 #exec Texture Import File=Textures\Arrow.pcx Name=HitMarkerArrow Mips=Off
 #exec Audio Import FILE=Sounds\HitSound.wav Name=HitSound
+#exec Audio Import FILE=Sounds\HitSound1.wav Name=HitSound1
 #exec Audio Import FILE=Sounds\HitSoundFriendly.wav Name=HitSoundFriendly
 
 var ModifyLoginHandler NextMLH;			// Link list of handlers
@@ -43,6 +44,7 @@ var localized config bool bAutoPause;		// Enable or disable autopause. (bTournam
 var localized config byte ForceModels;		// 0 = Disallow, 1 = Client Selectable, 2 = Forced
 var localized config byte ImprovedHUD;		// 0 = Disabled, 1 = Boots/Clock, 2 = Enhanced Team Info
 var localized config bool bDelayedPickupSpawn;	// Enable or disable delayed first pickup spawn.
+var localized config bool bUseFastWeaponSwitch;
 var localized config bool bTellSpectators;	// Enable or disable telling spectators of reason for kicks.
 var localized config string PlayerPacks[8];	// Config list of supported player packs
 var localized config int DefaultHitSound, DefaultTeamHitSound;
@@ -62,6 +64,7 @@ var localized config bool bEnableWallDodging;
 var localized config bool bDodgePreserveZMomentum;
 var localized config int MaxMultiDodges;
 var localized config int BrightskinMode; //0=None,1=Unlit
+var localized config float PlayerScale;
 
 // Nice variables.
 var float zzTeamChangeTime;			// This would be to Prevent Team Change Spamming
@@ -76,11 +79,6 @@ var bool bDidEndWarn;				// True if screenshot warning has been sent to players.
 var bool bDidShot;
 var float EndWarnDelay;
 
-// Anti-Timer
-var Inventory zzAntiTimerList[32];		// This holds the inventory on the map that should be protected
-var int zzAntiTimerListCount;			// How many in the list
-var int zzAntiTimerListState;			// The state of the pickups, calculated each tick
-
 // Pause control (for Event PlayerCalcView)
 var bool	zzbPaused;			// Game has been paused at one time.
 var float	zzPauseCountdown;		// Give 120 seconds of "ignore FT"
@@ -91,6 +89,9 @@ var localized config float MinNetUpdateRate;
 var localized config float MaxNetUpdateRate;
 var localized config bool bEnableServerExtrapolation;
 var localized config bool bEnableServerPacketReordering;
+var localized config bool bEnableLoosePositionCheck;
+var localized config bool bPlayersAlwaysRelevant;
+var localized config bool bEnablePingCompensatedSpawn;
 var localized config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
@@ -101,6 +102,15 @@ var PureAutoPause zzAutoPauser;
 //Add the maplist where kickers will work using normal network
 var localized config string ExcludeMapsForKickers[128];
 var bool bExludeKickers;
+
+var bbPlayerReplicationInfo SkinIndexToPRIMap[64];
+
+struct ForceSettingsEntry{
+	var string Key;
+	var string Value;
+	var int Mode;
+};
+var localized config ForceSettingsEntry ForcedSettings[128];
 
 replication
 {
@@ -130,11 +140,6 @@ function PreBeginPlay()
 
 	// toggle first blood so it doesn't get triggered during warmup
 	zzDMP.bFirstBlood = True;
-
-	Spawn(class'NN_SpawnNotify');
-
-	if (NNAnnouncer)
-		Spawn(class'NNAnnouncerSA');
 
  	if (zzDMP.HUDType == Class'ChallengeDominationHUD')
 		zzDMP.HUDType = Class'PureDOMHUD';
@@ -261,13 +266,11 @@ function PostBeginPlay()
 	for (MLH = NextMLH; MLH != None; MLH = MLH.NextMLH)
 		MLH.Accepted();
 
-	xxBuildAntiTimerList();
-
 	//Log("bAutoPause:"@bAutoPause@"bTeamGame:"@zzDMP.bTeamGame@"bTournament:"@zzDMP.bTournament);
 	if (bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
 		zzAutoPauser = Spawn(Class'PureAutoPause');
 
-	if (bUseClickboard && zzDMP.bTournament)
+	if (bUseClickboard)
 		SetupClickBoard();
 
 	if (ImprovedHUD == 2 && zzDMP.bTeamGame)
@@ -275,6 +278,11 @@ function PostBeginPlay()
 
 	if (bDelayedPickupSpawn)
 		Spawn(Class'PureDPS');
+
+	Spawn(class'NN_SpawnNotify');
+
+	if (NNAnnouncer)
+		Spawn(class'NNAnnouncerSA');
 
 // Necessary functions to let the "bExludeKickers" list work
 /////////////////////////////////////////////////////////////////////////
@@ -411,19 +419,10 @@ function xxReplaceTeamInfo()
 // TICK!!! And it's not the bug kind. Sorta :/
 event Tick(float zzDelta)
 {
-	local int zzx;
 	local bool zzb, zzbDoShot;
 	local Pawn zzP;
 	local bbPlayer zzbP;
 	local bbCHSpectator zzbS;
-
-	// Build visible/hidden list for pickups.
-	zzAntiTimerListState = 0;
-	for (zzx = 0; zzx < zzAntiTimerListCount; zzx++)
-	{
-		if (zzAntiTimerList[zzx] != None && zzAntiTimerList[zzx].bHidden)
-			zzAntiTimerListState = zzAntiTimerListState | (1 << zzx);
-	}
 
 	if (Level.Pauser != "")		// This code is to avoid players being kicked when paused.
 	{
@@ -449,7 +448,7 @@ event Tick(float zzDelta)
 			xxHideControlPoints();
 		if (Level.Game.IsA('Assault'))
 			xxHideFortStandards();
-		if (zzDMP.CountDown < 10)
+		if (zzDMP.CountDown < 10 || zzDMP.bTournament == false)
 			xxResetGame();
 
 		// Make sure first blood doesn't get triggered during warmup
@@ -477,7 +476,6 @@ event Tick(float zzDelta)
 		zzbP = bbPlayer(zzP);
 		if (zzbP != None)
 		{
-			zzbP.zzAntiTimerListState = zzAntiTimerListState;	// Copy the visible/hidden list for pickups.
 			if (zzbP.zzOldNetspeed != zzbP.zzNetspeed)
 			{
 				zzbP.xxSetNetUpdateRate(1.0/zzbP.TimeBetweenNetUpdates, zzbP.zzNetspeed);
@@ -539,35 +537,6 @@ function xxHideFortStandards()
 		FS.Disable('Touch');
 		FS.Disable('Trigger');
 		FS.SetCollision(false, false, false);
-	}
-}
-
-function bool xxAntiTimeThis(Inventory zzInv)	// These thing should be hidden from timer.
-{
-	Switch(zzInv.Class.Name)
-	{
-		Case 'Armor2':
-		Case 'ThighPads':
-		Case 'HealthPack':
-		Case 'UDamage':
-		Case 'UT_Invisibility':
-		case 'UT_ShieldBelt':
-		Case 'WarheadLauncher':		return True;
-	}
-	return False;
-}
-
-function xxBuildAntiTimerList()
-{
-	local Inventory zzInv;
-
-	ForEach Level.AllActors(Class'Inventory',zzInv)
-	{
-		if (zzInv != None && xxAntiTimeThis(zzInv))
-		{
-			zzAntiTimerList[zzAntiTimerListCount++] = zzInv;
-		}
-		if (zzAntiTimerListCount == 32) break;
 	}
 }
 
@@ -655,6 +624,73 @@ function xxResetGame()			// Resets the current game to make sure nothing bad hap
 	zzDMP.bFirstBlood = False;
 }
 
+function int FindEmptyIndex(bbPlayerReplicationInfo bbPRI) {
+	local TeamGamePlus TGP;
+	local int Index;
+	local int TeamOffset;
+
+	TGP = TeamGamePlus(Level.Game);
+	if (TGP != none) {
+		TeamOffset = bbPRI.Team << 4;
+		for (Index = 0; Index < 16; ++Index) {
+			if (SkinIndexToPRIMap[TeamOffset+Index] == none)
+				return TeamOffset+Index;
+		}
+	} else {
+		for (Index = 0; Index < 16; ++Index) {
+			if (SkinIndexToPRIMap[Index] == none)
+				return Index;
+		}
+	}
+	return -1;
+}
+
+function AssignFixedSkinIndex(Pawn Other) {
+	local bbPlayerReplicationInfo bbPRI;
+	local TeamGamePlus TGP;
+	local int MapIndex;
+	local int TmpIndex;
+	local int Team;
+
+	bbPRI = bbPlayerReplicationInfo(Other.PlayerReplicationInfo);
+	if (bbPRI != none && Spectator(bbPRI.Owner) == none) {
+		TGP = TeamGamePlus(Level.Game);
+		MapIndex = bbPRI.SkinIndex;
+		if (MapIndex >= 0) {
+			if (TGP != none) {
+				MapIndex += bbPRI.Team << 4;
+
+				if (SkinIndexToPRIMap[MapIndex] != bbPRI) {
+					// likely changed team
+					// remove from old index
+					for (Team = 0; Team < TGP.MaxTeams; ++Team) {
+						TmpIndex = (Team << 4) + (MapIndex & 0xF);
+						if (SkinIndexToPRIMap[TmpIndex] == bbPRI)
+							SkinIndexToPRIMap[TmpIndex] = none;
+					}
+					// assign new index
+					MapIndex = FindEmptyIndex(bbPRI);
+					if (MapIndex >= 0) {
+						SkinIndexToPRIMap[MapIndex] = bbPRI;
+						bbPRI.SkinIndex = MapIndex & 0xF;
+					}
+				}
+			}
+		} else {
+			// first time spawning
+			// assign new index
+			MapIndex = FindEmptyIndex(bbPRI);
+			if (MapIndex >= 0) {
+				SkinIndexToPRIMap[MapIndex] = bbPRI;
+				if (TGP == none)
+					bbPRI.SkinIndex = MapIndex;
+				else
+					bbPRI.SkinINdex = MapIndex & 0xF;
+			}
+		}
+	}
+}
+
 // Modify the login classes to our classes.
 function ModifyLogin(out class<playerpawn> SpawnClass, out string Portal, out string Options)
 {
@@ -712,7 +748,7 @@ function ModifyPlayer(Pawn Other)
 		zzP = bbPlayer(Other);
 		if (zzP == None && Spectator(Other) == None)
 		{
-			xxLog("Destroying bad player - Pure might be incompatible with some mod!");
+			xxLog("Destroying bad player - Pure might be incompatible with some mod! ("$class'StringUtils'.static.PackageOfObject(zzP)$")");
 			Other.Destroy();
 			return;
 		}
@@ -728,17 +764,40 @@ function ModifyPlayer(Pawn Other)
 				zzP.zzbForceDemo = bForceDemo;
 				zzP.zzbGameStarted = True;
 			}
-			zzP.bHidden = true;
-			zzP.SetCollision(false, false, false);
+			if (default.bEnablePingCompensatedSpawn) {
+				zzP.bHidden = true;
+				zzP.SetCollision(false, false, false);
+				// we are not undoing the effects because we cant "unplay" a sound
+				// see DeathMatchPlus.PlayTeleportEffect
+			}
 		}
 	}
+
+	AssignFixedSkinIndex(Other);
+	Other.SetCollisionSize(Other.default.CollisionRadius * PlayerScale, Other.default.CollisionHeight * PlayerScale);
+	Other.DrawScale = Other.default.DrawScale * PlayerScale;
+
 	Super.ModifyPlayer(Other);
+}
+
+function ModifyLogout(Pawn Exiting) {
+	local bbPlayerReplicationInfo bbPRI;
+	local TeamGamePlus TGP;
+
+	bbPRI = bbPlayerReplicationInfo(Exiting.PlayerReplicationInfo);
+	if (bbPRI != none) {
+		TGP = TeamGamePlus(Level.Game);
+		if (TGP != none) {
+			SkinIndexToPRIMap[(bbPRI.Team << 4) + bbPRI.SkinIndex] = none;
+		} else {
+			SkinIndexToPRIMap[bbPRI.SkinIndex] = none;
+		}
+	}
 }
 
 //"Hack" for variables that only need to be set once.
 function bool AlwaysKeep(Actor Other)
 {
-	local int zzx;
 	local UTPlayerChunks PC;
 
 	ForEach AllActors(class'UTPlayerChunks', PC)
@@ -748,11 +807,6 @@ function bool AlwaysKeep(Actor Other)
 
 	if ( bbPlayer(Other) != None )
 	{
-		for (zzx = 0; zzx < zzAntiTimerListCount; zzx++)
-		{
-			bbPlayer(Other).zzAntiTimerList[zzx] = zzAntiTimerList[zzx];
-		}
-		bbPlayer(Other).zzAntiTimerListCount = zzAntiTimerListCount;
 		bbPlayer(Other).zzUTPure = Self;
 		bbPlayer(Other).zzThrowVelocity = ThrowVelocity;
 	}
@@ -1363,6 +1417,18 @@ event Destroyed()	// Make sure config is stored. (Don't think this is ever calle
 	Super.Destroyed();
 }
 
+static function string GetForcedSettingKey(int Index) {
+	return default.ForcedSettings[Index].Key;
+}
+
+static function string GetForcedSettingValue(int Index) {
+	return default.ForcedSettings[Index].Value;
+}
+
+static function int GetForcedSettingMode(int Index) {
+	return default.ForcedSettings[Index].Mode;
+}
+
 defaultproperties
 {
 	SniperDamagePri=60
@@ -1384,6 +1450,8 @@ defaultproperties
 	bWarmup=True
 	ForceModels=1
 	ImprovedHUD=1
+	bDelayedPickupSpawn=False
+	bUseFastWeaponSwitch=True
 	PlayerPacks(0)=""
 	DefaultHitSound=2
 	DefaultTeamHitSound=3
@@ -1391,8 +1459,8 @@ defaultproperties
 	ThrowVelocity=750
 	VersionStr="IG+"
 	LongVersion=""
-	ThisVer="6"
-	NiceVer="6"
+	ThisVer="7"
+	NiceVer="7"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
@@ -1400,7 +1468,7 @@ defaultproperties
 	MaxHitError=10000
 	MaxJitterTime=0.1
 	MinNetUpdateRate=60.0
-	MaxNetUpdateRate=250.0
+	MaxNetUpdateRate=200.0
 	ShowTouchedPackage=False
 	bRestrictTrading=True
 	MaxTradeTimeMargin=0.1
@@ -1414,6 +1482,10 @@ defaultproperties
 	bDodgePreserveZMomentum=False
 	MaxMultiDodges=1
 	BrightskinMode=1
+	PlayerScale=1.0
 	bEnableServerExtrapolation=True
-	bEnableServerPacketReordering=True
+	bEnableServerPacketReordering=False
+	bEnableLoosePositionCheck=True
+	bPlayersAlwaysRelevant=True
+	bEnablePingCompensatedSpawn=True
 }
