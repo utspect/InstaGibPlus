@@ -267,9 +267,9 @@ var string IGPlus_TPFix_URL;
 var int HitMarkerTestDamage;
 var int HitMarkerTestTeam;
 
-var bbServerMove FirstServerMove;
-var bbServerMove LatestServerMove;
-var bbServerMove FreeServerMove;
+var bbServerMove IGPlus_ServerMove_First;
+var bbServerMove IGPlus_ServerMove_Latest;
+var bbServerMove IGPlus_ServerMove_FreeList;
 
 var Utilities Utils;
 var StringUtils StringUtils;
@@ -2068,15 +2068,15 @@ function IGPlus_ProcessRemoteMovement() {
 function IGPlus_ApplyAllServerMoves() {
 	local bbServerMove SM;
 
-	if (FirstServerMove == none) return;
+	if (IGPlus_ServerMove_First == none) return;
 
-	for (SM = FirstServerMove; SM.Next != none; SM = SM.Next)
+	for (SM = IGPlus_ServerMove_First; SM.Next != none; SM = SM.Next)
 		IGPlus_ApplyServerMove(SM);
 
 	IGPlus_ApplyServerMove(SM);
 
-	IGPlus_DestroyServerMoveChain(FirstServerMove, SM);
-	FirstServerMove = none;
+	IGPlus_DestroyServerMoveChain(IGPlus_ServerMove_First, SM);
+	IGPlus_ServerMove_First = none;
 }
 
 function IGPlus_ApplyMomentum(vector Momentum) {
@@ -2647,9 +2647,9 @@ function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMov
 
 function bbServerMove IGPlus_CreateServerMove() {
 	local bbServerMove F;
-	if (FreeServerMove != none) {
-		F = FreeServerMove;
-		FreeServerMove = F.Next;
+	if (IGPlus_ServerMove_FreeList != none) {
+		F = IGPlus_ServerMove_FreeList;
+		IGPlus_ServerMove_FreeList = F.Next;
 		F.Next = none;
 		return F;
 	}
@@ -2659,8 +2659,8 @@ function bbServerMove IGPlus_CreateServerMove() {
 
 function IGPlus_DestroyServerMove(bbServerMove SM) {
 	if (SM == none) return;
-	SM.Next = FreeServerMove;
-	FreeServerMove = SM;
+	SM.Next = IGPlus_ServerMove_FreeList;
+	IGPlus_ServerMove_FreeList = SM;
 }
 
 function IGPlus_DestroyServerMoveChain(bbServerMove Head, bbServerMove Tail) {
@@ -2672,32 +2672,32 @@ function IGPlus_DestroyServerMoveChain(bbServerMove Head, bbServerMove Tail) {
 			Tail = Tail.Next;
 	}
 
-	Tail.Next = FreeServerMove;
-	FreeServerMove = Head;
+	Tail.Next = IGPlus_ServerMove_FreeList;
+	IGPlus_ServerMove_FreeList = Head;
 }
 
 function IGPlus_InsertServerMove(bbServerMove SM) {
 	local bbServerMove I;
 
-	if (FirstServerMove == none) {
-		FirstServerMove = SM;
-		LatestServerMove = SM;
+	if (IGPlus_ServerMove_First == none) {
+		IGPlus_ServerMove_First = SM;
+		IGPlus_ServerMove_Latest = SM;
 		return;
 	}
 
-	if (FirstServerMove.TimeStamp > SM.TimeStamp) {
-		SM.Next = FirstServerMove;
-		FirstServerMove = SM;
+	if (IGPlus_ServerMove_First.TimeStamp > SM.TimeStamp) {
+		SM.Next = IGPlus_ServerMove_First;
+		IGPlus_ServerMove_First = SM;
 		return;
 	}
 
-	if (LatestServerMove.TimeStamp < SM.TimeStamp) {
-		LatestServerMove.Next = SM;
-		LatestServerMove = SM;
+	if (IGPlus_ServerMove_Latest.TimeStamp < SM.TimeStamp) {
+		IGPlus_ServerMove_Latest.Next = SM;
+		IGPlus_ServerMove_Latest = SM;
 		return;
 	}
 
-	I = FirstServerMove;
+	I = IGPlus_ServerMove_First;
 	while(I.Next != none && I.Next.TimeStamp < SM.TimeStamp) {
 		I = I.Next;
 	}
