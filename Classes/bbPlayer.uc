@@ -267,9 +267,9 @@ var string IGPlus_TPFix_URL;
 var int HitMarkerTestDamage;
 var int HitMarkerTestTeam;
 
-var bbServerMove IGPlus_ServerMove_First;
-var bbServerMove IGPlus_ServerMove_Latest;
-var bbServerMove IGPlus_ServerMove_FreeList;
+var IGPlus_ServerMove IGPlus_ServerMove_First;
+var IGPlus_ServerMove IGPlus_ServerMove_Latest;
+var IGPlus_ServerMove IGPlus_ServerMove_FreeList;
 
 var Utilities Utils;
 var StringUtils StringUtils;
@@ -2066,7 +2066,7 @@ function IGPlus_ProcessRemoteMovement() {
 }
 
 function IGPlus_ApplyAllServerMoves() {
-	local bbServerMove SM;
+	local IGPlus_ServerMove SM;
 
 	if (IGPlus_ServerMove_First == none) return;
 
@@ -2106,7 +2106,7 @@ function IGPlus_AfterTranslocate() {
 	}
 }
 
-function IGPlus_ApplyServerMove(bbServerMove SM) {
+function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	local int i;
 	local float ServerDeltaTime;
 	local float DeltaTime;
@@ -2645,8 +2645,8 @@ function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMov
 	return true;
 }
 
-function bbServerMove IGPlus_CreateServerMove() {
-	local bbServerMove F;
+function IGPlus_ServerMove IGPlus_CreateServerMove() {
+	local IGPlus_ServerMove F;
 	if (IGPlus_ServerMove_FreeList != none) {
 		F = IGPlus_ServerMove_FreeList;
 		IGPlus_ServerMove_FreeList = F.Next;
@@ -2654,16 +2654,16 @@ function bbServerMove IGPlus_CreateServerMove() {
 		return F;
 	}
 
-	return Spawn(class'bbServerMove', self);
+	return Spawn(class'IGPlus_ServerMove', self);
 }
 
-function IGPlus_DestroyServerMove(bbServerMove SM) {
+function IGPlus_DestroyServerMove(IGPlus_ServerMove SM) {
 	if (SM == none) return;
 	SM.Next = IGPlus_ServerMove_FreeList;
 	IGPlus_ServerMove_FreeList = SM;
 }
 
-function IGPlus_DestroyServerMoveChain(bbServerMove Head, bbServerMove Tail) {
+function IGPlus_DestroyServerMoveChain(IGPlus_ServerMove Head, IGPlus_ServerMove Tail) {
 	if (Head == none) return;
 
 	if (Tail == none) {
@@ -2676,8 +2676,8 @@ function IGPlus_DestroyServerMoveChain(bbServerMove Head, bbServerMove Tail) {
 	IGPlus_ServerMove_FreeList = Head;
 }
 
-function IGPlus_InsertServerMove(bbServerMove SM) {
-	local bbServerMove I;
+function IGPlus_InsertServerMove(IGPlus_ServerMove SM) {
+	local IGPlus_ServerMove I;
 
 	if (IGPlus_ServerMove_First == none) {
 		IGPlus_ServerMove_First = SM;
@@ -2722,7 +2722,7 @@ function xxServerMove(
 	optional int OldMoveData1,
 	optional int OldMoveData2
 ) {
-	local bbServerMove SM;
+	local IGPlus_ServerMove SM;
 
 	SM = IGPlus_CreateServerMove();
 

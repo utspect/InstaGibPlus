@@ -1,4 +1,4 @@
-class bbServerMove extends Actor;
+class IGPlus_ServerMove extends Actor;
 
 var float TimeStamp;
 var float MoveDeltaTime;
@@ -12,7 +12,7 @@ var Actor ClientBase;
 var int OldMoveData1;
 var int OldMoveData2;
 
-var bbServerMove Next;
+var IGPlus_ServerMove Next;
 
 defaultproperties {
 	bHidden=True
