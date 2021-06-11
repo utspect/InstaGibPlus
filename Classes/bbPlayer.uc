@@ -1158,6 +1158,10 @@ function IGPlus_NotifyPlayerRestart(vector Loc, rotator Dir, bbPlayer Other) {
 	local UTTeleportEffect PTE;
 
 	PTE = Spawn(class'UTTeleportEffect', self, , Loc, Dir);
+	if (Level.bHighDetailMode == false) {
+		PTE.bOwnerNoSee = (Other == self);
+		PTE.Disable('Tick');
+	}
 	PTE.Initialize(Other, true);
 	PTE.PlaySound(sound'Resp2A',, 10.0);
 	PTE.RemoteRole = ROLE_None;
