@@ -471,7 +471,17 @@ function ReceiveWeaponEffect(
 	vector TargetOffset,
 	vector HitNormal
 ) {
-	Effect.static.Play(self, Settings, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
+	Effect.static.Play(
+		self,
+		Settings,
+		SourcePRI,
+		SourceLocation,
+		SourceOffset,
+		Target,
+		TargetLocation,
+		TargetOffset,
+		Normal(HitNormal / 32767)
+	);
 }
 
 simulated function DemoReceiveWeaponEffect(
@@ -485,7 +495,17 @@ simulated function DemoReceiveWeaponEffect(
 	vector HitNormal
 ) {
 	if (LastWeaponEffectCreated >= 0) return;
-	Effect.static.Play(self, Settings, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
+	Effect.static.Play(
+		self,
+		Settings,
+		SourcePRI,
+		SourceLocation,
+		SourceOffset,
+		Target,
+		TargetLocation,
+		TargetOffset,
+		Normal(HitNormal / 32767)
+	);
 }
 
 function SendWeaponEffect(
@@ -498,9 +518,28 @@ function SendWeaponEffect(
 	vector TargetOffset,
 	vector HitNormal
 ) {
-	ReceiveWeaponEffect(Effect, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
+	ReceiveWeaponEffect(
+		Effect,
+		SourcePRI,
+		SourceLocation,
+		SourceOffset,
+		Target,
+		TargetLocation,
+		TargetOffset,
+		HitNormal * 32767
+	);
+
 	LastWeaponEffectCreated = Level.TimeSeconds;
-	DemoReceiveWeaponEffect(Effect, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
+	DemoReceiveWeaponEffect(
+		Effect,
+		SourcePRI,
+		SourceLocation,
+		SourceOffset,
+		Target,
+		TargetLocation,
+		TargetOffset,
+		HitNormal * 32767
+	);
 }
 
 /* More crash fix bs */
