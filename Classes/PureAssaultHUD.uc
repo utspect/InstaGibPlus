@@ -177,6 +177,10 @@ simulated function DrawStatus(Canvas Canvas)
 		Canvas.DrawColor = GoldColor;
 	else
 		Canvas.DrawColor = WhiteColor;
+	if (PawnOwner.IsA('PlayerPawn') == false || PlayerPawn(PawnOwner).Player.IsA('ViewPort') == false) {
+		if (PawnOwner.PlayerReplicationInfo.IsA('bbPlayerReplicationInfo'))
+			ArmorAmount = bbPlayerReplicationInfo(PawnOwner.PlayerReplicationInfo).Armor;
+	}
 	DrawBigNum(Canvas, Min(150,ArmorAmount), X + 4 * Scale, Y + 16 * Scale, 1);
 
 	if ((bbPlayer(PlayerOwner) != None && bbPlayer(PlayerOwner).HUDInfo > 0) || bbCHSpectator(PlayerOwner) != None)

@@ -5,10 +5,14 @@ var string FaceName;
 var string OriginalName;
 var int MaxMultiDodges;
 var int SkinIndex;
+var int Armor;
 
 replication {
     reliable if (Role == ROLE_Authority)
-        SkinName, FaceName, MaxMultiDodges;
+        Armor,
+        FaceName,
+        MaxMultiDodges,
+        SkinName;
 }
 
 function PostBeginPlay()
@@ -45,6 +49,19 @@ function Timer()
 
     if (PlayerPawn(Owner) != None)
         PacketLoss = int(PlayerPawn(Owner).ConsoleCommand("GETLOSS"));
+
+    UpdateArmor();
+}
+
+function UpdateArmor() {
+    local Inventory Inv;
+    local int ArmorAmount;
+
+    for (Inv = Owner.Inventory; Inv != none; Inv = Inv.Inventory)
+        if (Inv.bIsAnArmor)
+            ArmorAmount += Inv.Charge;
+
+    Armor = ArmorAmount;
 }
 
 defaultproperties
