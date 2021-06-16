@@ -586,12 +586,14 @@ simulated event bool PreTeleport(Teleporter T) {
 		return true;
 	}
 
-	IGPlus_TPFix_OffsetZ = Location.Z - T.Location.Z;
-	IGPlus_TPFix_Velocity = Velocity;
-	IGPlus_TPFix_Rotation = Rotation;
-	IGPlus_TPFix_LastTouched = T;
-	IGPlus_TPFix_URL = T.URL;
-	bForcePacketSplit = true;
+	if (T.URL != "") {
+		IGPlus_TPFix_OffsetZ = Location.Z - T.Location.Z;
+		IGPlus_TPFix_Velocity = Velocity;
+		IGPlus_TPFix_Rotation = Rotation;
+		IGPlus_TPFix_LastTouched = T;
+		IGPlus_TPFix_URL = T.URL;
+		bForcePacketSplit = true;
+	}
 	return false;
 }
 
