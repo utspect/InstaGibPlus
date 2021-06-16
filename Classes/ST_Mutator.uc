@@ -601,7 +601,7 @@ function SwitchWeaponsInventory(Pawn Other)
 		if (AmmoTyp[x] == none)
 			AmmoTyp[x] = Ammo(Other.FindInventoryType(AmmoCls[x]));
 		if (AmmoTyp[x] != none)
-			AmmoTyp[x].UseAmmo(W.PickupAmmoCount);
+			AmmoTyp[x].UseAmmo(OldWeap[x].PickupAmmoCount);
 
 		GiveGoodWeapon(Other, NewName[x], OldWeap[x]);
 		OldWeap[x].GotoState('');
