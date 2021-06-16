@@ -117,7 +117,7 @@ static function ClientReceive(
         }
         if (ChallengeHUD(P.MyHUD) != None)
             ChallengeHUD(P.MyHUD).ScoreTime = P.Level.TimeSeconds;
-    } else if (P == RelatedPRI_2.Owner || (P.ViewTarget != none && P.ViewTarget == RelatedPRI_2.Owner)) {
+    } else if (RelatedPRI_2 != none && (P == RelatedPRI_2.Owner || (P.ViewTarget != none && P.ViewTarget == RelatedPRI_2.Owner))) {
         P.ReceiveLocalizedMessage(class'VictimMessage', 0, RelatedPRI_1);
         Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
     } else {
