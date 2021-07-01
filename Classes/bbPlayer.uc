@@ -2155,6 +2155,7 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	local int i;
 	local float ServerDeltaTime;
 	local float DeltaTime;
+	local float SimTime;
 	local float SimStep;
 	local rotator DeltaRot;
 	local rotator Rot;
@@ -2376,6 +2377,14 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 
 	// Predict new position
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
+		if (class'UTPure'.default.bEnableJitterBounding && DeltaTime > class'UTPure'.default.MaxJitterTime) {
+			SimTime = DeltaTime - class'UTPure'.default.MaxJitterTime;
+			if (SimTime >= 0.005 || bIs469Server) {
+				SimMoveAutonomous(SimTime);
+				DeltaTime = class'UTPure'.default.MaxJitterTime;
+			}
+		}
+
 		MergeCount++;
 
 		SimStep = DeltaTime / float(MergeCount);
@@ -2662,16 +2671,19 @@ function EPhysics GetPhysics(int phys) {
 function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData2) {
 	local vector Accel;
 	local float OldTimeStamp;
+	local float DeltaTime;
 	local bool OldRun;
 	local bool OldDuck;
 	local bool OldJump;
 	local EDodgeDir DodgeMove;
+	local float SimTime;
 
 	OldTimeStamp = TimeStamp - (float(OldMoveData1 & 0x3FF) * 0.001);
 	if (CurrentTimeStamp + 0.001 >= OldTimeStamp) {
 		return false;
 	}
 
+	DeltaTime = OldTimeStamp - CurrentTimeStamp;
 	OldJump   = (OldMoveData1 & 0x0400) != 0;
 	OldRun    = (OldMoveData1 & 0x0800) != 0;
 	OldDuck   = (OldMoveData1 & 0x1000) != 0;
@@ -2684,7 +2696,16 @@ function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMov
 		ClientDebugMessage("Received Old Dodge"@DodgeMove@CurrentTimeStamp@OldTimeStamp);
 
 	UndoExtrapolation();
-	IGPlus_MoveAutonomous(OldTimeStamp - CurrentTimeStamp, OldRun, OldDuck, OldJump, DodgeMove, Accel, rot(0,0,0));
+
+	if (class'UTPure'.default.bEnableJitterBounding && DeltaTime > class'UTPure'.default.MaxJitterTime) {
+		SimTime = DeltaTime - class'UTPure'.default.MaxJitterTime;
+		if (SimTime >= 0.005 || bIs469Server) {
+			SimMoveAutonomous(SimTime);
+			DeltaTime = class'UTPure'.default.MaxJitterTime;
+		}
+	}
+
+	IGPlus_MoveAutonomous(DeltaTime, OldRun, OldDuck, OldJump, DodgeMove, Accel, rot(0,0,0));
 	CurrentTimeStamp = OldTimeStamp;
 
 	return true;

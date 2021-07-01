@@ -92,6 +92,7 @@ var localized config bool bEnableServerPacketReordering;
 var localized config bool bEnableLoosePositionCheck;
 var localized config bool bPlayersAlwaysRelevant;
 var localized config bool bEnablePingCompensatedSpawn;
+var localized config bool bEnableJitterBounding;
 var localized config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
@@ -1488,4 +1489,5 @@ defaultproperties
 	bEnableLoosePositionCheck=True
 	bPlayersAlwaysRelevant=True
 	bEnablePingCompensatedSpawn=True
+	bEnableJitterBounding=True
 }

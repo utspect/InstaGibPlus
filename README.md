@@ -859,9 +859,10 @@ Server settings can be found inside InstaGibPlus.ini.
 55. [bEnableLoosePositionCheck](#benableloosepositioncheck)
 56. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
 57. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
-58. [ShowTouchedPackage](#showtouchedpackage)
-59. [ExcludeMapsForKickers](#excludemapsforkickers)
-60. [ForcedSettings](#forcedsettings)
+58. [bEnableJitterBounding](#benablejitterbounding)
+59. [ShowTouchedPackage](#showtouchedpackage)
+60. [ExcludeMapsForKickers](#excludemapsforkickers)
+61. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1174,7 +1175,7 @@ Minimum frequency of client updates for server.
 ## MaxNetUpdateRate
 
 **Type: float**  
-**Default: 250**  
+**Default: 200**  
 **Unit: Hz**  
 
 Maximum frequency of client updates for server.
@@ -1199,7 +1200,7 @@ Maximum time after death (on server) that players can still fire their weapons. 
 ## TradePingMargin
 
 **Type: float**  
-**Default: 0.2**  
+**Default: 0.5**  
 
 Trade uncertainty relative to shooters ping. Reasonable values range from 0 to 1. Higher values lead to more trades.
 
@@ -1215,7 +1216,7 @@ Disable to restore default netcode behavior.
 ## bEnableServerPacketReordering
 
 **Type: bool**  
-**Default: True**  
+**Default: False**  
 
 If enabled, the server will try to reorder incoming ServerMove calls to extract the maximum amount of usable data. More relevant at lower TickRates.
 
@@ -1246,6 +1247,15 @@ Disable to restore default netcode behavior.
 
 If enabled, players will not become visible to others until they can actually move on their end.  
 If disabled, players will stand on their spawn-point visible to other players without being able to move for the duration of their ping.
+
+Disable to restore default netcode behavior.
+
+## bEnableJitterBounding
+
+**Type: bool**  
+**Default: True**  
+
+If enabled, updates by clients over more than [MaxJitterTime](#maxjittertime) will be cut down to MaxJitterTime in order to reduce visible warping for other players.
 
 Disable to restore default netcode behavior.
 
