@@ -5837,25 +5837,25 @@ state PlayerWaking
 	}
 }
 
-function bool GameRestartPlayer() {
-	local bool bDeathMatchSave;
-	local bool Result;
-
-	if (class'UTPure'.default.bEnablePingCompensatedSpawn) {
-		bDeathMatchSave = Level.Game.bDeathMatch;
-		Level.Game.bDeathMatch = false;
-	}
-
-	Result = Level.Game.RestartPlayer(self);
-
-	if (class'UTPure'.default.bEnablePingCompensatedSpawn)
-		Level.Game.bDeathMatch = bDeathMatchSave;
-
-	return Result;
-}
-
 state Dying
 {
+	function bool GameRestartPlayer() {
+		local bool bDeathMatchSave;
+		local bool Result;
+
+		if (class'UTPure'.default.bEnablePingCompensatedSpawn) {
+			bDeathMatchSave = Level.Game.bDeathMatch;
+			Level.Game.bDeathMatch = false;
+		}
+
+		Result = Level.Game.RestartPlayer(self);
+
+		if (class'UTPure'.default.bEnablePingCompensatedSpawn)
+			Level.Game.bDeathMatch = bDeathMatchSave;
+
+		return Result;
+	}
+
 	function ServerReStartPlayer()
 	{
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
@@ -6530,28 +6530,24 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2"$suffix, "FCommandoSkins.aphe");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.aphe4Indina", "FCommandoSkins.aphe");
-			// Set the Mesh
 			break;
 		case 1: // Female Commando Anna
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.cmdo1"$suffix, "FCommandoSkins.cmdo");
 			SetSkinElement(SkinActor, 1, "FCommandoSkins.cmdo2"$suffix, "FCommandoSkins.cmdo");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.cmdo4Anna", "FCommandoSkins.anna");
-			// Set the Mesh
 			break;
 		case 2: // Female Commando Mercenary
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.daco1"$suffix, "FCommandoSkins.daco");
 			SetSkinElement(SkinActor, 1, "FCommandoSkins.daco2"$suffix, "FCommandoSkins.daco");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.daco4Jayce", "FCommandoSkins.daco");
-			// Set the Mesh
 			break;
 		case 3: // Female Commando Necris
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.goth1"$suffix, "FCommandoSkins.goth");
 			SetSkinElement(SkinActor, 1, "FCommandoSkins.goth2"$suffix, "FCommandoSkins.goth");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.goth4Cryss", "FCommandoSkins.goth");
-			// Set the Mesh
 			break;
 		case 4: // Female Soldier Marine
 			SetSkinElement(SkinActor, 0, "SGirlSkins.fbth1"$suffix, "SGirlSkins.fbth");
@@ -6559,7 +6555,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SGirlSkins.fbth3", "SGirkSkins.fbth");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.fbth4Annaka", "SGirlSkins.fbth");
-			// Set the Mesh
 			break;
 		case 5: // Female Soldier Metal Guard
 			SetSkinElement(SkinActor, 0, "SGirlSkins.Garf1"$suffix, "SGirlSkins.Garf");
