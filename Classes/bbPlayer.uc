@@ -37,10 +37,8 @@ var float debugClientLocError;
 var bool debugClientForceUpdate;
 var int debugNumOfForcedUpdates;
 var float clientLastUpdateTime;
-var int debugLastMoveCounter;
 var int debugServerMoveCallsSent;
 var int debugServerMoveCallsReceived;
-var int debugServerMoveCallsLost;
 
 // Control stuff
 var PureInfo zzInfoThing;	// Registers diverse stuff.
@@ -342,7 +340,6 @@ replication
 		debugClientLocError,
 		debugNumOfForcedUpdates,
 		debugServerMoveCallsReceived,
-		debugServerMoveCallsLost,
 		ExtrapolationDelta;
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2179,7 +2176,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	local int MoveIndex;
 
 	local int AddVelocityId;
-	local int MoveCounter;
 
 	local int JumpIndex;
 	local float JumpPos;
@@ -2232,7 +2228,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	DodgeMove      = GetDodgeDir((SM.MiscData & 0x00000F00) >> 8);
 	ClientRoll     =             (SM.MiscData & 0x000000FF);
 
-	MoveCounter     = (SM.MiscData2 & 0xFF000000) >>> 24;
 	AddVelocityId   = (SM.MiscData2 & 0x00F00000) >> 20;
 	DuckChangeIndex = (SM.MiscData2 & 0x000F8000) >> 15;
 	RunChangeIndex  = (SM.MiscData2 & 0x00007C00) >> 10;
@@ -2241,9 +2236,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 
 	if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
 		ClientDebugMessage("Received Dodge"@DodgeMove@SM.TimeStamp);
-
-	debugServerMoveCallsLost += (MoveCounter - debugLastMoveCounter - 1) & 0xFF;
-	debugLastMoveCounter = MoveCounter;
 
 	if (SM.ClientBase == none)
 		ClientLocAbs = SM.ClientLocation;
@@ -3641,7 +3633,6 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	if (Move.RunChangeIndex > 0)  MiscData2 = MiscData2 | (Move.RunChangeIndex & 0x1F) << 10;
 	if (Move.DuckChangeIndex > 0) MiscData2 = MiscData2 | (Move.DuckChangeIndex & 0x1F) << 15;
 	                              MiscData2 = MiscData2 | (Move.AddVelocityId & 0xF) << 20;
-	                              MiscData2 = MiscData2 | (debugServerMoveCallsSent & 0xFF) << 24;
 
 	if (OldMove != none && OldMove != Move) {
 		OldMoveData1 = Min(0x3FF, int((Move.TimeStamp - OldMove.TimeStamp) * 1000.0));
@@ -7055,7 +7046,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.SetPos(zzx, zzY + 520);
 	zzC.DrawText("EyeHeight:"@EyeHeight);
 	zzC.SetPos(zzx, zzY + 540);
-	zzC.DrawText("ServerMove calls"@debugServerMoveCallsSent@debugServerMoveCallsReceived@debugServerMoveCallsLost);
+	zzC.DrawText("ServerMove calls"@debugServerMoveCallsSent@debugServerMoveCallsReceived);
 	zzC.SetPos(zzx, zzY + 560);
 	zzC.DrawText("bDodging"@bDodging@"DodgeDir"@DodgeDir);
 
