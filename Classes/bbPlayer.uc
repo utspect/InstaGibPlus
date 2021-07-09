@@ -458,6 +458,16 @@ replication
 //XC_Engine interface
 native(1719) final function bool IsInPackageMap( optional string PkgName, optional bool bServerPackagesOnly);
 
+static final operator(34) int or_eq (out int A, int B) {
+	A = A | B;
+	return A;
+}
+
+static final operator(34) int and_eq (out int A, int B) {
+	A = A & B;
+	return A;
+}
+
 function ReceiveWeaponEffect(
 	class<WeaponEffect> Effect,
 	PlayerReplicationInfo SourcePRI,
@@ -2165,10 +2175,7 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	local bool NewbRun;
 	local bool NewbDuck;
 	local bool NewbJumpStatus;
-	local bool bFired;
-	local bool bAltFired;
-	local bool bForceFire;
-	local bool bForceAltFire;
+
 	local EDodgeDir DodgeMove;
 	local EPhysics ClientPhysics;
 	local byte ClientRoll;
@@ -2193,6 +2200,16 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	local float DuckChangePos;
 	local bool bDuckActual;
 
+	local int FireIndex;
+	local float FirePos;
+	local bool bFired;
+	local bool bForceFire;
+
+	local int AltFireIndex;
+	local float AltFirePos;
+	local bool bAltFired;
+	local bool bForceAltFire;
+
 	debugServerMoveCallsReceived += 1;
 
 	if (bDeleteMe) {
@@ -2215,11 +2232,10 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 		return;
 	}
 
-	ClientTlocCounter =          (SM.MiscData & 0x60000000) >> 29;
-	bFired         =             (SM.MiscData & 0x10000000) != 0;
-	bAltFired      =             (SM.MiscData & 0x08000000) != 0;
-	bForceFire     =             (SM.MiscData & 0x04000000) != 0;
-	bForceAltFire  =             (SM.MiscData & 0x02000000) != 0;
+	AddVelocityId  =             (SM.MiscData & 0xF0000000) >>> 28; // >>> doesnt sign-extend
+	ClientTlocCounter =          (SM.MiscData & 0x0C000000) >> 26;
+	bFired         =             (SM.MiscData & 0x02000000) != 0;
+	bAltFired      =             (SM.MiscData & 0x01000000) != 0;
 	MergeCount     =             (SM.MiscData & 0x00F80000) >> 19;
 	NewbRun        =             (SM.MiscData & 0x00040000) != 0;
 	NewbDuck       =             (SM.MiscData & 0x00020000) != 0;
@@ -2228,7 +2244,10 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	DodgeMove      = GetDodgeDir((SM.MiscData & 0x00000F00) >> 8);
 	ClientRoll     =             (SM.MiscData & 0x000000FF);
 
-	AddVelocityId   = (SM.MiscData2 & 0x00F00000) >> 20;
+	bForceFire      = (SM.MiscData2 & 0x80000000) != 0;
+	bForceAltFire   = (SM.MiscData2 & 0x40000000) != 0;
+	FireIndex       = (SM.MiscData2 & 0x3E000000) >> 25;
+	AltFireIndex    = (SM.MiscData2 & 0x01F00000) >> 20;
 	DuckChangeIndex = (SM.MiscData2 & 0x000F8000) >> 15;
 	RunChangeIndex  = (SM.MiscData2 & 0x00007C00) >> 10;
 	DodgeIndex      = (SM.MiscData2 & 0x000003E0) >> 5;
@@ -2310,32 +2329,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	if (bUseFastWeaponSwitch && PendingWeapon != None)
 		ChangedWeapon();
 
-	// handle firing and alt-firing
-	if (bFired) {
-		if (bForceFire && (Weapon != None))
-			Weapon.ForceFire();
-		else if (bFire == 0)
-			Fire(0);
-		bFire = 1;
-	} else {
-		bFire = 0;
-	}
-
-	if (bAltFired) {
-		if (bForceAltFire && (Weapon != None))
-			Weapon.ForceAltFire();
-		else if (bAltFire == 0)
-			AltFire(0);
-		bAltFire = 1;
-	} else {
-		bAltFire = 0;
-	}
-
-	if (IGPlus_DidTranslocate) {
-		TlocCounter = (TlocCounter + 1) & 3;
-		IGPlus_DidTranslocate = false;
-	}
-
 	CurrentTimeStamp = SM.TimeStamp;
 	ServerTimeStamp = Level.TimeSeconds;
 	Rot.Roll = ClientRoll << 8;
@@ -2386,6 +2379,8 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 			DodgePos = float(DodgeIndex) / float(MergeCount);
 			RunChangePos = float(RunChangeIndex) / float(MergeCount);
 			DuckChangePos = float(DuckChangeIndex) / float(MergeCount);
+			FirePos = float(FireIndex) / float(MergeCount);
+			AltFirePos = float(AltFireIndex) / float(MergeCount);
 
 			MergeCount = int(DeltaTime * 100) + 1;
 			SimStep = DeltaTime / float(MergeCount);
@@ -2394,6 +2389,8 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 			DodgeIndex = int(DodgePos * MergeCount);
 			RunChangeIndex = int(RunChangePos * MergeCount);
 			DuckChangeIndex = int(DuckChangePos * MergeCount);
+			FireIndex = int(FirePos * MergeCount);
+			AltFireIndex = int(AltFirePos * MergeCount);
 		}
 
 		for (MoveIndex = 0; MoveIndex < MergeCount; MoveIndex++) {
@@ -2407,10 +2404,39 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 			else
 				DoDodge = DODGE_None;
 
+			if (MoveIndex == FireIndex) {
+				if (bFired) {
+					if (bForceFire && (Weapon != None))
+						Weapon.ForceFire();
+					else if (bFire == 0)
+						Fire(0);
+					bFire = 1;
+				} else {
+					bFire = 0;
+				}
+			}
+
+			if (MoveIndex == AltFireIndex) {
+				if (bAltFired) {
+					if (bForceAltFire && (Weapon != None))
+						Weapon.ForceAltFire();
+					else if (bAltFire == 0)
+						AltFire(0);
+					bAltFire = 1;
+				} else {
+					bAltFire = 0;
+				}
+			}
+
 			bRunActual = (MoveIndex < RunChangeIndex) ^^ NewbRun;
 			bDuckActual = (MoveIndex < DuckChangeIndex) ^^ NewbDuck;
 
 			IGPlus_MoveAutonomous(SimStep, bRunActual, bDuckActual, bDoJump, DoDodge, SM.ClientAcceleration, DeltaRot / MergeCount);
+		}
+
+		if (IGPlus_DidTranslocate) {
+			TlocCounter = (TlocCounter + 1) & 3;
+			IGPlus_DidTranslocate = false;
 		}
 
 		bWasPaused = false;
@@ -3424,6 +3450,65 @@ function bool CanMergeMove(bbSavedMove Pending, vector Accel) {
 	return true;
 }
 
+function MergeMove(bbSavedMove PendMove, float DeltaTime, vector NewAccel, EDodgeDir DodgeMove) {
+	local float TotalTime;
+	local bool bFireNew;
+	local bool bAltFireNew;
+
+	PendMove.TimeStamp = Level.TimeSeconds;
+	PendMove.IGPlus_MergeCount += 1;
+
+	TotalTime = PendMove.Delta + DeltaTime;
+	if (TotalTime != 0)
+		PendMove.Acceleration = (DeltaTime * NewAccel + PendMove.Delta * PendMove.Acceleration)/TotalTime;
+
+	// Set this move's data.
+	if ( PendMove.DodgeMove == DODGE_None ) {
+		PendMove.DodgeMove = DodgeMove;
+		if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active && PendMove.DodgeIndex < 0) {
+			PendMove.DodgeIndex = PendMove.IGPlus_MergeCount;
+		}
+	}
+
+	if (PendMove.bPressedJump == false && bPressedJump && PendMove.JumpIndex < 0)
+		PendMove.JumpIndex = PendMove.IGPlus_MergeCount;
+	PendMove.bPressedJump = bPressedJump || PendMove.bPressedJump;
+
+	if ((bRun > 0) != PendMove.bRun) {
+		if (PendMove.RunChangeIndex < 0)
+			PendMove.RunChangeIndex = PendMove.IGPlus_MergeCount;
+		else
+			// if we changed bRun before, ignore running/walking for a very short time
+			PendMove.RunChangeIndex = -1;
+	}
+	PendMove.bRun = (bRun > 0);
+
+	if ((bDuck > 0) != PendMove.bDuck) {
+		if (PendMove.DuckChangeIndex < 0)
+			PendMove.DuckChangeIndex = PendMove.IGPlus_MergeCount;
+		else
+			// if we changed bDuck before, ignore ducking/standing for a very short time
+			PendMove.DuckChangeIndex = -1;
+	}
+	PendMove.bDuck = (bDuck > 0);
+
+	bFireNew = PendMove.bFire || bJustFired || (bFire != 0);
+	if (bFireNew != PendMove.bFire && PendMove.FireIndex < 0) {
+		PendMove.FireIndex = PendMove.IGPlus_MergeCount;
+	}
+	PendMove.bFire = bFireNew;
+	PendMove.bForceFire = PendMove.bForceFire || bJustFired;
+
+	bAltFireNew = PendMove.bAltFire || bJustAltFired || (bAltFire != 0);
+	if (bAltFireNew != PendMove.bAltFire && PendMove.AltFireIndex < 0) {
+		PendMove.AltFireIndex = PendMove.IGPlus_MergeCount;
+	}
+	PendMove.bAltFire = bAltFireNew;
+	PendMove.bForceAltFire = PendMove.bForceAltFire || bJustAltFired;
+
+	PendMove.Delta = TotalTime;
+}
+
 function xxReplicateMove(
 	float DeltaTime,
 	vector NewAccel,
@@ -3431,7 +3516,6 @@ function xxReplicateMove(
 	rotator DeltaRot
 ) {
 	local bbSavedMove NewMove, OldMove, LastMove, PendMove;
-	local float TotalTime;
 	local EPhysics OldPhys;
 	local float AdjustAlpha;
 	local float RealDelta;
@@ -3460,49 +3544,7 @@ function xxReplicateMove(
 	{
 		PendMove = bbSavedMove(PendingMove);
 		if (CanMergeMove(PendMove, NewAccel)) {
-			//add this move to the pending move
-			PendMove.TimeStamp = Level.TimeSeconds;
-			PendMove.IGPlus_MergeCount += 1;
-
-			TotalTime = PendMove.Delta + DeltaTime;
-			if (TotalTime != 0)
-				PendMove.Acceleration = (DeltaTime * NewAccel + PendMove.Delta * PendMove.Acceleration)/TotalTime;
-
-			// Set this move's data.
-			if ( PendMove.DodgeMove == DODGE_None ) {
-				PendMove.DodgeMove = DodgeMove;
-				if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active && PendMove.DodgeIndex < 0) {
-					PendMove.DodgeIndex = PendMove.IGPlus_MergeCount;
-				}
-			}
-
-			if (PendMove.bPressedJump == false && bPressedJump && PendMove.JumpIndex < 0)
-				PendMove.JumpIndex = PendMove.IGPlus_MergeCount;
-			PendMove.bPressedJump = bPressedJump || PendMove.bPressedJump;
-
-			if ((bRun > 0) != PendMove.bRun) {
-				if (PendMove.RunChangeIndex < 0)
-					PendMove.RunChangeIndex = PendMove.IGPlus_MergeCount;
-				else
-					// if we changed bRun before, ignore running/walking for a very short time
-					PendMove.RunChangeIndex = -1;
-			}
-			PendMove.bRun = (bRun > 0);
-
-			if ((bDuck > 0) != PendMove.bDuck) {
-				if (PendMove.DuckChangeIndex < 0)
-					PendMove.DuckChangeIndex = PendMove.IGPlus_MergeCount;
-				else
-					// if we changed bDuck before, ignore ducking/standing for a very short time
-					PendMove.DuckChangeIndex = -1;
-			}
-			PendMove.bDuck = (bDuck > 0);
-
-			PendMove.bFire = PendMove.bFire || bJustFired || (bFire != 0);
-			PendMove.bForceFire = PendMove.bForceFire || bJustFired;
-			PendMove.bAltFire = PendMove.bAltFire || bJustAltFired || (bAltFire != 0);
-			PendMove.bForceAltFire = PendMove.bForceAltFire || bJustAltFired;
-			PendMove.Delta = TotalTime;
+			MergeMove(PendMove, DeltaTime, NewAccel, DodgeMove);
 		} else {
 			SendSavedMove(PendMove);
 			ClientUpdateTime = FClamp((PendMove.Delta/Level.TimeDilation) - TimeBetweenNetUpdates + ClientUpdateTime, -TimeBetweenNetUpdates, TimeBetweenNetUpdates);;
@@ -3555,9 +3597,13 @@ function xxReplicateMove(
 		if (bPressedJump)
 			NewMove.JumpIndex = 0;
 		NewMove.bFire = (bJustFired || (bFire != 0));
-		NewMove.bAltFire = (bJustAltFired || (bAltFire != 0));
 		NewMove.bForceFire = bJustFired;
+		if (NewMove.bFire)
+			NewMove.FireIndex = 0;
+		NewMove.bAltFire = (bJustAltFired || (bAltFire != 0));
 		NewMove.bForceAltFire = bJustAltFired;
+		if (NewMove.bAltFire)
+			NewMove.AltFireIndex = 0;
 		if ( Weapon != None ) // approximate pointing so don't have to replicate
 			Weapon.bPointing = ((bFire != 0) || (bAltFire != 0));
 
@@ -3602,6 +3648,8 @@ function xxReplicateMove(
 	SendSavedMove(NewMove, OldMove);
 }
 
+
+
 function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	local int MiscData, MiscData2;
 	local vector RelLoc;
@@ -3614,35 +3662,37 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	else
 		RelLoc = Location - Base.Location;
 
-	MiscData = MiscData | (TlocCounter << 29);
-	if (Move.bFire) MiscData = MiscData | 0x10000000;
-	if (Move.bAltFire) MiscData = MiscData | 0x08000000;
-	if (Move.bForceFire) MiscData = MiscData | 0x04000000;
-	if (Move.bForceAltFire) MiscData = MiscData | 0x02000000;
-	// 0x01000000 unused
-	MiscData = MiscData | ((Move.IGPlus_MergeCount & 0x1F) << 19);
-	if (Move.bRun) MiscData = MiscData | 0x40000;
-	if (Move.bDuck) MiscData = MiscData | 0x20000;
-	if (bJumpStatus) MiscData = MiscData | 0x10000;
-	MiscData = MiscData | (int(Physics) << 12);
-	MiscData = MiscData | (int(Move.DodgeMove) << 8);
-	MiscData = MiscData | ((Rotation.Roll >> 8) & 0xFF);
+	                   MiscData or_eq (Move.AddVelocityId & 0xF) << 8;
+	                   MiscData or_eq (TlocCounter << 26);
+	if (Move.bFire)    MiscData or_eq 0x02000000;
+	if (Move.bAltFire) MiscData or_eq 0x01000000;
+	                   MiscData or_eq ((Move.IGPlus_MergeCount & 0x1F) << 19);
+	if (Move.bRun)     MiscData or_eq 0x00040000;
+	if (Move.bDuck)    MiscData or_eq 0x00020000;
+	if (bJumpStatus)   MiscData or_eq 0x00010000;
+	                   MiscData or_eq (int(Physics) << 12);
+	                   MiscData or_eq (int(Move.DodgeMove) << 8);
+	                   MiscData or_eq ((Rotation.Roll >> 8) & 0xFF);
 
-	if (Move.JumpIndex > 0)       MiscData2 = MiscData2 | (Move.JumpIndex & 0x1F);
-	if (Move.DodgeIndex > 0)      MiscData2 = MiscData2 | (Move.DodgeIndex & 0x1F) << 5;
-	if (Move.RunChangeIndex > 0)  MiscData2 = MiscData2 | (Move.RunChangeIndex & 0x1F) << 10;
-	if (Move.DuckChangeIndex > 0) MiscData2 = MiscData2 | (Move.DuckChangeIndex & 0x1F) << 15;
-	                              MiscData2 = MiscData2 | (Move.AddVelocityId & 0xF) << 20;
+	if (Move.JumpIndex > 0)       MiscData2 or_eq (Move.JumpIndex & 0x1F);
+	if (Move.DodgeIndex > 0)      MiscData2 or_eq (Move.DodgeIndex & 0x1F) << 5;
+	if (Move.RunChangeIndex > 0)  MiscData2 or_eq (Move.RunChangeIndex & 0x1F) << 10;
+	if (Move.DuckChangeIndex > 0) MiscData2 or_eq (Move.DuckChangeIndex & 0x1F) << 15;
+	if (Move.AltFireIndex > 0)    MiscData2 or_eq (Move.AltFireIndex & 0x1F) << 20;
+	if (Move.FireIndex > 0)       MiscData2 or_eq (Move.FireIndex & 0x1F) << 25;
+	if (Move.bForceAltFire)       MiscData2 or_eq 0x40000000;
+	if (Move.bForceFire)          MiscData2 or_eq 0x80000000;
+
 
 	if (OldMove != none && OldMove != Move) {
-		OldMoveData1 = Min(0x3FF, int((Move.TimeStamp - OldMove.TimeStamp) * 1000.0));
-		if (OldMove.bPressedJump) OldMoveData1 = OldMoveData1 | 0x0400;
-		if (OldMove.bRun) OldMoveData1 = OldMoveData1 | 0x0800;
-		if (OldMove.bDuck) OldMoveData1 = OldMoveData1 | 0x1000;
-		OldMoveData1 = OldMoveData1 | (int(OldMove.DodgeMove) << 13);
-		OldMoveData1 = OldMoveData1 | (int(OldMove.Acceleration.X * 10.0) << 16);
-		OldMoveData2 = OldMoveData2 | (int(OldMove.Acceleration.Y * 10.0) & 0xFFFF);
-		OldMoveData2 = OldMoveData2 | (int(OldMove.Acceleration.Z * 10.0) << 16);
+		                          OldMoveData1 = Min(0x3FF, int((Move.TimeStamp - OldMove.TimeStamp) * 1000.0));
+		if (OldMove.bPressedJump) OldMoveData1 or_eq 0x0400;
+		if (OldMove.bRun)         OldMoveData1 or_eq 0x0800;
+		if (OldMove.bDuck)        OldMoveData1 or_eq 0x1000;
+		                          OldMoveData1 or_eq (int(OldMove.DodgeMove) << 13);
+		                          OldMoveData1 or_eq (int(OldMove.Acceleration.X * 10.0) << 16);
+		                          OldMoveData2 or_eq (int(OldMove.Acceleration.Y * 10.0) & 0xFFFF);
+		                          OldMoveData2 or_eq (int(OldMove.Acceleration.Z * 10.0) << 16);
 	}
 
 	xxServerMove(
