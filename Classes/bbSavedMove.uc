@@ -1,4 +1,4 @@
-class bbSavedMove extends SavedMove;
+class IGPlus_SavedMove extends SavedMove;
 
 // Player attributes after applying this move
 var vector IGPlus_SavedLocation;

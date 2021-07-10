@@ -1164,7 +1164,7 @@ function Timer() {
 
 function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 {
-	local bbSavedMove M;
+	local IGPlus_SavedMove M;
 	local int Pitch;
 
 	zzNewRotation.Roll = 0;
@@ -1178,13 +1178,13 @@ function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 	// Clean up moves
 	if (PendingMove != none) {
 		PendingMove.NextMove = FreeMoves;
-		bbSavedMove(PendingMove).Clear2();
+		IGPlus_SavedMove(PendingMove).Clear2();
 		FreeMoves = PendingMove;
 		PendingMove = none;
 	}
 
 	while(SavedMoves != none) {
-		M = bbSavedMove(SavedMoves);
+		M = IGPlus_SavedMove(SavedMoves);
 		SavedMoves = M.NextMove;
 		M.NextMove = FreeMoves;
 		M.Clear2();
@@ -1775,7 +1775,7 @@ function xxFakeCAP(float TimeStamp)
 	bUpdatePosition = true;
 }
 
-function IGPlus_ClientReplayMove(bbSavedMove M) {
+function IGPlus_ClientReplayMove(IGPlus_SavedMove M) {
 	local int MergeCount, MoveIndex;
 	local float dt;
 	local bool bDoJump;
@@ -1816,17 +1816,17 @@ function IGPlus_ClientReplayMove(bbSavedMove M) {
 }
 
 function IGPlus_FreeAcknowledgedMoves(float TimeStamp) {
-	local bbSavedMove FirstMove;
-	local bbSavedMove CurrentMove;
+	local IGPlus_SavedMove FirstMove;
+	local IGPlus_SavedMove CurrentMove;
 
 	if (SavedMoves == none) return;
 	if (SavedMoves.TimeStamp > TimeStamp) return;
 
-	CurrentMove = bbSavedMove(SavedMoves);
+	CurrentMove = IGPlus_SavedMove(SavedMoves);
 	FirstMove = CurrentMove;
 
 	while (CurrentMove.NextMove != none && CurrentMove.NextMove.TimeStamp <= TimeStamp) {
-		CurrentMove = bbSavedMove(CurrentMove.NextMove);
+		CurrentMove = IGPlus_SavedMove(CurrentMove.NextMove);
 	}
 
 	SavedMoves = CurrentMove.NextMove;
@@ -1836,7 +1836,7 @@ function IGPlus_FreeAcknowledgedMoves(float TimeStamp) {
 
 function ClientUpdatePosition()
 {
-	local bbSavedMove CurrentMove;
+	local IGPlus_SavedMove CurrentMove;
 	local int realbRun, realbDuck;
 	local bool bRealJump;
 	local rotator RealViewRotation, RealRotation;
@@ -1855,10 +1855,10 @@ function ClientUpdatePosition()
 	IGPlus_FreeAcknowledgedMoves(CurrentTimeStamp);
 
 	if (zzbFakeUpdate == false) {
-		CurrentMove = bbSavedMove(SavedMoves);
+		CurrentMove = IGPlus_SavedMove(SavedMoves);
 		while (CurrentMove != none) {
 			IGPlus_ClientReplayMove(CurrentMove);
-			CurrentMove = bbSavedMove(CurrentMove.NextMove);
+			CurrentMove = IGPlus_SavedMove(CurrentMove.NextMove);
 		}
 
 		// stijn: The original code was not replaying the pending move
@@ -1866,7 +1866,7 @@ function ClientUpdatePosition()
 		// because the playerpawn position would be off constantly until the player
 		// stopped moving!
 		if (PendingMove != none) {
-			IGPlus_ClientReplayMove(bbSavedMove(PendingMove));
+			IGPlus_ClientReplayMove(IGPlus_SavedMove(PendingMove));
 		}
 
 		// Higor: evaluate location adjustment and see if we should either
@@ -3410,14 +3410,14 @@ function ReplicateMove
 	xxServerCheater("RM");
 }
 
-function bbSavedMove xxGetFreeMove() {
-	local bbSavedMove s;
+function IGPlus_SavedMove xxGetFreeMove() {
+	local IGPlus_SavedMove s;
 
 	if ( FreeMoves == None )
-		return Spawn(class'bbSavedMove');
+		return Spawn(class'IGPlus_SavedMove');
 	else
 	{
-		s = bbSavedMove(FreeMoves);
+		s = IGPlus_SavedMove(FreeMoves);
 		FreeMoves = FreeMoves.NextMove;
 		s.NextMove = None;
 		s.Clear2();
@@ -3425,7 +3425,7 @@ function bbSavedMove xxGetFreeMove() {
 	}
 }
 
-function bbSavedMove PickRedundantMove(bbSavedMove Old, bbSavedMove M, vector Accel, EDodgeDir DodgeMove) {
+function IGPlus_SavedMove PickRedundantMove(IGPlus_SavedMove Old, IGPlus_SavedMove M, vector Accel, EDodgeDir DodgeMove) {
 	if (M.bPressedJump || (bDodging && M.DodgeMove >= DODGE_Left && M.DodgeMove <= DODGE_Back)) {
 		return M;
 	}
@@ -3436,7 +3436,7 @@ function bbSavedMove PickRedundantMove(bbSavedMove Old, bbSavedMove M, vector Ac
 	return Old;
 }
 
-function bool CanMergeMove(bbSavedMove Pending, vector Accel) {
+function bool CanMergeMove(IGPlus_SavedMove Pending, vector Accel) {
 	if (Pending.IGPlus_MergeCount >= 31)
 		return false;
 
@@ -3450,7 +3450,7 @@ function bool CanMergeMove(bbSavedMove Pending, vector Accel) {
 	return true;
 }
 
-function MergeMove(bbSavedMove PendMove, float DeltaTime, vector NewAccel, EDodgeDir DodgeMove) {
+function MergeMove(IGPlus_SavedMove PendMove, float DeltaTime, vector NewAccel, EDodgeDir DodgeMove) {
 	local float TotalTime;
 	local bool bFireNew;
 	local bool bAltFireNew;
@@ -3515,7 +3515,7 @@ function xxReplicateMove(
 	eDodgeDir DodgeMove,
 	rotator DeltaRot
 ) {
-	local bbSavedMove NewMove, OldMove, LastMove, PendMove;
+	local IGPlus_SavedMove NewMove, OldMove, LastMove, PendMove;
 	local EPhysics OldPhys;
 	local float AdjustAlpha;
 	local float RealDelta;
@@ -3542,7 +3542,7 @@ function xxReplicateMove(
 	// Get a SavedMove actor to store the movement in.
 	if ( PendingMove != None )
 	{
-		PendMove = bbSavedMove(PendingMove);
+		PendMove = IGPlus_SavedMove(PendingMove);
 		if (CanMergeMove(PendMove, NewAccel)) {
 			MergeMove(PendMove, DeltaTime, NewAccel, DodgeMove);
 		} else {
@@ -3552,9 +3552,9 @@ function xxReplicateMove(
 			if (SavedMoves == none) {
 				SavedMoves = PendingMove;
 			} else {
-				LastMove = bbSavedMove(SavedMoves);
+				LastMove = IGPlus_SavedMove(SavedMoves);
 				while(LastMove.NextMove != none)
-					LastMove = bbSavedMove(LastMove.NextMove);
+					LastMove = IGPlus_SavedMove(LastMove.NextMove);
 
 				LastMove.NextMove = PendingMove;
 			}
@@ -3563,10 +3563,10 @@ function xxReplicateMove(
 	}
 	if ( SavedMoves != None )
 	{
-		LastMove = bbSavedMove(SavedMoves);
+		LastMove = IGPlus_SavedMove(SavedMoves);
 		while (LastMove.NextMove != none) {
 			OldMove = PickRedundantMove(OldMove, LastMove, NewAccel, DodgeMove);
-			LastMove = bbSavedMove(LastMove.NextMove);
+			LastMove = IGPlus_SavedMove(LastMove.NextMove);
 		}
 		OldMove = PickRedundantMove(OldMove, LastMove, NewAccel, DodgeMove);
 	}
@@ -3609,7 +3609,7 @@ function xxReplicateMove(
 
 		PendingMove = NewMove;
 	} else {
-		NewMove = bbSavedMove(PendingMove);
+		NewMove = IGPlus_SavedMove(PendingMove);
 	}
 
 	bJustFired = false;
@@ -3650,7 +3650,7 @@ function xxReplicateMove(
 
 
 
-function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
+function SendSavedMove(IGPlus_SavedMove Move, optional IGPlus_SavedMove OldMove) {
 	local int MiscData, MiscData2;
 	local vector RelLoc;
 	local int OldMoveData1, OldMoveData2;
