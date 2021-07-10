@@ -3587,23 +3587,34 @@ function xxReplicateMove(
 		NewMove.AddVelocityId = LastAddVelocityAppliedIndex;
 
 		// Set this move's data.
+		NewMove.TimeStamp = Level.TimeSeconds;
+
 		NewMove.DodgeMove = DodgeMove;
 		if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
 			NewMove.DodgeIndex = 0;
-		NewMove.TimeStamp = Level.TimeSeconds;
+
 		NewMove.bRun = (bRun > 0);
+		if (LastMove == none || LastMove.bRun != NewMove.bRun)
+			NewMove.RunChangeIndex = 0;
+
 		NewMove.bDuck = (bDuck > 0);
+		if (LastMove == none || LastMove.bDuck != NewMove.bDuck)
+			NewMove.DuckChangeIndex = 0;
+
 		NewMove.bPressedJump = bPressedJump;
 		if (bPressedJump)
 			NewMove.JumpIndex = 0;
+
 		NewMove.bFire = (bJustFired || (bFire != 0));
 		NewMove.bForceFire = bJustFired;
-		if (NewMove.bFire)
+		if (LastMove == none || LastMove.bFire != NewMove.bFire)
 			NewMove.FireIndex = 0;
+
 		NewMove.bAltFire = (bJustAltFired || (bAltFire != 0));
 		NewMove.bForceAltFire = bJustAltFired;
-		if (NewMove.bAltFire)
+		if (LastMove == none || LastMove.bAltFire != NewMove.bAltFire)
 			NewMove.AltFireIndex = 0;
+
 		if ( Weapon != None ) // approximate pointing so don't have to replicate
 			Weapon.bPointing = ((bFire != 0) || (bAltFire != 0));
 
