@@ -3450,7 +3450,7 @@ function bool CanMergeMove(IGPlus_SavedMove Pending, vector Accel) {
 	return true;
 }
 
-function MergeMove(IGPlus_SavedMove PendMove, float DeltaTime, vector NewAccel, EDodgeDir DodgeMove) {
+function IGPlus_MergeMove(IGPlus_SavedMove PendMove, float DeltaTime, vector NewAccel, EDodgeDir DodgeMove) {
 	local float TotalTime;
 	local bool bFireNew;
 	local bool bAltFireNew;
@@ -3544,7 +3544,7 @@ function xxReplicateMove(
 	{
 		PendMove = IGPlus_SavedMove(PendingMove);
 		if (CanMergeMove(PendMove, NewAccel)) {
-			MergeMove(PendMove, DeltaTime, NewAccel, DodgeMove);
+			IGPlus_MergeMove(PendMove, DeltaTime, NewAccel, DodgeMove);
 		} else {
 			SendSavedMove(PendMove);
 			ClientUpdateTime = FClamp((PendMove.Delta/Level.TimeDilation) - TimeBetweenNetUpdates + ClientUpdateTime, -TimeBetweenNetUpdates, TimeBetweenNetUpdates);;
