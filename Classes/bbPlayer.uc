@@ -3646,9 +3646,33 @@ function xxReplicateMove(
 	PendingMove = None;
 
 	SendSavedMove(NewMove, OldMove);
+
+	if ( (Weapon != None) && !Weapon.IsAnimating() )
+	{
+		if ( (Weapon == ClientPending) || (Weapon != OldClientWeapon) )
+		{
+			if ( Weapon.Owner != self ) //Non-respawnable weapon was picked up and Owner wasn't replicated yet
+				Weapon.SetOwner(self); //Simulate owner change locally
+			if ( Weapon.IsInState('ClientActive') )
+				AnimEnd();
+			else
+				Weapon.GotoState('ClientActive');
+			if ( (Weapon != ClientPending) && (myHUD != None) && myHUD.IsA('ChallengeHUD') )
+				ChallengeHUD(myHUD).WeaponNameFade = 1.3;
+			if ( (Weapon != OldClientWeapon) && (OldClientWeapon != None) )
+				OldClientWeapon.GotoState('');
+
+			ClientPending = None;
+			bNeedActivate = false;
+		}
+		else
+		{
+			Weapon.GotoState('');
+			Weapon.TweenToStill();
+		}
+	}
+	OldClientWeapon = Weapon;
 }
-
-
 
 function SendSavedMove(IGPlus_SavedMove Move, optional IGPlus_SavedMove OldMove) {
 	local int MiscData, MiscData2;
@@ -3714,29 +3738,6 @@ function SendSavedMove(IGPlus_SavedMove Move, optional IGPlus_SavedMove OldMove)
 	);
 
 	debugServerMoveCallsSent += 1;
-
-	if ( (Weapon != None) && !Weapon.IsAnimating() )
-	{
-		if ( (Weapon == ClientPending) || (Weapon != OldClientWeapon) )
-		{
-			if ( Weapon.IsInState('ClientActive') )
-				AnimEnd();
-			else
-				Weapon.GotoState('ClientActive');
-
-			if ( (Weapon != OldClientWeapon) && (OldClientWeapon != None) )
-				OldClientWeapon.GotoState('');
-
-			ClientPending = None;
-			bNeedActivate = false;
-		}
-		else
-		{
-			Weapon.GotoState('');
-			Weapon.TweenToStill();
-		}
-	}
-	OldClientWeapon = Weapon;
 }
 
 simulated function bool xxUsingDefaultWeapon()
