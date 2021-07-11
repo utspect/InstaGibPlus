@@ -3,3 +3,4 @@ Object=(Name=InstaGibPlus8.UTPure,Class=Class,MetaClass=Engine.Mutator,Descripti
 Object=(Name=InstaGibPlus8.ST_Mutator,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 ST_Mutator,InstaGibPlus8 ST_Mutator")
 Object=(Name=InstaGibPlus8.NewNetIG,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 NewNetIG,InstaGibPlus8 NewNetIG")
 Object=(Name=InstaGibPlus8.NewNetSA,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 NewNetSA,InstaGibPlus8 NewNetSA")
+Object=(Name=InstaGibPlus8.MutKillFeed,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 Kill Feed,InstaGibPlus8 Kill Feed Mutator")
