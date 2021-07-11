@@ -3729,7 +3729,7 @@ function SendSavedMove(IGPlus_SavedMove Move, optional IGPlus_SavedMove OldMove)
 	else
 		RelLoc = Location - Base.Location;
 
-	                   MiscData or_eq (Move.AddVelocityId & 0xF) << 8;
+	                   MiscData or_eq (Move.AddVelocityId & 0xF) << 28;
 	                   MiscData or_eq (TlocCounter << 26);
 	if (Move.bFire)    MiscData or_eq 0x02000000;
 	if (Move.bAltFire) MiscData or_eq 0x01000000;
