@@ -7,8 +7,14 @@ static function string GetString(
     optional PlayerReplicationInfo RelatedPRI_1,
     optional PlayerReplicationInfo RelatedPRI_2,
     optional Object OptionalObject
-    )
-{
+) {
+    local class<TournamentGameInfo> TGI;
+
+    if (RelatedPRI_1 != none && RelatedPRI_1.Level.Game != none)
+        TGI = class<TournamentGameInfo>(RelatedPRI_1.Level.Game.class);
+    if (TGI == none)
+        TGI = class'TournamentGameInfo';
+
     switch (Switch)
     {
         case 0:
@@ -35,39 +41,39 @@ static function string GetString(
             if (RelatedPRI_1 == None)
                 return "";
             if (RelatedPRI_1.bIsFemale)
-                return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.FemaleSuicideMessage;
+                return RelatedPRI_1.PlayerName$TGI.Default.FemaleSuicideMessage;
             else
-                return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.MaleSuicideMessage;
+                return RelatedPRI_1.PlayerName$TGI.Default.MaleSuicideMessage;
             break;
         case 2: // Fell
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.FallMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.FallMessage;
             break;
         case 3: // Eradicated (Used for runes, but not in UT)
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.ExplodeMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.ExplodeMessage;
             break;
         case 4: // Drowned
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.DrownedMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.DrownedMessage;
             break;
         case 5: // Burned
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.BurnedMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.BurnedMessage;
             break;
         case 6: // Corroded
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.CorrodedMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.CorrodedMessage;
             break;
         case 7: // Mortared
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.MortarMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.MortarMessage;
             break;
         case 8: // Telefrag
             if (RelatedPRI_1 == None)
