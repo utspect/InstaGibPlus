@@ -97,8 +97,17 @@ static function ClientReceive(
     optional PlayerReplicationInfo RelatedPRI_2,
     optional Object OptionalObject
 ) {
-    if (P.myHUD != None)
-        P.myHUD.LocalizedMessage(Default.Class, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+    local MutKillFeed KFMut;
+    if (P.myHUD != None) {
+        foreach P.AllActors(class'MutKillFeed', KFMut)
+            break;
+        if (P.IsA('bbPlayer') == false ||
+            bbPlayer(P).Settings.bEnableKillFeed == false ||
+            KFMut == none
+        ) {
+            P.myHUD.LocalizedMessage(Default.Class, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+        }
+    }
 
     if (Default.bBeep && P.bMessageBeep)
         P.PlayBeepSound();
