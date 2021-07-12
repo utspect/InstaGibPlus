@@ -74,6 +74,10 @@ var config bool   bAllowWeaponShake;
 var config bool   bAutoReady;
 var config bool   bShowDeathReport;
 var config bool   bSmoothFOVChanges;
+var config bool   bEnableKillFeed;
+var config float  KillFeedX;
+var config float  KillFeedY;
+var config float  KillFeedSpeed;
 
 enum EHitMarkerSource {
 	HMSRC_Server,
@@ -266,6 +270,10 @@ simulated function string DumpSettings() {
 		GetSetting("bAutoReady")$
 		GetSetting("bShowDeathReport")$
 		GetSetting("bSmoothFOVChanges")$
+		GetSetting("bEnableKillFeed")$
+		GetSetting("KillFeedX")$
+		GetSetting("KillFeedY")$
+		GetSetting("KillFeedSpeed")$
 		GetSetting("bEnableHitMarker")$
 		GetSetting("bEnableTeamHitMarker")$
 		GetSetting("HitMarkerColorMode")$
@@ -341,6 +349,10 @@ defaultproperties
 	bAutoReady=True
 	bShowDeathReport=False
 	bSmoothFOVChanges=False
+	bEnableKillFeed=True
+	KillFeedX=0.0
+	KillFeedY=0.5
+	KillFeedSpeed=1.0
 	bEnableHitMarker=False
 	bEnableTeamHitMarker=False
 	HitMarkerColorMode=HMCM_FriendOrFoe

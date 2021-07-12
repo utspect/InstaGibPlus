@@ -85,18 +85,22 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 57. [bAutoReady](#bautoready)
 58. [bShowDeathReport](#bshowdeathreport)
 59. [bSmoothFOVChanges](#bsmoothfovchanges)
-60. [bEnableHitMarker](#benablehitmarker)
-61. [bEnableTeamHitMarker](#benableteamhitmarker)
-62. [HitMarkerColorMode](#hitmarkercolormode)
-63. [HitMarkerColor](#hitmarkercolor)
-64. [HitMarkerTeamColor](#hitmarkerteamcolor)
-65. [HitMarkerSize](#hitmarkersize)
-66. [HitMarkerOffset](#hitmarkeroffset)
-67. [HitMarkerDuration](#hitmarkerduration)
-68. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-69. [HitMarkerSource](#hitmarkersource)
-70. [bUseCrosshairFactory](#busecrosshairfactory)
-71. [CrosshairLayers](#crosshairlayers)
+60. [bEnableKillFeed](#benablekillfeed)
+61. [KillFeedX](#killfeedx)
+62. [KillFeedY](#killfeedy)
+63. [KillFeedSpeed](#killfeedspeed)
+64. [bEnableHitMarker](#benablehitmarker)
+65. [bEnableTeamHitMarker](#benableteamhitmarker)
+66. [HitMarkerColorMode](#hitmarkercolormode)
+67. [HitMarkerColor](#hitmarkercolor)
+68. [HitMarkerTeamColor](#hitmarkerteamcolor)
+69. [HitMarkerSize](#hitmarkersize)
+70. [HitMarkerOffset](#hitmarkeroffset)
+71. [HitMarkerDuration](#hitmarkerduration)
+72. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+73. [HitMarkerSource](#hitmarkersource)
+74. [bUseCrosshairFactory](#busecrosshairfactory)
+75. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -494,6 +498,33 @@ If `True`, show a report of damage taken that lead to death. The report starts f
 
 If `True`, smooth changes to your FOV, which can happen when spawning, teleporting or zooming.  
 If `False`, your FOV immediately changes to the desired FOV without a smooth transition.
+
+## bEnableKillFeed
+**Type: bool**  
+**Default: True**  
+
+If `True` kills are reported in a separate list in condensed form, using symbols to represent the cause of death.  
+If `False` nothing is shown.
+
+## KillFeedX
+**Type: float**  
+**Default: 0.0**  
+
+Horizontal position of the KillFeed. Left edge of screen is 0. Right edge of screen is 1.
+
+## KillFeedY
+**Type: float**  
+**Default: 0.5**  
+
+Vertical position of the KillFeed. Top of screen is 0. Bottom of screen is 1.
+
+## KillFeedSpeed
+**Type: float**  
+**Default: 1.0**  
+
+Linear factor on the speed at which individual lines in the KillFeed disappear.
+
+Increase to make lines disappear sooner. Decrease to make lines disappear later. 0 and below mean the lines stay until they are rotated out by subsequent kills. Maximum of 4 lines at any time.
 
 ## bEnableHitMarker
 **Type: bool**  

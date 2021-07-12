@@ -41,14 +41,30 @@ var float LastTimeStamp;
 var FontInfo MyFonts;
 var Font NameFont;
 
-var float LastMessageTime;
-var int LastSwitch;
-var PlayerReplicationInfo LastPRI1;
-var PlayerReplicationInfo LastPRI2;
+var ClientSettings Settings;
 
 replication {
 	reliable if (Role == ROLE_Authority)
 		Messages;
+}
+
+simulated function FindSettings() {
+	local bbPlayer P;
+	local bbCHSpectator S;
+
+	if (Settings != none) return;
+
+	foreach AllActors(class'bbPlayer', P)
+		if (P.Settings != none) {
+			Settings = P.Settings;
+			return;
+		}
+
+	foreach AllActors(class'bbCHSpectator', S)
+		if (S.Settings != none) {
+			Settings = S.Settings;
+			return;
+		}
 }
 
 simulated event Destroyed() {
@@ -60,11 +76,11 @@ simulated event Destroyed() {
 simulated event PostBeginPlay() {
 	RegisterHUDMutator();
 
-	if (Level.Game != none)
-		Level.Game.RegisterMessageMutator(self);
-
 	if (MyFonts == none)
 		MyFonts = Spawn(Class<FontInfo>(DynamicLoadObject(class'ChallengeHUD'.default.FontInfoClass, class'Class')));
+
+	if (Settings == none)
+		FindSettings();
 }
 
 simulated function Tick(float DeltaTime) {
@@ -73,6 +89,10 @@ simulated function Tick(float DeltaTime) {
 		if (MyFonts == none)
 			MyFonts = Spawn(Class<FontInfo>(DynamicLoadObject(class'ChallengeHUD'.default.FontInfoClass, class'Class')));
 	}
+
+	if (Settings == none)
+		FindSettings();
+
 	super.Tick(DeltaTime);
 }
 
@@ -213,18 +233,20 @@ simulated event PostRender(Canvas C) {
 
 	class'CanvasUtils'.static.SaveCanvas(C);
 
+	if (Settings.bEnableKillFeed == false)
+		goto end;
 	if (NameFont == none)
 		NameFont = MyFonts.GetMediumFont(C.SizeX);
 	if (NameFont == none)
 		goto end;
 
-	DeltaTime = Level.TimeSeconds - LastTimeStamp;
+	DeltaTime = (Level.TimeSeconds - LastTimeStamp) * Settings.KillFeedSpeed;
 	LastTimeStamp = Level.TimeSeconds;
 	if (DeltaTime <= 0)
 		goto end;
 
-	PositionX = 0;
-	PositionY = 0.5;
+	PositionX = Settings.KillFeedX;
+	PositionY = Settings.KillFeedY;
 
 	C.Font = NameFont;
 	C.Style = ERenderStyle.STY_Translucent;
@@ -283,7 +305,7 @@ simulated function Texture MapIndexToIcon(byte Index) {
 	if (Index == INVALID_WEAPON_ICON_INDEX)
 		return Texture'KF_General';
 
-	return WeaponIconMap[Index];
+	return WeaponIconMap[Index].Icon;
 }
 
 function AddKillFeedLine(
@@ -291,8 +313,6 @@ function AddKillFeedLine(
 	PlayerReplicationInfo VictimPRI,
 	class<Weapon> WeaponClass
 ) {
-	local byte Index;
-
 	if (KillerPRI == VictimPRI)
 		KillerPRI = none;
 
@@ -307,47 +327,23 @@ function AddKillFeedLine(
 		MessageIndex = 0;
 }
 
-function bool MutatorBroadcastLocalizedMessage(
-	Actor Sender,
-	Pawn Receiver,
-	out class<LocalMessage> Message,
-	out optional int Switch,
-	out optional PlayerReplicationInfo RelatedPRI_1,
-	out optional PlayerReplicationInfo RelatedPRI_2,
-	out optional Object OptionalObject
-) {
-	if (Message != Level.Game.DeathMessageClass)
-		goto end;
+function ScoreKill(Pawn Killer, Pawn Victim) {
+	local PlayerReplicationInfo KillerPRI;
+	local class<Weapon> WeaponClass;
+	local PlayerReplicationInfo VictimPRI;
 
-	if (Switch != 0) // varying forms of suicide
-		goto end;
-
-	if (Level.TimeSeconds == LastMessageTime &&
-		Switch == LastSwitch &&
-		RelatedPRI_1 == LastPRI1 &&
-		RelatedPRI_2 == LastPRI2
-	) {
-		// dont create more than 1 KillFeed line
-		goto end;
+	if (Killer != none) {
+		KillerPRI = Killer.PlayerReplicationInfo;
+		if (Killer.Weapon != none)
+			WeaponClass = Killer.Weapon.class;
+	}
+	if (Victim != none) {
+		VictimPRI = Victim.PlayerReplicationInfo;
 	}
 
-	LastMessageTime = Level.TimeSeconds;
-	LastSwitch = Switch;
-	LastPRI1 = RelatedPRI_1;
-	LastPRI2 = RelatedPRI_2;
+	AddKillFeedLine(KillerPRI, VictimPRI, WeaponClass);
 
-	AddKillFeedLine(RelatedPRI_1, RelatedPRI_2, class<Weapon>(OptionalObject));
-
-end:
-	return super.MutatorBroadcastLocalizedMessage(
-		Sender,
-		Receiver,
-		Message,
-		Switch,
-		RelatedPRI_1,
-		RelatedPRI_2,
-		OptionalObject
-	);
+	super.ScoreKill(Killer, Victim);
 }
 
 defaultproperties {
