@@ -1,5 +1,6 @@
 class MutKillFeed extends Mutator;
 
+#exec Texture Import Name=KF_General         File=Textures\Icons\IconSkull.pcx  Mips=Off
 #exec Texture Import Name=KF_ChainSaw        File=Textures\Icons\IconSaw.pcx    Mips=Off
 #exec Texture Import Name=KF_ImpactHammer    File=Textures\Icons\IconHammer.pcx Mips=Off
 #exec Texture Import Name=KF_Translocator    File=Textures\Icons\IconTrans.pcx  Mips=Off
@@ -160,7 +161,7 @@ simulated function RenderKillFeedLine(
 		LineLength += KillerNameX;
 	}
 
-	Icon = WeaponIconMap[E.IconIndex].Icon;
+	Icon = MapIndexToIcon(E.IconIndex);
 	// Weapon Icons dont use all vertical space, so add 5 pixels above and below
 	IconY = YL + 10;
 	// Weapon Icons have fixed 2:1 aspect ratio
@@ -278,6 +279,13 @@ function byte MapWeaponClassToIndex(class<Weapon> W) {
 	return INVALID_WEAPON_ICON_INDEX;
 }
 
+simulated function Texture MapIndexToIcon(byte Index) {
+	if (Index == INVALID_WEAPON_ICON_INDEX)
+		return Texture'KF_General';
+
+	return WeaponIconMap[Index];
+}
+
 function AddKillFeedLine(
 	PlayerReplicationInfo KillerPRI,
 	PlayerReplicationInfo VictimPRI,
@@ -288,13 +296,9 @@ function AddKillFeedLine(
 	if (KillerPRI == VictimPRI)
 		KillerPRI = none;
 
-	Index = MapWeaponClassToIndex(WeaponClass);
-	if (Index == INVALID_WEAPON_ICON_INDEX)
-		return;
-
 	Messages[MessageIndex].Killer = KillerPRI;
 	Messages[MessageIndex].Victim = VictimPRI;
-	Messages[MessageIndex].IconIndex = Index;
+	Messages[MessageIndex].IconIndex = MapWeaponClassToIndex(WeaponClass);
 	Messages[MessageIndex].StartTime = Level.TimeSeconds;
 	Messages[MessageIndex].Lifespan = LineLifespan + LineFadeTime;
 
