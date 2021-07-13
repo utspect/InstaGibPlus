@@ -78,6 +78,7 @@ var config bool   bEnableKillFeed;
 var config float  KillFeedX;
 var config float  KillFeedY;
 var config float  KillFeedSpeed;
+var config float  KillFeedScale;
 
 enum EHitMarkerSource {
 	HMSRC_Server,
@@ -274,6 +275,7 @@ simulated function string DumpSettings() {
 		GetSetting("KillFeedX")$
 		GetSetting("KillFeedY")$
 		GetSetting("KillFeedSpeed")$
+		GetSetting("KillFeedScale")$
 		GetSetting("bEnableHitMarker")$
 		GetSetting("bEnableTeamHitMarker")$
 		GetSetting("HitMarkerColorMode")$
@@ -353,6 +355,7 @@ defaultproperties
 	KillFeedX=0.0
 	KillFeedY=0.5
 	KillFeedSpeed=1.0
+	KillFeedScale=1.0
 	bEnableHitMarker=False
 	bEnableTeamHitMarker=False
 	HitMarkerColorMode=HMCM_FriendOrFoe

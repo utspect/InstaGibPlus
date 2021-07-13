@@ -89,18 +89,19 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 61. [KillFeedX](#killfeedx)
 62. [KillFeedY](#killfeedy)
 63. [KillFeedSpeed](#killfeedspeed)
-64. [bEnableHitMarker](#benablehitmarker)
-65. [bEnableTeamHitMarker](#benableteamhitmarker)
-66. [HitMarkerColorMode](#hitmarkercolormode)
-67. [HitMarkerColor](#hitmarkercolor)
-68. [HitMarkerTeamColor](#hitmarkerteamcolor)
-69. [HitMarkerSize](#hitmarkersize)
-70. [HitMarkerOffset](#hitmarkeroffset)
-71. [HitMarkerDuration](#hitmarkerduration)
-72. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-73. [HitMarkerSource](#hitmarkersource)
-74. [bUseCrosshairFactory](#busecrosshairfactory)
-75. [CrosshairLayers](#crosshairlayers)
+64. [KillFeedScale](#killfeedscale)
+65. [bEnableHitMarker](#benablehitmarker)
+66. [bEnableTeamHitMarker](#benableteamhitmarker)
+67. [HitMarkerColorMode](#hitmarkercolormode)
+68. [HitMarkerColor](#hitmarkercolor)
+69. [HitMarkerTeamColor](#hitmarkerteamcolor)
+70. [HitMarkerSize](#hitmarkersize)
+71. [HitMarkerOffset](#hitmarkeroffset)
+72. [HitMarkerDuration](#hitmarkerduration)
+73. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+74. [HitMarkerSource](#hitmarkersource)
+75. [bUseCrosshairFactory](#busecrosshairfactory)
+76. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -525,6 +526,12 @@ Vertical position of the KillFeed. Top of screen is 0. Bottom of screen is 1.
 Linear factor on the speed at which individual lines in the KillFeed disappear.
 
 Increase to make lines disappear sooner. Decrease to make lines disappear later. 0 and below mean the lines stay until they are rotated out by subsequent kills. Maximum of 4 lines at any time.
+
+## KillFeedScale
+**Type: float**  
+**Default: 1.0**  
+
+Scales the size of individual lines of the KillFeed.
 
 ## bEnableHitMarker
 **Type: bool**  

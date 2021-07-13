@@ -156,6 +156,7 @@ simulated function RenderKillFeedLine(
 	local float VictimNameX;
 	local Texture Icon;
 	local float IconX, IconY;
+	local float Scale;
 
 	if (E.Victim == none) {
 		return;
@@ -163,6 +164,8 @@ simulated function RenderKillFeedLine(
 	if (E.Lifespan <= 0) {
 		return;
 	}
+
+	Scale = Settings.KillFeedScale;
 
 	if (LineFadeTime > 0) {
 		Opacity = FClamp(E.Lifespan / LineFadeTime, 0, 1);
@@ -172,7 +175,7 @@ simulated function RenderKillFeedLine(
 		Opacity = 0.0;
 	}
 
-	LineLength = 4;
+	LineLength = 4*Scale;
 
 	C.TextSize(E.Victim.PlayerName, VictimNameX, YL);
 	LineLength += VictimNameX;
@@ -183,11 +186,11 @@ simulated function RenderKillFeedLine(
 
 	Icon = MapIndexToIcon(E.IconIndex);
 	// Weapon Icons dont use all vertical space, so add 5 pixels above and below
-	IconY = YL + 10;
+	IconY = YL + 10*Scale;
 	// Weapon Icons have fixed 2:1 aspect ratio
 	IconX = IconY * 2;
-	// Weapon Icons dont use all horizontal space either, so overlap 10 pixels left and right with names
-	LineLength += IconX - 16;
+	// Weapon Icons dont use all horizontal space either, so overlap 8 pixels left and right with names
+	LineLength += IconX - 16*Scale;
 
 	X -= PositionX * LineLength;
 
@@ -197,24 +200,32 @@ simulated function RenderKillFeedLine(
 	C.DrawColor.B = int(Opacity * 48);
 	C.DrawColor.A = int(Opacity * 48);
 	C.SetPos(X, Y);
-	C.DrawTile(Texture'CrossHairBase', LineLength+4, YL+4, 0, 0, 1, 1);
+	C.DrawTile(
+		Texture'CrossHairBase',
+		LineLength,
+		YL + 4*Scale,
+		0,
+		0,
+		1,
+		1
+	);
 
 	if (E.Killer != none) {
 		C.DrawColor = GetTeamColor(bTeamGame, E.Killer, Opacity);
-		C.SetPos(X+2, Y+2);
+		C.SetPos(X + 2*Scale, Y + 2*Scale);
 		C.DrawText(E.Killer.PlayerName);
 
-		C.SetPos(X + 2 + KillerNameX - 8, Y + 2 - 5);
+		C.SetPos(X + KillerNameX + (2 - 8)*Scale, Y + (2 - 5)*Scale);
 		C.DrawTile(Icon, IconX, IconY, 0, 0, Icon.USize, Icon.VSize);
 
 		C.DrawColor = GetTeamColor(bTeamGame, E.Victim, Opacity);
 	} else {
 		C.DrawColor = GetTeamColor(bTeamGame, E.Victim, Opacity);
-		C.SetPos(X + 2 - 8, Y + 2 - 5);
+		C.SetPos(X + (2 - 8)*Scale, Y + (2 - 5)*Scale);
 		C.DrawTile(Icon, IconX, IconY, 0, 0, Icon.USize, Icon.VSize);
 	}
 
-	C.SetPos(X + LineLength - VictimNameX - 2, Y + 2);
+	C.SetPos(X + LineLength - VictimNameX - 2*Scale, Y + 2*Scale);
 	C.DrawText(E.Victim.PlayerName);
 }
 
@@ -236,7 +247,7 @@ simulated event PostRender(Canvas C) {
 	if (Settings.bEnableKillFeed == false)
 		goto end;
 	if (NameFont == none)
-		NameFont = MyFonts.GetMediumFont(C.SizeX);
+		NameFont = MyFonts.GetMediumFont(C.SizeX * Settings.KillFeedScale);
 	if (NameFont == none)
 		goto end;
 
@@ -256,7 +267,7 @@ simulated event PostRender(Canvas C) {
 
 	X = PositionX * C.SizeX;
 	Y = PositionY * C.SizeY;
-	Y -= PositionY * ((LineHeight + 4) * arraycount(Messages));
+	Y -= PositionY * ((LineHeight + 4*Settings.KillFeedScale) * arraycount(Messages));
 
 	LatestTime = Messages[0].StartTime;
 	Latest = 0;
@@ -275,7 +286,7 @@ simulated event PostRender(Canvas C) {
 		RenderKillFeedLine(C, Messages[i], X, Y, PositionX, bTeamGame);
 		Messages[i].Lifespan = FMax(Messages[i].Lifespan - DeltaTime, 0.0);
 
-		Y += LineHeight+4;
+		Y += LineHeight + 4*Settings.KillFeedScale;
 		if (i == 0)
 			i = arraycount(Messages);
 		i -= 1;
