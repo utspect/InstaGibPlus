@@ -77,7 +77,7 @@ simulated event PostBeginPlay() {
 	RegisterHUDMutator();
 
 	if (MyFonts == none)
-		MyFonts = Spawn(Class<FontInfo>(DynamicLoadObject(class'ChallengeHUD'.default.FontInfoClass, class'Class')));
+		MyFonts = Spawn(class'IGPlus_FontInfo');
 
 	if (Settings == none)
 		FindSettings();
@@ -87,7 +87,7 @@ simulated function Tick(float DeltaTime) {
 	if (bHUDMutator == false) {
 		RegisterHUDMutator();
 		if (MyFonts == none)
-			MyFonts = Spawn(Class<FontInfo>(DynamicLoadObject(class'ChallengeHUD'.default.FontInfoClass, class'Class')));
+			MyFonts = Spawn(class'IGPlus_FontInfo');
 	}
 
 	if (Settings == none)
