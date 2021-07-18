@@ -11,60 +11,60 @@ class UTPure extends Mutator config(InstaGibPlus);
 
 var ModifyLoginHandler NextMLH;			// Link list of handlers
 
-var localized config float HeadshotDamage;
-var localized config float SniperSpeed;
-var localized config float SniperDamagePri;
+var config float HeadshotDamage;
+var config float SniperSpeed;
+var config float SniperDamagePri;
 
-var localized config bool SetPendingWeapon;
-var localized config bool NNAnnouncer;
+var config bool SetPendingWeapon;
+var config bool NNAnnouncer;
 
 // Enable or disable.
-var localized config bool bUTPureEnabled;	// Possible to enable/disable UTPure without changing ini's
+var config bool bUTPureEnabled;	// Possible to enable/disable UTPure without changing ini's
 // Advertising
-var localized config byte Advertise;		// Adds [CSHP] to the Server Name
-var localized config byte AdvertiseMsg;		// Decides if [CSHP] or [PURE] will be added to server name
+var config byte Advertise;		// Adds [CSHP] to the Server Name
+var config byte AdvertiseMsg;		// Decides if [CSHP] or [PURE] will be added to server name
 // CenterView
-var localized config bool bAllowCenterView;	// Allow use of CenterView
-var localized config float CenterViewDelay;	// How long before allowing use of CenterView again
+var config bool bAllowCenterView;	// Allow use of CenterView
+var config float CenterViewDelay;	// How long before allowing use of CenterView again
 // BehindView
-var localized config bool bAllowBehindView;	// Allow use of BehindView
+var config bool bAllowBehindView;	// Allow use of BehindView
 // Others
-var localized config byte TrackFOV;		// Track the FOV cheats [0 = no, 1 = strict, 2 = loose]
-var localized config bool bAllowMultiWeapon;	// if true allows the multiweapon bug to be used on server.
-var localized config bool bFastTeams;		// Allow quick teams changes
-var localized config bool bUseClickboard;	// Use clickboard in Tournament Mode or not
-var localized config int MinClientRate;		// Minimum allowed client rate.
-var localized config int MaxClientRate;     // Maximum allowed client rate.
-var localized config bool bAdvancedTeamSay;	// Enable or disable Advanced TeamSay.
-var localized config byte ForceSettingsLevel;	// 0 = off, 1 = PostNetBeginPlay, 2 = SpawnNotify, 3 = Intervalled
-var localized config bool bWarmup;		// Enable or disable warmup. (bTournament only)
-var localized config int WarmupTimeLimit; // Warmup lasts at most this long
-var localized config bool bCoaches;		// Enable or disable coaching. (bTournament only)
-var localized config bool bAutoPause;		// Enable or disable autopause. (bTournament only)
-var localized config byte ForceModels;		// 0 = Disallow, 1 = Client Selectable, 2 = Forced
-var localized config byte ImprovedHUD;		// 0 = Disabled, 1 = Boots/Clock, 2 = Enhanced Team Info
-var localized config bool bDelayedPickupSpawn;	// Enable or disable delayed first pickup spawn.
-var localized config bool bUseFastWeaponSwitch;
-var localized config bool bTellSpectators;	// Enable or disable telling spectators of reason for kicks.
-var localized config string PlayerPacks[8];	// Config list of supported player packs
-var localized config int DefaultHitSound, DefaultTeamHitSound;
-var localized config bool bForceDefaultHitSounds;
-var localized config int TeleRadius;
-var localized config int ThrowVelocity;	// How far a player can throw weapons
-var localized config bool bForceDemo;		// Forces clients to do demos.
-var localized config bool bRestrictTrading;
-var localized config float MaxTradeTimeMargin; // Only relevant when bRestrictTrading is true
-var localized config float TradePingMargin;
-var localized config float KillCamDelay;
-var localized config float KillCamDuration;
-var localized config bool bJumpingPreservesMomentum;
-var localized config bool bEnableSingleButtonDodge;
-var localized config bool bUseFlipAnimation;
-var localized config bool bEnableWallDodging;
-var localized config bool bDodgePreserveZMomentum;
-var localized config int MaxMultiDodges;
-var localized config int BrightskinMode; //0=None,1=Unlit
-var localized config float PlayerScale;
+var config byte TrackFOV;		// Track the FOV cheats [0 = no, 1 = strict, 2 = loose]
+var config bool bAllowMultiWeapon;	// if true allows the multiweapon bug to be used on server.
+var config bool bFastTeams;		// Allow quick teams changes
+var config bool bUseClickboard;	// Use clickboard in Tournament Mode or not
+var config int MinClientRate;		// Minimum allowed client rate.
+var config int MaxClientRate;     // Maximum allowed client rate.
+var config bool bAdvancedTeamSay;	// Enable or disable Advanced TeamSay.
+var config byte ForceSettingsLevel;	// 0 = off, 1 = PostNetBeginPlay, 2 = SpawnNotify, 3 = Intervalled
+var config bool bWarmup;		// Enable or disable warmup. (bTournament only)
+var config int WarmupTimeLimit; // Warmup lasts at most this long
+var config bool bCoaches;		// Enable or disable coaching. (bTournament only)
+var config bool bAutoPause;		// Enable or disable autopause. (bTournament only)
+var config byte ForceModels;		// 0 = Disallow, 1 = Client Selectable, 2 = Forced
+var config byte ImprovedHUD;		// 0 = Disabled, 1 = Boots/Clock, 2 = Enhanced Team Info
+var config bool bDelayedPickupSpawn;	// Enable or disable delayed first pickup spawn.
+var config bool bUseFastWeaponSwitch;
+var config bool bTellSpectators;	// Enable or disable telling spectators of reason for kicks.
+var config string PlayerPacks[8];	// Config list of supported player packs
+var config int DefaultHitSound, DefaultTeamHitSound;
+var config bool bForceDefaultHitSounds;
+var config int TeleRadius;
+var config int ThrowVelocity;	// How far a player can throw weapons
+var config bool bForceDemo;		// Forces clients to do demos.
+var config bool bRestrictTrading;
+var config float MaxTradeTimeMargin; // Only relevant when bRestrictTrading is true
+var config float TradePingMargin;
+var config float KillCamDelay;
+var config float KillCamDuration;
+var config bool bJumpingPreservesMomentum;
+var config bool bEnableSingleButtonDodge;
+var config bool bUseFlipAnimation;
+var config bool bEnableWallDodging;
+var config bool bDodgePreserveZMomentum;
+var config int MaxMultiDodges;
+var config int BrightskinMode; //0=None,1=Unlit
+var config float PlayerScale;
 
 // Nice variables.
 var float zzTeamChangeTime;			// This would be to Prevent Team Change Spamming
@@ -82,18 +82,18 @@ var float EndWarnDelay;
 // Pause control (for Event PlayerCalcView)
 var bool	zzbPaused;			// Game has been paused at one time.
 var float	zzPauseCountdown;		// Give 120 seconds of "ignore FT"
-var localized config int MaxPosError;
-var localized config int MaxHitError;
-var localized config float MaxJitterTime;
-var localized config float MinNetUpdateRate;
-var localized config float MaxNetUpdateRate;
-var localized config bool bEnableServerExtrapolation;
-var localized config bool bEnableServerPacketReordering;
-var localized config bool bEnableLoosePositionCheck;
-var localized config bool bPlayersAlwaysRelevant;
-var localized config bool bEnablePingCompensatedSpawn;
-var localized config bool bEnableJitterBounding;
-var localized config bool ShowTouchedPackage;
+var config int MaxPosError;
+var config int MaxHitError;
+var config float MaxJitterTime;
+var config float MinNetUpdateRate;
+var config float MaxNetUpdateRate;
+var config bool bEnableServerExtrapolation;
+var config bool bEnableServerPacketReordering;
+var config bool bEnableLoosePositionCheck;
+var config bool bPlayersAlwaysRelevant;
+var config bool bEnablePingCompensatedSpawn;
+var config bool bEnableJitterBounding;
+var config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
 
@@ -101,7 +101,7 @@ var string zzDefaultPackages[8];
 var PureAutoPause zzAutoPauser;
 
 //Add the maplist where kickers will work using normal network
-var localized config string ExcludeMapsForKickers[128];
+var config string ExcludeMapsForKickers[128];
 var bool bExludeKickers;
 
 var bbPlayerReplicationInfo SkinIndexToPRIMap[64];
@@ -111,7 +111,7 @@ struct ForceSettingsEntry{
 	var string Value;
 	var int Mode;
 };
-var localized config ForceSettingsEntry ForcedSettings[128];
+var config ForceSettingsEntry ForcedSettings[128];
 
 replication
 {
