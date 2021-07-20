@@ -30,14 +30,13 @@ simulated function Tick(float DeltaTime) {
             LightBrightness = ScaleGlow * 128;
 
         TimeLeft -= DeltaTime;
-        if (TimeLeft <= 0.0)
+        if (TimeLeft <= 0.0) {
             FreeBeam(self);
+        }
     }
 }
 
 simulated function PostBeginPlay() {
-    if (Level.NetMode != NM_DedicatedServer)
-        SetTimer(0.05, false);
 }
 
 simulated function SetProperties(int pTeam, float pSize, float pCurve, float pDuration, vector pMoveAmount, int pNumPuffs) {
@@ -88,6 +87,9 @@ simulated function SetProperties(int pTeam, float pSize, float pCurve, float pDu
     }
     DrawScale = 0.44 * Size;
     TimeLeft = Duration;
+
+    if (Level.NetMode != NM_DedicatedServer)
+        SetTimer(0.05, false);
 }
 
 simulated function Timer() {
