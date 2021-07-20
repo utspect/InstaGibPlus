@@ -296,6 +296,8 @@ var float IGPlus_ZoomToggle_SensitivityFactorX;
 var float IGPlus_ZoomToggle_SensitivityFactorY;
 
 var ReplicationInfo IGPlus_AdditionalReplicationInfo;
+var bool IGPlus_TryOpenSettingsMenu;
+var IGPlus_SettingsDialog IGPlus_SettingsMenu;
 
 replication
 {
@@ -359,6 +361,7 @@ replication
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Functions Server -> Client
 	reliable if ( Role == ROLE_Authority )
+		IGPlusMenu,
 		Ready,
 		xxClientKicker,
 		xxClientSwJumpPad,
@@ -6856,6 +6859,7 @@ function ApplyBrightskins(PlayerReplicationInfo PRI) {
 event PreRender( canvas zzCanvas )
 {
 	local PlayerReplicationInfo zzPRI;
+	local WindowConsole C;
 
 	zzbDemoRecording = PureLevel != None && PureLevel.zzDemoRecDriver != None;
 
@@ -6869,6 +6873,21 @@ event PreRender( canvas zzCanvas )
 			ApplyForcedSkins(zzPRI);
 			ApplyBrightskins(zzPRI);
 		}
+	}
+
+	if (IGPlus_TryOpenSettingsMenu) {
+		IGPlus_TryOpenSettingsMenu = false;
+
+		if (Player != none)
+			C = WindowConsole(Player.Console);
+
+		if (C == none)
+			return;
+
+		C.bQuickKeyEnable = True;
+		C.LaunchUWindow();
+
+		IGPlus_OpenSettingsMenu();
 	}
 }
 
@@ -8813,6 +8832,66 @@ exec function ZoomToggle(float SensitivityX, optional float SensitivityY) {
 		else
 			IGPlus_ZoomToggle_SensitivityFactorY = SensitivityY * IGPlus_ZoomToggle_RestoreFOV/DefaultFOV;
 	}
+}
+
+exec function IGPlusMenu() {
+	local WindowConsole C;
+
+	if (Player != none)
+		C = WindowConsole(Player.Console);
+
+	if (C == none) {
+		ClientMessage("Failed to create Settings window (Console not a WindowConsole)");
+		return;
+	}
+
+	if (C.IsInState('Typing')) {
+		IGPlus_TryOpenSettingsMenu = true; // delay until processing of this command is over
+	} else if (C.bShowConsole) {
+		// console is already open, no need to do anything
+	} else {
+		// probably a hotkey that called this function
+		C.bQuickKeyEnable = True;
+		C.LaunchUWindow();
+	}
+
+	IGPlus_OpenSettingsMenu();
+}
+
+function IGPlus_OpenSettingsMenu() {
+	local WindowConsole C;
+
+	if (Player != none)
+		C = WindowConsole(Player.Console);
+
+	if (C == none) {
+		ClientMessage("Failed to create Settings window (Console not a WindowConsole)");
+		return;
+	}
+
+	if (IGPlus_SettingsMenu == none) {
+		if (C.Root == none) {
+			ClientMessage("Failed to create Settings window (Root does not exist)");
+			return;
+		}
+
+		IGPlus_SettingsMenu = IGPlus_SettingsDialog(C.Root.CreateWindow(
+			class'IGPlus_SettingsDialog',
+			Settings.MenuX,
+			Settings.MenuY,
+			Settings.MenuWidth,
+			Settings.MenuHeight
+		));
+
+		if (IGPlus_SettingsMenu == none) {
+			ClientMessage("Failed to create Settings window (Could not create Dialog)");
+			return;
+		}
+	}
+
+	IGPlus_SettingsMenu.bLeaveOnscreen = true;
+	IGPlus_SettingsMenu.ShowWindow();
+	IGPlus_SettingsMenu.Load();
 }
 
 defaultproperties

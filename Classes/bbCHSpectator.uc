@@ -43,6 +43,9 @@ var bool bFollowFlag;
 var CTFFlag FlagToFollow;
 var Pawn FlagCarrierToFollow;
 
+var bool IGPlus_TryOpenSettingsMenu;
+var IGPlus_SettingsDialog IGPlus_SettingsMenu;
+
 replication
 {
 	// Server -> Client
@@ -57,7 +60,7 @@ replication
 
 	// Server->Client
 	reliable if ( Role == ROLE_Authority )
-		xxSetTimes; //, xxClientActivateMover;
+		IGPlusMenu, xxSetTimes; //, xxClientActivateMover;
 
 	reliable if ( (!bDemoRecording || (bClientDemoRecording && bClientDemoNetFunc) || (Level.NetMode==NM_Standalone)) && Role == ROLE_Authority )
 		ReceiveWeaponEffect;
@@ -321,6 +324,27 @@ event PostNetBeginPlay() {
 	super.PostNetBeginPlay();
 
 	InitSettings();
+}
+
+event PreRender(Canvas C) {
+	local WindowConsole Con;
+
+	super.PreRender(C);
+
+	if (IGPlus_TryOpenSettingsMenu) {
+		IGPlus_TryOpenSettingsMenu = false;
+
+		if (Player != none)
+			Con = WindowConsole(Player.Console);
+
+		if (Con == none)
+			return;
+
+		Con.bQuickKeyEnable = True;
+		Con.LaunchUWindow();
+
+		IGPlus_OpenSettingsMenu();
+	}
 }
 
 event PostRender( canvas Canvas )
@@ -913,6 +937,66 @@ exec function ShowFPS() {
 		ClientMessage("FPS shown!", 'IGPlus');
 	else
 		ClientMessage("FPS hidden!", 'IGPlus');
+}
+
+exec function IGPlusMenu() {
+	local WindowConsole C;
+
+	if (Player != none)
+		C = WindowConsole(Player.Console);
+
+	if (C == none) {
+		ClientMessage("Failed to create Settings window (Console not a WindowConsole)");
+		return;
+	}
+
+	if (C.IsInState('Typing')) {
+		IGPlus_TryOpenSettingsMenu = true; // delay until processing of this command is over
+	} else if (C.bShowConsole) {
+		// console is already open, no need to do anything
+	} else {
+		// probably a hotkey that called this function
+		C.bQuickKeyEnable = True;
+		C.LaunchUWindow();
+	}
+
+	IGPlus_OpenSettingsMenu();
+}
+
+function IGPlus_OpenSettingsMenu() {
+	local WindowConsole C;
+
+	if (Player != none)
+		C = WindowConsole(Player.Console);
+
+	if (C == none) {
+		ClientMessage("Failed to create Settings window (Console not a WindowConsole)");
+		return;
+	}
+
+	if (IGPlus_SettingsMenu == none) {
+		if (C.Root == none) {
+			ClientMessage("Failed to create Settings window (Root does not exist)");
+			return;
+		}
+
+		IGPlus_SettingsMenu = IGPlus_SettingsDialog(C.Root.CreateWindow(
+			class'IGPlus_SettingsDialog',
+			Settings.MenuX,
+			Settings.MenuY,
+			Settings.MenuWidth,
+			Settings.MenuHeight
+		));
+
+		if (IGPlus_SettingsMenu == none) {
+			ClientMessage("Failed to create Settings window (Could not create Dialog)");
+			return;
+		}
+	}
+
+	IGPlus_SettingsMenu.bLeaveOnscreen = true;
+	IGPlus_SettingsMenu.ShowWindow();
+	IGPlus_SettingsMenu.Load();
 }
 
 defaultproperties

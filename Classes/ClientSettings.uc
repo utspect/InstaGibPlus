@@ -114,6 +114,8 @@ var config CrosshairLayerDescr CrosshairLayers[10];
 var CrosshairLayer BottomLayer;
 var CrosshairLayer TopLayer;
 
+var config float MenuX, MenuY, MenuWidth, MenuHeight;
+
 simulated function AppendLayer(CrosshairLayer L) {
 	if (BottomLayer == none) {
 		BottomLayer = L;
@@ -367,4 +369,9 @@ defaultproperties
 	HitMarkerDecayExponent=5.0
 	HitMarkerSource=HMSRC_Server
 	bUseCrosshairFactory=False
+
+	MenuX=200
+	MenuY=200
+	MenuWidth=240
+	MenuHeight=400
 }

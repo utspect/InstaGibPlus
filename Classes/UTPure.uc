@@ -957,6 +957,13 @@ function Mutate(string MutateString, PlayerPawn Sender)
 	{
 		bbPlayer(Sender).Ready();
 	}
+	else if (MutateString ~= "IGPlusMenu")
+	{
+		if (Sender.IsA('bbPlayer'))
+			bbPlayer(Sender).IGPlusMenu();
+		else if (Sender.IsA('bbCHSpectator'))
+			bbCHSpectator(Sender).IGPlusMenu();
+	}
 	else if (MutateString ~= "EnablePure")
 	{
 		if (Sender.bAdmin)
