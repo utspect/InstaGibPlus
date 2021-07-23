@@ -93,6 +93,17 @@ simulated function Timer() {
     }
 }
 
+static final function ResetBeam(ClientSuperShockBeam Beam) {
+    Beam.Texture = default.Texture;
+    Beam.Mesh = default.Mesh;
+    Beam.LightType = default.LightType;
+    Beam.LightEffect = default.LightEffect;
+    Beam.LightBrightness = default.LightBrightness;
+    Beam.LightSaturation = default.LightSaturation;
+    Beam.LightRadius = default.LightRadius;
+    Beam.LightHue = default.LightHue;
+}
+
 static final function ClientSuperShockBeam AllocBeam(PlayerPawn P) {
     local ClientSuperShockBeam Beam;
 
@@ -107,6 +118,7 @@ static final function ClientSuperShockBeam AllocBeam(PlayerPawn P) {
         Beam = P.Spawn(class'ClientSuperShockBeam', P);
     }
 
+    ResetBeam(Beam);
     return Beam;
 }
 
