@@ -3,7 +3,7 @@ class ClientSuperShockBeam extends Effects;
 // Settings
 var int Team;
 var float Size;
-var byte Curve;
+var float Curve;
 var float Duration;
 var vector MoveAmount;
 var int NumPuffs;
@@ -15,15 +15,8 @@ var ClientSuperShockBeam Next;
 var ClientSuperShockBeam Free;
 
 simulated function Tick(float DeltaTime) {
-    local byte x;
-    local float d;
-
     if (Level.NetMode != NM_DedicatedServer) {
-        d = TimeLeft / Duration;
-
-        ScaleGlow = 1;
-        for (x = 0; x < Curve; x++)
-            ScaleGlow *= d;
+        ScaleGlow = (TimeLeft / Duration) ** Curve;
 
         AmbientGlow = ScaleGlow * 210;
         if (Team >= 0)
@@ -36,14 +29,11 @@ simulated function Tick(float DeltaTime) {
     }
 }
 
-simulated function PostBeginPlay() {
-}
-
 simulated function SetProperties(int pTeam, float pSize, float pCurve, float pDuration, vector pMoveAmount, int pNumPuffs) {
     Team = pTeam;
     Size = pSize;
     Duration = pDuration;
-    Curve = Clamp(pCurve, 1, 6);
+    Curve = pCurve;
     MoveAmount = pMoveAmount;
     NumPuffs = pNumPuffs;
 
