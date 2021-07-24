@@ -177,6 +177,27 @@ var localized string SSRRingTypeNone;
 var localized string SSRRingTypeDefault;
 var localized string SSRRingTypeTeamColored;
 
+var UWindowLabelControl Lbl_FPS;
+var localized string FPSLblText;
+
+var UWindowHSliderControl HSld_FPSDetail;
+var localized string FPSDetailText;
+var localized string FPSDetailHelp;
+
+var localized string FPSDetailDisabled;
+var localized string FPSDetailFPSOnly;
+var localized string FPSDetailRenTime;
+var localized string FPSDetailStdDev;
+var localized string FPSDetailMinMax;
+
+var IGPlus_EditControl Edit_FPSCounterSmoothingStrength;
+var localized string FPSCounterSmoothingStrengthText;
+var localized string FPSCounterSmoothingStrengthHelp;
+
+var IGPlus_ScreenLocationControl SLoc_FPSLocation;
+var localized string FPSLocationText;
+var localized string FPSLocationHelp;
+
 var UWindowSmallButton Btn_Close;
 var UWindowSmallButton Btn_Save;
 var localized string SaveButtonText;
@@ -383,6 +404,50 @@ function IGPlus_ComboBox CreateComboBox(
 	return CreateComboBoxResizable(T, 0.5, EditBoxWidth, EditBoxWidth, HT, bCanEdit, WndOwner);
 }
 
+function UWindowHSliderControl CreateSlider(
+	float Min,
+	float Max,
+	int Step,
+	string T,
+	optional string HT,
+	optional float SliderWidth,
+	optional UWindowWindow WndOwner
+) {
+	local UWindowHSliderControl HSld;
+
+	HSld = UWindowHSliderControl(CreateControl(class'IGPlus_HSlider', PaddingX, ControlOffset, 200, 1, WndOwner));
+	HSld.SetText(T);
+	HSld.SetHelpText(HT);
+	HSld.SetFont(F_Normal);
+	HSld.Align = TA_Left;
+	HSld.SetRange(Min, Max, Step);
+	HSld.SliderWidth = SliderWidth;
+	ControlOffset += LineSpacing;
+
+	InsertControl(HSld);
+
+	return HSld;
+}
+
+function IGPlus_ScreenLocationControl CreateScreenLocation(
+	float Height,
+	string T,
+	optional string HT,
+	optional UWindowWindow WndOwner
+) {
+	local IGPlus_ScreenLocationControl SLoc;
+
+	SLoc = IGPlus_ScreenLocationControl(CreateControl(class'IGPlus_ScreenLocationControl', PaddingX, ControlOffset, 200, Height, WndOwner));
+	SLoc.SetText(T);
+	SLoc.SetHelpText(HT);
+	SLoc.Align = TA_Left;
+	ControlOffset += Height+4;
+
+	InsertControl(Sloc);
+
+	return Sloc;
+}
+
 function SetUpForcedModelComboBox(IGPlus_ComboBox Cmb) {
 	Cmb.AddItem(ForcedModelDefault);
 	Cmb.AddItem(ForcedModelAphex);
@@ -408,6 +473,28 @@ function SetUpForcedModelComboBox(IGPlus_ComboBox Cmb) {
 function SetUpBeamModeComboBox(IGPlus_ComboBox Cmb) {
 	Cmb.AddItem(BeamModePrecise);
 	Cmb.AddItem(BeamModeAttached);
+}
+
+function UpdateFPSSlider() {
+	local string Text;
+	switch(HSld_FPSDetail.GetValue()) {
+		case -1:
+			Text = FPSDetailDisabled;
+			break;
+		case 0:
+			Text = FPSDetailFPSOnly;
+			break;
+		case 1:
+			Text = FPSDetailRenTime;
+			break;
+		case 2:
+			Text = FPSDetailStdDev;
+			break;
+		case 3:
+			Text = FPSDetailMinMax;
+			break;
+	}
+	HSld_FPSDetail.SetText(FPSDetailText$":"@Text);
 }
 
 function Created() {
@@ -475,6 +562,11 @@ function Created() {
 	Cmb_SSRRingType.AddItem(SSRRingTypeDefault);
 	Cmb_SSRRingType.AddItem(SSRRingTypeTeamColored);
 
+	Lbl_FPS = CreateSeparator(FPSLblText);
+	HSld_FPSDetail = CreateSlider(-1, 3, 1, FPSDetailText, FPSDetailHelp, 150);
+	Edit_FPSCounterSmoothingStrength = CreateEdit(ECT_Integer, FPSCounterSmoothingStrengthText, FPSCounterSmoothingStrengthHelp, , 64);
+	SLoc_FPSLocation = CreateScreenLocation(100, FPSLocationText, FPSLocationHelp);
+
 	Btn_Save = UWindowSmallButton(CreateControl(class'UWindowSmallButton', WinWidth-PaddingX-72, ControlOffset, 32, 16));
 	Btn_Save.SetText(SaveButtonText);
 	Btn_Save.ToolTipString = SaveButtonToolTip;
@@ -521,8 +613,13 @@ function Notify(UWindowDialogControl C, byte E)
 {
 	Super.Notify(C, E);
 
-	if (E == DE_Click && C == Btn_Save)
+	if (E == DE_Click && C == Btn_Save) {
 		Save();
+		Load();
+	}
+
+	if (E == DE_Change && C == HSld_FPSDetail)
+		UpdateFPSSlider();
 }
 
 function Load() {
@@ -566,6 +663,14 @@ function Load() {
 	Cmb_BeamOriginMode.SetSelectedIndex(Clamp(Settings.BeamOriginMode, 0, 1));
 	Cmb_BeamDestinationMode.SetSelectedIndex(Clamp(Settings.BeamDestinationMode, 0, 1));
 	Cmb_SSRRingType.SetSelectedIndex(Clamp(Settings.SSRRingType, 0, 2));
+
+	if (Settings.bShowFPS)
+		HSld_FPSDetail.SetValue(Settings.FPSDetail);
+	else
+		HSld_FPSDetail.SetValue(-1);
+	UpdateFPSSlider();
+	Edit_FPSCounterSmoothingStrength.SetValue(string(Settings.FPSCounterSmoothingStrength));
+	SLoc_FPSLocation.SetLocation(Settings.FPSLocationX, Settings.FPSLocationY);
 
 	bLoadSucceeded = true;
 }
@@ -614,6 +719,15 @@ function Save() {
 	Settings.BeamOriginMode = Cmb_BeamOriginMode.GetSelectedIndex();
 	Settings.BeamDestinationMode = Cmb_BeamDestinationMode.GetSelectedIndex();
 	Settings.SSRRingType = Cmb_SSRRingType.GetSelectedIndex();
+
+	if (HSld_FPSDetail.GetValue() == -1)
+		Settings.bShowFPS = false;
+	else {
+		Settings.bShowFPS = true;
+		Settings.FPSDetail = HSld_FPSDetail.GetValue();
+	}
+	Settings.FPSCounterSmoothingStrength = Max(int(Edit_FPSCounterSmoothingStrength.GetValue()), 1);
+	SLoc_FPSLocation.GetLocation(Settings.FPSLocationX, Settings.FPSLocationY);
 
 	Settings.SaveConfig();
 }
@@ -737,7 +851,7 @@ defaultproperties
 
 	SuperShockRifleText="IG+ Super Shock Rifle";
 
-	cShockBeamText="SSR Beam Style"
+	cShockBeamText="Beam Style"
 	cShockBeamHelp="How to render the beams fired by the IG+ SSR"
 
 	cShockBeamDefault="Default"
@@ -745,32 +859,50 @@ defaultproperties
 	cShockBeamHidden="Hidden"
 	cShockBeamInstant="Instant"
 
-	BeamScaleText="SSR Beam Scale"
+	HideOwnBeamText="Always Hide Own Beams"
+	HideOwnBeamHelp="If checked, your own beams will always be hidden"
+
+	BeamScaleText="Beam Scale"
 	BeamScaleHelp="Diameter of the beam of the IG+ SSR"
 
-	BeamFadeCurveText="SSR Beam Fade Curve"
+	BeamFadeCurveText="Beam Fade Curve"
 	BeamFadeCurveHelp="Brightness fade curve, 1=linear, 2=quadratic, 3=cubic, etc."
 
-	BeamDurationText="SSR Beam Duration"
+	BeamDurationText="Beam Duration"
 	BeamDurationHelp="Time in seconds over which the brightness fades"
 
-	BeamOriginModeText="SSR Beam Origin Mode"
+	BeamOriginModeText="Beam Origin Mode"
 	BeamOriginModeHelp="Decides where SSR beams will be shown to originate from"
 
-	BeamDestinationModeText="SSR Beam Destination Mode"
+	BeamDestinationModeText="Beam Destination Mode"
 	BeamDestinationModeHelp="Decides where SSR beams will be shown to end at"
 
 	BeamModePrecise="Precise"
 	BeamModeAttached="Attached"
 
-	SSRRingTypeText="SSR Impact Effect"
+	SSRRingTypeText="Impact Effect"
 	SSRRingTypeHelp="Decides what effects to play where SSR shots end"
 
 	SSRRingTypeNone="Nothing"
 	SSRRingTypeDefault="Default"
 	SSRRingTypeTeamColored="Team-Colored"
-	HideOwnBeamText="Always Hide Own Beams"
-	HideOwnBeamHelp="If checked, your own beams will always be hidden"
+
+	FPSLblText="FPS Display"
+
+	FPSDetailText="FPS Detail"
+	FPSDetailHelp="How much detail to show for frame rate; this setting is cumulative"
+
+	FPSDetailDisabled="Disabled"
+	FPSDetailFPSOnly="FPS"
+	FPSDetailRenTime="Render Time"
+	FPSDetailStdDev="Std. Dev."
+	FPSDetailMinMax="Min/Max"
+
+	FPSCounterSmoothingStrengthText="FPS Smoothing Strength"
+	FPSCounterSmoothingStrengthHelp="Higher values mean individual frames influence the stats less"
+
+	FPSLocationText="FPS Location"
+	FPSLocationHelp="Where on screen to show the framerate information"
 
 	SaveButtonText="Save"
 	SaveButtonToolTip="Saves the current settings to InstaGibPlus.ini"
