@@ -198,11 +198,6 @@ var IGPlus_ScreenLocationControl SLoc_FPSLocation;
 var localized string FPSLocationText;
 var localized string FPSLocationHelp;
 
-var UWindowSmallButton Btn_Close;
-var UWindowSmallButton Btn_Save;
-var localized string SaveButtonText;
-var localized string SaveButtonToolTip;
-
 var float PaddingX;
 var float PaddingY;
 var float LineSpacing;
@@ -561,13 +556,7 @@ function Created() {
 	Edit_FPSCounterSmoothingStrength = CreateEdit(ECT_Integer, FPSCounterSmoothingStrengthText, FPSCounterSmoothingStrengthHelp, , 64);
 	SLoc_FPSLocation = CreateScreenLocation(100, FPSLocationText, FPSLocationHelp);
 
-	Btn_Save = UWindowSmallButton(CreateControl(class'UWindowSmallButton', WinWidth-PaddingX-72, ControlOffset, 32, 16));
-	Btn_Save.SetText(SaveButtonText);
-	Btn_Save.ToolTipString = SaveButtonToolTip;
-	Btn_Close = UWindowSmallButton(CreateControl(class'UWindowSmallCloseButton', WinWidth-PaddingX-32, ControlOffset, 32, 16));
-	ControlOffset += 16;
-
-	ControlOffset += PaddingY;
+	ControlOffset += PaddingY-4;
 
 	Load();
 }
@@ -595,22 +584,11 @@ function BeforePaint(Canvas C, float X, float Y) {
 				break;
 		}
 	}
-
-	Btn_Close.AutoWidth(C);
-	Btn_Close.WinLeft = WinWidth-PaddingX-Btn_Close.WinWidth;
-
-	Btn_Save.AutoWidth(C);
-	Btn_Save.WinLeft = WinWidth-PaddingX-Btn_Close.WinWidth-5-Btn_Save.WinWidth;
 }
 
 function Notify(UWindowDialogControl C, byte E)
 {
 	Super.Notify(C, E);
-
-	if (E == DE_Click && C == Btn_Save) {
-		Save();
-		Load();
-	}
 
 	if (E == DE_Change && C == HSld_FPSDetail)
 		UpdateFPSSlider();
@@ -897,9 +875,6 @@ defaultproperties
 
 	FPSLocationText="FPS Location"
 	FPSLocationHelp="Where on screen to show the framerate information"
-
-	SaveButtonText="Save"
-	SaveButtonToolTip="Saves the current settings to InstaGibPlus.ini"
 
 	PaddingX=20
 	PaddingY=20

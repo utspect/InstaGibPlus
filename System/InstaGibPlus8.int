@@ -142,8 +142,6 @@ FPSCounterSmoothingStrengthText="FPS Smoothing Strength"
 FPSCounterSmoothingStrengthHelp="Higher values mean individual frames influence the stats less"
 FPSLocationText="FPS Location"
 FPSLocationHelp="Where on screen to show the framerate information"
-SaveButtonText="Save"
-SaveButtonToolTip="Saves the current settings to InstaGibPlus.ini"
 
 [NN_ASMD]
 WeaponDescription="Classification: Energy RiflenPrimary Fire: Lightning-Fast Burst of focused energy.nSecondary Fire: Unstable Energy projectile, expands radially.nTechniques: Hitting the secondary fire energy projectiles with the regular fire's energy will cause an immensely powerful explosion."
@@ -161,6 +159,10 @@ MenuName="Boss"
 
 [IGPlus_SettingsDialog]
 WindowTitle="IG+ Settings"
+
+[IGPlus_SettingsScroll]
+SaveButtonText="Save"
+SaveButtonToolTip="Saves the current settings to InstaGibPlus.ini"
 
 [MMultiKillMessage]
 DoubleKillString="Double Kill!"
