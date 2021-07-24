@@ -146,6 +146,37 @@ var UWindowCheckbox Chk_HideOwnBeam;
 var localized string HideOwnBeamText;
 var localized string HideOwnBeamHelp;
 
+var IGPlus_EditControl Edit_BeamScale;
+var localized string BeamScaleText;
+var localized string BeamScaleHelp;
+
+var IGPlus_EditControl Edit_BeamFadeCurve;
+var localized string BeamFadeCurveText;
+var localized string BeamFadeCurveHelp;
+
+var IGPlus_EditControl Edit_BeamDuration;
+var localized string BeamDurationText;
+var localized string BeamDurationHelp;
+
+var IGPlus_ComboBox Cmb_BeamOriginMode;
+var localized string BeamOriginModeText;
+var localized string BeamOriginModeHelp;
+
+var IGPlus_ComboBox Cmb_BeamDestinationMode;
+var localized string BeamDestinationModeText;
+var localized string BeamDestinationModeHelp;
+
+var localized string BeamModePrecise;
+var localized string BeamModeAttached;
+
+var IGPlus_ComboBox Cmb_SSRRingType;
+var localized string SSRRingTypeText;
+var localized string SSRRingTypeHelp;
+
+var localized string SSRRingTypeNone;
+var localized string SSRRingTypeDefault;
+var localized string SSRRingTypeTeamColored;
+
 var UWindowSmallButton Btn_Close;
 var UWindowSmallButton Btn_Save;
 var localized string SaveButtonText;
@@ -374,6 +405,11 @@ function SetUpForcedModelComboBox(IGPlus_ComboBox Cmb) {
 	Cmb.AddItem(ForcedModelXan);
 }
 
+function SetUpBeamModeComboBox(IGPlus_ComboBox Cmb) {
+	Cmb.AddItem(BeamModePrecise);
+	Cmb.AddItem(BeamModeAttached);
+}
+
 function Created() {
 	local float ControlWidth;
 
@@ -427,6 +463,17 @@ function Created() {
 	Cmb_cShockBeam.AddItem(cShockBeamHidden);
 	Cmb_cShockBeam.AddItem(cShockBeamInstant);
 	Chk_HideOwnBeam = CreateCheckbox(HideOwnBeamText, HideOwnBeamHelp);
+	Edit_BeamScale = CreateEdit(ECT_Real, BeamScaleText, BeamScaleHelp, , 64);
+	Edit_BeamFadeCurve = CreateEdit(ECT_Integer, BeamFadeCurveText, BeamFadeCurveHelp, , 64);
+	Edit_BeamDuration = CreateEdit(ECT_Real, BeamDurationText, BeamDurationHelp, , 64);
+	Cmb_BeamOriginMode = CreateComboBox(BeamOriginModeText, BeamOriginModeHelp, false, 150);
+	Cmb_BeamDestinationMode = CreateComboBox(BeamDestinationModeText, BeamDestinationModeHelp, false, 150);
+	SetUpBeamModeComboBox(Cmb_BeamOriginMode);
+	SetUpBeamModeComboBox(Cmb_BeamDestinationMode);
+	Cmb_SSRRingType = CreateComboBox(SSRRingTypeText, SSRRingTypeHelp, false, 150);
+	Cmb_SSRRingType.AddItem(SSRRingTypeNone);
+	Cmb_SSRRingType.AddItem(SSRRingTypeDefault);
+	Cmb_SSRRingType.AddItem(SSRRingTypeTeamColored);
 
 	Btn_Save = UWindowSmallButton(CreateControl(class'UWindowSmallButton', WinWidth-PaddingX-72, ControlOffset, 32, 16));
 	Btn_Save.SetText(SaveButtonText);
@@ -513,6 +560,12 @@ function Load() {
 
 	Cmb_cShockBeam.SetSelectedIndex(Clamp(Settings.cShockBeam - 1, 0, 3));
 	Chk_HideOwnBeam.bChecked = Settings.bHideOwnBeam;
+	Edit_BeamScale.SetValue(string(Settings.BeamScale));
+	Edit_BeamFadeCurve.SetValue(string(int(Settings.BeamFadeCurve)));
+	Edit_BeamDuration.SetValue(string(Settings.BeamDuration));
+	Cmb_BeamOriginMode.SetSelectedIndex(Clamp(Settings.BeamOriginMode, 0, 1));
+	Cmb_BeamDestinationMode.SetSelectedIndex(Clamp(Settings.BeamDestinationMode, 0, 1));
+	Cmb_SSRRingType.SetSelectedIndex(Clamp(Settings.SSRRingType, 0, 2));
 
 	bLoadSucceeded = true;
 }
@@ -555,6 +608,12 @@ function Save() {
 
 	Settings.cShockBeam = Cmb_cShockBeam.GetSelectedIndex() + 1;
 	Settings.bHideOwnBeam = Chk_HideOwnBeam.bChecked;
+	Settings.BeamScale = float(Edit_BeamScale.GetValue());
+	Settings.BeamFadeCurve = int(Edit_BeamFadeCurve.GetValue());
+	Settings.BeamDuration = float(Edit_BeamDuration.GetValue());
+	Settings.BeamOriginMode = Cmb_BeamOriginMode.GetSelectedIndex();
+	Settings.BeamDestinationMode = Cmb_BeamDestinationMode.GetSelectedIndex();
+	Settings.SSRRingType = Cmb_SSRRingType.GetSelectedIndex();
 
 	Settings.SaveConfig();
 }
@@ -686,6 +745,30 @@ defaultproperties
 	cShockBeamHidden="Hidden"
 	cShockBeamInstant="Instant"
 
+	BeamScaleText="SSR Beam Scale"
+	BeamScaleHelp="Diameter of the beam of the IG+ SSR"
+
+	BeamFadeCurveText="SSR Beam Fade Curve"
+	BeamFadeCurveHelp="Brightness fade curve, 1=linear, 2=quadratic, 3=cubic, etc."
+
+	BeamDurationText="SSR Beam Duration"
+	BeamDurationHelp="Time in seconds over which the brightness fades"
+
+	BeamOriginModeText="SSR Beam Origin Mode"
+	BeamOriginModeHelp="Decides where SSR beams will be shown to originate from"
+
+	BeamDestinationModeText="SSR Beam Destination Mode"
+	BeamDestinationModeHelp="Decides where SSR beams will be shown to end at"
+
+	BeamModePrecise="Precise"
+	BeamModeAttached="Attached"
+
+	SSRRingTypeText="SSR Impact Effect"
+	SSRRingTypeHelp="Decides what effects to play where SSR shots end"
+
+	SSRRingTypeNone="Nothing"
+	SSRRingTypeDefault="Default"
+	SSRRingTypeTeamColored="Team-Colored"
 	HideOwnBeamText="Always Hide Own Beams"
 	HideOwnBeamHelp="If checked, your own beams will always be hidden"
 
