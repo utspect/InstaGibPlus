@@ -254,10 +254,10 @@ function UWindowDialogControl NextControl(UWindowDialogControl C) {
 	return TemporaryControl;
 }
 
-function UWindowCheckbox CreateCheckbox(string T, optional string HT, optional UWindowWindow WndOwner) {
+function UWindowCheckbox CreateCheckbox(string T, optional string HT) {
 	local UWindowCheckbox Chk;
 
-	Chk = UWindowCheckbox(CreateControl(class'IGPlus_Checkbox', PaddingX, ControlOffset, 200, 1, WndOwner));
+	Chk = UWindowCheckbox(CreateControl(class'IGPlus_Checkbox', PaddingX, ControlOffset, 200, 1));
 	Chk.SetText(T);
 	Chk.SetHelpText(HT);
 	Chk.ToolTipString = HT;
@@ -277,12 +277,11 @@ function IGPlus_EditControl CreateEditResizable(
 	float EditBoxMinWidth,
 	float EditBoxMaxWidth,
 	optional string HT,
-	optional int MaxLength, // 255 is default
-	optional UWindowWindow WndOwner
+	optional int MaxLength // 255 is default
 ) {
 	local IGPlus_EditControl Edit;
 
-	Edit = IGPlus_EditControl(CreateControl(class'IGPlus_EditControl', PaddingX, ControlOffset, 200, 1, WndOwner));
+	Edit = IGPlus_EditControl(CreateControl(class'IGPlus_EditControl', PaddingX, ControlOffset, 200, 1));
 	Edit.SetText(T);
 	Edit.SetHelpText(HT);
 	Edit.SetFont(F_Normal);
@@ -320,19 +319,18 @@ function IGPlus_EditControl CreateEdit(
 	string T,
 	optional string HT,
 	optional int MaxLength, // 255 is default
-	optional float EditBoxWidth, // 100 is default
-	optional UWindowWindow WndOwner
+	optional float EditBoxWidth // 100 is default
 ) {
 	if (EditBoxWidth <= 0)
-		return CreateEditResizable(ECT, T, 0.5, 0, MaxInt, HT, MaxLength, WndOwner);
+		return CreateEditResizable(ECT, T, 0.5, 0, MaxInt, HT, MaxLength);
 
-	return CreateEditResizable(ECT, T, 0.5, EditBoxWidth, EditBoxWidth, HT, MaxLength, WndOwner);
+	return CreateEditResizable(ECT, T, 0.5, EditBoxWidth, EditBoxWidth, HT, MaxLength);
 }
 
-function UWindowLabelControl CreateLabel(string T, optional string HT, optional UWindowWindow WndOwner) {
+function UWindowLabelControl CreateLabel(string T, optional string HT) {
 	local UWindowLabelControl Lbl;
 
-	Lbl = UWindowLabelControl(CreateControl(class'IGPlus_Label', PaddingX, ControlOffset, 200, 1, WndOwner));
+	Lbl = UWindowLabelControl(CreateControl(class'IGPlus_Label', PaddingX, ControlOffset, 200, 1));
 	Lbl.SetText(T);
 	Lbl.SetHelpText(HT);
 	Lbl.SetFont(F_Normal);
@@ -344,13 +342,13 @@ function UWindowLabelControl CreateLabel(string T, optional string HT, optional 
 	return Lbl;
 }
 
-function UWindowLabelControl CreateSeparator(string T, optional string HT, optional UWindowWindow WndOwner) {
+function UWindowLabelControl CreateSeparator(string T, optional string HT) {
 	local UWindowLabelControl Lbl;
 
 	if (ControlOffset > PaddingY)
 		ControlOffset += (SeparatorSpacing - LineSpacing);
 
-	Lbl = UWindowLabelControl(CreateControl(class'IGPlus_Separator', PaddingX, ControlOffset, 200, 1, WndOwner));
+	Lbl = UWindowLabelControl(CreateControl(class'IGPlus_Separator', PaddingX, ControlOffset, 200, 1));
 	Lbl.SetText(T);
 	Lbl.SetHelpText(HT);
 	Lbl.SetFont(F_Normal);
@@ -368,14 +366,13 @@ function IGPlus_ComboBox CreateComboBoxResizable(
 	float EditBoxMinWidth,
 	float EditBoxMaxWidth,
 	optional string HT,
-	optional bool bCanEdit,
-	optional UWindowWindow WndOwner
+	optional bool bCanEdit
 ) {
 	local IGPlus_ComboBox Cmb;
 
 	EditBoxWidthFraction = FClamp(EditBoxWidthFraction, 0.0, 1.0);
 
-	Cmb = IGPlus_ComboBox(CreateControl(class'IGPlus_ComboBox', PaddingX, ControlOffset, 200, 1, WndOwner));
+	Cmb = IGPlus_ComboBox(CreateControl(class'IGPlus_ComboBox', PaddingX, ControlOffset, 200, 1));
 	Cmb.SetText(T);
 	Cmb.SetHelpText(HT);
 	Cmb.SetFont(F_Normal);
@@ -395,13 +392,12 @@ function IGPlus_ComboBox CreateComboBox(
 	string T,
 	optional string HT,
 	optional bool bCanEdit,
-	optional float EditBoxWidth,
-	optional UWindowWindow WndOwner
+	optional float EditBoxWidth
 ) {
 	if (EditBoxWidth <= 0)
-		return CreateComboBoxResizable(T, 0.5, 0, MaxInt, HT, bCanEdit, WndOwner);
+		return CreateComboBoxResizable(T, 0.5, 0, MaxInt, HT, bCanEdit);
 
-	return CreateComboBoxResizable(T, 0.5, EditBoxWidth, EditBoxWidth, HT, bCanEdit, WndOwner);
+	return CreateComboBoxResizable(T, 0.5, EditBoxWidth, EditBoxWidth, HT, bCanEdit);
 }
 
 function UWindowHSliderControl CreateSlider(
@@ -410,12 +406,11 @@ function UWindowHSliderControl CreateSlider(
 	int Step,
 	string T,
 	optional string HT,
-	optional float SliderWidth,
-	optional UWindowWindow WndOwner
+	optional float SliderWidth
 ) {
 	local UWindowHSliderControl HSld;
 
-	HSld = UWindowHSliderControl(CreateControl(class'IGPlus_HSlider', PaddingX, ControlOffset, 200, 1, WndOwner));
+	HSld = UWindowHSliderControl(CreateControl(class'IGPlus_HSlider', PaddingX, ControlOffset, 200, 1));
 	HSld.SetText(T);
 	HSld.SetHelpText(HT);
 	HSld.SetFont(F_Normal);
@@ -432,12 +427,11 @@ function UWindowHSliderControl CreateSlider(
 function IGPlus_ScreenLocationControl CreateScreenLocation(
 	float Height,
 	string T,
-	optional string HT,
-	optional UWindowWindow WndOwner
+	optional string HT
 ) {
 	local IGPlus_ScreenLocationControl SLoc;
 
-	SLoc = IGPlus_ScreenLocationControl(CreateControl(class'IGPlus_ScreenLocationControl', PaddingX, ControlOffset, 200, Height, WndOwner));
+	SLoc = IGPlus_ScreenLocationControl(CreateControl(class'IGPlus_ScreenLocationControl', PaddingX, ControlOffset, 200, Height));
 	SLoc.SetText(T);
 	SLoc.SetHelpText(HT);
 	SLoc.Align = TA_Left;
