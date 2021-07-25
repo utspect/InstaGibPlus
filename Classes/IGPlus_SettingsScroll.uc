@@ -20,6 +20,7 @@ function Created() {
 	));
 	Btn_Save.SetText(SaveButtonText);
 	Btn_Save.ToolTipString = SaveButtonToolTip;
+	Btn_Save.Register(self);
 
 	Btn_Close = UWindowSmallButton(FixedArea.CreateControl(
 		class'UWindowSmallCloseButton',
