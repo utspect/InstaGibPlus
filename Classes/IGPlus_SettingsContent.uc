@@ -198,6 +198,54 @@ var IGPlus_ScreenLocationControl SLoc_FPSLocation;
 var localized string FPSLocationText;
 var localized string FPSLocationHelp;
 
+var UWindowLabelControl Lbl_HitSounds;
+var localized string HitSoundsLblText;
+
+var IGPlus_ComboBox Cmb_HitSoundSource;
+var localized string HitSoundSourceText;
+var localized string HitSoundSourceHelp;
+
+var localized string HitSourceServer;
+var localized string HitSourceClient;
+
+var UWindowLabelControl Lbl_EnemyHitSounds;
+var localized string EnemyHitSoundsLblText;
+
+var UWindowCheckbox Chk_EnableHitSounds;
+var localized string EnableHitSoundsText;
+var localized string EnableHitSoundsHelp;
+
+var UWindowCheckbox Chk_HitSoundPitchShift;
+var localized string HitSoundPitchShiftText;
+var localized string HitSoundPitchShiftHelp;
+
+var IGPlus_EditControl Edit_HitSoundVolume;
+var localized string HitSoundVolumeText;
+var localized string HitSoundVolumeHelp;
+
+var IGPlus_ComboBox Cmb_SelectedHitSound;
+var localized string SelectedHitSoundText;
+var localized string SelectedHitSoundHelp;
+
+var UWindowLabelControl Lbl_TeamHitSounds;
+var localized string TeamHitSoundsLblText;
+
+var UWindowCheckbox Chk_EnableTeamHitSounds;
+var localized string EnableTeamHitSoundsText;
+var localized string EnableTeamHitSoundsHelp;
+
+var UWindowCheckbox Chk_HitSoundTeamPitchShift;
+var localized string HitSoundTeamPitchShiftText;
+var localized string HitSoundTeamPitchShiftHelp;
+
+var IGPlus_EditControl Edit_HitSoundTeamVolume;
+var localized string HitSoundTeamVolumeText;
+var localized string HitSoundTeamVolumeHelp;
+
+var IGPlus_ComboBox Cmb_SelectedTeamHitSound;
+var localized string SelectedTeamHitSoundText;
+var localized string SelectedTeamHitSoundHelp;
+
 var float PaddingX;
 var float PaddingY;
 var float LineSpacing;
@@ -464,6 +512,20 @@ function SetUpBeamModeComboBox(IGPlus_ComboBox Cmb) {
 	Cmb.AddItem(BeamModeAttached);
 }
 
+function SetUpHitSoundComboBox(IGPlus_ComboBox Cmb) {
+	local int i;
+
+	Cmb.EditBox.bDelayedNotify = true;
+	Cmb.Clear();
+	for (i = 0; i < arraycount(Settings.sHitSound); ++i)
+		Cmb.AddItem(Settings.sHitSound[i], string(i));
+}
+
+function SetUpHitSourceComboBox(IGPlus_ComboBox Cmb) {
+	Cmb.AddItem(HitSourceServer);
+	Cmb.AddItem(HitSourceClient);
+}
+
 function UpdateFPSSlider() {
 	local string Text;
 	switch(HSld_FPSDetail.GetValue()) {
@@ -484,6 +546,53 @@ function UpdateFPSSlider() {
 			break;
 	}
 	HSld_FPSDetail.SetText(FPSDetailText$":"@Text);
+}
+
+function UpdateHitSoundComboBox(UWindowComboControl C) {
+	local string Value;
+	local int Index;
+	local UWindowComboListItem Item;
+	local UWindowDialogClientWindow NotifyWindow;
+
+	Value = C.GetValue();
+	Index = int(C.GetValue2());
+
+	Item = Cmb_SelectedHitSound.FindEntry(Index);
+	if (Item != none) {
+		Item.Value = Value;
+	}
+
+	Item = Cmb_SelectedTeamHitSound.FindEntry(Index);
+	if (Item != none) {
+		Item.Value = Value;
+	}
+
+	if (C == Cmb_SelectedHitSound) {
+		if (Cmb_SelectedTeamHitSound.GetValue2() == C.GetValue2()) {
+			NotifyWindow = Cmb_SelectedTeamHitSound.NotifyWindow;
+			Cmb_SelectedTeamHitSound.NotifyWindow = none;
+			Cmb_SelectedTeamHitSound.SetValue(C.GetValue(), C.GetValue2());
+			Cmb_SelectedTeamHitSound.NotifyWindow = NotifyWindow;
+		}
+	} else if (C == Cmb_SelectedTeamHitSound) {
+		if (Cmb_SelectedHitSound.GetValue2() == C.GetValue2()) {
+			NotifyWindow = Cmb_SelectedHitSound.NotifyWindow;
+			Cmb_SelectedHitSound.NotifyWindow = none;
+			Cmb_SelectedHitSound.SetValue(C.GetValue(), C.GetValue2());
+			Cmb_SelectedHitSound.NotifyWindow = NotifyWindow;
+		}
+	}
+}
+
+function SaveHitSounds() {
+	local int i;
+	local UWindowComboListItem Item;
+
+	Item = UWindowComboListItem(Cmb_SelectedHitSound.List.Items.Next);
+	while (i < arraycount(Settings.sHitSound) && Item != None) {
+		Settings.sHitSound[i++] = Item.Value;
+		Item = UWindowComboListItem(Item.Next);
+	}
 }
 
 function Created() {
@@ -556,6 +665,22 @@ function Created() {
 	Edit_FPSCounterSmoothingStrength = CreateEdit(ECT_Integer, FPSCounterSmoothingStrengthText, FPSCounterSmoothingStrengthHelp, , 64);
 	SLoc_FPSLocation = CreateScreenLocation(100, FPSLocationText, FPSLocationHelp);
 
+	Lbl_HitSounds = CreateSeparator(HitSoundsLblText);
+	Cmb_HitSoundSource = CreateComboBox(HitSoundSourceText, HitSoundSourceHelp, false, 150);
+	SetUpHitSourceComboBox(Cmb_HitSoundSource);
+
+	Lbl_EnemyHitSounds = CreateSeparator(EnemyHitSoundsLblText);
+	Chk_EnableHitSounds = CreateCheckbox(EnableHitSoundsText, EnableHitSoundsHelp);
+	Chk_HitSoundPitchShift = CreateCheckbox(HitSoundPitchShiftText, HitSoundPitchShiftHelp);
+	Edit_HitSoundVolume = CreateEdit(ECT_Real, HitSoundVolumeText, HitSoundVolumeHelp, , 64);
+	Cmb_SelectedHitSound = CreateComboBox(SelectedHitSoundText, SelectedHitSoundHelp, true, 150);
+
+	Lbl_TeamHitSounds = CreateSeparator(TeamHitSoundsLblText);
+	Chk_EnableTeamHitSounds = CreateCheckbox(EnableTeamHitSoundsText, EnableTeamHitSoundsHelp);
+	Chk_HitSoundTeamPitchShift = CreateCheckbox(HitSoundTeamPitchShiftText, HitSoundTeamPitchShiftHelp);
+	Edit_HitSoundTeamVolume = CreateEdit(ECT_Real, HitSoundTeamVolumeText, HitSoundTeamVolumeHelp, , 64);
+	Cmb_SelectedTeamHitSound = CreateComboBox(SelectedTeamHitSoundText, SelectedTeamHitSoundHelp, true, 150);
+
 	ControlOffset += PaddingY-4;
 
 	Load();
@@ -586,12 +711,15 @@ function BeforePaint(Canvas C, float X, float Y) {
 	}
 }
 
-function Notify(UWindowDialogControl C, byte E)
-{
-	Super.Notify(C, E);
+function Notify(UWindowDialogControl C, byte E) {
+	super.Notify(C, E);
 
 	if (E == DE_Change && C == HSld_FPSDetail)
 		UpdateFPSSlider();
+
+	if (E == DE_Change && (C == Cmb_SelectedHitSound || C == Cmb_SelectedTeamHitSound)) {
+		UpdateHitSoundComboBox(UWindowComboControl(C));
+	}
 }
 
 function Load() {
@@ -643,6 +771,20 @@ function Load() {
 	UpdateFPSSlider();
 	Edit_FPSCounterSmoothingStrength.SetValue(string(Settings.FPSCounterSmoothingStrength));
 	SLoc_FPSLocation.SetLocation(Settings.FPSLocationX, Settings.FPSLocationY);
+
+	Cmb_HitSoundSource.SetSelectedIndex(Clamp(Settings.HitSoundSource, 0, 1));
+
+	Chk_EnableHitSounds.bChecked = Settings.bEnableHitSounds;
+	Chk_HitSoundPitchShift.bChecked = Settings.bHitSoundPitchShift;
+	Edit_HitSoundVolume.SetValue(string(Settings.HitSoundVolume));
+	SetUpHitSoundComboBox(Cmb_SelectedHitSound);
+	Cmb_SelectedHitSound.SetSelectedIndex(Settings.SelectedHitSound);
+
+	Chk_EnableTeamHitSounds.bChecked = Settings.bEnableTeamHitSounds;
+	Chk_HitSoundTeamPitchShift.bChecked = Settings.bHitSoundTeamPitchShift;
+	Edit_HitSoundTeamVolume.SetValue(string(Settings.HitSoundTeamVolume));
+	SetUpHitSoundComboBox(Cmb_SelectedTeamHitSound);
+	Cmb_SelectedTeamHitSound.SetSelectedIndex(Settings.SelectedTeamHitSound);
 
 	bLoadSucceeded = true;
 }
@@ -700,6 +842,20 @@ function Save() {
 	}
 	Settings.FPSCounterSmoothingStrength = Max(int(Edit_FPSCounterSmoothingStrength.GetValue()), 1);
 	SLoc_FPSLocation.GetLocation(Settings.FPSLocationX, Settings.FPSLocationY);
+
+	Settings.HitSoundSource = Settings.IntToHitSoundSource(Cmb_HitSoundSource.GetSelectedIndex());
+
+	Settings.bEnableHitSounds = Chk_EnableHitSounds.bChecked;
+	Settings.bHitSoundPitchShift = Chk_HitSoundPitchShift.bChecked;
+	Settings.HitSoundVolume = Max(int(Edit_HitSoundVolume.GetValue()), 1);
+	Settings.SelectedHitSound = Cmb_SelectedHitSound.GetSelectedIndex2();
+
+	Settings.bEnableTeamHitSounds = Chk_EnableTeamHitSounds.bChecked;
+	Settings.bHitSoundTeamPitchShift = Chk_HitSoundTeamPitchShift.bChecked;
+	Settings.HitSoundTeamVolume = Max(int(Edit_HitSoundTeamVolume.GetValue()), 1);
+	Settings.SelectedTeamHitSound = Cmb_SelectedTeamHitSound.GetSelectedIndex2();
+
+	SaveHitSounds();
 
 	Settings.SaveConfig();
 }
@@ -875,6 +1031,42 @@ defaultproperties
 
 	FPSLocationText="FPS Location"
 	FPSLocationHelp="Where on screen to show the framerate information"
+
+	HitSoundsLblText="Hit Sounds"
+
+	HitSoundSourceText="Hit Source"
+	HitSoundSourceHelp="Controls where hit notifications originate from\\nServer --> No notifications for hits that werent, but delayed by ping\\nClient --> Instant notifications, but may not be accurate"
+
+	HitSourceServer="Server"
+	HitSourceClient="Client"
+
+	EnemyHitSoundsLblText="Enemy Hit Sounds"
+
+	EnableHitSoundsText="Enable"
+	EnableHitSoundsHelp="If checked, play a sound whenever you deal damage to enemies"
+
+	HitSoundPitchShiftText="Pitch Shift"
+	HitSoundPitchShiftHelp="If checked, shift the pitch of hit sounds depending on damage"
+
+	HitSoundVolumeText="Volume"
+	HitSoundVolumeHelp="Loudness of Hit Sound"
+
+	SelectedHitSoundText="Sound"
+	SelectedHitSoundHelp="Which sound to play when you damage enemies"
+
+	TeamHitSoundsLblText="Team Hit Sounds"
+
+	EnableTeamHitSoundsText="Enable"
+	EnableTeamHitSoundsHelp="If checked, play a sound whenever you deal damage to team-mates"
+
+	HitSoundTeamPitchShiftText="Pitch Shift "
+	HitSoundTeamPitchShiftHelp="If checked, shift the pitch of hit sounds depending on damage"
+
+	HitSoundTeamVolumeText="Volume"
+	HitSoundTeamVolumeHelp="Loudness of Hit Sound"
+
+	SelectedTeamHitSoundText="Sound"
+	SelectedTeamHitSoundHelp="Which sound to play when you damage team-mates"
 
 	PaddingX=20
 	PaddingY=20

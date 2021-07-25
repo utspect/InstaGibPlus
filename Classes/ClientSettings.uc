@@ -213,6 +213,14 @@ simulated function string DumpCrosshairLayers() {
 	return Result;
 }
 
+simulated function EHitSoundSource IntToHitSoundSource(int A) {
+	switch(A) {
+		case 0: return HSSRC_Server;
+		case 1: return HSSRC_Client;
+	}
+	return HSSRC_Server;
+}
+
 simulated function string DumpSettings() {
 	return "IG+ Client Settings:"$Chr(10)$
 		GetSetting("bForceModels")$

@@ -12,6 +12,14 @@ function AfterCreate() {
 	EditBoxMaxWidth = WinWidth * EditBoxWidthFraction;
 }
 
+function UWindowComboListItem FindEntry(int Index) {
+	return UWindowComboListItem(List.Items.FindEntry(Index));
+}
+
+function int GetSelectedIndex2() {
+	return List.FindItemIndex2(GetValue2());
+}
+
 function MouseLeave() {
 	Super.MouseLeave();
 	if(HelpText != "") ToolTip("");
