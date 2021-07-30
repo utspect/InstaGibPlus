@@ -4263,15 +4263,15 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	local float adjZ, maxZ;
 	local vector delta;
 
-
 	if (Role != ROLE_Authority)
 		maxZ = Location.Z + (1.0 - 0.7 * DuckFractionRepl/255.0) * CollisionHeight;
 	else
 		maxZ = Location.Z + (1.0 - 0.7 * DuckFraction) * CollisionHeight;// default game is 0.25
-	if ( HitLocation.Z <= maxZ )
+
+	if (HitLocation.Z <= maxZ)
 		return true;
 
-	if ( TraceDir.Z >= 0 )
+	if (TraceDir.Z >= 0)
 		return false;
 
 	TraceDir = Normal(TraceDir);
@@ -4282,6 +4282,8 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	delta = (HitLocation - Location) * vect(1,1,0);
 	if (delta dot delta > CollisionRadius * CollisionRadius)
 		return false;
+
+	return true;
 }
 
 simulated function AddVelocity( vector NewVelocity )
