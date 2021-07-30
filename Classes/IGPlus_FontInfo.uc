@@ -45,7 +45,7 @@ function Font GetFont(int Size) {
 	return FontMap[Max(Size, 0)];
 }
 
-event PostBeginPlay() {
+event Spawned() {
 	LargestFont = Font(DynamicLoadObject("LadderFonts.UTLadder60", class'Font'));
 	FontMap[0] = Font'SmallFont';
 	FontMap[1] = Font'SmallFont';
