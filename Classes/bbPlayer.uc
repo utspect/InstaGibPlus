@@ -4261,20 +4261,13 @@ simulated function bool AdjustHitLocation(out vector HitLocation, vector TraceDi
 
 simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector TraceDir)
 {
-	/**
-	 * @Author: spect
-	 * @Modified Date: 2020-02-22 02:08:45
-	 * @Desc: Reduced the hitboxes slightly
-	 * @Feedback: Positive
-	 */
-
 	local float adjZ, maxZ;
 	local vector delta;
 
 	if (Role != ROLE_Authority)
 		maxZ = Location.Z + (1.0 - 0.7 * DuckFractionRepl/255.0) * CollisionHeight;
 	else
-		maxZ = Location.Z + (1.0 - 0.7 * DuckFraction) * CollisionHeight;// default game is 0.25
+		maxZ = Location.Z + (1.0 - 0.7 * DuckFraction) * CollisionHeight; // default game is 0.25
 
 	if (HitLocation.Z <= maxZ)
 		return true;

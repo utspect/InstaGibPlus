@@ -717,9 +717,8 @@ function Notify(UWindowDialogControl C, byte E) {
 	if (E == DE_Change && C == HSld_FPSDetail)
 		UpdateFPSSlider();
 
-	if (E == DE_Change && (C == Cmb_SelectedHitSound || C == Cmb_SelectedTeamHitSound)) {
+	if (E == DE_Change && (C == Cmb_SelectedHitSound || C == Cmb_SelectedTeamHitSound))
 		UpdateHitSoundComboBox(UWindowComboControl(C));
-	}
 }
 
 function Load() {
