@@ -1822,17 +1822,17 @@ function IGPlus_ClientReplayMove(IGPlus_SavedMove M) {
 }
 
 function IGPlus_FreeAcknowledgedMoves(float TimeStamp) {
-	local IGPlus_SavedMove FirstMove;
-	local IGPlus_SavedMove CurrentMove;
+	local SavedMove FirstMove;
+	local SavedMove CurrentMove;
 
 	if (SavedMoves == none) return;
 	if (SavedMoves.TimeStamp > TimeStamp) return;
 
-	CurrentMove = IGPlus_SavedMove(SavedMoves);
+	CurrentMove = SavedMoves;
 	FirstMove = CurrentMove;
 
 	while (CurrentMove.NextMove != none && CurrentMove.NextMove.TimeStamp <= TimeStamp) {
-		CurrentMove = IGPlus_SavedMove(CurrentMove.NextMove);
+		CurrentMove = CurrentMove.NextMove;
 	}
 
 	SavedMoves = CurrentMove.NextMove;
