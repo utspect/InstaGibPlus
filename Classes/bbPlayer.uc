@@ -239,6 +239,7 @@ var float SecondaryDodgeSpeedZ;
 var float DodgeEndVelocity;
 var float JumpEndVelocity;
 var bool bJumpingPreservesMomentum;
+var bool bOldLandingMomentum;
 var bool bUseFlipAnimation;
 var bool bCanWallDodge;
 var bool bDodging;
@@ -309,6 +310,7 @@ replication
 		bEnableSingleButtonDodge,
 		bIs469Server,
 		bJumpingPreservesMomentum,
+		bOldLandingMomentum,
 		BrightskinMode,
 		bUseFastWeaponSwitch,
 		bUseFlipAnimation,
@@ -1013,6 +1015,7 @@ event Possess()
 		KillCamDelay = FMax(0.0, class'UTPure'.default.KillCamDelay);
 		KillCamDuration = class'UTPure'.default.KillCamDuration;
 		bJumpingPreservesMomentum = class'UTPure'.default.bJumpingPreservesMomentum;
+		bOldLandingMomentum = class'UTPure'.default.bOldLandingMomentum;
 		bEnableSingleButtonDodge = class'UTPure'.default.bEnableSingleButtonDodge;
 		bUseFlipAnimation = class'UTPure'.default.bUseFlipAnimation;
 		bCanWallDodge = class'UTPure'.default.bEnableWallDodging;
@@ -5207,12 +5210,18 @@ ignores SeePlayer, HearNoise, Bump;
 		if (bJumpingPreservesMomentum == false) {
 			Velocity *= vect(1,1,0);
 
-			if (bDodging)
-				Vel = VSize(Velocity) * DodgeEndVelocity;
-			else
-				Vel = VSize(Velocity) * JumpEndVelocity;
+			if (bOldLandingMomentum) {
+				if (bDodging)
+					Velocity *= DodgeEndVelocity;
+				Velocity = Normal(Velocity) * FMin(VSize(Velocity), GroundSpeed);
+			} else {
+				if (bDodging)
+					Vel = VSize(Velocity) * DodgeEndVelocity;
+				else
+					Vel = VSize(Velocity) * JumpEndVelocity;
 
-			Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * FMin(Vel, GroundSpeed);
+				Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * FMin(Vel, GroundSpeed);
+			}
 		} else if (bDodging) {
 			Velocity *= DodgeEndVelocity;
 		} else {

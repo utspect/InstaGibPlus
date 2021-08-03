@@ -58,6 +58,7 @@ var config float TradePingMargin;
 var config float KillCamDelay;
 var config float KillCamDuration;
 var config bool bJumpingPreservesMomentum;
+var config bool bOldLandingMomentum;
 var config bool bEnableSingleButtonDodge;
 var config bool bUseFlipAnimation;
 var config bool bEnableWallDodging;
@@ -1484,6 +1485,7 @@ defaultproperties
 	KillCamDelay=0.0
 	KillCamDuration=2.0
 	bJumpingPreservesMomentum=False
+	bOldLandingMomentum=True
 	bEnableSingleButtonDodge=True
 	bUseFlipAnimation=True
 	bEnableWallDodging=False
