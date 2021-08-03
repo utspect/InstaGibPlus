@@ -4188,6 +4188,9 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 	if (!Settings.bUseOldMouseInput)
 		TurnFractionalPart = YawDelta - int(YawDelta);
 
+	if (Settings.bDebugMovement && (Abs(PitchDelta) > 1 || Abs(YawDelta) > 1))
+		ClientDebugMessage("PitchDelta:"@PitchDelta@"YawDelta:"@YawDelta);
+
 	ViewShake(deltaTime);		// ViewRotation is fuked in here.
 	ViewFlash(deltaTime);
 
