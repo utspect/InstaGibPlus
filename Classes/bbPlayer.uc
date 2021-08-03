@@ -68,7 +68,7 @@ var rotator zzNN_ViewRot;
 var actor   zzNN_HitActor, zzOldBase;
 var Vector  zzNN_HitLoc, zzClientHitNormal, zzClientHitLocation, zzNN_HitDiff, zzNN_HitLocLast, zzNN_HitNormalLast, zzNN_ClientLoc, zzNN_ClientVel;
 var bool    zzbIsWarmingUp, zzbFakeUpdate, zzbForceUpdate, zzbNN_Special, zzbNN_ReleasedFire, zzbNN_ReleasedAltFire;
-var float   zzNN_Accuracy, zzLastStuffUpdate, zzNextTimeTime, zzLastFallVelZ, zzLastClientErr, zzForceUpdateUntil, zzIgnoreUpdateUntil, zzLastLocDiff, zzSpawnedTime;
+var float   zzNN_Accuracy, zzLastStuffUpdate, zzNextTimeTime, zzLastClientErr, zzForceUpdateUntil, zzIgnoreUpdateUntil, zzLastLocDiff, zzSpawnedTime;
 var TournamentWeapon zzGrappling;
 var float zzGrappleTime;
 var float LastFireTimeStamp;
@@ -1931,19 +1931,18 @@ function TakeFallingDamage()
 			MakeNoise(-0.5 * Velocity.Z/(FMax(JumpZ, 150.0)));
 		if (Velocity.Z <= -750 - JumpZ)
 		{
-			if (zzLastFallVelZ <= -750 - JumpZ)
+			if (Velocity.Z <= -750 - JumpZ)
 			{
-				if ( (zzLastFallVelZ < -1650 - JumpZ) && (ReducedDamageType != 'All') )
+				if ( (Velocity.Z < -1650 - JumpZ) && (ReducedDamageType != 'All') )
 					TakeDamage(1000, None, Location, vect(0,0,0), 'Fell');
 				else if ( Role == ROLE_Authority )
-					TakeDamage(-0.15 * (zzLastFallVelZ + 700 + JumpZ), None, Location, vect(0,0,0), 'Fell');
-				ShakeView(0.175 - 0.00007 * zzLastFallVelZ, -0.85 * zzLastFallVelZ, -0.002 * zzLastFallVelZ);
+					TakeDamage(-0.15 * (Velocity.Z + 700 + JumpZ), None, Location, vect(0,0,0), 'Fell');
+				ShakeView(0.175 - 0.00007 * Velocity.Z, -0.85 * Velocity.Z, -0.002 * Velocity.Z);
 			}
 		}
 	}
 	else if ( Velocity.Z > 0.5 * Default.JumpZ )
 		MakeNoise(0.35);
-	zzLastFallVelZ = 0;
 }
 
 function xxSetPendingWeapon(Weapon W)
@@ -2351,9 +2350,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	ViewRotation.Yaw = ViewYaw;
 	ViewRotation.Roll = 0;
 	SetRotation(Rot);
-
-	if (SM.ClientVelocity.Z < 0)
-		zzLastFallVelZ = SM.ClientVelocity.Z;
 
 	// Apply momentum as it was applied on client
 	if (((AddVelocityId - LastAddVelocityAppliedIndex) & 0xF) > ((LastAddVelocityIndex - LastAddVelocityAppliedIndex) & 0xF))
