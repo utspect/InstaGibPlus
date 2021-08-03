@@ -2513,6 +2513,7 @@ function bool IGPlus_IsCAPNecessary() {
 	local int ClientTlocCounter;
 	local vector LocDelta;
 	local float ClientLocError;
+	local float MinLocError;
 	local float MaxLocError;
 	local bool bServerOnMover;
 	local bool bClientOnMover;
@@ -2546,8 +2547,10 @@ function bool IGPlus_IsCAPNecessary() {
 	}
 
 	// Calculate how far off we allow the client to be from the predicted position
+	MinLocError = 0.0;
 	MaxLocError = 3.0;
 	if (LastServerMoveParams.ClientDeltaTime > 0) {
+		MinLocError = 3.0;
 		MaxLocError = CalculateLocError(
 			LastServerMoveParams.ClientDeltaTime,
 			LastServerMoveParams.Physics,
@@ -2579,13 +2582,16 @@ function bool IGPlus_IsCAPNecessary() {
 
 	ClearLastServerMoveParams();
 
+	if (zzLastClientErr == 0 || ClientLocError < zzLastClientErr)
+		zzLastClientErr = ClientLocError;
+
+	if (ClientLocError < MinLocError)
+		return false;
+
 	if (bForceUpdate) {
 		ClientDebugMessage("Send CAP:"@CurrentTimeStamp@Physics@ClientPhysics@ClientLocError@MaxLocError);
 		return true;
 	}
-
-	if (zzLastClientErr == 0 || ClientLocError < zzLastClientErr)
-		zzLastClientErr = ClientLocError;
 
 	bCanTraceNewLoc = FastTrace(ClientLocAbs);
 	if (bCanTraceNewLoc) {
