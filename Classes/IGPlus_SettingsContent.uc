@@ -812,7 +812,7 @@ function Save() {
 	Settings.MinDodgeClickTime = float(Edit_MinDodgeClickTime.GetValue());
 	Settings.DesiredNetUpdateRate = int(Edit_DesiredNetUpdateRate.GetValue());
 	Settings.DesiredNetspeed = int(Edit_DesiredNetspeed.GetValue());
-	Settings.FakeCAPInterval = int(Edit_FakeCAPInterval.GetValue());
+	Settings.FakeCAPInterval = float(Edit_FakeCAPInterval.GetValue());
 
 	Settings.bAutoDemo = Chk_AutoDemo.bChecked;
 	Settings.DemoMask = Edit_DemoMask.GetValue();
