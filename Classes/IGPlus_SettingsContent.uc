@@ -246,6 +246,17 @@ var IGPlus_ComboBox Cmb_SelectedTeamHitSound;
 var localized string SelectedTeamHitSoundText;
 var localized string SelectedTeamHitSoundHelp;
 
+var UWindowLabelControl Lbl_KillCam;
+var localized string KillCamLblText;
+
+var UWindowCheckbox Chk_EnableKillCam;
+var localized string EnableKillCamText;
+var localized string EnableKillCamHelp;
+
+var IGPlus_EditControl Edit_KillCamMinDelay;
+var localized string KillCamMinDelayText;
+var localized string KillCamMinDelayHelp;
+
 var float PaddingX;
 var float PaddingY;
 var float LineSpacing;
@@ -681,6 +692,10 @@ function Created() {
 	Edit_HitSoundTeamVolume = CreateEdit(ECT_Real, HitSoundTeamVolumeText, HitSoundTeamVolumeHelp, , 64);
 	Cmb_SelectedTeamHitSound = CreateComboBox(SelectedTeamHitSoundText, SelectedTeamHitSoundHelp, true, 150);
 
+	Lbl_KillCam = CreateSeparator(KillCamLblText);
+	Chk_EnableKillCam = CreateCheckbox(EnableKillCamText, EnableKillCamHelp);
+	Edit_KillCamMinDelay = CreateEdit(ECT_Real, KillCamMinDelayText, KillCamMinDelayHelp, , 64);
+
 	ControlOffset += PaddingY-4;
 
 	Load();
@@ -785,6 +800,9 @@ function Load() {
 	SetUpHitSoundComboBox(Cmb_SelectedTeamHitSound);
 	Cmb_SelectedTeamHitSound.SetSelectedIndex(Settings.SelectedTeamHitSound);
 
+	Chk_EnableKillCam.bChecked = Settings.bEnableKillCam;
+	Edit_KillCamMinDelay.SetValue(string(Settings.KillCamMinDelay));
+
 	bLoadSucceeded = true;
 }
 
@@ -846,15 +864,18 @@ function Save() {
 
 	Settings.bEnableHitSounds = Chk_EnableHitSounds.bChecked;
 	Settings.bHitSoundPitchShift = Chk_HitSoundPitchShift.bChecked;
-	Settings.HitSoundVolume = Max(int(Edit_HitSoundVolume.GetValue()), 1);
+	Settings.HitSoundVolume = FMax(float(Edit_HitSoundVolume.GetValue()), 1);
 	Settings.SelectedHitSound = Cmb_SelectedHitSound.GetSelectedIndex2();
 
 	Settings.bEnableTeamHitSounds = Chk_EnableTeamHitSounds.bChecked;
 	Settings.bHitSoundTeamPitchShift = Chk_HitSoundTeamPitchShift.bChecked;
-	Settings.HitSoundTeamVolume = Max(int(Edit_HitSoundTeamVolume.GetValue()), 1);
+	Settings.HitSoundTeamVolume = FMax(float(Edit_HitSoundTeamVolume.GetValue()), 1);
 	Settings.SelectedTeamHitSound = Cmb_SelectedTeamHitSound.GetSelectedIndex2();
 
 	SaveHitSounds();
+
+	Settings.bEnableKillCam = Chk_EnableKillCam.bChecked;
+	Settings.KillCamMinDelay = Max(float(Edit_KillCamMinDelay.GetValue()), 1);
 
 	Settings.SaveConfig();
 }
@@ -1058,7 +1079,7 @@ defaultproperties
 	EnableTeamHitSoundsText="Enable"
 	EnableTeamHitSoundsHelp="If checked, play a sound whenever you deal damage to team-mates"
 
-	HitSoundTeamPitchShiftText="Pitch Shift "
+	HitSoundTeamPitchShiftText="Pitch Shift"
 	HitSoundTeamPitchShiftHelp="If checked, shift the pitch of hit sounds depending on damage"
 
 	HitSoundTeamVolumeText="Volume"
@@ -1066,6 +1087,14 @@ defaultproperties
 
 	SelectedTeamHitSoundText="Sound"
 	SelectedTeamHitSoundHelp="Which sound to play when you damage team-mates"
+
+	KillCamLblText="Death Camera"
+
+	EnableKillCamText="Enable Death Cam"
+	EnableKillCamHelp="If checked, camera follows killer after your death"
+
+	KillCamMinDelayText="Minimum Delay"
+	KillCamMinDelayHelp="Minimum delay in seconds before camera starts following killer"
 
 	PaddingX=20
 	PaddingY=20
