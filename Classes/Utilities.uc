@@ -5,6 +5,23 @@ static final function int IAbs(int A) {
 	return A;
 }
 
+static final function float Round(float A) {
+	if (A < 0) return float(int(A-0.5));
+	return float(int(A+0.5));
+}
+
+static final function float Ceil(float A) {
+	if (A <= 0) return float(int(A));
+	if (A <= 1) return 1.0; // avoid subnormals
+	return float(int(A + (1 - A*1.19209e-7)));
+}
+
+static final function float Floor(float A) {
+	if (A >= 0) return float(int(A));
+	if (A >= -1) return -1.0; // avoid subnormals
+	return float(int(A - (1 - A*1.19209e-7)));
+}
+
 // convert rotation representation from signed to unsigned
 static final function int RotS2U(int A) {
 	return A & 0xFFFF;
