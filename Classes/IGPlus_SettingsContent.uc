@@ -257,6 +257,25 @@ var IGPlus_EditControl Edit_KillCamMinDelay;
 var localized string KillCamMinDelayText;
 var localized string KillCamMinDelayHelp;
 
+var UWindowLabelControl Lbl_KillFeed;
+var localized string KillFeedLblText;
+
+var UWindowCheckbox Chk_EnableKillFeed;
+var localized string EnableKillFeedText;
+var localized string EnableKillFeedHelp;
+
+var IGPlus_EditControl Edit_KillFeedSpeed;
+var localized string KillFeedSpeedText;
+var localized string KillFeedSpeedHelp;
+
+var IGPlus_EditControl Edit_KillFeedScale;
+var localized string KillFeedScaleText;
+var localized string KillFeedScaleHelp;
+
+var IGPlus_ScreenLocationControl SLoc_KillFeedLocation;
+var localized string KillFeedLocationText;
+var localized string KillFeedLocationHelp;
+
 var float PaddingX;
 var float PaddingY;
 var float LineSpacing;
@@ -696,6 +715,12 @@ function Created() {
 	Chk_EnableKillCam = CreateCheckbox(EnableKillCamText, EnableKillCamHelp);
 	Edit_KillCamMinDelay = CreateEdit(ECT_Real, KillCamMinDelayText, KillCamMinDelayHelp, , 64);
 
+	Lbl_KillFeed = CreateSeparator(KillFeedLblText);
+	Chk_EnableKillFeed = CreateCheckbox(EnableKillFeedText, EnableKillFeedHelp);
+	Edit_KillFeedSpeed = CreateEdit(ECT_Real, KillFeedSpeedText, KillFeedSpeedHelp, , 64);
+	Edit_KillFeedScale = CreateEdit(ECT_Real, KillFeedScaleText, KillFeedScaleHelp, , 64);
+	SLoc_KillFeedLocation = CreateScreenLocation(100, KillFeedLocationText, KillFeedLocationHelp);
+
 	ControlOffset += PaddingY-4;
 
 	Load();
@@ -803,6 +828,11 @@ function Load() {
 	Chk_EnableKillCam.bChecked = Settings.bEnableKillCam;
 	Edit_KillCamMinDelay.SetValue(string(Settings.KillCamMinDelay));
 
+	Chk_EnableKillFeed.bChecked = Settings.bEnableKillFeed;
+	Edit_KillFeedSpeed.SetValue(string(Settings.KillFeedSpeed));
+	Edit_KillFeedScale.SetValue(string(Settings.KillFeedScale));
+	SLoc_KillFeedLocation.SetLocation(Settings.KillFeedX, Settings.KillFeedY);
+
 	bLoadSucceeded = true;
 }
 
@@ -876,6 +906,11 @@ function Save() {
 
 	Settings.bEnableKillCam = Chk_EnableKillCam.bChecked;
 	Settings.KillCamMinDelay = Max(float(Edit_KillCamMinDelay.GetValue()), 1);
+
+	Settings.bEnableKillFeed = Chk_EnableKillFeed.bChecked;
+	Settings.KillFeedSpeed = Max(float(Edit_KillFeedSpeed.GetValue()), 1);
+	Settings.KillFeedScale = Max(float(Edit_KillFeedScale.GetValue()), 1);
+	SLoc_KillFeedLocation.GetLocation(Settings.KillFeedX, Settings.KillFeedY);
 
 	Settings.SaveConfig();
 }
@@ -1095,6 +1130,20 @@ defaultproperties
 
 	KillCamMinDelayText="Minimum Delay"
 	KillCamMinDelayHelp="Minimum delay in seconds before camera starts following killer"
+
+	KillFeedLblText="Kill Feed"
+
+	EnableKillFeedText="Enable Kill Feed"
+	EnableKillFeedHelp="If checked, show kills using weapon symbols"
+
+	KillFeedSpeedText="Speed"
+	KillFeedSpeedHelp="Multiplier, higher numbers make kills disappear faster"
+
+	KillFeedScaleText="Scale"
+	KillFeedScaleHelp="Multiplier, higher numbers make the feed bigger"
+
+	KillFeedLocationText="Location"
+	KillFeedLocationHelp="Where on screen to show the kill feed"
 
 	PaddingX=20
 	PaddingY=20
