@@ -8224,6 +8224,8 @@ exec function Say(string Msg) {
 		Msg ~= "!ready"
 	) {
 		Ready();
+	} else if (Msg ~= "!IGPlusMenu") {
+		IGPlusMenu();
 	}
 	super.Say(Msg);
 }
