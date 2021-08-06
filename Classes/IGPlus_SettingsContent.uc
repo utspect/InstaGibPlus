@@ -5,276 +5,284 @@ var ClientSettings Settings;
 var UWindowLabelControl Lbl_MoreInformation;
 var localized string MoreInformationText;
 
-var UWindowLabelControl Lbl_General;
-var localized string GeneralText;
-
-var UWindowCheckbox Chk_ShootDead;
-var localized string ShootDeadText;
-var localized string ShootDeadHelp;
-
-var UWindowCheckbox Chk_DoEndShot;
-var localized string DoEndShotText;
-var localized string DoEndShotHelp;
-
-var UWindowCheckbox Chk_UnlitSkins;
-var localized string UnlitSkinsText;
-var localized string UnlitSkinsHelp;
-
-var UWindowCheckbox Chk_NoOwnFootsteps;
-var localized string NoOwnFootstepsText;
-var localized string NoOwnFootstepsHelp;
-
-var UWindowCheckbox Chk_ReduceEyeHeightInAir;
-var localized string ReduceEyeHeightInAirText;
-var localized string ReduceEyeHeightInAirHelp;
-
-var UWindowCheckbox Chk_AllowWeaponShake;
-var localized string AllowWeaponShakeText;
-var localized string AllowWeaponShakeHelp;
-
-var UWindowCheckbox Chk_AutoReady;
-var localized string AutoReadyText;
-var localized string AutoReadyHelp;
-
-var UWindowCheckbox Chk_ShowDeathReport;
-var localized string ShowDeathReportText;
-var localized string ShowDeathReportHelp;
-
-var UWindowCheckbox Chk_SmoothFOVChanges;
-var localized string SmoothFOVChangesText;
-var localized string SmoothFOVChangesHelp;
-
-var UWindowCheckbox Chk_NoSmoothing;
-var localized string NoSmoothingText;
-var localized string NoSmoothingHelp;
-
-var UWindowCheckbox Chk_UseOldMouseInput;
-var localized string UseOldMouseInputText;
-var localized string UseOldMouseInputHelp;
-
-var IGPlus_EditControl Edit_MinDodgeClickTime;
-var localized string MinDodgeClickTimeText;
-var localized string MinDodgeClickTimeHelp;
-
-var IGPlus_EditControl Edit_DesiredNetUpdateRate;
-var localized string DesiredNetUpdateRateText;
-var localized string DesiredNetUpdateRateHelp;
-
-var IGPlus_EditControl Edit_DesiredNetspeed;
-var localized string DesiredNetspeedText;
-var localized string DesiredNetspeedHelp;
-
-var IGPlus_EditControl Edit_FakeCAPInterval;
-var localized string FakeCAPIntervalText;
-var localized string FakeCAPIntervalHelp;
-
-var UWindowLabelControl Lbl_AutoDemo;
-var localized string AutoDemoLblText;
-
-var UWindowCheckbox Chk_AutoDemo;
-var localized string AutoDemoText;
-var localized string AutoDemoHelp;
-
-var IGPlus_EditControl Edit_DemoMask;
-var localized string DemoMaskText;
-var localized string DemoMaskHelp;
-
-var IGPlus_EditControl Edit_DemoPath;
-var localized string DemoPathText;
-var localized string DemoPathHelp;
-
-var IGPlus_EditControl Edit_DemoChar;
-var localized string DemoCharText;
-var localized string DemoCharHelp;
-
-var UWindowLabelControl Lbl_ForceModels;
-var localized string ForceModelsLblText;
-
-var UWindowCheckbox Chk_ForceModels;
-var localized string ForceModelsText;
-var localized string ForceModelsHelp;
-
-var IGPlus_ComboBox Cmb_DesiredSkin;
-var localized string DesiredSkinText;
-var localized string DesiredSkinHelp;
-
-var IGPlus_ComboBox Cmb_DesiredSkinFemale;
-var localized string DesiredSkinFemaleText;
-var localized string DesiredSkinFemaleHelp;
-
-var IGPlus_ComboBox Cmb_DesiredTeamSkin;
-var localized string DesiredTeamSkinText;
-var localized string DesiredTeamSkinHelp;
-
-var IGPlus_ComboBox Cmb_DesiredTeamSkinFemale;
-var localized string DesiredTeamSkinFemaleText;
-var localized string DesiredTeamSkinFemaleHelp;
-
-var localized string ForcedModelDefault;
-var localized string ForcedModelAphex;
-var localized string ForcedModelFemaleCommando;
-var localized string ForcedModelFemaleMercenary;
-var localized string ForcedModelFemaleNecris;
-var localized string ForcedModelFemaleMarine;
-var localized string ForcedModelFemaleMetalGuard;
-var localized string ForcedModelFemaleSoldier;
-var localized string ForcedModelVenom;
-var localized string ForcedModelFemaleWarMachine;
-var localized string ForcedModelMaleCommando;
-var localized string ForcedModelMaleMercenary;
-var localized string ForcedModelMaleNecris;
-var localized string ForcedModelMaleMarine;
-var localized string ForcedModelMaleMetalGuard;
-var localized string ForcedModelRawSteel;
-var localized string ForcedModelMaleSoldier;
-var localized string ForcedModelMaleWarMachine;
-var localized string ForcedModelXan;
-
-var UWindowLabelControl Lbl_SuperShockRifle;
-var localized string SuperShockRifleText;
-
-var IGPlus_ComboBox Cmb_cShockBeam;
-var localized string cShockBeamText;
-var localized string cShockBeamHelp;
-
-var localized string cShockBeamDefault;
-var localized string cShockBeamTeamColored;
-var localized string cShockBeamHidden;
-var localized string cShockBeamInstant;
-
-var UWindowCheckbox Chk_HideOwnBeam;
-var localized string HideOwnBeamText;
-var localized string HideOwnBeamHelp;
-
-var IGPlus_EditControl Edit_BeamScale;
-var localized string BeamScaleText;
-var localized string BeamScaleHelp;
-
-var IGPlus_EditControl Edit_BeamFadeCurve;
-var localized string BeamFadeCurveText;
-var localized string BeamFadeCurveHelp;
-
-var IGPlus_EditControl Edit_BeamDuration;
-var localized string BeamDurationText;
-var localized string BeamDurationHelp;
-
-var IGPlus_ComboBox Cmb_BeamOriginMode;
-var localized string BeamOriginModeText;
-var localized string BeamOriginModeHelp;
-
-var IGPlus_ComboBox Cmb_BeamDestinationMode;
-var localized string BeamDestinationModeText;
-var localized string BeamDestinationModeHelp;
-
-var localized string BeamModePrecise;
-var localized string BeamModeAttached;
-
-var IGPlus_ComboBox Cmb_SSRRingType;
-var localized string SSRRingTypeText;
-var localized string SSRRingTypeHelp;
-
-var localized string SSRRingTypeNone;
-var localized string SSRRingTypeDefault;
-var localized string SSRRingTypeTeamColored;
-
-var UWindowLabelControl Lbl_FPS;
-var localized string FPSLblText;
-
-var UWindowHSliderControl HSld_FPSDetail;
-var localized string FPSDetailText;
-var localized string FPSDetailHelp;
-
-var localized string FPSDetailDisabled;
-var localized string FPSDetailFPSOnly;
-var localized string FPSDetailRenTime;
-var localized string FPSDetailStdDev;
-var localized string FPSDetailMinMax;
-
-var IGPlus_EditControl Edit_FPSCounterSmoothingStrength;
-var localized string FPSCounterSmoothingStrengthText;
-var localized string FPSCounterSmoothingStrengthHelp;
-
-var IGPlus_ScreenLocationControl SLoc_FPSLocation;
-var localized string FPSLocationText;
-var localized string FPSLocationHelp;
-
-var UWindowLabelControl Lbl_HitSounds;
-var localized string HitSoundsLblText;
-
-var IGPlus_ComboBox Cmb_HitSoundSource;
-var localized string HitSoundSourceText;
-var localized string HitSoundSourceHelp;
-
-var localized string HitSourceServer;
-var localized string HitSourceClient;
-
-var UWindowLabelControl Lbl_EnemyHitSounds;
-var localized string EnemyHitSoundsLblText;
-
-var UWindowCheckbox Chk_EnableHitSounds;
-var localized string EnableHitSoundsText;
-var localized string EnableHitSoundsHelp;
-
-var UWindowCheckbox Chk_HitSoundPitchShift;
-var localized string HitSoundPitchShiftText;
-var localized string HitSoundPitchShiftHelp;
-
-var IGPlus_EditControl Edit_HitSoundVolume;
-var localized string HitSoundVolumeText;
-var localized string HitSoundVolumeHelp;
-
-var IGPlus_ComboBox Cmb_SelectedHitSound;
-var localized string SelectedHitSoundText;
-var localized string SelectedHitSoundHelp;
-
-var UWindowLabelControl Lbl_TeamHitSounds;
-var localized string TeamHitSoundsLblText;
-
-var UWindowCheckbox Chk_EnableTeamHitSounds;
-var localized string EnableTeamHitSoundsText;
-var localized string EnableTeamHitSoundsHelp;
-
-var UWindowCheckbox Chk_HitSoundTeamPitchShift;
-var localized string HitSoundTeamPitchShiftText;
-var localized string HitSoundTeamPitchShiftHelp;
-
-var IGPlus_EditControl Edit_HitSoundTeamVolume;
-var localized string HitSoundTeamVolumeText;
-var localized string HitSoundTeamVolumeHelp;
-
-var IGPlus_ComboBox Cmb_SelectedTeamHitSound;
-var localized string SelectedTeamHitSoundText;
-var localized string SelectedTeamHitSoundHelp;
-
-var UWindowLabelControl Lbl_KillCam;
-var localized string KillCamLblText;
-
-var UWindowCheckbox Chk_EnableKillCam;
-var localized string EnableKillCamText;
-var localized string EnableKillCamHelp;
-
-var IGPlus_EditControl Edit_KillCamMinDelay;
-var localized string KillCamMinDelayText;
-var localized string KillCamMinDelayHelp;
-
-var UWindowLabelControl Lbl_KillFeed;
-var localized string KillFeedLblText;
-
-var UWindowCheckbox Chk_EnableKillFeed;
-var localized string EnableKillFeedText;
-var localized string EnableKillFeedHelp;
-
-var IGPlus_EditControl Edit_KillFeedSpeed;
-var localized string KillFeedSpeedText;
-var localized string KillFeedSpeedHelp;
-
-var IGPlus_EditControl Edit_KillFeedScale;
-var localized string KillFeedScaleText;
-var localized string KillFeedScaleHelp;
-
-var IGPlus_ScreenLocationControl SLoc_KillFeedLocation;
-var localized string KillFeedLocationText;
-var localized string KillFeedLocationHelp;
+// General
+	var UWindowLabelControl Lbl_General;
+	var localized string GeneralText;
+
+	var UWindowCheckbox Chk_ShootDead;
+	var localized string ShootDeadText;
+	var localized string ShootDeadHelp;
+
+	var UWindowCheckbox Chk_DoEndShot;
+	var localized string DoEndShotText;
+	var localized string DoEndShotHelp;
+
+	var UWindowCheckbox Chk_UnlitSkins;
+	var localized string UnlitSkinsText;
+	var localized string UnlitSkinsHelp;
+
+	var UWindowCheckbox Chk_NoOwnFootsteps;
+	var localized string NoOwnFootstepsText;
+	var localized string NoOwnFootstepsHelp;
+
+	var UWindowCheckbox Chk_ReduceEyeHeightInAir;
+	var localized string ReduceEyeHeightInAirText;
+	var localized string ReduceEyeHeightInAirHelp;
+
+	var UWindowCheckbox Chk_AllowWeaponShake;
+	var localized string AllowWeaponShakeText;
+	var localized string AllowWeaponShakeHelp;
+
+	var UWindowCheckbox Chk_AutoReady;
+	var localized string AutoReadyText;
+	var localized string AutoReadyHelp;
+
+	var UWindowCheckbox Chk_ShowDeathReport;
+	var localized string ShowDeathReportText;
+	var localized string ShowDeathReportHelp;
+
+	var UWindowCheckbox Chk_SmoothFOVChanges;
+	var localized string SmoothFOVChangesText;
+	var localized string SmoothFOVChangesHelp;
+
+	var UWindowCheckbox Chk_NoSmoothing;
+	var localized string NoSmoothingText;
+	var localized string NoSmoothingHelp;
+
+	var UWindowCheckbox Chk_UseOldMouseInput;
+	var localized string UseOldMouseInputText;
+	var localized string UseOldMouseInputHelp;
+
+	var IGPlus_EditControl Edit_MinDodgeClickTime;
+	var localized string MinDodgeClickTimeText;
+	var localized string MinDodgeClickTimeHelp;
+
+	var IGPlus_EditControl Edit_DesiredNetUpdateRate;
+	var localized string DesiredNetUpdateRateText;
+	var localized string DesiredNetUpdateRateHelp;
+
+	var IGPlus_EditControl Edit_DesiredNetspeed;
+	var localized string DesiredNetspeedText;
+	var localized string DesiredNetspeedHelp;
+
+	var IGPlus_EditControl Edit_FakeCAPInterval;
+	var localized string FakeCAPIntervalText;
+	var localized string FakeCAPIntervalHelp;
+
+// Auto Demo
+	var UWindowLabelControl Lbl_AutoDemo;
+	var localized string AutoDemoLblText;
+
+	var UWindowCheckbox Chk_AutoDemo;
+	var localized string AutoDemoText;
+	var localized string AutoDemoHelp;
+
+	var IGPlus_EditControl Edit_DemoMask;
+	var localized string DemoMaskText;
+	var localized string DemoMaskHelp;
+
+	var IGPlus_EditControl Edit_DemoPath;
+	var localized string DemoPathText;
+	var localized string DemoPathHelp;
+
+	var IGPlus_EditControl Edit_DemoChar;
+	var localized string DemoCharText;
+	var localized string DemoCharHelp;
+
+// Force Models
+	var UWindowLabelControl Lbl_ForceModels;
+	var localized string ForceModelsLblText;
+
+	var UWindowCheckbox Chk_ForceModels;
+	var localized string ForceModelsText;
+	var localized string ForceModelsHelp;
+
+	var IGPlus_ComboBox Cmb_DesiredSkin;
+	var localized string DesiredSkinText;
+	var localized string DesiredSkinHelp;
+
+	var IGPlus_ComboBox Cmb_DesiredSkinFemale;
+	var localized string DesiredSkinFemaleText;
+	var localized string DesiredSkinFemaleHelp;
+
+	var IGPlus_ComboBox Cmb_DesiredTeamSkin;
+	var localized string DesiredTeamSkinText;
+	var localized string DesiredTeamSkinHelp;
+
+	var IGPlus_ComboBox Cmb_DesiredTeamSkinFemale;
+	var localized string DesiredTeamSkinFemaleText;
+	var localized string DesiredTeamSkinFemaleHelp;
+
+	var localized string ForcedModelDefault;
+	var localized string ForcedModelAphex;
+	var localized string ForcedModelFemaleCommando;
+	var localized string ForcedModelFemaleMercenary;
+	var localized string ForcedModelFemaleNecris;
+	var localized string ForcedModelFemaleMarine;
+	var localized string ForcedModelFemaleMetalGuard;
+	var localized string ForcedModelFemaleSoldier;
+	var localized string ForcedModelVenom;
+	var localized string ForcedModelFemaleWarMachine;
+	var localized string ForcedModelMaleCommando;
+	var localized string ForcedModelMaleMercenary;
+	var localized string ForcedModelMaleNecris;
+	var localized string ForcedModelMaleMarine;
+	var localized string ForcedModelMaleMetalGuard;
+	var localized string ForcedModelRawSteel;
+	var localized string ForcedModelMaleSoldier;
+	var localized string ForcedModelMaleWarMachine;
+	var localized string ForcedModelXan;
+
+// SuperShockRifle
+	var UWindowLabelControl Lbl_SuperShockRifle;
+	var localized string SuperShockRifleText;
+
+	var IGPlus_ComboBox Cmb_cShockBeam;
+	var localized string cShockBeamText;
+	var localized string cShockBeamHelp;
+
+	var localized string cShockBeamDefault;
+	var localized string cShockBeamTeamColored;
+	var localized string cShockBeamHidden;
+	var localized string cShockBeamInstant;
+
+	var UWindowCheckbox Chk_HideOwnBeam;
+	var localized string HideOwnBeamText;
+	var localized string HideOwnBeamHelp;
+
+	var IGPlus_EditControl Edit_BeamScale;
+	var localized string BeamScaleText;
+	var localized string BeamScaleHelp;
+
+	var IGPlus_EditControl Edit_BeamFadeCurve;
+	var localized string BeamFadeCurveText;
+	var localized string BeamFadeCurveHelp;
+
+	var IGPlus_EditControl Edit_BeamDuration;
+	var localized string BeamDurationText;
+	var localized string BeamDurationHelp;
+
+	var IGPlus_ComboBox Cmb_BeamOriginMode;
+	var localized string BeamOriginModeText;
+	var localized string BeamOriginModeHelp;
+
+	var IGPlus_ComboBox Cmb_BeamDestinationMode;
+	var localized string BeamDestinationModeText;
+	var localized string BeamDestinationModeHelp;
+
+	var localized string BeamModePrecise;
+	var localized string BeamModeAttached;
+
+	var IGPlus_ComboBox Cmb_SSRRingType;
+	var localized string SSRRingTypeText;
+	var localized string SSRRingTypeHelp;
+
+	var localized string SSRRingTypeNone;
+	var localized string SSRRingTypeDefault;
+	var localized string SSRRingTypeTeamColored;
+
+// FPS
+	var UWindowLabelControl Lbl_FPS;
+	var localized string FPSLblText;
+
+	var UWindowHSliderControl HSld_FPSDetail;
+	var localized string FPSDetailText;
+	var localized string FPSDetailHelp;
+
+	var localized string FPSDetailDisabled;
+	var localized string FPSDetailFPSOnly;
+	var localized string FPSDetailRenTime;
+	var localized string FPSDetailStdDev;
+	var localized string FPSDetailMinMax;
+
+	var IGPlus_EditControl Edit_FPSCounterSmoothingStrength;
+	var localized string FPSCounterSmoothingStrengthText;
+	var localized string FPSCounterSmoothingStrengthHelp;
+
+	var IGPlus_ScreenLocationControl SLoc_FPSLocation;
+	var localized string FPSLocationText;
+	var localized string FPSLocationHelp;
+
+// Hit Sounds
+	var UWindowLabelControl Lbl_HitSounds;
+	var localized string HitSoundsLblText;
+
+	var IGPlus_ComboBox Cmb_HitSoundSource;
+	var localized string HitSoundSourceText;
+	var localized string HitSoundSourceHelp;
+
+	var localized string HitSourceServer;
+	var localized string HitSourceClient;
+
+	var UWindowLabelControl Lbl_EnemyHitSounds;
+	var localized string EnemyHitSoundsLblText;
+
+	var UWindowCheckbox Chk_EnableHitSounds;
+	var localized string EnableHitSoundsText;
+	var localized string EnableHitSoundsHelp;
+
+	var UWindowCheckbox Chk_HitSoundPitchShift;
+	var localized string HitSoundPitchShiftText;
+	var localized string HitSoundPitchShiftHelp;
+
+	var IGPlus_EditControl Edit_HitSoundVolume;
+	var localized string HitSoundVolumeText;
+	var localized string HitSoundVolumeHelp;
+
+	var IGPlus_ComboBox Cmb_SelectedHitSound;
+	var localized string SelectedHitSoundText;
+	var localized string SelectedHitSoundHelp;
+
+	var UWindowLabelControl Lbl_TeamHitSounds;
+	var localized string TeamHitSoundsLblText;
+
+	var UWindowCheckbox Chk_EnableTeamHitSounds;
+	var localized string EnableTeamHitSoundsText;
+	var localized string EnableTeamHitSoundsHelp;
+
+	var UWindowCheckbox Chk_HitSoundTeamPitchShift;
+	var localized string HitSoundTeamPitchShiftText;
+	var localized string HitSoundTeamPitchShiftHelp;
+
+	var IGPlus_EditControl Edit_HitSoundTeamVolume;
+	var localized string HitSoundTeamVolumeText;
+	var localized string HitSoundTeamVolumeHelp;
+
+	var IGPlus_ComboBox Cmb_SelectedTeamHitSound;
+	var localized string SelectedTeamHitSoundText;
+	var localized string SelectedTeamHitSoundHelp;
+
+// Kill Cam
+	var UWindowLabelControl Lbl_KillCam;
+	var localized string KillCamLblText;
+
+	var UWindowCheckbox Chk_EnableKillCam;
+	var localized string EnableKillCamText;
+	var localized string EnableKillCamHelp;
+
+	var IGPlus_EditControl Edit_KillCamMinDelay;
+	var localized string KillCamMinDelayText;
+	var localized string KillCamMinDelayHelp;
+
+// Kill Feed
+	var UWindowLabelControl Lbl_KillFeed;
+	var localized string KillFeedLblText;
+
+	var UWindowCheckbox Chk_EnableKillFeed;
+	var localized string EnableKillFeedText;
+	var localized string EnableKillFeedHelp;
+
+	var IGPlus_EditControl Edit_KillFeedSpeed;
+	var localized string KillFeedSpeedText;
+	var localized string KillFeedSpeedHelp;
+
+	var IGPlus_EditControl Edit_KillFeedScale;
+	var localized string KillFeedScaleText;
+	var localized string KillFeedScaleHelp;
+
+	var IGPlus_ScreenLocationControl SLoc_KillFeedLocation;
+	var localized string KillFeedLocationText;
+	var localized string KillFeedLocationHelp;
 
 var float PaddingX;
 var float PaddingY;
@@ -936,214 +944,214 @@ defaultproperties
 
 	GeneralText="General"
 
-	ShootDeadText="Enable Shooting Corpses"
-	ShootDeadHelp="If checked, corpses can be hit by your lag-compensated shots"
+		ShootDeadText="Enable Shooting Corpses"
+		ShootDeadHelp="If checked, corpses can be hit by your lag-compensated shots"
 
-	DoEndShotText="Take Screenshot After Match"
-	DoEndShotHelp="If checked, automatically takes a screenshot after the end of a match"
+		DoEndShotText="Take Screenshot After Match"
+		DoEndShotHelp="If checked, automatically takes a screenshot after the end of a match"
 
-	UnlitSkinsText="Show Player Skins Unlit"
-	UnlitSkinsHelp="If checked and allowed by server, skins of players will not be affected by lighting"
+		UnlitSkinsText="Show Player Skins Unlit"
+		UnlitSkinsHelp="If checked and allowed by server, skins of players will not be affected by lighting"
 
-	NoOwnFootstepsText="Disable Own Footsteps"
-	NoOwnFootstepsHelp="If checked, dont play sounds for your own footsteps"
+		NoOwnFootstepsText="Disable Own Footsteps"
+		NoOwnFootstepsHelp="If checked, dont play sounds for your own footsteps"
 
-	ReduceEyeHeightInAirText="Reduce EyeHeight In Air"
-	ReduceEyeHeightInAirHelp="If checked, EyeHeight is reduced while player is in the air"
+		ReduceEyeHeightInAirText="Reduce EyeHeight In Air"
+		ReduceEyeHeightInAirHelp="If checked, EyeHeight is reduced while player is in the air"
 
-	AllowWeaponShakeText="Allow Weapon Shake"
-	AllowWeaponShakeHelp="If checked, weapons can shake the camera when fired"
+		AllowWeaponShakeText="Allow Weapon Shake"
+		AllowWeaponShakeHelp="If checked, weapons can shake the camera when fired"
 
-	AutoReadyText="Auto Ready"
-	AutoReadyHelp="If checked, automatically ready up with the first spawn during warmup"
+		AutoReadyText="Auto Ready"
+		AutoReadyHelp="If checked, automatically ready up with the first spawn during warmup"
 
-	ShowDeathReportText="Show Death Report"
-	ShowDeathReportHelp="If checked, prints a report of damage taken and its source since when you last healed"
+		ShowDeathReportText="Show Death Report"
+		ShowDeathReportHelp="If checked, prints a report of damage taken and its source since when you last healed"
 
-	SmoothFOVChangesText="Smooth FOV Changes"
-	SmoothFOVChangesHelp="If checked, changes to your FOV are smoothed"
+		SmoothFOVChangesText="Smooth FOV Changes"
+		SmoothFOVChangesHelp="If checked, changes to your FOV are smoothed"
 
-	NoSmoothingText="Disable Mouse Smoothing"
-	NoSmoothingHelp="If checked, mouse movement is not smoothed at all"
+		NoSmoothingText="Disable Mouse Smoothing"
+		NoSmoothingHelp="If checked, mouse movement is not smoothed at all"
 
-	UseOldMouseInputText="Use Old Mouse Input"
-	UseOldMouseInputHelp="If checked, mouse input is rounded like in v436, otherwise use v469-style mouse input"
+		UseOldMouseInputText="Use Old Mouse Input"
+		UseOldMouseInputHelp="If checked, mouse input is rounded like in v436, otherwise use v469-style mouse input"
 
-	MinDodgeClickTimeText="Min Dodge Click Time"
-	MinDodgeClickTimeHelp="Minimum time in seconds between two taps to count as dodge"
+		MinDodgeClickTimeText="Min Dodge Click Time"
+		MinDodgeClickTimeHelp="Minimum time in seconds between two taps to count as dodge"
 
-	DesiredNetUpdateRateText="Desired Net Update Rate"
-	DesiredNetUpdateRateHelp="How often your client wants to send a position update to the server per second"
+		DesiredNetUpdateRateText="Desired Net Update Rate"
+		DesiredNetUpdateRateHelp="How often your client wants to send a position update to the server per second"
 
-	DesiredNetspeedText="Desired Netspeed"
-	DesiredNetspeedHelp="IG+ will try keeping your netspeed at this value, if the server allows"
+		DesiredNetspeedText="Desired Netspeed"
+		DesiredNetspeedHelp="IG+ will try keeping your netspeed at this value, if the server allows"
 
-	FakeCAPIntervalText="Fake CAP Interval"
-	FakeCAPIntervalHelp="Server will acknowledge your movement every this many seconds"
+		FakeCAPIntervalText="Fake CAP Interval"
+		FakeCAPIntervalHelp="Server will acknowledge your movement every this many seconds"
 
 	AutoDemoLblText="Auto Demo"
 
-	AutoDemoText="Enable AutoDemo"
-	AutoDemoHelp="If checked, automatically starts recording a demo when the match starts"
+		AutoDemoText="Enable AutoDemo"
+		AutoDemoHelp="If checked, automatically starts recording a demo when the match starts"
 
-	DemoMaskText="Demo Name Mask"
-	DemoMaskHelp="Mask for the name of automatically recorded demos; MUST NOT contain spaces\\n%E --> Name of the map file\\n%F --> Title of the map\\n%D --> Day (two digits)\\n%M --> Month (two digits)\\n%Y --> Year\\n%H --> Hour\\n%N --> Minute\\n%T --> Combined Hour and Minute (two digits each)\\n%C --> Clan Tags (detected by determining common prefix of all players on a team, or 'Unknown')\\n%L --> Name of the recording player\\n%% --> Replaced with a single %"
+		DemoMaskText="Demo Name Mask"
+		DemoMaskHelp="Mask for the name of automatically recorded demos; MUST NOT contain spaces\\n%E --> Name of the map file\\n%F --> Title of the map\\n%D --> Day (two digits)\\n%M --> Month (two digits)\\n%Y --> Year\\n%H --> Hour\\n%N --> Minute\\n%T --> Combined Hour and Minute (two digits each)\\n%C --> Clan Tags (detected by determining common prefix of all players on a team, or 'Unknown')\\n%L --> Name of the recording player\\n%% --> Replaced with a single %"
 
-	DemoPathText="Demo Path"
-	DemoPathHelp="Path to store automatically recorded demos in; MUST NOT contain spaces"
+		DemoPathText="Demo Path"
+		DemoPathHelp="Path to store automatically recorded demos in; MUST NOT contain spaces"
 
-	DemoCharText="Demo Char"
-	DemoCharHelp="Replacement character for those that cannot be used in file-names"
+		DemoCharText="Demo Char"
+		DemoCharHelp="Replacement character for those that cannot be used in file-names"
 
 	ForceModelsLblText="Forced Skins"
 
-	ForceModelsText="Enable Forcing Skins"
-	ForceModelsHelp="If checked, enables forcing of skins of other players"
+		ForceModelsText="Enable Forcing Skins"
+		ForceModelsHelp="If checked, enables forcing of skins of other players"
 
-	DesiredSkinText="Skin - Male Enemies"
-	DesiredSkinHelp="Which skin to use for enemies that use a male skin"
+		DesiredSkinText="Skin - Male Enemies"
+		DesiredSkinHelp="Which skin to use for enemies that use a male skin"
 
-	DesiredSkinFemaleText="Skin - Female Enemies"
-	DesiredSkinFemaleHelp="Which skin to use for enemies that use a female skin"
+		DesiredSkinFemaleText="Skin - Female Enemies"
+		DesiredSkinFemaleHelp="Which skin to use for enemies that use a female skin"
 
-	DesiredTeamSkinText="Skin - Male Friendlies"
-	DesiredTeamSkinHelp="Which skin to use for team-mates that use a male skin"
+		DesiredTeamSkinText="Skin - Male Friendlies"
+		DesiredTeamSkinHelp="Which skin to use for team-mates that use a male skin"
 
-	DesiredTeamSkinFemaleText="Skin - Female Friendlies"
-	DesiredTeamSkinFemaleHelp="Which skin to use for team-mates that use a female skin"
+		DesiredTeamSkinFemaleText="Skin - Female Friendlies"
+		DesiredTeamSkinFemaleHelp="Which skin to use for team-mates that use a female skin"
 
-	ForcedModelDefault="Do Not Force"
-	ForcedModelAphex="Aphex"
-	ForcedModelFemaleCommando="Female Commando"
-	ForcedModelFemaleMercenary="Female Mercenary"
-	ForcedModelFemaleNecris="Female Necris"
-	ForcedModelFemaleMarine="Female Marine"
-	ForcedModelFemaleMetalGuard="Female Metal Guard"
-	ForcedModelFemaleSoldier="Female Soldier"
-	ForcedModelVenom="Venom"
-	ForcedModelFemaleWarMachine="Female War Machine"
-	ForcedModelMaleCommando="Male Commando"
-	ForcedModelMaleMercenary="Male Mercenary"
-	ForcedModelMaleNecris="Male Necris"
-	ForcedModelMaleMarine="Male Marine"
-	ForcedModelMaleMetalGuard="Male Metal Guard"
-	ForcedModelRawSteel="RawSteel"
-	ForcedModelMaleSoldier="Male Soldier"
-	ForcedModelMaleWarMachine="Male War Machine"
-	ForcedModelXan="Xan"
+		ForcedModelDefault="Do Not Force"
+		ForcedModelAphex="Aphex"
+		ForcedModelFemaleCommando="Female Commando"
+		ForcedModelFemaleMercenary="Female Mercenary"
+		ForcedModelFemaleNecris="Female Necris"
+		ForcedModelFemaleMarine="Female Marine"
+		ForcedModelFemaleMetalGuard="Female Metal Guard"
+		ForcedModelFemaleSoldier="Female Soldier"
+		ForcedModelVenom="Venom"
+		ForcedModelFemaleWarMachine="Female War Machine"
+		ForcedModelMaleCommando="Male Commando"
+		ForcedModelMaleMercenary="Male Mercenary"
+		ForcedModelMaleNecris="Male Necris"
+		ForcedModelMaleMarine="Male Marine"
+		ForcedModelMaleMetalGuard="Male Metal Guard"
+		ForcedModelRawSteel="RawSteel"
+		ForcedModelMaleSoldier="Male Soldier"
+		ForcedModelMaleWarMachine="Male War Machine"
+		ForcedModelXan="Xan"
 
 	SuperShockRifleText="IG+ Super Shock Rifle";
 
-	cShockBeamText="Beam Style"
-	cShockBeamHelp="How to render the beams fired by the IG+ SSR"
+		cShockBeamText="Beam Style"
+		cShockBeamHelp="How to render the beams fired by the IG+ SSR"
 
-	cShockBeamDefault="Default"
-	cShockBeamTeamColored="Team Colored"
-	cShockBeamHidden="Hidden"
-	cShockBeamInstant="Instant"
+		cShockBeamDefault="Default"
+		cShockBeamTeamColored="Team Colored"
+		cShockBeamHidden="Hidden"
+		cShockBeamInstant="Instant"
 
-	HideOwnBeamText="Always Hide Own Beams"
-	HideOwnBeamHelp="If checked, your own beams will always be hidden"
+		HideOwnBeamText="Always Hide Own Beams"
+		HideOwnBeamHelp="If checked, your own beams will always be hidden"
 
-	BeamScaleText="Beam Scale"
-	BeamScaleHelp="Diameter of the beam of the IG+ SSR"
+		BeamScaleText="Beam Scale"
+		BeamScaleHelp="Diameter of the beam of the IG+ SSR"
 
-	BeamFadeCurveText="Beam Fade Curve"
-	BeamFadeCurveHelp="Brightness fade curve, 1=linear, 2=quadratic, 3=cubic, etc."
+		BeamFadeCurveText="Beam Fade Curve"
+		BeamFadeCurveHelp="Brightness fade curve, 1=linear, 2=quadratic, 3=cubic, etc."
 
-	BeamDurationText="Beam Duration"
-	BeamDurationHelp="Time in seconds over which the brightness fades"
+		BeamDurationText="Beam Duration"
+		BeamDurationHelp="Time in seconds over which the brightness fades"
 
-	BeamOriginModeText="Beam Origin Mode"
-	BeamOriginModeHelp="Decides where SSR beams will be shown to originate from"
+		BeamOriginModeText="Beam Origin Mode"
+		BeamOriginModeHelp="Decides where SSR beams will be shown to originate from"
 
-	BeamDestinationModeText="Beam Destination Mode"
-	BeamDestinationModeHelp="Decides where SSR beams will be shown to end at"
+		BeamDestinationModeText="Beam Destination Mode"
+		BeamDestinationModeHelp="Decides where SSR beams will be shown to end at"
 
-	BeamModePrecise="Precise"
-	BeamModeAttached="Attached"
+		BeamModePrecise="Precise"
+		BeamModeAttached="Attached"
 
-	SSRRingTypeText="Impact Effect"
-	SSRRingTypeHelp="Decides what effects to play where SSR shots end"
+		SSRRingTypeText="Impact Effect"
+		SSRRingTypeHelp="Decides what effects to play where SSR shots end"
 
-	SSRRingTypeNone="Nothing"
-	SSRRingTypeDefault="Default"
-	SSRRingTypeTeamColored="Team-Colored"
+		SSRRingTypeNone="Nothing"
+		SSRRingTypeDefault="Default"
+		SSRRingTypeTeamColored="Team-Colored"
 
 	FPSLblText="FPS Display"
 
-	FPSDetailText="FPS Detail"
-	FPSDetailHelp="How much detail to show for frame rate; this setting is cumulative"
+		FPSDetailText="FPS Detail"
+		FPSDetailHelp="How much detail to show for frame rate; this setting is cumulative"
 
-	FPSDetailDisabled="Disabled"
-	FPSDetailFPSOnly="FPS"
-	FPSDetailRenTime="Render Time"
-	FPSDetailStdDev="Std. Dev."
-	FPSDetailMinMax="Min/Max"
+		FPSDetailDisabled="Disabled"
+		FPSDetailFPSOnly="FPS"
+		FPSDetailRenTime="Render Time"
+		FPSDetailStdDev="Std. Dev."
+		FPSDetailMinMax="Min/Max"
 
-	FPSCounterSmoothingStrengthText="FPS Smoothing Strength"
-	FPSCounterSmoothingStrengthHelp="Higher values mean individual frames influence the stats less"
+		FPSCounterSmoothingStrengthText="FPS Smoothing Strength"
+		FPSCounterSmoothingStrengthHelp="Higher values mean individual frames influence the stats less"
 
-	FPSLocationText="FPS Location"
-	FPSLocationHelp="Where on screen to show the framerate information"
+		FPSLocationText="FPS Location"
+		FPSLocationHelp="Where on screen to show the framerate information"
 
 	HitSoundsLblText="Hit Sounds"
 
-	HitSoundSourceText="Hit Source"
-	HitSoundSourceHelp="Controls where hit notifications originate from\\nServer --> No notifications for hits that werent, but delayed by ping\\nClient --> Instant notifications, but may not be accurate"
+		HitSoundSourceText="Hit Source"
+		HitSoundSourceHelp="Controls where hit notifications originate from\\nServer --> No notifications for hits that werent, but delayed by ping\\nClient --> Instant notifications, but may not be accurate"
 
-	HitSourceServer="Server"
-	HitSourceClient="Client"
+		HitSourceServer="Server"
+		HitSourceClient="Client"
 
-	EnemyHitSoundsLblText="Enemy Hit Sounds"
+		EnemyHitSoundsLblText="Enemy Hit Sounds"
 
-	EnableHitSoundsText="Enable"
-	EnableHitSoundsHelp="If checked, play a sound whenever you deal damage to enemies"
+		EnableHitSoundsText="Enable"
+		EnableHitSoundsHelp="If checked, play a sound whenever you deal damage to enemies"
 
-	HitSoundPitchShiftText="Pitch Shift"
-	HitSoundPitchShiftHelp="If checked, shift the pitch of hit sounds depending on damage"
+		HitSoundPitchShiftText="Pitch Shift"
+		HitSoundPitchShiftHelp="If checked, shift the pitch of hit sounds depending on damage"
 
-	HitSoundVolumeText="Volume"
-	HitSoundVolumeHelp="Loudness of Hit Sound"
+		HitSoundVolumeText="Volume"
+		HitSoundVolumeHelp="Loudness of Hit Sound"
 
-	SelectedHitSoundText="Sound"
-	SelectedHitSoundHelp="Which sound to play when you damage enemies"
+		SelectedHitSoundText="Sound"
+		SelectedHitSoundHelp="Which sound to play when you damage enemies"
 
-	TeamHitSoundsLblText="Team Hit Sounds"
+		TeamHitSoundsLblText="Team Hit Sounds"
 
-	EnableTeamHitSoundsText="Enable"
-	EnableTeamHitSoundsHelp="If checked, play a sound whenever you deal damage to team-mates"
+		EnableTeamHitSoundsText="Enable"
+		EnableTeamHitSoundsHelp="If checked, play a sound whenever you deal damage to team-mates"
 
-	HitSoundTeamPitchShiftText="Pitch Shift"
-	HitSoundTeamPitchShiftHelp="If checked, shift the pitch of hit sounds depending on damage"
+		HitSoundTeamPitchShiftText="Pitch Shift"
+		HitSoundTeamPitchShiftHelp="If checked, shift the pitch of hit sounds depending on damage"
 
-	HitSoundTeamVolumeText="Volume"
-	HitSoundTeamVolumeHelp="Loudness of Hit Sound"
+		HitSoundTeamVolumeText="Volume"
+		HitSoundTeamVolumeHelp="Loudness of Hit Sound"
 
-	SelectedTeamHitSoundText="Sound"
-	SelectedTeamHitSoundHelp="Which sound to play when you damage team-mates"
+		SelectedTeamHitSoundText="Sound"
+		SelectedTeamHitSoundHelp="Which sound to play when you damage team-mates"
 
 	KillCamLblText="Death Camera"
 
-	EnableKillCamText="Enable Death Cam"
-	EnableKillCamHelp="If checked, camera follows killer after your death"
+		EnableKillCamText="Enable Death Cam"
+		EnableKillCamHelp="If checked, camera follows killer after your death"
 
-	KillCamMinDelayText="Minimum Delay"
-	KillCamMinDelayHelp="Minimum delay in seconds before camera starts following killer"
+		KillCamMinDelayText="Minimum Delay"
+		KillCamMinDelayHelp="Minimum delay in seconds before camera starts following killer"
 
 	KillFeedLblText="Kill Feed"
 
-	EnableKillFeedText="Enable Kill Feed"
-	EnableKillFeedHelp="If checked, show kills using weapon symbols"
+		EnableKillFeedText="Enable Kill Feed"
+		EnableKillFeedHelp="If checked, show kills using weapon symbols"
 
-	KillFeedSpeedText="Speed"
-	KillFeedSpeedHelp="Multiplier, higher numbers make kills disappear faster"
+		KillFeedSpeedText="Speed"
+		KillFeedSpeedHelp="Multiplier, higher numbers make kills disappear faster"
 
-	KillFeedScaleText="Scale"
-	KillFeedScaleHelp="Multiplier, higher numbers make the feed bigger"
+		KillFeedScaleText="Scale"
+		KillFeedScaleHelp="Multiplier, higher numbers make the feed bigger"
 
-	KillFeedLocationText="Location"
-	KillFeedLocationHelp="Where on screen to show the kill feed"
+		KillFeedLocationText="Location"
+		KillFeedLocationHelp="Where on screen to show the kill feed"
 
 	PaddingX=20
 	PaddingY=20
