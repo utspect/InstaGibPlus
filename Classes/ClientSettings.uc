@@ -221,6 +221,22 @@ simulated function EHitSoundSource IntToHitSoundSource(int A) {
 	return HSSRC_Server;
 }
 
+simulated function EHitMarkerSource IntToHitMarkerSource(int A) {
+	switch(A) {
+		case 0: return HMSRC_Server;
+		case 1: return HMSRC_Client;
+	}
+	return HMSRC_Server;
+}
+
+simulated function EHitMarkerColorMode IntToHitMarkerColorMode(int A) {
+	switch(A) {
+		case 0: return HMCM_FriendOrFoe;
+		case 1: return HMCM_TeamColor;
+	}
+	return HMCM_FriendOrFoe;
+}
+
 simulated function string DumpSettings() {
 	return "IG+ Client Settings:"$Chr(10)$
 		GetSetting("bForceModels")$

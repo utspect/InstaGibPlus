@@ -284,6 +284,69 @@ var localized string MoreInformationText;
 	var localized string KillFeedLocationText;
 	var localized string KillFeedLocationHelp;
 
+// Hit Marker
+	var UWindowLabelControl Lbl_HitMarker;
+	var localized string HitMarkerLblText;
+
+	var IGPlus_ComboBox Cmb_HitMarkerSource;
+	var localized string HitMarkerSourceText;
+	var localized string HitMarkerSourceHelp;
+
+	var IGPlus_ComboBox Cmb_HitMarkerColorMode;
+	var localized string HitMarkerColorModeText;
+	var localized string HitMarkerColorModeHelp;
+
+	var localized string HitMarkerColorModeFriendOrFoe;
+	var localized string HitMarkerColorModeTeamColor;
+
+	var IGPlus_EditControl Edit_HitMarkerSize;
+	var localized string HitMarkerSizeText;
+	var localized string HitMarkerSizeHelp;
+
+	var IGPlus_EditControl Edit_HitMarkerOffset;
+	var localized string HitMarkerOffsetText;
+	var localized string HitMarkerOffsetHelp;
+
+	var IGPlus_EditControl Edit_HitMarkerDuration;
+	var localized string HitMarkerDurationText;
+	var localized string HitMarkerDurationHelp;
+
+	var IGPlus_EditControl Edit_HitMarkerDecayExponent;
+	var localized string HitMarkerDecayExponentText;
+	var localized string HitMarkerDecayExponentHelp;
+
+	var UWindowCheckbox Chk_EnableHitMarker;
+	var localized string EnableHitMarkerText;
+	var localized string EnableHitMarkerHelp;
+
+	var UWindowHSliderControl HSld_HitMarkerColorR;
+	var localized string HitMarkerColorRText;
+	var localized string HitMarkerColorRHelp;
+
+	var UWindowHSliderControl HSld_HitMarkerColorG;
+	var localized string HitMarkerColorGText;
+	var localized string HitMarkerColorGHelp;
+
+	var UWindowHSliderControl HSld_HitMarkerColorB;
+	var localized string HitMarkerColorBText;
+	var localized string HitMarkerColorBHelp;
+
+	var UWindowCheckbox Chk_EnableTeamHitMarker;
+	var localized string EnableTeamHitMarkerText;
+	var localized string EnableTeamHitMarkerHelp;
+
+	var UWindowHSliderControl HSld_HitMarkerTeamColorR;
+	var localized string HitMarkerTeamColorRText;
+	var localized string HitMarkerTeamColorRHelp;
+
+	var UWindowHSliderControl HSld_HitMarkerTeamColorG;
+	var localized string HitMarkerTeamColorGText;
+	var localized string HitMarkerTeamColorGHelp;
+
+	var UWindowHSliderControl HSld_HitMarkerTeamColorB;
+	var localized string HitMarkerTeamColorBText;
+	var localized string HitMarkerTeamColorBHelp;
+
 var float PaddingX;
 var float PaddingY;
 var float LineSpacing;
@@ -729,6 +792,25 @@ function Created() {
 	Edit_KillFeedScale = CreateEdit(ECT_Real, KillFeedScaleText, KillFeedScaleHelp, , 64);
 	SLoc_KillFeedLocation = CreateScreenLocation(100, KillFeedLocationText, KillFeedLocationHelp);
 
+	Lbl_HitMarker = CreateSeparator(HitMarkerLblText);
+	Cmb_HitMarkerSource = CreateComboBox(HitMarkerSourceText, HitMarkerSourceHelp, false, 150);
+	SetUpHitSourceComboBox(Cmb_HitMarkerSource);
+	Cmb_HitMarkerColorMode = CreateComboBox(HitMarkerColorModeText, HitMarkerColorModeHelp, false, 150);
+	Cmb_HitMarkerColorMode.AddItem(HitMarkerColorModeFriendOrFoe);
+	Cmb_HitMarkerColorMode.AddItem(HitMarkerColorModeTeamColor);
+	Edit_HitMarkerSize = CreateEdit(ECT_Integer, HitMarkerSizeText, HitMarkerSizeHelp, , 64);
+	Edit_HitMarkerOffset = CreateEdit(ECT_Integer, HitMarkerOffsetText, HitMarkerOffsetHelp, , 64);
+	Edit_HitMarkerDuration = CreateEdit(ECT_Real, HitMarkerDurationText, HitMarkerDurationHelp, , 64);
+	Edit_HitMarkerDecayExponent = CreateEdit(ECT_Real, HitMarkerDecayExponentText, HitMarkerDecayExponentHelp, , 64);
+	Chk_EnableHitMarker = CreateCheckbox(EnableHitMarkerText, EnableHitMarkerHelp);
+	HSld_HitMarkerColorR = CreateSlider(0, 255, 1, HitMarkerColorRText, HitMarkerColorRHelp, 150);
+	HSld_HitMarkerColorG = CreateSlider(0, 255, 1, HitMarkerColorGText, HitMarkerColorGHelp, 150);
+	HSld_HitMarkerColorB = CreateSlider(0, 255, 1, HitMarkerColorBText, HitMarkerColorBHelp, 150);
+	Chk_EnableTeamHitMarker = CreateCheckbox(EnableTeamHitMarkerText, EnableTeamHitMarkerHelp);
+	HSld_HitMarkerTeamColorR = CreateSlider(0, 255, 1, HitMarkerTeamColorRText, HitMarkerTeamColorRHelp, 150);
+	HSld_HitMarkerTeamColorG = CreateSlider(0, 255, 1, HitMarkerTeamColorGText, HitMarkerTeamColorGHelp, 150);
+	HSld_HitMarkerTeamColorB = CreateSlider(0, 255, 1, HitMarkerTeamColorBText, HitMarkerTeamColorBHelp, 150);
+
 	ControlOffset += PaddingY-4;
 
 	Load();
@@ -841,6 +923,21 @@ function Load() {
 	Edit_KillFeedScale.SetValue(string(Settings.KillFeedScale));
 	SLoc_KillFeedLocation.SetLocation(Settings.KillFeedX, Settings.KillFeedY);
 
+	Cmb_HitMarkerSource.SetSelectedIndex(Clamp(Settings.HitMarkerSource, 0, 1));
+	Cmb_HitMarkerColorMode.SetSelectedIndex(Clamp(Settings.HitMarkerColorMode, 0, 1));
+	Edit_HitMarkerSize.SetValue(string(int(Settings.HitMarkerSize)));
+	Edit_HitMarkerOffset.SetValue(string(int(Settings.HitMarkerOffset)));
+	Edit_HitMarkerDuration.SetValue(string(Settings.HitMarkerDuration));
+	Edit_HitMarkerDecayExponent.SetValue(string(Settings.HitMarkerDecayExponent));
+	Chk_EnableHitMarker.bChecked = Settings.bEnableHitMarker;
+	HSld_HitMarkerColorR.SetValue(Settings.HitMarkerColor.R);
+	HSld_HitMarkerColorG.SetValue(Settings.HitMarkerColor.G);
+	HSld_HitMarkerColorB.SetValue(Settings.HitMarkerColor.B);
+	Chk_EnableTeamHitMarker.bChecked = Settings.bEnableTeamHitMarker;
+	HSld_HitMarkerTeamColorR.SetValue(Settings.HitMarkerTeamColor.R);
+	HSld_HitMarkerTeamColorG.SetValue(Settings.HitMarkerTeamColor.G);
+	HSld_HitMarkerTeamColorB.SetValue(Settings.HitMarkerTeamColor.B);
+
 	bLoadSucceeded = true;
 }
 
@@ -919,6 +1016,21 @@ function Save() {
 	Settings.KillFeedSpeed = Max(float(Edit_KillFeedSpeed.GetValue()), 1);
 	Settings.KillFeedScale = Max(float(Edit_KillFeedScale.GetValue()), 1);
 	SLoc_KillFeedLocation.GetLocation(Settings.KillFeedX, Settings.KillFeedY);
+
+	Settings.HitMarkerSource = Settings.IntToHitMarkerSource(Cmb_HitMarkerSource.GetSelectedIndex());
+	Settings.HitMarkerColorMode = Settings.IntToHitMarkerColorMode(Cmb_HitMarkerColorMode.GetSelectedIndex());
+	Settings.HitMarkerSize = int(Edit_HitMarkerSize.GetValue());
+	Settings.HitMarkerOffset = int(Edit_HitMarkerOffset.GetValue());
+	Settings.HitMarkerDuration = float(Edit_HitMarkerDuration.GetValue());
+	Settings.HitMarkerDecayExponent = float(Edit_HitMarkerDecayExponent.GetValue());
+	Settings.bEnableHitMarker = Chk_EnableHitMarker.bChecked;
+	Settings.HitMarkerColor.R = HSld_HitMarkerColorR.GetValue();
+	Settings.HitMarkerColor.G = HSld_HitMarkerColorG.GetValue();
+	Settings.HitMarkerColor.B = HSld_HitMarkerColorB.GetValue();
+	Settings.bEnableTeamHitMarker = Chk_EnableTeamHitMarker.bChecked;
+	Settings.HitMarkerTeamColor.R = HSld_HitMarkerTeamColorR.GetValue();
+	Settings.HitMarkerTeamColor.G = HSld_HitMarkerTeamColorG.GetValue();
+	Settings.HitMarkerTeamColor.B = HSld_HitMarkerTeamColorB.GetValue();
 
 	Settings.SaveConfig();
 }
@@ -1152,6 +1264,53 @@ defaultproperties
 
 		KillFeedLocationText="Location"
 		KillFeedLocationHelp="Where on screen to show the kill feed"
+
+	HitMarkerLblText="Hit Marker"
+
+		HitMarkerSourceText="Hit Source"
+		HitMarkerSourceHelp="Controls where hit notifications originate from\\nServer --> No notifications for hits that werent, but delayed by ping\\nClient --> Instant notifications, but may not be accurate"
+
+		HitMarkerColorModeText="Color Mode"
+		HitMarkerColorModeHelp="Controls how the hit marker is colored in team-based games\\nFriend Or Foe --> Use Enemy/Friendly colors (forced for FFA)\\nTeam Color --> Use color of the team the player belongs to"
+
+		HitMarkerColorModeFriendOrFoe="Friend Or Foe"
+		HitMarkerColorModeTeamColor="Team Color"
+
+		HitMarkerSizeText="Size"
+		HitMarkerSizeHelp="Maximum size of hit marker in pixels"
+
+		HitMarkerOffsetText="Offset"
+		HitMarkerOffsetHelp="Offset from center of screen in pixels"
+
+		HitMarkerDurationText="Duration"
+		HitMarkerDurationHelp="Length of time in seconds to dislay hit marker"
+
+		HitMarkerDecayExponentText="Fade Curve"
+		HitMarkerDecayExponentHelp="Hit marker fade curve, 1=linear, 2=quadratic, 3=cubic, etc."
+
+		EnableHitMarkerText="Enable (Enemy)"
+		EnableHitMarkerHelp="If checked, show a hit marker when you hit enemies"
+
+		HitMarkerColorRText="Color (Enemy) - Red"
+		HitMarkerColorRHelp="Red color component of hit markers for enemies"
+
+		HitMarkerColorGText="Color (Enemy) - Green"
+		HitMarkerColorGHelp="Green color component of hit markers for enemies"
+
+		HitMarkerColorBText="Color (Enemy) - Blue"
+		HitMarkerColorBHelp="Blue color component of hit markers for enemies"
+
+		EnableTeamHitMarkerText="Enable (Team)"
+		EnableTeamHitMarkerHelp="If checked, show a hit marker when you hit team-mates"
+
+		HitMarkerTeamColorRText="Color (Team) - Red"
+		HitMarkerTeamColorRHelp="Red color component of hit markers for team-mates"
+
+		HitMarkerTeamColorGText="Color (Team) - Green"
+		HitMarkerTeamColorGHelp="Green color component of hit markers for team-mates"
+
+		HitMarkerTeamColorBText="Color (Team) - Blue"
+		HitMarkerTeamColorBHelp="Blue color component of hit markers for team-mates"
 
 	PaddingX=20
 	PaddingY=20
