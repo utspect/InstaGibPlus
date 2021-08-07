@@ -999,22 +999,22 @@ function Save() {
 
 	Settings.bEnableHitSounds = Chk_EnableHitSounds.bChecked;
 	Settings.bHitSoundPitchShift = Chk_HitSoundPitchShift.bChecked;
-	Settings.HitSoundVolume = FMax(float(Edit_HitSoundVolume.GetValue()), 1);
+	Settings.HitSoundVolume = float(Edit_HitSoundVolume.GetValue());
 	Settings.SelectedHitSound = Cmb_SelectedHitSound.GetSelectedIndex2();
 
 	Settings.bEnableTeamHitSounds = Chk_EnableTeamHitSounds.bChecked;
 	Settings.bHitSoundTeamPitchShift = Chk_HitSoundTeamPitchShift.bChecked;
-	Settings.HitSoundTeamVolume = FMax(float(Edit_HitSoundTeamVolume.GetValue()), 1);
+	Settings.HitSoundTeamVolume = float(Edit_HitSoundTeamVolume.GetValue());
 	Settings.SelectedTeamHitSound = Cmb_SelectedTeamHitSound.GetSelectedIndex2();
 
 	SaveHitSounds();
 
 	Settings.bEnableKillCam = Chk_EnableKillCam.bChecked;
-	Settings.KillCamMinDelay = Max(float(Edit_KillCamMinDelay.GetValue()), 1);
+	Settings.KillCamMinDelay = float(Edit_KillCamMinDelay.GetValue());
 
 	Settings.bEnableKillFeed = Chk_EnableKillFeed.bChecked;
-	Settings.KillFeedSpeed = Max(float(Edit_KillFeedSpeed.GetValue()), 1);
-	Settings.KillFeedScale = Max(float(Edit_KillFeedScale.GetValue()), 1);
+	Settings.KillFeedSpeed = float(Edit_KillFeedSpeed.GetValue());
+	Settings.KillFeedScale = float(Edit_KillFeedScale.GetValue());
 	SLoc_KillFeedLocation.GetLocation(Settings.KillFeedX, Settings.KillFeedY);
 
 	Settings.HitMarkerSource = Settings.IntToHitMarkerSource(Cmb_HitMarkerSource.GetSelectedIndex());
