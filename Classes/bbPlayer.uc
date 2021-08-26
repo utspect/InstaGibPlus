@@ -590,8 +590,11 @@ simulated event Destroyed() {
 simulated event bool PreTeleport(Teleporter T) {
 	local vector D;
 	D = Location - T.Location;
-	if (VSize(D * vect(1,1,0)) > CollisionRadius + T.CollisionRadius ||
-		Abs(D.Z) > CollisionHeight + T.CollisionHeight
+	if (Region.Zone.IsA('TeleporterZone') == false &&
+		(
+			VSize(D * vect(1,1,0)) > CollisionRadius + T.CollisionRadius ||
+			Abs(D.Z) > CollisionHeight + T.CollisionHeight
+		)
 	) {
 		// Were not touching the teleporter just yet.
 		// Do nothing and
