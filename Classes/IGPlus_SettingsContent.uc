@@ -69,6 +69,18 @@ var localized string MoreInformationText;
 	var localized string FakeCAPIntervalText;
 	var localized string FakeCAPIntervalHelp;
 
+// Advanced
+	var UWindowLabelControl Lbl_Advanced;
+	var localized string AdvancedText;
+
+	var UWindowCheckbox Chk_LogClientMessages;
+	var localized string LogClientMessagesText;
+	var localized string LogClientMessagesHelp;
+
+	var UWindowCheckbox Chk_DebugMovement;
+	var localized string DebugMovementText;
+	var localized string DebugMovementHelp;
+
 // Auto Demo
 	var UWindowLabelControl Lbl_AutoDemo;
 	var localized string AutoDemoLblText;
@@ -725,6 +737,10 @@ function Created() {
 	Edit_DesiredNetspeed = CreateEdit(ECT_Integer, DesiredNetspeedText, DesiredNetspeedHelp, , 64);
 	Edit_FakeCAPInterval = CreateEdit(ECT_Real, FakeCAPIntervalText, FakeCAPIntervalHelp, , 64);
 
+	Lbl_Advanced = CreateSeparator(AdvancedText);
+	Chk_LogClientMessages = CreateCheckbox(LogClientMessagesText, LogClientMessagesHelp);
+	Chk_DebugMovement = CreateCheckbox(DebugMovementText, DebugMovementHelp);
+
 	Lbl_AutoDemo = CreateSeparator(AutoDemoLblText);
 	Chk_AutoDemo = CreateCheckbox(AutoDemoText, AutoDemoHelp);
 	Edit_DemoMask = CreateEditResizable(ECT_Text, DemoMaskText, 0.7, 100, MaxInt, DemoMaskHelp);
@@ -873,6 +889,9 @@ function Load() {
 	Edit_DesiredNetspeed.SetValue(string(Settings.DesiredNetspeed));
 	Edit_FakeCAPInterval.SetValue(string(Settings.FakeCAPInterval));
 
+	Chk_LogClientMessages.bChecked = Settings.bLogClientMessages;
+	Chk_DebugMovement.bChecked = Settings.bDebugMovement;
+
 	Chk_AutoDemo.bChecked = Settings.bAutoDemo;
 	Edit_DemoMask.SetValue(Settings.DemoMask);
 	Edit_DemoPath.SetValue(Settings.DemoPath);
@@ -965,6 +984,9 @@ function Save() {
 	Settings.DesiredNetUpdateRate = int(Edit_DesiredNetUpdateRate.GetValue());
 	Settings.DesiredNetspeed = int(Edit_DesiredNetspeed.GetValue());
 	Settings.FakeCAPInterval = float(Edit_FakeCAPInterval.GetValue());
+
+	Settings.bLogClientMessages = Chk_LogClientMessages.bChecked;
+	Settings.bDebugMovement = Chk_DebugMovement.bChecked;
 
 	Settings.bAutoDemo = Chk_AutoDemo.bChecked;
 	Settings.DemoMask = Edit_DemoMask.GetValue();
@@ -1100,6 +1122,14 @@ defaultproperties
 
 		FakeCAPIntervalText="Fake CAP Interval"
 		FakeCAPIntervalHelp="Server will acknowledge your movement every this many seconds"
+
+	AdvancedText="Advanced"
+
+		LogClientMessagesText="Log Client Messages"
+		LogClientMessagesHelp="If checked, write client messages to log in addition to console"
+
+		DebugMovementText="Trace Movement Input"
+		DebugMovementHelp="If checked, trace movement input to demo"
 
 	AutoDemoLblText="Auto Demo"
 
