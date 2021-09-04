@@ -1,4 +1,4 @@
-class PureDOMHUD expands ChallengeDominationHUD;
+class PureDOMHUD extends ChallengeDominationHUD;
 
 simulated function DrawStatus(Canvas Canvas)
 {

@@ -4,7 +4,7 @@
 // Created by UClasses - (C) 2000 by meltdown@thirdtower.com
 // ============================================================
 
-class PureSN expands SpawnNotify;
+class PureSN extends SpawnNotify;
 
 event PostBeginPlay();	// Ignore
 

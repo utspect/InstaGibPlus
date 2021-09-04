@@ -77,7 +77,7 @@
 //  D   = Destination JumpPad name
 //
 // ============================================================================
-class NN_swJumpPad expands Teleporter;
+class NN_swJumpPad extends Teleporter;
 
 
 enum EAngleMode

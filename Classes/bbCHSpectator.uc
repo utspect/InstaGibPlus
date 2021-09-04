@@ -2,7 +2,7 @@
 // Created by UClasses - (C) 2000 by meltdown@thirdtower.com
 // ============================================================
 
-class bbCHSpectator expands CHSpectator;
+class bbCHSpectator extends CHSpectator;
 
 // AntiSpam
 var float zzLastView1,zzLastView2;

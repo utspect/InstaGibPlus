@@ -1,4 +1,4 @@
-class PureCTFHUD expands ChallengeCTFHUD;
+class PureCTFHUD extends ChallengeCTFHUD;
 
 simulated function DrawStatus(Canvas Canvas)
 {

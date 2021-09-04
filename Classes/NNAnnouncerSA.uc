@@ -1,4 +1,4 @@
-class NNAnnouncerSA expands MessagingSpectator config(System);
+class NNAnnouncerSA extends MessagingSpectator config(System);
 
 var config int AnnounceLevel;
 var NNAnnouncer mut;

@@ -1,4 +1,4 @@
-class NewNetSA expands Arena;
+class NewNetSA extends Arena;
 
 defaultproperties
 {

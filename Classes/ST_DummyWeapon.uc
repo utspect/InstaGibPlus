@@ -1,2 +1,2 @@
-class ST_DummyWeapon expands Weapon;
+class ST_DummyWeapon extends Weapon;
 

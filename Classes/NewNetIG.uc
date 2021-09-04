@@ -1,4 +1,4 @@
-class NewNetIG expands Arena;
+class NewNetIG extends Arena;
 
 function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 {

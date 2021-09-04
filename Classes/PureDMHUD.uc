@@ -1,4 +1,4 @@
-class PureDMHUD expands ChallengeHUD;
+class PureDMHUD extends ChallengeHUD;
 
 simulated function DrawStatus(Canvas Canvas)
 {

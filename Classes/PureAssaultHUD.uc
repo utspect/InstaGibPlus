@@ -1,4 +1,4 @@
-class PureAssaultHUD expands AssaultHUD;
+class PureAssaultHUD extends AssaultHUD;
 
 simulated function DrawStatus(Canvas Canvas)
 {

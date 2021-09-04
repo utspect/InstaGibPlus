@@ -1,4 +1,4 @@
-class PureTDMHUD expands ChallengeTeamHUD;
+class PureTDMHUD extends ChallengeTeamHUD;
 
 simulated function DrawStatus(Canvas Canvas)
 {

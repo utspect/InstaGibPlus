@@ -1,4 +1,4 @@
-class ST_WildcardsWeapons expands TournamentWeapon;
+class ST_WildcardsWeapons extends TournamentWeapon;
 
 var bool bNewNet;
 var Rotator GV;
