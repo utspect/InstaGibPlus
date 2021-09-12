@@ -361,7 +361,7 @@ If `False`, your own footstep sounds will be played.
 
 ## DesiredNetUpdateRate
 **Type: float**  
-**Default: 250**  
+**Default: 200**  
 **Unit: Hz**  
 
 How often you want your client to update the server on your movement. The server places upper and lower limits on this (see [MinNetUpdateRate](#minnetupdaterate), [MaxNetUpdateRate](#maxnetupdaterate)), and the actual update rate will never exceed your netspeed divided by 100.
@@ -879,28 +879,29 @@ Server settings can be found inside InstaGibPlus.ini.
 37. [KillCamDelay](#killcamdelay)
 38. [KillCamDuration](#killcamduration)
 39. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
-40. [bEnableSingleButtonDodge](#benablesinglebuttondodge)
-41. [bUseFlipAnimation](#buseflipanimation)
-42. [bEnableWallDodging](#benablewalldodging)
-43. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
-44. [MaxMultiDodges](#maxmultidodges)
-45. [BrightskinMode](#brightskinmode)
-46. [PlayerScale](#playerscale)
-47. [MinPosError](#minposerror)
-48. [MaxPosError](#maxposerror)
-49. [MaxHitError](#maxhiterror)
-50. [MaxJitterTime](#maxjittertime)
-51. [MinNetUpdateRate](#minnetupdaterate)
-52. [MaxNetUpdateRate](#maxnetupdaterate)
-53. [bEnableServerExtrapolation](#benableserverextrapolation)
-54. [bEnableServerPacketReordering](#benableserverpacketreordering)
-55. [bEnableLoosePositionCheck](#benableloosepositioncheck)
-56. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
-57. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
-58. [bEnableJitterBounding](#benablejitterbounding)
-59. [ShowTouchedPackage](#showtouchedpackage)
-60. [ExcludeMapsForKickers](#excludemapsforkickers)
-61. [ForcedSettings](#forcedsettings)
+40. [bOldLandingMomentum](#boldlandingmomentum)
+41. [bEnableSingleButtonDodge](#benablesinglebuttondodge)
+42. [bUseFlipAnimation](#buseflipanimation)
+43. [bEnableWallDodging](#benablewalldodging)
+44. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
+45. [MaxMultiDodges](#maxmultidodges)
+46. [BrightskinMode](#brightskinmode)
+47. [PlayerScale](#playerscale)
+48. [MinPosError](#minposerror)
+49. [MaxPosError](#maxposerror)
+50. [MaxHitError](#maxhiterror)
+51. [MaxJitterTime](#maxjittertime)
+52. [MinNetUpdateRate](#minnetupdaterate)
+53. [MaxNetUpdateRate](#maxnetupdaterate)
+54. [bEnableServerExtrapolation](#benableserverextrapolation)
+55. [bEnableServerPacketReordering](#benableserverpacketreordering)
+56. [bEnableLoosePositionCheck](#benableloosepositioncheck)
+57. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
+58. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
+59. [bEnableJitterBounding](#benablejitterbounding)
+60. [ShowTouchedPackage](#showtouchedpackage)
+61. [ExcludeMapsForKickers](#excludemapsforkickers)
+62. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1319,6 +1320,13 @@ KillCam follows the killing player for this long after its start.
 **Default: False**  
 
 If False, players will be slowed down to ground speed upon landing, which prevents Bunny Hopping. If True, landing works like before.
+
+## bOldLandingMomentum
+
+**Type: bool**  
+**Default: True**  
+
+If True, players retain the momentum of their in-air movement upon landing. If False, players can cancel their momentum by moving in the opposite direction of their in-air movement.
 
 ## bEnableSingleButtonDodge
 

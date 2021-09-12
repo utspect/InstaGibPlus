@@ -1578,7 +1578,7 @@ event PlayerInput( float DeltaTime )
 	}
 	else
 	{
-		// Forward.
+		// Turning.
 		aTurn  += aBaseX * FOVScale + SmoothMouseX;
 		aBaseX  = 0;
 	}
@@ -6544,21 +6544,6 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 	return bCant;
 }
 
-function CalcAvgTick()
-{
-	local float CurrentTime;
-	CurrentTime = Level.TimeSeconds;
-	if (LastTick > 0)
-		AvgTickDiff = CurrentTime - LastTick;
-	else
-		AvgTickDiff = (AvgTickDiff + CurrentTime - LastTick) / 2;
-	LastTick = CurrentTime;
-	if (Level.NetMode == NM_Client)
-		ClientMessage(AvgTickDiff);
-	else
-		Log(AvgTickDiff);
-}
-
 function xxPlayerTickEvents(float DeltaTime)
 {
 	local float CurrentTime;
@@ -6908,14 +6893,6 @@ event PostRender( canvas zzCanvas )
 	local int CH;
 	local int NetspeedTarget;
 	local int Netspeed;
-
-	if (zzbRepVRData)
-	{	// Received data through demo replication.
-		ViewRotation.Yaw = zzRepVRYaw;
-		ViewRotation.Pitch = zzRepVRPitch;
-		ViewRotation.Roll = 0;
-		EyeHeight = zzRepVREye;
-	}
 
 	if (Settings.bUseCrosshairFactory) {
 		CH = MyHud.Crosshair;

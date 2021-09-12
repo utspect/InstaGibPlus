@@ -355,7 +355,7 @@ defaultproperties
 	BeamOriginMode=0
 	BeamDestinationMode=0
 	SSRRingType=1
-	DesiredNetUpdateRate=250.0
+	DesiredNetUpdateRate=200.0
 	DesiredNetspeed=25000
 	bNoSmoothing=True
 	bNoOwnFootsteps=False
