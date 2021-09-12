@@ -3,7 +3,7 @@ class ClientSuperShockBeam extends Effects;
 // Settings
 var int Team;
 var float Size;
-var byte Curve;
+var float Curve;
 var float Duration;
 var vector MoveAmount;
 var int NumPuffs;
@@ -15,36 +15,25 @@ var ClientSuperShockBeam Next;
 var ClientSuperShockBeam Free;
 
 simulated function Tick(float DeltaTime) {
-    local byte x;
-    local float d;
-
     if (Level.NetMode != NM_DedicatedServer) {
-        d = TimeLeft / Duration;
-
-        ScaleGlow = 1;
-        for (x = 0; x < Curve; x++)
-            ScaleGlow *= d;
+        ScaleGlow = (TimeLeft / Duration) ** Curve;
 
         AmbientGlow = ScaleGlow * 210;
         if (Team >= 0)
             LightBrightness = ScaleGlow * 128;
 
         TimeLeft -= DeltaTime;
-        if (TimeLeft <= 0.0)
+        if (TimeLeft <= 0.0) {
             FreeBeam(self);
+        }
     }
-}
-
-simulated function PostBeginPlay() {
-    if (Level.NetMode != NM_DedicatedServer)
-        SetTimer(0.05, false);
 }
 
 simulated function SetProperties(int pTeam, float pSize, float pCurve, float pDuration, vector pMoveAmount, int pNumPuffs) {
     Team = pTeam;
     Size = pSize;
     Duration = pDuration;
-    Curve = Clamp(pCurve, 1, 6);
+    Curve = pCurve;
     MoveAmount = pMoveAmount;
     NumPuffs = pNumPuffs;
 
@@ -88,6 +77,9 @@ simulated function SetProperties(int pTeam, float pSize, float pCurve, float pDu
     }
     DrawScale = 0.44 * Size;
     TimeLeft = Duration;
+
+    if (Level.NetMode != NM_DedicatedServer)
+        SetTimer(0.05, false);
 }
 
 simulated function Timer() {
@@ -99,6 +91,17 @@ simulated function Timer() {
         r.SetRotation(Rotation);
         r.SetProperties(Team,Size,Curve,Duration,MoveAmount, NumPuffs - 1);
     }
+}
+
+static final function ResetBeam(ClientSuperShockBeam Beam) {
+    Beam.Texture = default.Texture;
+    Beam.Mesh = default.Mesh;
+    Beam.LightType = default.LightType;
+    Beam.LightEffect = default.LightEffect;
+    Beam.LightBrightness = default.LightBrightness;
+    Beam.LightSaturation = default.LightSaturation;
+    Beam.LightRadius = default.LightRadius;
+    Beam.LightHue = default.LightHue;
 }
 
 static final function ClientSuperShockBeam AllocBeam(PlayerPawn P) {
@@ -115,6 +118,7 @@ static final function ClientSuperShockBeam AllocBeam(PlayerPawn P) {
         Beam = P.Spawn(class'ClientSuperShockBeam', P);
     }
 
+    ResetBeam(Beam);
     return Beam;
 }
 

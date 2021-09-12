@@ -7,8 +7,14 @@ static function string GetString(
     optional PlayerReplicationInfo RelatedPRI_1,
     optional PlayerReplicationInfo RelatedPRI_2,
     optional Object OptionalObject
-    )
-{
+) {
+    local class<TournamentGameInfo> TGI;
+
+    if (RelatedPRI_1 != none && RelatedPRI_1.Level.Game != none)
+        TGI = class<TournamentGameInfo>(RelatedPRI_1.Level.Game.class);
+    if (TGI == none)
+        TGI = class'TournamentGameInfo';
+
     switch (Switch)
     {
         case 0:
@@ -35,39 +41,39 @@ static function string GetString(
             if (RelatedPRI_1 == None)
                 return "";
             if (RelatedPRI_1.bIsFemale)
-                return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.FemaleSuicideMessage;
+                return RelatedPRI_1.PlayerName$TGI.Default.FemaleSuicideMessage;
             else
-                return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.MaleSuicideMessage;
+                return RelatedPRI_1.PlayerName$TGI.Default.MaleSuicideMessage;
             break;
         case 2: // Fell
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.FallMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.FallMessage;
             break;
         case 3: // Eradicated (Used for runes, but not in UT)
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.ExplodeMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.ExplodeMessage;
             break;
         case 4: // Drowned
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.DrownedMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.DrownedMessage;
             break;
         case 5: // Burned
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.BurnedMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.BurnedMessage;
             break;
         case 6: // Corroded
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.CorrodedMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.CorrodedMessage;
             break;
         case 7: // Mortared
             if (RelatedPRI_1 == None)
                 return "";
-            return RelatedPRI_1.PlayerName$class'TournamentGameInfo'.Default.MortarMessage;
+            return RelatedPRI_1.PlayerName$TGI.Default.MortarMessage;
             break;
         case 8: // Telefrag
             if (RelatedPRI_1 == None)
@@ -91,15 +97,30 @@ static function ClientReceive(
     optional PlayerReplicationInfo RelatedPRI_2,
     optional Object OptionalObject
 ) {
+    local MutKillFeed KFMut;
+    if (P.myHUD != None) {
+        foreach P.AllActors(class'MutKillFeed', KFMut)
+            break;
+        if (P.IsA('bbPlayer') == false ||
+            bbPlayer(P).Settings.bEnableKillFeed == false ||
+            KFMut == none
+        ) {
+            P.myHUD.LocalizedMessage(Default.Class, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
+        }
+    }
+
+    if (Default.bBeep && P.bMessageBeep)
+        P.PlayBeepSound();
+
+    if (Default.bIsConsoleMessage) {
+        if ((P.Player != None) && (P.Player.Console != None))
+            P.Player.Console.AddString(Static.GetString(Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject));
+    }
+
     if (P == RelatedPRI_1.Owner || (P.ViewTarget != none && P.ViewTarget == RelatedPRI_1.Owner)) {
         // Interdict and send the child message instead.
         if ( P.myHUD != None ) {
             P.myHUD.LocalizedMessage(Default.ChildMessage, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-            P.myHUD.LocalizedMessage(Default.Class, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-        }
-
-        if (Default.bIsConsoleMessage) {
-            P.Player.Console.AddString(Static.GetString( Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject ));
         }
 
         if (RelatedPRI_1.Owner.IsA('TournamentPlayer')) { // ie. not a Bot
@@ -115,13 +136,10 @@ static function ClientReceive(
                 TournamentPlayer(RelatedPRI_1.Owner).MultiLevel = 0;
             }
         }
-        if (ChallengeHUD(P.MyHUD) != None)
-            ChallengeHUD(P.MyHUD).ScoreTime = P.Level.TimeSeconds;
-    } else if (P == RelatedPRI_2.Owner || (P.ViewTarget != none && P.ViewTarget == RelatedPRI_2.Owner)) {
+        if (ChallengeHUD(P.myHUD) != None)
+            ChallengeHUD(P.myHUD).ScoreTime = P.Level.TimeSeconds;
+    } else if (RelatedPRI_2 != none && (P == RelatedPRI_2.Owner || (P.ViewTarget != none && P.ViewTarget == RelatedPRI_2.Owner))) {
         P.ReceiveLocalizedMessage(class'VictimMessage', 0, RelatedPRI_1);
-        Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
-    } else {
-        Super.ClientReceive(P, Switch, RelatedPRI_1, RelatedPRI_2, OptionalObject);
     }
 }
 

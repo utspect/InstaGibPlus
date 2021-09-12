@@ -1,0 +1,290 @@
+[Public]
+Object=(Name=InstaGibPlus8.ST_Mutator,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 ST_Mutator,InstaGibPlus8 ST_Mutator")
+Object=(Name=InstaGibPlus8.PureStatMutator,Class=Class,MetaClass=Engine.Mutator,Description="PureStatMutator,<Insert description here>")
+Object=(Name=InstaGibPlus8.UTPure,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 UTPure,InstaGibPlus8 UTPure")
+Object=(Name=InstaGibPlus8.MutKillFeed,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 Kill Feed,InstaGibPlus8 Kill Feed Mutator")
+Object=(Name=InstaGibPlus8.PureClickBoard,Class=Class,MetaClass=Engine.Mutator,Description="PureClickBoard,<Insert description here>")
+Object=(Name=InstaGibPlus8.NewNetArena,Class=Class,MetaClass=Engine.Mutator,Description="NewNetArena,<Insert description here>")
+Object=(Name=InstaGibPlus8.NewNetIG,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 NewNetIG,InstaGibPlus8 NewNetIG")
+Object=(Name=InstaGibPlus8.NNAnnouncer,Class=Class,MetaClass=Engine.Mutator,Description="NNAnnouncer,<Insert description here>")
+Object=(Name=InstaGibPlus8.DisableNewNet,Class=Class,MetaClass=Engine.Mutator,Description="DisableNewNet,<Insert description here>")
+Object=(Name=InstaGibPlus8.DisableWeapons,Class=Class,MetaClass=Engine.Mutator,Description="DisableWeapons,<Insert description here>")
+Object=(Name=InstaGibPlus8.NewNetSA,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 NewNetSA,InstaGibPlus8 NewNetSA")
+Object=(Name=InstaGibPlus8.NN_ShockRifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_sgShockRifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.NN_ASMD,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.NN_SuperShockRifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.NN_SniperRifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_ImpactHammer,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_enforcer,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_UT_FlakCannon,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_SniperRifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_WarheadLauncher,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_minigun2,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_SuperShockRifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_ripper,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_PulseGun,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_ShockRifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_UT_Eightball,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_ut_biorifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_Translocator,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_WildcardsWeapons,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.NN_SniperArenaRifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus8.ST_DummyWeapon,Class=Class,MetaClass=Engine.Weapon)
+
+[IGPlus_SettingsContent]
+MoreInformationText="Right-click on settings to get more information"
+GeneralText="General"
+ShootDeadText="Enable Shooting Corpses"
+ShootDeadHelp="If checked, corpses can be hit by your lag-compensated shots"
+DoEndShotText="Take Screenshot After Match"
+DoEndShotHelp="If checked, automatically takes a screenshot after the end of a match"
+UnlitSkinsText="Show Player Skins Unlit"
+UnlitSkinsHelp="If checked and allowed by server, skins of players will not be affected by lighting"
+NoOwnFootstepsText="Disable Own Footsteps"
+NoOwnFootstepsHelp="If checked, dont play sounds for your own footsteps"
+ReduceEyeHeightInAirText="Reduce EyeHeight In Air"
+ReduceEyeHeightInAirHelp="If checked, EyeHeight is reduced while player is in the air"
+AllowWeaponShakeText="Allow Weapon Shake"
+AllowWeaponShakeHelp="If checked, weapons can shake the camera when fired"
+AutoReadyText="Auto Ready"
+AutoReadyHelp="If checked, automatically ready up with the first spawn during warmup"
+ShowDeathReportText="Show Death Report"
+ShowDeathReportHelp="If checked, prints a report of damage taken and its source since when you last healed"
+SmoothFOVChangesText="Smooth FOV Changes"
+SmoothFOVChangesHelp="If checked, changes to your FOV are smoothed"
+NoSmoothingText="Disable Mouse Smoothing"
+NoSmoothingHelp="If checked, mouse movement is not smoothed at all"
+UseOldMouseInputText="Use Old Mouse Input"
+UseOldMouseInputHelp="If checked, mouse input is rounded like in v436, otherwise use v469-style mouse input"
+MinDodgeClickTimeText="Min Dodge Click Time"
+MinDodgeClickTimeHelp="Minimum time in seconds between two taps to count as dodge"
+DesiredNetUpdateRateText="Desired Net Update Rate"
+DesiredNetUpdateRateHelp="How often your client wants to send a position update to the server per second"
+DesiredNetspeedText="Desired Netspeed"
+DesiredNetspeedHelp="IG+ will try keeping your netspeed at this value, if the server allows"
+FakeCAPIntervalText="Fake CAP Interval"
+FakeCAPIntervalHelp="Server will acknowledge your movement every this many seconds"
+AdvancedText="Advanced"
+LogClientMessagesText="Log Client Messages"
+LogClientMessagesHelp="If checked, write client messages to log in addition to console"
+DebugMovementText="Trace Movement Input"
+DebugMovementHelp="If checked, trace movement input to demo"
+AutoDemoLblText="Auto Demo"
+AutoDemoText="Enable AutoDemo"
+AutoDemoHelp="If checked, automatically starts recording a demo when the match starts"
+DemoMaskText="Demo Name Mask"
+DemoMaskHelp="Mask for the name of automatically recorded demos; MUST NOT contain spaces\n%E --> Name of the map file\n%F --> Title of the map\n%D --> Day (two digits)\n%M --> Month (two digits)\n%Y --> Year\n%H --> Hour\n%N --> Minute\n%T --> Combined Hour and Minute (two digits each)\n%C --> Clan Tags (detected by determining common prefix of all players on a team, or 'Unknown')\n%L --> Name of the recording player\n%% --> Replaced with a single %"
+DemoPathText="Demo Path"
+DemoPathHelp="Path to store automatically recorded demos in; MUST NOT contain spaces"
+DemoCharText="Demo Char"
+DemoCharHelp="Replacement character for those that cannot be used in file-names"
+ForceModelsLblText="Forced Skins"
+ForceModelsText="Enable Forcing Skins"
+ForceModelsHelp="If checked, enables forcing of skins of other players"
+DesiredSkinText="Skin - Male Enemies"
+DesiredSkinHelp="Which skin to use for enemies that use a male skin"
+DesiredSkinFemaleText="Skin - Female Enemies"
+DesiredSkinFemaleHelp="Which skin to use for enemies that use a female skin"
+DesiredTeamSkinText="Skin - Male Friendlies"
+DesiredTeamSkinHelp="Which skin to use for team-mates that use a male skin"
+DesiredTeamSkinFemaleText="Skin - Female Friendlies"
+DesiredTeamSkinFemaleHelp="Which skin to use for team-mates that use a female skin"
+ForcedModelDefault="Do Not Force"
+ForcedModelAphex="Aphex"
+ForcedModelFemaleCommando="Female Commando"
+ForcedModelFemaleMercenary="Female Mercenary"
+ForcedModelFemaleNecris="Female Necris"
+ForcedModelFemaleMarine="Female Marine"
+ForcedModelFemaleMetalGuard="Female Metal Guard"
+ForcedModelFemaleSoldier="Female Soldier"
+ForcedModelVenom="Venom"
+ForcedModelFemaleWarMachine="Female War Machine"
+ForcedModelMaleCommando="Male Commando"
+ForcedModelMaleMercenary="Male Mercenary"
+ForcedModelMaleNecris="Male Necris"
+ForcedModelMaleMarine="Male Marine"
+ForcedModelMaleMetalGuard="Male Metal Guard"
+ForcedModelRawSteel="RawSteel"
+ForcedModelMaleSoldier="Male Soldier"
+ForcedModelMaleWarMachine="Male War Machine"
+ForcedModelXan="Xan"
+SuperShockRifleText="IG+ Super Shock Rifle"
+cShockBeamText="Beam Style"
+cShockBeamHelp="How to render the beams fired by the IG+ SSR"
+cShockBeamDefault="Default"
+cShockBeamTeamColored="Team Colored"
+cShockBeamHidden="Hidden"
+cShockBeamInstant="Instant"
+HideOwnBeamText="Always Hide Own Beams"
+HideOwnBeamHelp="If checked, your own beams will always be hidden"
+BeamScaleText="Beam Scale"
+BeamScaleHelp="Diameter of the beam of the IG+ SSR"
+BeamFadeCurveText="Beam Fade Curve"
+BeamFadeCurveHelp="Brightness fade curve, 1=linear, 2=quadratic, 3=cubic, etc."
+BeamDurationText="Beam Duration"
+BeamDurationHelp="Time in seconds over which the brightness fades"
+BeamOriginModeText="Beam Origin Mode"
+BeamOriginModeHelp="Decides where SSR beams will be shown to originate from"
+BeamDestinationModeText="Beam Destination Mode"
+BeamDestinationModeHelp="Decides where SSR beams will be shown to end at"
+BeamModePrecise="Precise"
+BeamModeAttached="Attached"
+SSRRingTypeText="Impact Effect"
+SSRRingTypeHelp="Decides what effects to play where SSR shots end"
+SSRRingTypeNone="Nothing"
+SSRRingTypeDefault="Default"
+SSRRingTypeTeamColored="Team-Colored"
+FPSLblText="FPS Display"
+FPSDetailText="FPS Detail"
+FPSDetailHelp="How much detail to show for frame rate; this setting is cumulative"
+FPSDetailDisabled="Disabled"
+FPSDetailFPSOnly="FPS"
+FPSDetailRenTime="Render Time"
+FPSDetailStdDev="Std. Dev."
+FPSDetailMinMax="Min/Max"
+FPSCounterSmoothingStrengthText="FPS Smoothing Strength"
+FPSCounterSmoothingStrengthHelp="Higher values mean individual frames influence the stats less"
+FPSLocationText="FPS Location"
+FPSLocationHelp="Where on screen to show the framerate information"
+HitSoundsLblText="Hit Sounds"
+HitSoundSourceText="Hit Source"
+HitSoundSourceHelp="Controls where hit notifications originate from\nServer --> No notifications for hits that werent, but delayed by ping\nClient --> Instant notifications, but may not be accurate"
+HitSourceServer="Server"
+HitSourceClient="Client"
+EnemyHitSoundsLblText="Enemy Hit Sounds"
+EnableHitSoundsText="Enable"
+EnableHitSoundsHelp="If checked, play a sound whenever you deal damage to enemies"
+HitSoundPitchShiftText="Pitch Shift"
+HitSoundPitchShiftHelp="If checked, shift the pitch of hit sounds depending on damage"
+HitSoundVolumeText="Volume"
+HitSoundVolumeHelp="Loudness of Hit Sound"
+SelectedHitSoundText="Sound"
+SelectedHitSoundHelp="Which sound to play when you damage enemies"
+TeamHitSoundsLblText="Team Hit Sounds"
+EnableTeamHitSoundsText="Enable"
+EnableTeamHitSoundsHelp="If checked, play a sound whenever you deal damage to team-mates"
+HitSoundTeamPitchShiftText="Pitch Shift"
+HitSoundTeamPitchShiftHelp="If checked, shift the pitch of hit sounds depending on damage"
+HitSoundTeamVolumeText="Volume"
+HitSoundTeamVolumeHelp="Loudness of Hit Sound"
+SelectedTeamHitSoundText="Sound"
+SelectedTeamHitSoundHelp="Which sound to play when you damage team-mates"
+KillCamLblText="Death Camera"
+EnableKillCamText="Enable Death Cam"
+EnableKillCamHelp="If checked, camera follows killer after your death"
+KillCamMinDelayText="Minimum Delay"
+KillCamMinDelayHelp="Minimum delay in seconds before camera starts following killer"
+KillFeedLblText="Kill Feed"
+EnableKillFeedText="Enable Kill Feed"
+EnableKillFeedHelp="If checked, show kills using weapon symbols"
+KillFeedSpeedText="Speed"
+KillFeedSpeedHelp="Multiplier, higher numbers make kills disappear faster"
+KillFeedScaleText="Scale"
+KillFeedScaleHelp="Multiplier, higher numbers make the feed bigger"
+KillFeedLocationText="Location"
+KillFeedLocationHelp="Where on screen to show the kill feed"
+HitMarkerLblText="Hit Marker"
+HitMarkerSourceText="Hit Source"
+HitMarkerSourceHelp="Controls where hit notifications originate from\nServer --> No notifications for hits that werent, but delayed by ping\nClient --> Instant notifications, but may not be accurate"
+HitMarkerColorModeText="Color Mode"
+HitMarkerColorModeHelp="Controls how the hit marker is colored in team-based games\nFriend Or Foe --> Use Enemy/Friendly colors (forced for FFA)\nTeam Color --> Use color of the team the player belongs to"
+HitMarkerColorModeFriendOrFoe="Friend Or Foe"
+HitMarkerColorModeTeamColor="Team Color"
+HitMarkerSizeText="Size"
+HitMarkerSizeHelp="Maximum size of hit marker in pixels"
+HitMarkerOffsetText="Offset"
+HitMarkerOffsetHelp="Offset from center of screen in pixels"
+HitMarkerDurationText="Duration"
+HitMarkerDurationHelp="Length of time in seconds to dislay hit marker"
+HitMarkerDecayExponentText="Fade Curve"
+HitMarkerDecayExponentHelp="Hit marker fade curve, 1=linear, 2=quadratic, 3=cubic, etc."
+EnableHitMarkerText="Enable (Enemy)"
+EnableHitMarkerHelp="If checked, show a hit marker when you hit enemies"
+HitMarkerColorRText="Color (Enemy) - Red"
+HitMarkerColorRHelp="Red color component of hit markers for enemies"
+HitMarkerColorGText="Color (Enemy) - Green"
+HitMarkerColorGHelp="Green color component of hit markers for enemies"
+HitMarkerColorBText="Color (Enemy) - Blue"
+HitMarkerColorBHelp="Blue color component of hit markers for enemies"
+EnableTeamHitMarkerText="Enable (Team)"
+EnableTeamHitMarkerHelp="If checked, show a hit marker when you hit team-mates"
+HitMarkerTeamColorRText="Color (Team) - Red"
+HitMarkerTeamColorRHelp="Red color component of hit markers for team-mates"
+HitMarkerTeamColorGText="Color (Team) - Green"
+HitMarkerTeamColorGHelp="Green color component of hit markers for team-mates"
+HitMarkerTeamColorBText="Color (Team) - Blue"
+HitMarkerTeamColorBHelp="Blue color component of hit markers for team-mates"
+
+[NN_ASMD]
+WeaponDescription="Classification: Energy RiflenPrimary Fire: Lightning-Fast Burst of focused energy.nSecondary Fire: Unstable Energy projectile, expands radially.nTechniques: Hitting the secondary fire energy projectiles with the regular fire's energy will cause an immensely powerful explosion."
+PickupMessage="You got the ASMD"
+ItemName="ASMD"
+
+[IGPlus_DeathMessagePlus]
+KilledString="was killed by"
+
+[bbTBoss]
+MenuName="Boss"
+
+[ST_TBossBot]
+MenuName="Boss"
+
+[IGPlus_SettingsDialog]
+WindowTitle="IG+ Settings"
+
+[IGPlus_SettingsScroll]
+SaveButtonText="Save"
+SaveButtonToolTip="Saves the current settings to InstaGibPlus.ini"
+
+[MMultiKillMessage]
+DoubleKillString="Double Kill!"
+TripleKillString="Triple Kill!"
+MultiKillString="Multi Kill!"
+MegaKillString="Mega Kill!"
+UltraKillString="ULTRA KILL!!"
+MonsterKillString="M O N S T E R  K I L L !!!"
+LudicrousKillString="L U D I C R O U S  K I L L !!!"
+HolyShitString="H O L Y  S H I T!!!"
+
+[ST_SpecialMessage]
+SpecialMessage[1]="Deflect!"
+SpecialMessage[4]="Direct Hit Bio!"
+SpecialMessage[5]="Excellent!"
+SpecialMessage[6]="Block!"
+SpecialMessage[7]="Standstill Combo!"
+SpecialMessage[8]="Dual Midair!"
+SpecialMessage[12]="Direct Hit Ripper!"
+SpecialMessage[13]="8 Hit Streak!"
+SpecialMessage[14]="Perfect Flak +8!"
+SpecialMessage[15]="Direct Hit Slug!"
+SpecialMessage[16]="Direct Hit Rocket!"
+SpecialMessage[17]="Non-bouncey Pipe!"
+SpecialMessage2[0]="Capture Assist!"
+SpecialMessage2[1]="Solo Capture!"
+SpecialMessage2[2]="Close Call!"
+
+[bbTMale1]
+MenuName="Male Commando"
+
+[bbTMale2]
+MenuName="Male Soldier"
+
+[bbTFemale2]
+MenuName="Female Soldier"
+
+[bbTFemale1]
+MenuName="Female Commando"
+
+[ST_TMale2Bot]
+MenuName="Male Soldier"
+
+[ST_TMale1Bot]
+MenuName="Male Commando"
+
+[ST_TFemale1Bot]
+MenuName="Female Commando"
+
+[ST_TFemale2Bot]
+MenuName="Female Soldier"
+

@@ -282,8 +282,12 @@ simulated function float GetMinHeadshotZ(Pawn Other) {
 	local bbPlayer P;
 
 	P = bbPlayer(Other);
-	if (P != none)
-		return (BodyHeight - 0.70 * P.DuckFraction) * P.CollisionHeight;
+	if (P != none) {
+		if (P.Role < ROLE_Authority)
+			return (BodyHeight - 0.70 * P.DuckFractionRepl/255.0) * P.CollisionHeight;
+		else
+			return (BodyHeight - 0.70 * P.DuckFraction) * P.CollisionHeight;
+	}
 
 
 	return BodyHeight * Other.CollisionHeight;

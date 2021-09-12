@@ -37,10 +37,8 @@ var float debugClientLocError;
 var bool debugClientForceUpdate;
 var int debugNumOfForcedUpdates;
 var float clientLastUpdateTime;
-var int debugLastMoveCounter;
 var int debugServerMoveCallsSent;
 var int debugServerMoveCallsReceived;
-var int debugServerMoveCallsLost;
 
 // Control stuff
 var PureInfo zzInfoThing;	// Registers diverse stuff.
@@ -70,7 +68,7 @@ var rotator zzNN_ViewRot;
 var actor   zzNN_HitActor, zzOldBase;
 var Vector  zzNN_HitLoc, zzClientHitNormal, zzClientHitLocation, zzNN_HitDiff, zzNN_HitLocLast, zzNN_HitNormalLast, zzNN_ClientLoc, zzNN_ClientVel;
 var bool    zzbIsWarmingUp, zzbFakeUpdate, zzbForceUpdate, zzbNN_Special, zzbNN_ReleasedFire, zzbNN_ReleasedAltFire;
-var float   zzNN_Accuracy, zzLastStuffUpdate, zzNextTimeTime, zzLastFallVelZ, zzLastClientErr, zzForceUpdateUntil, zzIgnoreUpdateUntil, zzLastLocDiff, zzSpawnedTime;
+var float   zzNN_Accuracy, zzLastStuffUpdate, zzNextTimeTime, zzLastClientErr, zzForceUpdateUntil, zzIgnoreUpdateUntil, zzLastLocDiff, zzSpawnedTime;
 var TournamentWeapon zzGrappling;
 var float zzGrappleTime;
 var float LastFireTimeStamp;
@@ -241,6 +239,7 @@ var float SecondaryDodgeSpeedZ;
 var float DodgeEndVelocity;
 var float JumpEndVelocity;
 var bool bJumpingPreservesMomentum;
+var bool bOldLandingMomentum;
 var bool bUseFlipAnimation;
 var bool bCanWallDodge;
 var bool bDodging;
@@ -298,6 +297,8 @@ var float IGPlus_ZoomToggle_SensitivityFactorX;
 var float IGPlus_ZoomToggle_SensitivityFactorY;
 
 var ReplicationInfo IGPlus_AdditionalReplicationInfo;
+var bool IGPlus_TryOpenSettingsMenu;
+var IGPlus_SettingsDialog IGPlus_SettingsMenu;
 
 replication
 {
@@ -309,6 +310,7 @@ replication
 		bEnableSingleButtonDodge,
 		bIs469Server,
 		bJumpingPreservesMomentum,
+		bOldLandingMomentum,
 		BrightskinMode,
 		bUseFastWeaponSwitch,
 		bUseFlipAnimation,
@@ -342,7 +344,6 @@ replication
 		debugClientLocError,
 		debugNumOfForcedUpdates,
 		debugServerMoveCallsReceived,
-		debugServerMoveCallsLost,
 		ExtrapolationDelta;
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -362,6 +363,7 @@ replication
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Functions Server -> Client
 	reliable if ( Role == ROLE_Authority )
+		IGPlusMenu,
 		Ready,
 		xxClientKicker,
 		xxClientSwJumpPad,
@@ -461,6 +463,16 @@ replication
 //XC_Engine interface
 native(1719) final function bool IsInPackageMap( optional string PkgName, optional bool bServerPackagesOnly);
 
+static final operator(34) int or_eq (out int A, int B) {
+	A = A | B;
+	return A;
+}
+
+static final operator(34) int and_eq (out int A, int B) {
+	A = A & B;
+	return A;
+}
+
 function ReceiveWeaponEffect(
 	class<WeaponEffect> Effect,
 	PlayerReplicationInfo SourcePRI,
@@ -471,7 +483,17 @@ function ReceiveWeaponEffect(
 	vector TargetOffset,
 	vector HitNormal
 ) {
-	Effect.static.Play(self, Settings, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
+	Effect.static.Play(
+		self,
+		Settings,
+		SourcePRI,
+		SourceLocation,
+		SourceOffset,
+		Target,
+		TargetLocation,
+		TargetOffset,
+		Normal(HitNormal / 32767)
+	);
 }
 
 simulated function DemoReceiveWeaponEffect(
@@ -485,7 +507,17 @@ simulated function DemoReceiveWeaponEffect(
 	vector HitNormal
 ) {
 	if (LastWeaponEffectCreated >= 0) return;
-	Effect.static.Play(self, Settings, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, Normal(HitNormal / 32767));
+	Effect.static.Play(
+		self,
+		Settings,
+		SourcePRI,
+		SourceLocation,
+		SourceOffset,
+		Target,
+		TargetLocation,
+		TargetOffset,
+		Normal(HitNormal / 32767)
+	);
 }
 
 function SendWeaponEffect(
@@ -498,9 +530,28 @@ function SendWeaponEffect(
 	vector TargetOffset,
 	vector HitNormal
 ) {
-	ReceiveWeaponEffect(Effect, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
+	ReceiveWeaponEffect(
+		Effect,
+		SourcePRI,
+		SourceLocation,
+		SourceOffset,
+		Target,
+		TargetLocation,
+		TargetOffset,
+		HitNormal * 32767
+	);
+
 	LastWeaponEffectCreated = Level.TimeSeconds;
-	DemoReceiveWeaponEffect(Effect, SourcePRI, SourceLocation, SourceOffset, Target, TargetLocation, TargetOffset, HitNormal * 32767);
+	DemoReceiveWeaponEffect(
+		Effect,
+		SourcePRI,
+		SourceLocation,
+		SourceOffset,
+		Target,
+		TargetLocation,
+		TargetOffset,
+		HitNormal * 32767
+	);
 }
 
 /* More crash fix bs */
@@ -539,20 +590,25 @@ simulated event Destroyed() {
 simulated event bool PreTeleport(Teleporter T) {
 	local vector D;
 	D = Location - T.Location;
-	if (VSize(D * vect(1,1,0)) > CollisionRadius + T.CollisionRadius ||
-		Abs(D.Z) > CollisionHeight + T.CollisionHeight
+	if (Region.Zone.IsA('TeleporterZone') == false &&
+		(
+			VSize(D * vect(1,1,0)) > CollisionRadius + T.CollisionRadius ||
+			Abs(D.Z) > CollisionHeight + T.CollisionHeight
+		)
 	) {
 		// Were not touching the teleporter just yet.
 		// Do nothing and
 		return true;
 	}
 
-	IGPlus_TPFix_OffsetZ = Location.Z - T.Location.Z;
-	IGPlus_TPFix_Velocity = Velocity;
-	IGPlus_TPFix_Rotation = Rotation;
-	IGPlus_TPFix_LastTouched = T;
-	IGPlus_TPFix_URL = T.URL;
-	bForcePacketSplit = true;
+	if (T.URL != "") {
+		IGPlus_TPFix_OffsetZ = Location.Z - T.Location.Z;
+		IGPlus_TPFix_Velocity = Velocity;
+		IGPlus_TPFix_Rotation = Rotation;
+		IGPlus_TPFix_LastTouched = T;
+		IGPlus_TPFix_URL = T.URL;
+		bForcePacketSplit = true;
+	}
 	return false;
 }
 
@@ -962,6 +1018,7 @@ event Possess()
 		KillCamDelay = FMax(0.0, class'UTPure'.default.KillCamDelay);
 		KillCamDuration = class'UTPure'.default.KillCamDuration;
 		bJumpingPreservesMomentum = class'UTPure'.default.bJumpingPreservesMomentum;
+		bOldLandingMomentum = class'UTPure'.default.bOldLandingMomentum;
 		bEnableSingleButtonDodge = class'UTPure'.default.bEnableSingleButtonDodge;
 		bUseFlipAnimation = class'UTPure'.default.bUseFlipAnimation;
 		bCanWallDodge = class'UTPure'.default.bEnableWallDodging;
@@ -1116,7 +1173,7 @@ function Timer() {
 
 function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 {
-	local bbSavedMove M;
+	local IGPlus_SavedMove M;
 	local int Pitch;
 
 	zzNewRotation.Roll = 0;
@@ -1130,13 +1187,13 @@ function ClientSetLocation( vector zzNewLocation, rotator zzNewRotation )
 	// Clean up moves
 	if (PendingMove != none) {
 		PendingMove.NextMove = FreeMoves;
-		bbSavedMove(PendingMove).Clear2();
+		IGPlus_SavedMove(PendingMove).Clear2();
 		FreeMoves = PendingMove;
 		PendingMove = none;
 	}
 
 	while(SavedMoves != none) {
-		M = bbSavedMove(SavedMoves);
+		M = IGPlus_SavedMove(SavedMoves);
 		SavedMoves = M.NextMove;
 		M.NextMove = FreeMoves;
 		M.Clear2();
@@ -1158,6 +1215,10 @@ function IGPlus_NotifyPlayerRestart(vector Loc, rotator Dir, bbPlayer Other) {
 	local UTTeleportEffect PTE;
 
 	PTE = Spawn(class'UTTeleportEffect', self, , Loc, Dir);
+	if (Level.bHighDetailMode == false) {
+		PTE.bOwnerNoSee = (Other == self);
+		PTE.Disable('Tick');
+	}
 	PTE.Initialize(Other, true);
 	PTE.PlaySound(sound'Resp2A',, 10.0);
 	PTE.RemoteRole = ROLE_None;
@@ -1517,7 +1578,7 @@ event PlayerInput( float DeltaTime )
 	}
 	else
 	{
-		// Forward.
+		// Turning.
 		aTurn  += aBaseX * FOVScale + SmoothMouseX;
 		aBaseX  = 0;
 	}
@@ -1723,7 +1784,7 @@ function xxFakeCAP(float TimeStamp)
 	bUpdatePosition = true;
 }
 
-function IGPlus_ClientReplayMove(bbSavedMove M) {
+function IGPlus_ClientReplayMove(IGPlus_SavedMove M) {
 	local int MergeCount, MoveIndex;
 	local float dt;
 	local bool bDoJump;
@@ -1764,17 +1825,17 @@ function IGPlus_ClientReplayMove(bbSavedMove M) {
 }
 
 function IGPlus_FreeAcknowledgedMoves(float TimeStamp) {
-	local bbSavedMove FirstMove;
-	local bbSavedMove CurrentMove;
+	local SavedMove FirstMove;
+	local SavedMove CurrentMove;
 
 	if (SavedMoves == none) return;
 	if (SavedMoves.TimeStamp > TimeStamp) return;
 
-	CurrentMove = bbSavedMove(SavedMoves);
+	CurrentMove = SavedMoves;
 	FirstMove = CurrentMove;
 
 	while (CurrentMove.NextMove != none && CurrentMove.NextMove.TimeStamp <= TimeStamp) {
-		CurrentMove = bbSavedMove(CurrentMove.NextMove);
+		CurrentMove = CurrentMove.NextMove;
 	}
 
 	SavedMoves = CurrentMove.NextMove;
@@ -1784,7 +1845,7 @@ function IGPlus_FreeAcknowledgedMoves(float TimeStamp) {
 
 function ClientUpdatePosition()
 {
-	local bbSavedMove CurrentMove;
+	local IGPlus_SavedMove CurrentMove;
 	local int realbRun, realbDuck;
 	local bool bRealJump;
 	local rotator RealViewRotation, RealRotation;
@@ -1803,10 +1864,10 @@ function ClientUpdatePosition()
 	IGPlus_FreeAcknowledgedMoves(CurrentTimeStamp);
 
 	if (zzbFakeUpdate == false) {
-		CurrentMove = bbSavedMove(SavedMoves);
+		CurrentMove = IGPlus_SavedMove(SavedMoves);
 		while (CurrentMove != none) {
 			IGPlus_ClientReplayMove(CurrentMove);
-			CurrentMove = bbSavedMove(CurrentMove.NextMove);
+			CurrentMove = IGPlus_SavedMove(CurrentMove.NextMove);
 		}
 
 		// stijn: The original code was not replaying the pending move
@@ -1814,7 +1875,7 @@ function ClientUpdatePosition()
 		// because the playerpawn position would be off constantly until the player
 		// stopped moving!
 		if (PendingMove != none) {
-			IGPlus_ClientReplayMove(bbSavedMove(PendingMove));
+			IGPlus_ClientReplayMove(IGPlus_SavedMove(PendingMove));
 		}
 
 		// Higor: evaluate location adjustment and see if we should either
@@ -1873,19 +1934,18 @@ function TakeFallingDamage()
 			MakeNoise(-0.5 * Velocity.Z/(FMax(JumpZ, 150.0)));
 		if (Velocity.Z <= -750 - JumpZ)
 		{
-			if (zzLastFallVelZ <= -750 - JumpZ)
+			if (Velocity.Z <= -750 - JumpZ)
 			{
-				if ( (zzLastFallVelZ < -1650 - JumpZ) && (ReducedDamageType != 'All') )
+				if ( (Velocity.Z < -1650 - JumpZ) && (ReducedDamageType != 'All') )
 					TakeDamage(1000, None, Location, vect(0,0,0), 'Fell');
 				else if ( Role == ROLE_Authority )
-					TakeDamage(-0.15 * (zzLastFallVelZ + 700 + JumpZ), None, Location, vect(0,0,0), 'Fell');
-				ShakeView(0.175 - 0.00007 * zzLastFallVelZ, -0.85 * zzLastFallVelZ, -0.002 * zzLastFallVelZ);
+					TakeDamage(-0.15 * (Velocity.Z + 700 + JumpZ), None, Location, vect(0,0,0), 'Fell');
+				ShakeView(0.175 - 0.00007 * Velocity.Z, -0.85 * Velocity.Z, -0.002 * Velocity.Z);
 			}
 		}
 	}
 	else if ( Velocity.Z > 0.5 * Default.JumpZ )
 		MakeNoise(0.35);
-	zzLastFallVelZ = 0;
 }
 
 function xxSetPendingWeapon(Weapon W)
@@ -2110,6 +2170,7 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	local int i;
 	local float ServerDeltaTime;
 	local float DeltaTime;
+	local float SimTime;
 	local float SimStep;
 	local rotator DeltaRot;
 	local rotator Rot;
@@ -2122,10 +2183,7 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	local bool NewbRun;
 	local bool NewbDuck;
 	local bool NewbJumpStatus;
-	local bool bFired;
-	local bool bAltFired;
-	local bool bForceFire;
-	local bool bForceAltFire;
+
 	local EDodgeDir DodgeMove;
 	local EPhysics ClientPhysics;
 	local byte ClientRoll;
@@ -2133,7 +2191,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	local int MoveIndex;
 
 	local int AddVelocityId;
-	local int MoveCounter;
 
 	local int JumpIndex;
 	local float JumpPos;
@@ -2150,6 +2207,16 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	local int DuckChangeIndex;
 	local float DuckChangePos;
 	local bool bDuckActual;
+
+	local int FireIndex;
+	local float FirePos;
+	local bool bFired;
+	local bool bForceFire;
+
+	local int AltFireIndex;
+	local float AltFirePos;
+	local bool bAltFired;
+	local bool bForceAltFire;
 
 	debugServerMoveCallsReceived += 1;
 
@@ -2173,11 +2240,10 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 		return;
 	}
 
-	ClientTlocCounter =          (SM.MiscData & 0x60000000) >> 29;
-	bFired         =             (SM.MiscData & 0x10000000) != 0;
-	bAltFired      =             (SM.MiscData & 0x08000000) != 0;
-	bForceFire     =             (SM.MiscData & 0x04000000) != 0;
-	bForceAltFire  =             (SM.MiscData & 0x02000000) != 0;
+	AddVelocityId  =             (SM.MiscData & 0xF0000000) >>> 28; // >>> doesnt sign-extend
+	ClientTlocCounter =          (SM.MiscData & 0x0C000000) >> 26;
+	bFired         =             (SM.MiscData & 0x02000000) != 0;
+	bAltFired      =             (SM.MiscData & 0x01000000) != 0;
 	MergeCount     =             (SM.MiscData & 0x00F80000) >> 19;
 	NewbRun        =             (SM.MiscData & 0x00040000) != 0;
 	NewbDuck       =             (SM.MiscData & 0x00020000) != 0;
@@ -2186,8 +2252,10 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	DodgeMove      = GetDodgeDir((SM.MiscData & 0x00000F00) >> 8);
 	ClientRoll     =             (SM.MiscData & 0x000000FF);
 
-	MoveCounter     = (SM.MiscData2 & 0xFF000000) >>> 24;
-	AddVelocityId   = (SM.MiscData2 & 0x00F00000) >> 20;
+	bForceFire      = (SM.MiscData2 & 0x80000000) != 0;
+	bForceAltFire   = (SM.MiscData2 & 0x40000000) != 0;
+	FireIndex       = (SM.MiscData2 & 0x3E000000) >> 25;
+	AltFireIndex    = (SM.MiscData2 & 0x01F00000) >> 20;
 	DuckChangeIndex = (SM.MiscData2 & 0x000F8000) >> 15;
 	RunChangeIndex  = (SM.MiscData2 & 0x00007C00) >> 10;
 	DodgeIndex      = (SM.MiscData2 & 0x000003E0) >> 5;
@@ -2195,9 +2263,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 
 	if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
 		ClientDebugMessage("Received Dodge"@DodgeMove@SM.TimeStamp);
-
-	debugServerMoveCallsLost += (MoveCounter - debugLastMoveCounter - 1) & 0xFF;
-	debugLastMoveCounter = MoveCounter;
 
 	if (SM.ClientBase == none)
 		ClientLocAbs = SM.ClientLocation;
@@ -2272,32 +2337,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	if (bUseFastWeaponSwitch && PendingWeapon != None)
 		ChangedWeapon();
 
-	// handle firing and alt-firing
-	if (bFired) {
-		if (bForceFire && (Weapon != None))
-			Weapon.ForceFire();
-		else if (bFire == 0)
-			Fire(0);
-		bFire = 1;
-	} else {
-		bFire = 0;
-	}
-
-	if (bAltFired) {
-		if (bForceAltFire && (Weapon != None))
-			Weapon.ForceAltFire();
-		else if (bAltFire == 0)
-			AltFire(0);
-		bAltFire = 1;
-	} else {
-		bAltFire = 0;
-	}
-
-	if (IGPlus_DidTranslocate) {
-		TlocCounter = (TlocCounter + 1) & 3;
-		IGPlus_DidTranslocate = false;
-	}
-
 	CurrentTimeStamp = SM.TimeStamp;
 	ServerTimeStamp = Level.TimeSeconds;
 	Rot.Roll = ClientRoll << 8;
@@ -2315,9 +2354,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	ViewRotation.Roll = 0;
 	SetRotation(Rot);
 
-	if (SM.ClientVelocity.Z < 0)
-		zzLastFallVelZ = SM.ClientVelocity.Z;
-
 	// Apply momentum as it was applied on client
 	if (((AddVelocityId - LastAddVelocityAppliedIndex) & 0xF) > ((LastAddVelocityIndex - LastAddVelocityAppliedIndex) & 0xF))
 		AddVelocityId = LastAddVelocityIndex;
@@ -2331,6 +2367,14 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 
 	// Predict new position
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
+		if (class'UTPure'.default.bEnableJitterBounding && DeltaTime > class'UTPure'.default.MaxJitterTime) {
+			SimTime = DeltaTime - class'UTPure'.default.MaxJitterTime;
+			if (SimTime >= 0.005 || bIs469Server) {
+				SimMoveAutonomous(SimTime);
+				DeltaTime = class'UTPure'.default.MaxJitterTime;
+			}
+		}
+
 		MergeCount++;
 
 		SimStep = DeltaTime / float(MergeCount);
@@ -2340,6 +2384,8 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 			DodgePos = float(DodgeIndex) / float(MergeCount);
 			RunChangePos = float(RunChangeIndex) / float(MergeCount);
 			DuckChangePos = float(DuckChangeIndex) / float(MergeCount);
+			FirePos = float(FireIndex) / float(MergeCount);
+			AltFirePos = float(AltFireIndex) / float(MergeCount);
 
 			MergeCount = int(DeltaTime * 100) + 1;
 			SimStep = DeltaTime / float(MergeCount);
@@ -2348,6 +2394,8 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 			DodgeIndex = int(DodgePos * MergeCount);
 			RunChangeIndex = int(RunChangePos * MergeCount);
 			DuckChangeIndex = int(DuckChangePos * MergeCount);
+			FireIndex = int(FirePos * MergeCount);
+			AltFireIndex = int(AltFirePos * MergeCount);
 		}
 
 		for (MoveIndex = 0; MoveIndex < MergeCount; MoveIndex++) {
@@ -2361,10 +2409,39 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 			else
 				DoDodge = DODGE_None;
 
+			if (MoveIndex == FireIndex) {
+				if (bFired) {
+					if (bForceFire && (Weapon != None))
+						Weapon.ForceFire();
+					else if (bFire == 0)
+						Fire(0);
+					bFire = 1;
+				} else {
+					bFire = 0;
+				}
+			}
+
+			if (MoveIndex == AltFireIndex) {
+				if (bAltFired) {
+					if (bForceAltFire && (Weapon != None))
+						Weapon.ForceAltFire();
+					else if (bAltFire == 0)
+						AltFire(0);
+					bAltFire = 1;
+				} else {
+					bAltFire = 0;
+				}
+			}
+
 			bRunActual = (MoveIndex < RunChangeIndex) ^^ NewbRun;
 			bDuckActual = (MoveIndex < DuckChangeIndex) ^^ NewbDuck;
 
 			IGPlus_MoveAutonomous(SimStep, bRunActual, bDuckActual, bDoJump, DoDodge, SM.ClientAcceleration, DeltaRot / MergeCount);
+		}
+
+		if (IGPlus_DidTranslocate) {
+			TlocCounter = (TlocCounter + 1) & 3;
+			IGPlus_DidTranslocate = false;
 		}
 
 		bWasPaused = false;
@@ -2435,6 +2512,7 @@ function bool IGPlus_IsCAPNecessary() {
 	local int ClientTlocCounter;
 	local vector LocDelta;
 	local float ClientLocError;
+	local float MinLocError;
 	local float MaxLocError;
 	local bool bServerOnMover;
 	local bool bClientOnMover;
@@ -2468,8 +2546,10 @@ function bool IGPlus_IsCAPNecessary() {
 	}
 
 	// Calculate how far off we allow the client to be from the predicted position
+	MinLocError = 0.0;
 	MaxLocError = 3.0;
 	if (LastServerMoveParams.ClientDeltaTime > 0) {
+		MinLocError = 3.0;
 		MaxLocError = CalculateLocError(
 			LastServerMoveParams.ClientDeltaTime,
 			LastServerMoveParams.Physics,
@@ -2493,21 +2573,23 @@ function bool IGPlus_IsCAPNecessary() {
 		zzIgnoreUpdateUntil = ServerTimeStamp;
 	}
 
-	bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
-		(ClientLocError > MaxLocError && zzIgnoreUpdateUntil < ServerTimeStamp);
+	bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp);
 
 	clientLastUpdateTime = ServerTimeStamp;
 	debugClientForceUpdate = bForceUpdate;
 
 	ClearLastServerMoveParams();
 
-	if (bForceUpdate) {
+	if (zzLastClientErr == 0 || ClientLocError < zzLastClientErr)
+		zzLastClientErr = ClientLocError;
+
+	if (ClientLocError < MinLocError && bForceUpdate == false)
+		return false;
+
+	if (bForceUpdate || (ClientLocError > MaxLocError && zzIgnoreUpdateUntil < ServerTimeStamp)) {
 		ClientDebugMessage("Send CAP:"@CurrentTimeStamp@Physics@ClientPhysics@ClientLocError@MaxLocError);
 		return true;
 	}
-
-	if (zzLastClientErr == 0 || ClientLocError < zzLastClientErr)
-		zzLastClientErr = ClientLocError;
 
 	bCanTraceNewLoc = FastTrace(ClientLocAbs);
 	if (bCanTraceNewLoc) {
@@ -2617,16 +2699,19 @@ function EPhysics GetPhysics(int phys) {
 function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData2) {
 	local vector Accel;
 	local float OldTimeStamp;
+	local float DeltaTime;
 	local bool OldRun;
 	local bool OldDuck;
 	local bool OldJump;
 	local EDodgeDir DodgeMove;
+	local float SimTime;
 
 	OldTimeStamp = TimeStamp - (float(OldMoveData1 & 0x3FF) * 0.001);
 	if (CurrentTimeStamp + 0.001 >= OldTimeStamp) {
 		return false;
 	}
 
+	DeltaTime = OldTimeStamp - CurrentTimeStamp;
 	OldJump   = (OldMoveData1 & 0x0400) != 0;
 	OldRun    = (OldMoveData1 & 0x0800) != 0;
 	OldDuck   = (OldMoveData1 & 0x1000) != 0;
@@ -2639,7 +2724,16 @@ function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMov
 		ClientDebugMessage("Received Old Dodge"@DodgeMove@CurrentTimeStamp@OldTimeStamp);
 
 	UndoExtrapolation();
-	IGPlus_MoveAutonomous(OldTimeStamp - CurrentTimeStamp, OldRun, OldDuck, OldJump, DodgeMove, Accel, rot(0,0,0));
+
+	if (class'UTPure'.default.bEnableJitterBounding && DeltaTime > class'UTPure'.default.MaxJitterTime) {
+		SimTime = DeltaTime - class'UTPure'.default.MaxJitterTime;
+		if (SimTime >= 0.005 || bIs469Server) {
+			SimMoveAutonomous(SimTime);
+			DeltaTime = class'UTPure'.default.MaxJitterTime;
+		}
+	}
+
+	IGPlus_MoveAutonomous(DeltaTime, OldRun, OldDuck, OldJump, DodgeMove, Accel, rot(0,0,0));
 	CurrentTimeStamp = OldTimeStamp;
 
 	return true;
@@ -2705,6 +2799,38 @@ function IGPlus_InsertServerMove(IGPlus_ServerMove SM) {
 	I.Next = SM;
 }
 
+//  MiscData
+//  0                      7 8         11 12        15 16  17  18  19           23 24  25  26  27 28        31
+// +------------------------+------------+------------+---+---+---+---------------+---+---+------+------------+
+// |          Roll          |    Dodge   |   Physics  |Ju |Du |Run|  MergeCount   |Fi |Alt| Tloc | AddVelocity|
+// |                        |    Move    |            | mp| ck|   |               | re|Fir| Count|     ID     |
+// +------------------------+------------+------------+---+---+---+---------------+---+---+------+------------+
+//
+//  MiscData2
+//  0             4 5             9 10           14 15           19 20           24 25           29 30  31
+// +---------------+---------------+---------------+---------------+---------------+---------------+---+---+
+// |     Jump      |     Dodge     |      Run      |     Duck      |    AltFire    |     Fire      |FFi|FAF|
+// |     Index     |     Index     |     Index     |     Index     |     Index     |     Index     |re |ire|
+// +---------------+---------------+---------------+---------------+---------------+---------------+---+---+
+//
+//  View
+//  0                                             15 16                                            31
+// +------------------------------------------------+------------------------------------------------+
+// |                      Yaw                       |                     Pitch                      |
+// +------------------------------------------------+------------------------------------------------+
+//
+//  OldMoveData1
+//  0                            9 10  11  12  13     15 16                                            31
+// +------------------------------+---+---+---+---------+------------------------------------------------+
+// |           TimeStamp          |Ju |Run|Du |  Dodge  |                Acceleration X                  |
+// |                              | mp|   | ck|  Move   |                                                |
+// +------------------------------+---+---+---+---------+------------------------------------------------+
+//
+//  OldMoveData2
+//  0                                             15 16                                            31
+// +------------------------------------------------+------------------------------------------------+
+// |                Acceleration Y                  |                Acceleration Z                  |
+// +------------------------------------------------+------------------------------------------------+
 function xxServerMove(
 	float TimeStamp,
 	float MoveDeltaTime,
@@ -3326,14 +3452,14 @@ function ReplicateMove
 	xxServerCheater("RM");
 }
 
-function bbSavedMove xxGetFreeMove() {
-	local bbSavedMove s;
+function IGPlus_SavedMove xxGetFreeMove() {
+	local IGPlus_SavedMove s;
 
 	if ( FreeMoves == None )
-		return Spawn(class'bbSavedMove');
+		return Spawn(class'IGPlus_SavedMove');
 	else
 	{
-		s = bbSavedMove(FreeMoves);
+		s = IGPlus_SavedMove(FreeMoves);
 		FreeMoves = FreeMoves.NextMove;
 		s.NextMove = None;
 		s.Clear2();
@@ -3341,7 +3467,7 @@ function bbSavedMove xxGetFreeMove() {
 	}
 }
 
-function bbSavedMove PickRedundantMove(bbSavedMove Old, bbSavedMove M, vector Accel, EDodgeDir DodgeMove) {
+function IGPlus_SavedMove PickRedundantMove(IGPlus_SavedMove Old, IGPlus_SavedMove M, vector Accel, EDodgeDir DodgeMove) {
 	if (M.bPressedJump || (bDodging && M.DodgeMove >= DODGE_Left && M.DodgeMove <= DODGE_Back)) {
 		return M;
 	}
@@ -3352,7 +3478,7 @@ function bbSavedMove PickRedundantMove(bbSavedMove Old, bbSavedMove M, vector Ac
 	return Old;
 }
 
-function bool CanMergeMove(bbSavedMove Pending, vector Accel) {
+function bool CanMergeMove(IGPlus_SavedMove Pending, vector Accel) {
 	if (Pending.IGPlus_MergeCount >= 31)
 		return false;
 
@@ -3366,14 +3492,72 @@ function bool CanMergeMove(bbSavedMove Pending, vector Accel) {
 	return true;
 }
 
+function IGPlus_MergeMove(IGPlus_SavedMove PendMove, float DeltaTime, vector NewAccel, EDodgeDir DodgeMove) {
+	local float TotalTime;
+	local bool bFireNew;
+	local bool bAltFireNew;
+
+	PendMove.TimeStamp = Level.TimeSeconds;
+	PendMove.IGPlus_MergeCount += 1;
+
+	TotalTime = PendMove.Delta + DeltaTime;
+	if (TotalTime != 0)
+		PendMove.Acceleration = (DeltaTime * NewAccel + PendMove.Delta * PendMove.Acceleration)/TotalTime;
+
+	// Set this move's data.
+	if ( PendMove.DodgeMove == DODGE_None ) {
+		PendMove.DodgeMove = DodgeMove;
+		if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active && PendMove.DodgeIndex < 0) {
+			PendMove.DodgeIndex = PendMove.IGPlus_MergeCount;
+		}
+	}
+
+	if (PendMove.bPressedJump == false && bPressedJump && PendMove.JumpIndex < 0)
+		PendMove.JumpIndex = PendMove.IGPlus_MergeCount;
+	PendMove.bPressedJump = bPressedJump || PendMove.bPressedJump;
+
+	if ((bRun > 0) != PendMove.bRun) {
+		if (PendMove.RunChangeIndex < 0)
+			PendMove.RunChangeIndex = PendMove.IGPlus_MergeCount;
+		else
+			// if we changed bRun before, ignore running/walking for a very short time
+			PendMove.RunChangeIndex = -1;
+	}
+	PendMove.bRun = (bRun > 0);
+
+	if ((bDuck > 0) != PendMove.bDuck) {
+		if (PendMove.DuckChangeIndex < 0)
+			PendMove.DuckChangeIndex = PendMove.IGPlus_MergeCount;
+		else
+			// if we changed bDuck before, ignore ducking/standing for a very short time
+			PendMove.DuckChangeIndex = -1;
+	}
+	PendMove.bDuck = (bDuck > 0);
+
+	bFireNew = PendMove.bFire || bJustFired || (bFire != 0);
+	if (bFireNew != PendMove.bFire && PendMove.FireIndex < 0) {
+		PendMove.FireIndex = PendMove.IGPlus_MergeCount;
+	}
+	PendMove.bFire = bFireNew;
+	PendMove.bForceFire = PendMove.bForceFire || bJustFired;
+
+	bAltFireNew = PendMove.bAltFire || bJustAltFired || (bAltFire != 0);
+	if (bAltFireNew != PendMove.bAltFire && PendMove.AltFireIndex < 0) {
+		PendMove.AltFireIndex = PendMove.IGPlus_MergeCount;
+	}
+	PendMove.bAltFire = bAltFireNew;
+	PendMove.bForceAltFire = PendMove.bForceAltFire || bJustAltFired;
+
+	PendMove.Delta = TotalTime;
+}
+
 function xxReplicateMove(
 	float DeltaTime,
 	vector NewAccel,
 	eDodgeDir DodgeMove,
 	rotator DeltaRot
 ) {
-	local bbSavedMove NewMove, OldMove, LastMove, PendMove;
-	local float TotalTime;
+	local IGPlus_SavedMove NewMove, OldMove, LastMove, PendMove;
 	local EPhysics OldPhys;
 	local float AdjustAlpha;
 	local float RealDelta;
@@ -3400,51 +3584,9 @@ function xxReplicateMove(
 	// Get a SavedMove actor to store the movement in.
 	if ( PendingMove != None )
 	{
-		PendMove = bbSavedMove(PendingMove);
+		PendMove = IGPlus_SavedMove(PendingMove);
 		if (CanMergeMove(PendMove, NewAccel)) {
-			//add this move to the pending move
-			PendMove.TimeStamp = Level.TimeSeconds;
-			PendMove.IGPlus_MergeCount += 1;
-
-			TotalTime = PendMove.Delta + DeltaTime;
-			if (TotalTime != 0)
-				PendMove.Acceleration = (DeltaTime * NewAccel + PendMove.Delta * PendMove.Acceleration)/TotalTime;
-
-			// Set this move's data.
-			if ( PendMove.DodgeMove == DODGE_None ) {
-				PendMove.DodgeMove = DodgeMove;
-				if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active && PendMove.DodgeIndex < 0) {
-					PendMove.DodgeIndex = PendMove.IGPlus_MergeCount;
-				}
-			}
-
-			if (PendMove.bPressedJump == false && bPressedJump && PendMove.JumpIndex < 0)
-				PendMove.JumpIndex = PendMove.IGPlus_MergeCount;
-			PendMove.bPressedJump = bPressedJump || PendMove.bPressedJump;
-
-			if ((bRun > 0) != PendMove.bRun) {
-				if (PendMove.RunChangeIndex < 0)
-					PendMove.RunChangeIndex = PendMove.IGPlus_MergeCount;
-				else
-					// if we changed bRun before, ignore running/walking for a very short time
-					PendMove.RunChangeIndex = -1;
-			}
-			PendMove.bRun = (bRun > 0);
-
-			if ((bDuck > 0) != PendMove.bDuck) {
-				if (PendMove.DuckChangeIndex < 0)
-					PendMove.DuckChangeIndex = PendMove.IGPlus_MergeCount;
-				else
-					// if we changed bDuck before, ignore ducking/standing for a very short time
-					PendMove.DuckChangeIndex = -1;
-			}
-			PendMove.bDuck = (bDuck > 0);
-
-			PendMove.bFire = PendMove.bFire || bJustFired || (bFire != 0);
-			PendMove.bForceFire = PendMove.bForceFire || bJustFired;
-			PendMove.bAltFire = PendMove.bAltFire || bJustAltFired || (bAltFire != 0);
-			PendMove.bForceAltFire = PendMove.bForceAltFire || bJustAltFired;
-			PendMove.Delta = TotalTime;
+			IGPlus_MergeMove(PendMove, DeltaTime, NewAccel, DodgeMove);
 		} else {
 			SendSavedMove(PendMove);
 			ClientUpdateTime = FClamp((PendMove.Delta/Level.TimeDilation) - TimeBetweenNetUpdates + ClientUpdateTime, -TimeBetweenNetUpdates, TimeBetweenNetUpdates);;
@@ -3452,9 +3594,9 @@ function xxReplicateMove(
 			if (SavedMoves == none) {
 				SavedMoves = PendingMove;
 			} else {
-				LastMove = bbSavedMove(SavedMoves);
+				LastMove = IGPlus_SavedMove(SavedMoves);
 				while(LastMove.NextMove != none)
-					LastMove = bbSavedMove(LastMove.NextMove);
+					LastMove = IGPlus_SavedMove(LastMove.NextMove);
 
 				LastMove.NextMove = PendingMove;
 			}
@@ -3463,10 +3605,10 @@ function xxReplicateMove(
 	}
 	if ( SavedMoves != None )
 	{
-		LastMove = bbSavedMove(SavedMoves);
+		LastMove = IGPlus_SavedMove(SavedMoves);
 		while (LastMove.NextMove != none) {
 			OldMove = PickRedundantMove(OldMove, LastMove, NewAccel, DodgeMove);
-			LastMove = bbSavedMove(LastMove.NextMove);
+			LastMove = IGPlus_SavedMove(LastMove.NextMove);
 		}
 		OldMove = PickRedundantMove(OldMove, LastMove, NewAccel, DodgeMove);
 	}
@@ -3487,25 +3629,40 @@ function xxReplicateMove(
 		NewMove.AddVelocityId = LastAddVelocityAppliedIndex;
 
 		// Set this move's data.
+		NewMove.TimeStamp = Level.TimeSeconds;
+
 		NewMove.DodgeMove = DodgeMove;
 		if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
 			NewMove.DodgeIndex = 0;
-		NewMove.TimeStamp = Level.TimeSeconds;
+
 		NewMove.bRun = (bRun > 0);
+		if (LastMove == none || LastMove.bRun != NewMove.bRun)
+			NewMove.RunChangeIndex = 0;
+
 		NewMove.bDuck = (bDuck > 0);
+		if (LastMove == none || LastMove.bDuck != NewMove.bDuck)
+			NewMove.DuckChangeIndex = 0;
+
 		NewMove.bPressedJump = bPressedJump;
 		if (bPressedJump)
 			NewMove.JumpIndex = 0;
+
 		NewMove.bFire = (bJustFired || (bFire != 0));
-		NewMove.bAltFire = (bJustAltFired || (bAltFire != 0));
 		NewMove.bForceFire = bJustFired;
+		if (LastMove == none || LastMove.bFire != NewMove.bFire)
+			NewMove.FireIndex = 0;
+
+		NewMove.bAltFire = (bJustAltFired || (bAltFire != 0));
 		NewMove.bForceAltFire = bJustAltFired;
+		if (LastMove == none || LastMove.bAltFire != NewMove.bAltFire)
+			NewMove.AltFireIndex = 0;
+
 		if ( Weapon != None ) // approximate pointing so don't have to replicate
 			Weapon.bPointing = ((bFire != 0) || (bAltFire != 0));
 
 		PendingMove = NewMove;
 	} else {
-		NewMove = bbSavedMove(PendingMove);
+		NewMove = IGPlus_SavedMove(PendingMove);
 	}
 
 	bJustFired = false;
@@ -3542,9 +3699,35 @@ function xxReplicateMove(
 	PendingMove = None;
 
 	SendSavedMove(NewMove, OldMove);
+
+	if ( (Weapon != None) && !Weapon.IsAnimating() )
+	{
+		if ( (Weapon == ClientPending) || (Weapon != OldClientWeapon) )
+		{
+			if ( Weapon.Owner != self ) //Non-respawnable weapon was picked up and Owner wasn't replicated yet
+				Weapon.SetOwner(self); //Simulate owner change locally
+			if ( Weapon.IsInState('ClientActive') )
+				AnimEnd();
+			else
+				Weapon.GotoState('ClientActive');
+			if ( (Weapon != ClientPending) && (myHUD != None) && myHUD.IsA('ChallengeHUD') )
+				ChallengeHUD(myHUD).WeaponNameFade = 1.3;
+			if ( (Weapon != OldClientWeapon) && (OldClientWeapon != None) )
+				OldClientWeapon.GotoState('');
+
+			ClientPending = None;
+			bNeedActivate = false;
+		}
+		else
+		{
+			Weapon.GotoState('');
+			Weapon.TweenToStill();
+		}
+	}
+	OldClientWeapon = Weapon;
 }
 
-function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
+function SendSavedMove(IGPlus_SavedMove Move, optional IGPlus_SavedMove OldMove) {
 	local int MiscData, MiscData2;
 	local vector RelLoc;
 	local int OldMoveData1, OldMoveData2;
@@ -3556,36 +3739,37 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	else
 		RelLoc = Location - Base.Location;
 
-	MiscData = MiscData | (TlocCounter << 29);
-	if (Move.bFire) MiscData = MiscData | 0x10000000;
-	if (Move.bAltFire) MiscData = MiscData | 0x08000000;
-	if (Move.bForceFire) MiscData = MiscData | 0x04000000;
-	if (Move.bForceAltFire) MiscData = MiscData | 0x02000000;
-	// 0x01000000 unused
-	MiscData = MiscData | ((Move.IGPlus_MergeCount & 0x1F) << 19);
-	if (Move.bRun) MiscData = MiscData | 0x40000;
-	if (Move.bDuck) MiscData = MiscData | 0x20000;
-	if (bJumpStatus) MiscData = MiscData | 0x10000;
-	MiscData = MiscData | (int(Physics) << 12);
-	MiscData = MiscData | (int(Move.DodgeMove) << 8);
-	MiscData = MiscData | ((Rotation.Roll >> 8) & 0xFF);
+	                   MiscData or_eq (Move.AddVelocityId & 0xF) << 28;
+	                   MiscData or_eq (TlocCounter << 26);
+	if (Move.bFire)    MiscData or_eq 0x02000000;
+	if (Move.bAltFire) MiscData or_eq 0x01000000;
+	                   MiscData or_eq ((Move.IGPlus_MergeCount & 0x1F) << 19);
+	if (Move.bRun)     MiscData or_eq 0x00040000;
+	if (Move.bDuck)    MiscData or_eq 0x00020000;
+	if (bJumpStatus)   MiscData or_eq 0x00010000;
+	                   MiscData or_eq (int(Physics) << 12);
+	                   MiscData or_eq (int(Move.DodgeMove) << 8);
+	                   MiscData or_eq ((Rotation.Roll >> 8) & 0xFF);
 
-	if (Move.JumpIndex > 0)       MiscData2 = MiscData2 | (Move.JumpIndex & 0x1F);
-	if (Move.DodgeIndex > 0)      MiscData2 = MiscData2 | (Move.DodgeIndex & 0x1F) << 5;
-	if (Move.RunChangeIndex > 0)  MiscData2 = MiscData2 | (Move.RunChangeIndex & 0x1F) << 10;
-	if (Move.DuckChangeIndex > 0) MiscData2 = MiscData2 | (Move.DuckChangeIndex & 0x1F) << 15;
-	                              MiscData2 = MiscData2 | (Move.AddVelocityId & 0xF) << 20;
-	                              MiscData2 = MiscData2 | (debugServerMoveCallsSent & 0xFF) << 24;
+	if (Move.JumpIndex > 0)       MiscData2 or_eq (Move.JumpIndex & 0x1F);
+	if (Move.DodgeIndex > 0)      MiscData2 or_eq (Move.DodgeIndex & 0x1F) << 5;
+	if (Move.RunChangeIndex > 0)  MiscData2 or_eq (Move.RunChangeIndex & 0x1F) << 10;
+	if (Move.DuckChangeIndex > 0) MiscData2 or_eq (Move.DuckChangeIndex & 0x1F) << 15;
+	if (Move.AltFireIndex > 0)    MiscData2 or_eq (Move.AltFireIndex & 0x1F) << 20;
+	if (Move.FireIndex > 0)       MiscData2 or_eq (Move.FireIndex & 0x1F) << 25;
+	if (Move.bForceAltFire)       MiscData2 or_eq 0x40000000;
+	if (Move.bForceFire)          MiscData2 or_eq 0x80000000;
+
 
 	if (OldMove != none && OldMove != Move) {
-		OldMoveData1 = Min(0x3FF, int((Move.TimeStamp - OldMove.TimeStamp) * 1000.0));
-		if (OldMove.bPressedJump) OldMoveData1 = OldMoveData1 | 0x0400;
-		if (OldMove.bRun) OldMoveData1 = OldMoveData1 | 0x0800;
-		if (OldMove.bDuck) OldMoveData1 = OldMoveData1 | 0x1000;
-		OldMoveData1 = OldMoveData1 | (int(OldMove.DodgeMove) << 13);
-		OldMoveData1 = OldMoveData1 | (int(OldMove.Acceleration.X * 10.0) << 16);
-		OldMoveData2 = OldMoveData2 | (int(OldMove.Acceleration.Y * 10.0) & 0xFFFF);
-		OldMoveData2 = OldMoveData2 | (int(OldMove.Acceleration.Z * 10.0) << 16);
+		                          OldMoveData1 = Min(0x3FF, int((Move.TimeStamp - OldMove.TimeStamp) * 1000.0));
+		if (OldMove.bPressedJump) OldMoveData1 or_eq 0x0400;
+		if (OldMove.bRun)         OldMoveData1 or_eq 0x0800;
+		if (OldMove.bDuck)        OldMoveData1 or_eq 0x1000;
+		                          OldMoveData1 or_eq (int(OldMove.DodgeMove) << 13);
+		                          OldMoveData1 or_eq (int(OldMove.Acceleration.X * 10.0) << 16);
+		                          OldMoveData2 or_eq (int(OldMove.Acceleration.Y * 10.0) & 0xFFFF);
+		                          OldMoveData2 or_eq (int(OldMove.Acceleration.Z * 10.0) << 16);
 	}
 
 	xxServerMove(
@@ -3607,29 +3791,6 @@ function SendSavedMove(bbSavedMove Move, optional bbSavedMove OldMove) {
 	);
 
 	debugServerMoveCallsSent += 1;
-
-	if ( (Weapon != None) && !Weapon.IsAnimating() )
-	{
-		if ( (Weapon == ClientPending) || (Weapon != OldClientWeapon) )
-		{
-			if ( Weapon.IsInState('ClientActive') )
-				AnimEnd();
-			else
-				Weapon.GotoState('ClientActive');
-
-			if ( (Weapon != OldClientWeapon) && (OldClientWeapon != None) )
-				OldClientWeapon.GotoState('');
-
-			ClientPending = None;
-			bNeedActivate = false;
-		}
-		else
-		{
-			Weapon.GotoState('');
-			Weapon.TweenToStill();
-		}
-	}
-	OldClientWeapon = Weapon;
 }
 
 simulated function bool xxUsingDefaultWeapon()
@@ -4025,6 +4186,9 @@ function xxUpdateRotation(float DeltaTime, float maxPitch)
 	if (!Settings.bUseOldMouseInput)
 		TurnFractionalPart = YawDelta - int(YawDelta);
 
+	if (Settings.bDebugMovement && (Abs(PitchDelta) > 1 || Abs(YawDelta) > 1))
+		ClientDebugMessage("PitchDelta:"@PitchDelta@"YawDelta:"@YawDelta);
+
 	ViewShake(deltaTime);		// ViewRotation is fuked in here.
 	ViewFlash(deltaTime);
 
@@ -4099,25 +4263,18 @@ simulated function bool AdjustHitLocation(out vector HitLocation, vector TraceDi
 
 simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector TraceDir)
 {
-	/**
-	 * @Author: spect
-	 * @Modified Date: 2020-02-22 02:08:45
-	 * @Desc: Reduced the hitboxes slightly
-	 * @Feedback: Positive
-	 */
-
 	local float adjZ, maxZ;
 	local vector delta;
-
 
 	if (Role != ROLE_Authority)
 		maxZ = Location.Z + (1.0 - 0.7 * DuckFractionRepl/255.0) * CollisionHeight;
 	else
-		maxZ = Location.Z + (1.0 - 0.7 * DuckFraction) * CollisionHeight;// default game is 0.25
-	if ( HitLocation.Z <= maxZ )
+		maxZ = Location.Z + (1.0 - 0.7 * DuckFraction) * CollisionHeight; // default game is 0.25
+
+	if (HitLocation.Z <= maxZ)
 		return true;
 
-	if ( TraceDir.Z >= 0 )
+	if (TraceDir.Z >= 0)
 		return false;
 
 	TraceDir = Normal(TraceDir);
@@ -4128,6 +4285,8 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	delta = (HitLocation - Location) * vect(1,1,0);
 	if (delta dot delta > CollisionRadius * CollisionRadius)
 		return false;
+
+	return true;
 }
 
 simulated function AddVelocity( vector NewVelocity )
@@ -5051,12 +5210,18 @@ ignores SeePlayer, HearNoise, Bump;
 		if (bJumpingPreservesMomentum == false) {
 			Velocity *= vect(1,1,0);
 
-			if (bDodging)
-				Vel = VSize(Velocity) * DodgeEndVelocity;
-			else
-				Vel = VSize(Velocity) * JumpEndVelocity;
+			if (bOldLandingMomentum) {
+				if (bDodging)
+					Velocity *= DodgeEndVelocity;
+				Velocity = Normal(Velocity) * FMin(VSize(Velocity), GroundSpeed);
+			} else {
+				if (bDodging)
+					Vel = VSize(Velocity) * DodgeEndVelocity;
+				else
+					Vel = VSize(Velocity) * JumpEndVelocity;
 
-			Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * FMin(Vel, GroundSpeed);
+				Velocity = (Normal(Velocity) + Normal(Acceleration)) * 0.5 * HitNormal.Z * FMin(Vel, GroundSpeed);
+			}
 		} else if (bDodging) {
 			Velocity *= DodgeEndVelocity;
 		} else {
@@ -5771,25 +5936,25 @@ state PlayerWaking
 	}
 }
 
-function bool GameRestartPlayer() {
-	local bool bDeathMatchSave;
-	local bool Result;
-
-	if (class'UTPure'.default.bEnablePingCompensatedSpawn) {
-		bDeathMatchSave = Level.Game.bDeathMatch;
-		Level.Game.bDeathMatch = false;
-	}
-
-	Result = Level.Game.RestartPlayer(self);
-
-	if (class'UTPure'.default.bEnablePingCompensatedSpawn)
-		Level.Game.bDeathMatch = bDeathMatchSave;
-
-	return Result;
-}
-
 state Dying
 {
+	function bool GameRestartPlayer() {
+		local bool bDeathMatchSave;
+		local bool Result;
+
+		if (class'UTPure'.default.bEnablePingCompensatedSpawn) {
+			bDeathMatchSave = Level.Game.bDeathMatch;
+			Level.Game.bDeathMatch = false;
+		}
+
+		Result = Level.Game.RestartPlayer(self);
+
+		if (class'UTPure'.default.bEnablePingCompensatedSpawn)
+			Level.Game.bDeathMatch = bDeathMatchSave;
+
+		return Result;
+	}
+
 	function ServerReStartPlayer()
 	{
 		if ( Level.NetMode == NM_Client || bFrozen && (TimerRate>0.0) )
@@ -6378,21 +6543,6 @@ simulated function bool ClientCannotShoot(optional Weapon W, optional byte Mode,
 	return bCant;
 }
 
-function CalcAvgTick()
-{
-	local float CurrentTime;
-	CurrentTime = Level.TimeSeconds;
-	if (LastTick > 0)
-		AvgTickDiff = CurrentTime - LastTick;
-	else
-		AvgTickDiff = (AvgTickDiff + CurrentTime - LastTick) / 2;
-	LastTick = CurrentTime;
-	if (Level.NetMode == NM_Client)
-		ClientMessage(AvgTickDiff);
-	else
-		Log(AvgTickDiff);
-}
-
 function xxPlayerTickEvents(float DeltaTime)
 {
 	local float CurrentTime;
@@ -6464,28 +6614,24 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 1, "FCommandoSkins.aphe2"$suffix, "FCommandoSkins.aphe");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.aphe4Indina", "FCommandoSkins.aphe");
-			// Set the Mesh
 			break;
 		case 1: // Female Commando Anna
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.cmdo1"$suffix, "FCommandoSkins.cmdo");
 			SetSkinElement(SkinActor, 1, "FCommandoSkins.cmdo2"$suffix, "FCommandoSkins.cmdo");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.cmdo4Anna", "FCommandoSkins.anna");
-			// Set the Mesh
 			break;
 		case 2: // Female Commando Mercenary
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.daco1"$suffix, "FCommandoSkins.daco");
 			SetSkinElement(SkinActor, 1, "FCommandoSkins.daco2"$suffix, "FCommandoSkins.daco");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.daco4Jayce", "FCommandoSkins.daco");
-			// Set the Mesh
 			break;
 		case 3: // Female Commando Necris
 			SetSkinElement(SkinActor, 0, "FCommandoSkins.goth1"$suffix, "FCommandoSkins.goth");
 			SetSkinElement(SkinActor, 1, "FCommandoSkins.goth2"$suffix, "FCommandoSkins.goth");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "FCommandoSkins.goth4Cryss", "FCommandoSkins.goth");
-			// Set the Mesh
 			break;
 		case 4: // Female Soldier Marine
 			SetSkinElement(SkinActor, 0, "SGirlSkins.fbth1"$suffix, "SGirlSkins.fbth");
@@ -6493,7 +6639,6 @@ static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame,
 			SetSkinElement(SkinActor, 2, "SGirlSkins.fbth3", "SGirkSkins.fbth");
 			// Set the face
 			SetSkinElement(SkinActor, 3, "SGirlSkins.fbth4Annaka", "SGirlSkins.fbth");
-			// Set the Mesh
 			break;
 		case 5: // Female Soldier Metal Guard
 			SetSkinElement(SkinActor, 0, "SGirlSkins.Garf1"$suffix, "SGirlSkins.Garf");
@@ -6710,6 +6855,7 @@ function ApplyBrightskins(PlayerReplicationInfo PRI) {
 event PreRender( canvas zzCanvas )
 {
 	local PlayerReplicationInfo zzPRI;
+	local WindowConsole C;
 
 	zzbDemoRecording = PureLevel != None && PureLevel.zzDemoRecDriver != None;
 
@@ -6724,6 +6870,21 @@ event PreRender( canvas zzCanvas )
 			ApplyBrightskins(zzPRI);
 		}
 	}
+
+	if (IGPlus_TryOpenSettingsMenu) {
+		IGPlus_TryOpenSettingsMenu = false;
+
+		if (Player != none)
+			C = WindowConsole(Player.Console);
+
+		if (C == none)
+			return;
+
+		C.bQuickKeyEnable = True;
+		C.LaunchUWindow();
+
+		IGPlus_OpenSettingsMenu();
+	}
 }
 
 event PostRender( canvas zzCanvas )
@@ -6731,14 +6892,6 @@ event PostRender( canvas zzCanvas )
 	local int CH;
 	local int NetspeedTarget;
 	local int Netspeed;
-
-	if (zzbRepVRData)
-	{	// Received data through demo replication.
-		ViewRotation.Yaw = zzRepVRYaw;
-		ViewRotation.Pitch = zzRepVRPitch;
-		ViewRotation.Roll = 0;
-		EyeHeight = zzRepVREye;
-	}
 
 	if (Settings.bUseCrosshairFactory) {
 		CH = MyHud.Crosshair;
@@ -6994,7 +7147,7 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.SetPos(zzx, zzY + 520);
 	zzC.DrawText("EyeHeight:"@EyeHeight);
 	zzC.SetPos(zzx, zzY + 540);
-	zzC.DrawText("ServerMove calls"@debugServerMoveCallsSent@debugServerMoveCallsReceived@debugServerMoveCallsLost);
+	zzC.DrawText("ServerMove calls"@debugServerMoveCallsSent@debugServerMoveCallsReceived);
 	zzC.SetPos(zzx, zzY + 560);
 	zzC.DrawText("bDodging"@bDodging@"DodgeDir"@DodgeDir);
 
@@ -8050,6 +8203,8 @@ exec function Say(string Msg) {
 		Msg ~= "!ready"
 	) {
 		Ready();
+	} else if (Msg ~= "!IGPlusMenu") {
+		IGPlusMenu();
 	}
 	super.Say(Msg);
 }
@@ -8667,6 +8822,66 @@ exec function ZoomToggle(float SensitivityX, optional float SensitivityY) {
 		else
 			IGPlus_ZoomToggle_SensitivityFactorY = SensitivityY * IGPlus_ZoomToggle_RestoreFOV/DefaultFOV;
 	}
+}
+
+exec function IGPlusMenu() {
+	local WindowConsole C;
+
+	if (Player != none)
+		C = WindowConsole(Player.Console);
+
+	if (C == none) {
+		ClientMessage("Failed to create Settings window (Console not a WindowConsole)");
+		return;
+	}
+
+	if (C.IsInState('Typing')) {
+		IGPlus_TryOpenSettingsMenu = true; // delay until processing of this command is over
+	} else if (C.bShowConsole) {
+		// console is already open, no need to do anything
+	} else {
+		// probably a hotkey that called this function
+		C.bQuickKeyEnable = True;
+		C.LaunchUWindow();
+	}
+
+	IGPlus_OpenSettingsMenu();
+}
+
+function IGPlus_OpenSettingsMenu() {
+	local WindowConsole C;
+
+	if (Player != none)
+		C = WindowConsole(Player.Console);
+
+	if (C == none) {
+		ClientMessage("Failed to create Settings window (Console not a WindowConsole)");
+		return;
+	}
+
+	if (IGPlus_SettingsMenu == none) {
+		if (C.Root == none) {
+			ClientMessage("Failed to create Settings window (Root does not exist)");
+			return;
+		}
+
+		IGPlus_SettingsMenu = IGPlus_SettingsDialog(C.Root.CreateWindow(
+			class'IGPlus_SettingsDialog',
+			Settings.MenuX,
+			Settings.MenuY,
+			Settings.MenuWidth,
+			Settings.MenuHeight
+		));
+
+		if (IGPlus_SettingsMenu == none) {
+			ClientMessage("Failed to create Settings window (Could not create Dialog)");
+			return;
+		}
+	}
+
+	IGPlus_SettingsMenu.bLeaveOnscreen = true;
+	IGPlus_SettingsMenu.ShowWindow();
+	IGPlus_SettingsMenu.Load();
 }
 
 defaultproperties

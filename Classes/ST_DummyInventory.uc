@@ -1,2 +1,2 @@
-class ST_DummyInventory expands Inventory;
+class ST_DummyInventory extends Inventory;
 

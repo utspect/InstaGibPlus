@@ -1,4 +1,4 @@
-class ST_WeaponClassLoader expands ReplicationInfo;
+class ST_WeaponClassLoader extends ReplicationInfo;
 
 defaultproperties
 {

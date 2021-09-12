@@ -74,6 +74,11 @@ var config bool   bAllowWeaponShake;
 var config bool   bAutoReady;
 var config bool   bShowDeathReport;
 var config bool   bSmoothFOVChanges;
+var config bool   bEnableKillFeed;
+var config float  KillFeedX;
+var config float  KillFeedY;
+var config float  KillFeedSpeed;
+var config float  KillFeedScale;
 
 enum EHitMarkerSource {
 	HMSRC_Server,
@@ -108,6 +113,8 @@ var config bool bUseCrosshairFactory;
 var config CrosshairLayerDescr CrosshairLayers[10];
 var CrosshairLayer BottomLayer;
 var CrosshairLayer TopLayer;
+
+var config float MenuX, MenuY, MenuWidth, MenuHeight;
 
 simulated function AppendLayer(CrosshairLayer L) {
 	if (BottomLayer == none) {
@@ -206,6 +213,30 @@ simulated function string DumpCrosshairLayers() {
 	return Result;
 }
 
+simulated function EHitSoundSource IntToHitSoundSource(int A) {
+	switch(A) {
+		case 0: return HSSRC_Server;
+		case 1: return HSSRC_Client;
+	}
+	return HSSRC_Server;
+}
+
+simulated function EHitMarkerSource IntToHitMarkerSource(int A) {
+	switch(A) {
+		case 0: return HMSRC_Server;
+		case 1: return HMSRC_Client;
+	}
+	return HMSRC_Server;
+}
+
+simulated function EHitMarkerColorMode IntToHitMarkerColorMode(int A) {
+	switch(A) {
+		case 0: return HMCM_FriendOrFoe;
+		case 1: return HMCM_TeamColor;
+	}
+	return HMCM_FriendOrFoe;
+}
+
 simulated function string DumpSettings() {
 	return "IG+ Client Settings:"$Chr(10)$
 		GetSetting("bForceModels")$
@@ -266,6 +297,11 @@ simulated function string DumpSettings() {
 		GetSetting("bAutoReady")$
 		GetSetting("bShowDeathReport")$
 		GetSetting("bSmoothFOVChanges")$
+		GetSetting("bEnableKillFeed")$
+		GetSetting("KillFeedX")$
+		GetSetting("KillFeedY")$
+		GetSetting("KillFeedSpeed")$
+		GetSetting("KillFeedScale")$
 		GetSetting("bEnableHitMarker")$
 		GetSetting("bEnableTeamHitMarker")$
 		GetSetting("HitMarkerColorMode")$
@@ -307,10 +343,10 @@ defaultproperties
 	SelectedTeamHitSound=2
 	HitSoundVolume=4
 	HitSoundTeamVolume=4
-	sHitSound(0)="InstaGibPlus7.HitSound"
+	sHitSound(0)="InstaGibPlus8.HitSound"
 	sHitSound(1)="UnrealShare.StingerFire"
-	sHitSound(2)="InstaGibPlus7.HitSoundFriendly"
-	sHitSound(3)="InstaGibPlus7.HitSound1"
+	sHitSound(2)="InstaGibPlus8.HitSoundFriendly"
+	sHitSound(3)="InstaGibPlus8.HitSound1"
 	cShockBeam=1
 	bHideOwnBeam=False
 	BeamScale=0.45
@@ -319,7 +355,7 @@ defaultproperties
 	BeamOriginMode=0
 	BeamDestinationMode=0
 	SSRRingType=1
-	DesiredNetUpdateRate=250.0
+	DesiredNetUpdateRate=200.0
 	DesiredNetspeed=25000
 	bNoSmoothing=True
 	bNoOwnFootsteps=False
@@ -341,6 +377,11 @@ defaultproperties
 	bAutoReady=True
 	bShowDeathReport=False
 	bSmoothFOVChanges=False
+	bEnableKillFeed=True
+	KillFeedX=0.0
+	KillFeedY=0.5
+	KillFeedSpeed=1.0
+	KillFeedScale=1.0
 	bEnableHitMarker=False
 	bEnableTeamHitMarker=False
 	HitMarkerColorMode=HMCM_FriendOrFoe
@@ -352,4 +393,9 @@ defaultproperties
 	HitMarkerDecayExponent=5.0
 	HitMarkerSource=HMSRC_Server
 	bUseCrosshairFactory=False
+
+	MenuX=200
+	MenuY=200
+	MenuWidth=240
+	MenuHeight=400
 }

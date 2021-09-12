@@ -1,4 +1,4 @@
-class NN_Kicker expands Botpack.Kicker;
+class NN_Kicker extends Botpack.Kicker;
 
 simulated event Touch(Actor Other) {
 	local Actor A;

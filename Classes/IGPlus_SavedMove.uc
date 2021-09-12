@@ -1,4 +1,4 @@
-class bbSavedMove extends SavedMove;
+class IGPlus_SavedMove extends SavedMove;
 
 // Player attributes after applying this move
 var vector IGPlus_SavedLocation;
@@ -9,6 +9,8 @@ var int JumpIndex;
 var int DodgeIndex;
 var int RunChangeIndex;
 var int DuckChangeIndex;
+var int FireIndex;
+var int AltFireIndex;
 var int AddVelocityId;
 var vector Momentum;
 
@@ -19,6 +21,8 @@ function Clear2() {
     DodgeIndex = -1;
     RunChangeIndex = -1;
     DuckChangeIndex = -1;
+    FireIndex = -1;
+    AltFireIndex = -1;
     Momentum = vect(0,0,0);
 }
 
@@ -30,4 +34,6 @@ defaultproperties
      DodgeIndex=-1
      RunChangeIndex=-1
      DuckChangeIndex=-1
+     FireIndex=-1
+     AltFireIndex=-1
 }

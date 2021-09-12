@@ -23,13 +23,16 @@ ucc make -ini=%BUILD_DIR%make.ini -Silent
 :: dont do the post-process steps if compilation failed
 if ERRORLEVEL 1 goto cleanup
 
-:: Generate compressed file for redirects
+:: generate compressed file for redirects
 ucc compress %PACKAGE_NAME%.u
+:: dump localization strings
+ucc dumpint %PACKAGE_NAME%.u
 
 :: copy to release location
 if not exist %BUILD_DIR%System (mkdir %BUILD_DIR%System)
 copy %PACKAGE_NAME%.u     %BUILD_DIR%System >NUL
 copy %PACKAGE_NAME%.u.uz  %BUILD_DIR%System >NUL
+copy %PACKAGE_NAME%.int   %BUILD_DIR%System >NUL
 
 popd
 

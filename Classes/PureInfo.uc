@@ -4,7 +4,7 @@
 // Created by UClasses - (C) 2000 by meltdown@thirdtower.com
 // ============================================================
 
-class PureInfo expands Info;
+class PureInfo extends Info;
 
 var float zzLastTick;
 var int zzTickOff;

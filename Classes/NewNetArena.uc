@@ -1,4 +1,4 @@
-class NewNetArena expands Arena;
+class NewNetArena extends Arena;
 
 var name WeaponNames[8], AmmoNames[8];
 var string WeaponPackages[8], WeaponStrings[8], AmmoStrings[8];

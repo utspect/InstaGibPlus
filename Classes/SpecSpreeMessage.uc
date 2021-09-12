@@ -1,4 +1,4 @@
-class SpecSpreeMessage expands KillingSpreeMessage;
+class SpecSpreeMessage extends KillingSpreeMessage;
 
 static simulated function ClientReceive( 
 	PlayerPawn P,

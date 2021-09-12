@@ -21,7 +21,7 @@ static function int GetClockTime(HUD H) {
 		}
 	}
 
-	if (TGRI.GameEndedComments == "") {
+	if (TGRI != none && TGRI.GameEndedComments == "") {
 		// game hasnt ended yet
 		Rem = TGRI.RemainingTime;
 		if (Rem == 0) {

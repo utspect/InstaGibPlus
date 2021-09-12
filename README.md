@@ -85,18 +85,23 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 57. [bAutoReady](#bautoready)
 58. [bShowDeathReport](#bshowdeathreport)
 59. [bSmoothFOVChanges](#bsmoothfovchanges)
-60. [bEnableHitMarker](#benablehitmarker)
-61. [bEnableTeamHitMarker](#benableteamhitmarker)
-62. [HitMarkerColorMode](#hitmarkercolormode)
-63. [HitMarkerColor](#hitmarkercolor)
-64. [HitMarkerTeamColor](#hitmarkerteamcolor)
-65. [HitMarkerSize](#hitmarkersize)
-66. [HitMarkerOffset](#hitmarkeroffset)
-67. [HitMarkerDuration](#hitmarkerduration)
-68. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-69. [HitMarkerSource](#hitmarkersource)
-70. [bUseCrosshairFactory](#busecrosshairfactory)
-71. [CrosshairLayers](#crosshairlayers)
+60. [bEnableKillFeed](#benablekillfeed)
+61. [KillFeedX](#killfeedx)
+62. [KillFeedY](#killfeedy)
+63. [KillFeedSpeed](#killfeedspeed)
+64. [KillFeedScale](#killfeedscale)
+65. [bEnableHitMarker](#benablehitmarker)
+66. [bEnableTeamHitMarker](#benableteamhitmarker)
+67. [HitMarkerColorMode](#hitmarkercolormode)
+68. [HitMarkerColor](#hitmarkercolor)
+69. [HitMarkerTeamColor](#hitmarkerteamcolor)
+70. [HitMarkerSize](#hitmarkersize)
+71. [HitMarkerOffset](#hitmarkeroffset)
+72. [HitMarkerDuration](#hitmarkerduration)
+73. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+74. [HitMarkerSource](#hitmarkersource)
+75. [bUseCrosshairFactory](#busecrosshairfactory)
+76. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -356,7 +361,7 @@ If `False`, your own footstep sounds will be played.
 
 ## DesiredNetUpdateRate
 **Type: float**  
-**Default: 250**  
+**Default: 200**  
 **Unit: Hz**  
 
 How often you want your client to update the server on your movement. The server places upper and lower limits on this (see [MinNetUpdateRate](#minnetupdaterate), [MaxNetUpdateRate](#maxnetupdaterate)), and the actual update rate will never exceed your netspeed divided by 100.
@@ -494,6 +499,39 @@ If `True`, show a report of damage taken that lead to death. The report starts f
 
 If `True`, smooth changes to your FOV, which can happen when spawning, teleporting or zooming.  
 If `False`, your FOV immediately changes to the desired FOV without a smooth transition.
+
+## bEnableKillFeed
+**Type: bool**  
+**Default: True**  
+
+If `True` kills are reported in a separate list in condensed form, using symbols to represent the cause of death.  
+If `False` nothing is shown.
+
+## KillFeedX
+**Type: float**  
+**Default: 0.0**  
+
+Horizontal position of the KillFeed. Left edge of screen is 0. Right edge of screen is 1.
+
+## KillFeedY
+**Type: float**  
+**Default: 0.5**  
+
+Vertical position of the KillFeed. Top of screen is 0. Bottom of screen is 1.
+
+## KillFeedSpeed
+**Type: float**  
+**Default: 1.0**  
+
+Linear factor on the speed at which individual lines in the KillFeed disappear.
+
+Increase to make lines disappear sooner. Decrease to make lines disappear later. 0 and below mean the lines stay until they are rotated out by subsequent kills. Maximum of 4 lines at any time.
+
+## KillFeedScale
+**Type: float**  
+**Default: 1.0**  
+
+Scales the size of individual lines of the KillFeed.
 
 ## bEnableHitMarker
 **Type: bool**  
@@ -775,14 +813,14 @@ Extract the zipped files to your system folder.
 Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or Deepu's Ultimate NewNet.  
 Add the following lines to your server's **UnrealTournament.ini** under **[Engine.GameEngine]**:
 
-**ServerPackages=InstaGibPlus7**  
-**ServerActors=InstaGibPlus7.NewNetServer**  
-**ServerActors=InstaGibPlus7.PureStats**  
+**ServerPackages=InstaGibPlus8**  
+**ServerActors=InstaGibPlus8.NewNetServer**  
+**ServerActors=InstaGibPlus8.PureStats**  
 
 <b>It is highly recommended to set your server's tickrate to 100.</b>
 
 # Usage
-For InstaGib, make sure the mutator **InstaGibPlus7.NewNetIG** is loaded via your map vote configuration or during server launch.
+For InstaGib, make sure the mutator **InstaGibPlus8.NewNetIG** is loaded via your map vote configuration or during server launch.
 
 InstaGib+ has minimal weapons code and will load the default UT weapons if the NewNetIG mutator is not loaded, so it is absolutely unusable in normal weapons, make sure to use it only if your objective is to play or to run an InstaGib centered server.
 
@@ -841,27 +879,29 @@ Server settings can be found inside InstaGibPlus.ini.
 37. [KillCamDelay](#killcamdelay)
 38. [KillCamDuration](#killcamduration)
 39. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
-40. [bEnableSingleButtonDodge](#benablesinglebuttondodge)
-41. [bUseFlipAnimation](#buseflipanimation)
-42. [bEnableWallDodging](#benablewalldodging)
-43. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
-44. [MaxMultiDodges](#maxmultidodges)
-45. [BrightskinMode](#brightskinmode)
-46. [PlayerScale](#playerscale)
-47. [MinPosError](#minposerror)
-48. [MaxPosError](#maxposerror)
-49. [MaxHitError](#maxhiterror)
-50. [MaxJitterTime](#maxjittertime)
-51. [MinNetUpdateRate](#minnetupdaterate)
-52. [MaxNetUpdateRate](#maxnetupdaterate)
-53. [bEnableServerExtrapolation](#benableserverextrapolation)
-54. [bEnableServerPacketReordering](#benableserverpacketreordering)
-55. [bEnableLoosePositionCheck](#benableloosepositioncheck)
-56. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
-57. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
-58. [ShowTouchedPackage](#showtouchedpackage)
-59. [ExcludeMapsForKickers](#excludemapsforkickers)
-60. [ForcedSettings](#forcedsettings)
+40. [bOldLandingMomentum](#boldlandingmomentum)
+41. [bEnableSingleButtonDodge](#benablesinglebuttondodge)
+42. [bUseFlipAnimation](#buseflipanimation)
+43. [bEnableWallDodging](#benablewalldodging)
+44. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
+45. [MaxMultiDodges](#maxmultidodges)
+46. [BrightskinMode](#brightskinmode)
+47. [PlayerScale](#playerscale)
+48. [MinPosError](#minposerror)
+49. [MaxPosError](#maxposerror)
+50. [MaxHitError](#maxhiterror)
+51. [MaxJitterTime](#maxjittertime)
+52. [MinNetUpdateRate](#minnetupdaterate)
+53. [MaxNetUpdateRate](#maxnetupdaterate)
+54. [bEnableServerExtrapolation](#benableserverextrapolation)
+55. [bEnableServerPacketReordering](#benableserverpacketreordering)
+56. [bEnableLoosePositionCheck](#benableloosepositioncheck)
+57. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
+58. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
+59. [bEnableJitterBounding](#benablejitterbounding)
+60. [ShowTouchedPackage](#showtouchedpackage)
+61. [ExcludeMapsForKickers](#excludemapsforkickers)
+62. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1174,7 +1214,7 @@ Minimum frequency of client updates for server.
 ## MaxNetUpdateRate
 
 **Type: float**  
-**Default: 250**  
+**Default: 200**  
 **Unit: Hz**  
 
 Maximum frequency of client updates for server.
@@ -1199,7 +1239,7 @@ Maximum time after death (on server) that players can still fire their weapons. 
 ## TradePingMargin
 
 **Type: float**  
-**Default: 0.2**  
+**Default: 0.5**  
 
 Trade uncertainty relative to shooters ping. Reasonable values range from 0 to 1. Higher values lead to more trades.
 
@@ -1215,7 +1255,7 @@ Disable to restore default netcode behavior.
 ## bEnableServerPacketReordering
 
 **Type: bool**  
-**Default: True**  
+**Default: False**  
 
 If enabled, the server will try to reorder incoming ServerMove calls to extract the maximum amount of usable data. More relevant at lower TickRates.
 
@@ -1249,6 +1289,15 @@ If disabled, players will stand on their spawn-point visible to other players wi
 
 Disable to restore default netcode behavior.
 
+## bEnableJitterBounding
+
+**Type: bool**  
+**Default: True**  
+
+If enabled, updates by clients over more than [MaxJitterTime](#maxjittertime) will be cut down to MaxJitterTime in order to reduce visible warping for other players.
+
+Disable to restore default netcode behavior.
+
 ## KillCamDelay
 
 **Type: float**  
@@ -1271,6 +1320,13 @@ KillCam follows the killing player for this long after its start.
 **Default: False**  
 
 If False, players will be slowed down to ground speed upon landing, which prevents Bunny Hopping. If True, landing works like before.
+
+## bOldLandingMomentum
+
+**Type: bool**  
+**Default: True**  
+
+If True, players retain the momentum of their in-air movement upon landing. If False, players can cancel their momentum by moving in the opposite direction of their in-air movement.
 
 ## bEnableSingleButtonDodge
 
@@ -1351,8 +1407,8 @@ Each entry can be used to force a setting on clients:
 # Building
 
 1. Go to the installation directory of UT99 in a command shell
-2. Use `git clone https://github.com/utspect/InstaGibPlus InstaGibPlus7` to clone the repo
-3. Navigate to the newly created directory `InstaGibPlus7`
+2. Use `git clone https://github.com/utspect/InstaGibPlus InstaGibPlus8` to clone the repo
+3. Navigate to the newly created directory `InstaGibPlus8`
 4. Execute `build.bat`
 5. The result of the build process will be available in the `System` folder that is next to `build.bat`
 

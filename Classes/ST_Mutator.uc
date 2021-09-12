@@ -565,6 +565,8 @@ function SwitchWeaponsInventory(Pawn Other)
 	local Inventory Inv;
 	local string NewName[32];
 	local Weapon OldWeap[32];
+	local class<Ammo> AmmoCls[32];
+	local Ammo AmmoTyp[32];
 	local int NewCount, x;
 	local name n;
 	local UTPure UTP;
@@ -587,6 +589,8 @@ function SwitchWeaponsInventory(Pawn Other)
 			{
 				NewName[NewCount] = PreFix$NewName[NewCount];
 				OldWeap[NewCount] = W;
+				AmmoCls[NewCount] = W.AmmoName;
+				AmmoTyp[NewCount] = W.AmmoType;
 				NewCount++;
 			}
 		}
@@ -594,6 +598,11 @@ function SwitchWeaponsInventory(Pawn Other)
 
 	for (x = NewCount -1; x >= 0; x--)
 	{	// Now replace
+		if (AmmoTyp[x] == none)
+			AmmoTyp[x] = Ammo(Other.FindInventoryType(AmmoCls[x]));
+		if (AmmoTyp[x] != none)
+			AmmoTyp[x].UseAmmo(OldWeap[x].PickupAmmoCount);
+
 		GiveGoodWeapon(Other, NewName[x], OldWeap[x]);
 		OldWeap[x].GotoState('');
 		Other.DeleteInventory(OldWeap[x]);
