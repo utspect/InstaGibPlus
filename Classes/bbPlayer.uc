@@ -2573,8 +2573,7 @@ function bool IGPlus_IsCAPNecessary() {
 		zzIgnoreUpdateUntil = ServerTimeStamp;
 	}
 
-	bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp) ||
-		(ClientLocError > MaxLocError && zzIgnoreUpdateUntil < ServerTimeStamp);
+	bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp);
 
 	clientLastUpdateTime = ServerTimeStamp;
 	debugClientForceUpdate = bForceUpdate;
@@ -2584,10 +2583,10 @@ function bool IGPlus_IsCAPNecessary() {
 	if (zzLastClientErr == 0 || ClientLocError < zzLastClientErr)
 		zzLastClientErr = ClientLocError;
 
-	if (ClientLocError < MinLocError)
+	if (ClientLocError < MinLocError && bForceUpdate == false)
 		return false;
 
-	if (bForceUpdate) {
+	if (bForceUpdate || (ClientLocError > MaxLocError && zzIgnoreUpdateUntil < ServerTimeStamp)) {
 		ClientDebugMessage("Send CAP:"@CurrentTimeStamp@Physics@ClientPhysics@ClientLocError@MaxLocError);
 		return true;
 	}
