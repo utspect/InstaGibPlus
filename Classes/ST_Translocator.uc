@@ -18,7 +18,7 @@ function PostBeginPlay()
 
 function ReturnToPreviousWeapon()
 {	// This fixes the "both buttons goes back to old weapon" annoyance.
-	if (GetPropertyText("bEnableDualButtonSwitch") ~= "false")
+	if (GetPropertyText("bClientDualButtonSwitch") ~= "false")
 		return;
 	Super.ReturnToPreviousWeapon();
 }
