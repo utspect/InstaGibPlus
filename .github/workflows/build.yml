@@ -45,23 +45,18 @@ jobs:
         run: InstaGibPlus9/build.bat
 
       - name: Save UCC.log
-        if: ${{ success() == false }}
+        if: failure()
         uses: actions/upload-artifact@v2
         with:
           name: ucc-output
           path: System/UCC.log
 
-      - name: Create IG+ Package
-        if: ${{ success() }}
-        uses: papeloto/action-zip@v1
-        with:
-          files: InstaGibPlus9/System/ InstaGibPlus9/LICENSE InstaGibPlus9/README.md
-          recursive: true
-          dest: InstaGibPlus9.zip
-
       - name: Save IG+ Package
-        if: ${{ success() }}
+        if: success()
         uses: actions/upload-artifact@v2
         with:
-          name: package
-          path: InstaGibPlus9.zip
+          name: InstaGibPlus9
+          path: |
+            InstaGibPlus9/System/
+            InstaGibPlus9/LICENSE
+            InstaGibPlus9/README.md
