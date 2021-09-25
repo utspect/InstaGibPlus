@@ -33,6 +33,7 @@ jobs:
         uses: DuckSoft/extract-7z-action@v1.0
         with:
           pathSource: ${{ steps.downloadfile.outputs.filename }}
+          pathTarget: .
 
       - name: Checkout IG+
         uses: actions/checkout@v2
