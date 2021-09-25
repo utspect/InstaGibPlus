@@ -22,23 +22,29 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: suisei-cn/actions-download-file@v1
-        id: downloadfile
-        name: Download Build Environment
+      - name: Download 469b Patch
+        uses: robinraju/release-downloader@v1.2
         with:
-          url: "https://deaod.de/ut99/IG+BuildEnv_v469b.7z"
-          target: .
+          repository: "OldUnreal/UnrealTournamentPatches"
+          tag: "v469b"
+          fileName: "OldUnreal-UTPatch469b-Windows.zip"
           
-      - name: Extract Build Environment
+      - name: Extract Patch
         uses: DuckSoft/extract-7z-action@v1.0
         with:
-          pathSource: ${{ steps.downloadfile.outputs.filename }}
+          pathSource: OldUnreal-UTPatch469b-Windows.zip
           pathTarget: .
 
       - name: Checkout IG+
         uses: actions/checkout@v2
         with:
           path: InstaGibPlus9/
+
+      - name: Extract Necessary Resources
+        uses: DuckSoft/extract-7z-action@v1.0
+        with:
+          pathSource: InstaGibPlus9/Build/BuildEnv.zip
+          pathTarget: .
 
       # Runs a single command using the runners shell
       - name: Build IG+
