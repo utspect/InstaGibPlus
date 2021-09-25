@@ -5,10 +5,10 @@ name: CI
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
-#  push:
-#    branches: [ master ]
-#  pull_request:
-#    branches: [ master ]
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -22,36 +22,45 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: release-downloader
-        uses: robinraju/release-downloader@v1.2
+      - uses: suisei-cn/actions-download-file@v1
+        id: downloadfile
+        name: Download Build Environment
         with:
-          repository: OldUnreal/UnrealTournamentPatches
-          tag: v469b
-          fileName: OldUnreal-UTPatch469b-Windows.zip
-          out-file-path: .
+          url: "https://deaod.de/ut99/IG+BuildEnv_v469b.7z"
+          target: .
           
-      - name: extract-7z-action
-        # You may pin to the exact commit or the version.
-        # uses: DuckSoft/extract-7z-action@6eaaa506b410f047eaa9b22498696aad1e19a834
-        uses: DuckSoft/extract-7z-action@v1.0
+      - name: Extract Build Environment
+        uses: DuckSoft/extract-7z-action@v1
         with:
-          # archive path to extract
-          pathSource: OldUnreal-UTPatch469b-Windows.zip
-          # path to place the extract
-          pathTarget: .
-          
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: Checkout
+          pathSource: ${{ steps.downloadfile.outputs.filename }}
+
+      - name: Checkout IG+
         uses: actions/checkout@v2
         with:
           path: InstaGibPlus9/
 
       # Runs a single command using the runners shell
-      - name: Run a one-line script
+      - name: Build IG+
         run: InstaGibPlus9/build.bat
 
-      # Runs a set of commands using the runners shell
-#      - name: Run a multi-line script
-#        run: |
-#          echo Add other actions to build,
-#          echo test, and deploy your project.
+      - name: Save UCC.log
+        if: ${{ success() == false }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: ucc-output
+          path: System/UCC.log
+
+      - name: Create IG+ Package
+        if: ${{ success() }}
+        uses: papeloto/action-zip@v1
+        with:
+          files: InstaGibPlus9/System/ InstaGibPlus9/LICENSE InstaGibPlus9/README.md
+          recursive: true
+          dest: InstaGibPlus9.zip
+
+      - name: Save IG+ Package
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: package
+          path: InstaGibPlus9.zip
