@@ -30,7 +30,7 @@ jobs:
           target: .
           
       - name: Extract Build Environment
-        uses: DuckSoft/extract-7z-action@v1
+        uses: DuckSoft/extract-7z-action@v1.0
         with:
           pathSource: ${{ steps.downloadfile.outputs.filename }}
 
