@@ -1226,10 +1226,14 @@ function IGPlus_NotifyPlayerRestart(vector Loc, rotator Dir, bbPlayer Other) {
 
 function IGPlus_SendRespawnNoficiation() {
 	local bbPlayer P;
+	local bbCHSpectator S;
 
 	foreach AllActors(class'bbPlayer', P)
 		if (P != self)
 			P.IGPlus_NotifyPlayerRestart(Location, Rotation, self);
+
+	foreach AllActors(class'bbCHSpectator', S)
+		S.IGPlus_NotifyPlayerRestart(Location, Rotation, self);
 }
 
 event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, optional PlayerReplicationInfo RelatedPRI_1, optional PlayerReplicationInfo RelatedPRI_2, optional Object OptionalObject )
