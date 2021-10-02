@@ -2273,7 +2273,7 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	else
 		ClientLocAbs = SM.ClientLocation + SM.ClientBase.Location;
 
-	if ((SM.OldMoveData1 & 0x3FF) != 0)
+	if (bWasPaused == false)
 		if (IGPlus_OldServerMove(SM.TimeStamp, SM.OldMoveData1, SM.OldMoveData2)) {
 			xxFakeCAP(CurrentTimeStamp);
 			LastCAPTime = Level.TimeSeconds;
@@ -2701,6 +2701,7 @@ function EPhysics GetPhysics(int phys) {
 }
 
 function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMoveData2) {
+	local int OldTimeStampOffset;
 	local vector Accel;
 	local float OldTimeStamp;
 	local float DeltaTime;
@@ -2710,10 +2711,13 @@ function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMov
 	local EDodgeDir DodgeMove;
 	local float SimTime;
 
-	OldTimeStamp = TimeStamp - (float(OldMoveData1 & 0x3FF) * 0.001);
-	if (CurrentTimeStamp + 0.001 >= OldTimeStamp) {
+	OldTimeStampOffset = OldMoveData1 & 0x3FF;
+	if (OldTimeStampOffset == 0 || OldTimeStampOffset == 0x3FF)
 		return false;
-	}
+
+	OldTimeStamp = TimeStamp - (float(OldTimeStampOffset) * 0.001);
+	if (CurrentTimeStamp + 0.001 >= OldTimeStamp)
+		return false;
 
 	DeltaTime = OldTimeStamp - CurrentTimeStamp;
 	OldJump   = (OldMoveData1 & 0x0400) != 0;
@@ -6972,6 +6976,11 @@ event PostRender( canvas zzCanvas )
 		++HitMarkerTestTeam;
 		if (HitMarkerTestTeam >= 4)
 			HitMarkerTestTeam = 0;
+	}
+
+	if (Level.Pauser != "" && PendingMove != none) {
+		PendingMove.Destroy();
+		PendingMove = none;
 	}
 
 	IGPlus_FrameCount += 1;
