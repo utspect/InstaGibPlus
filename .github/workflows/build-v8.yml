@@ -1,0 +1,68 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CIv8
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ v8-maintenance ]
+  pull_request:
+    branches: [ v8-maintenance ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Download 469b Patch
+        uses: robinraju/release-downloader@v1.2
+        with:
+          repository: "OldUnreal/UnrealTournamentPatches"
+          tag: "v469b"
+          fileName: "OldUnreal-UTPatch469b-Windows.zip"
+          
+      - name: Extract Patch
+        uses: DuckSoft/extract-7z-action@v1.0
+        with:
+          pathSource: "OldUnreal-UTPatch469b-Windows.zip"
+          pathTarget: .
+
+      - name: Checkout IG+
+        uses: actions/checkout@v2
+        with:
+          path: InstaGibPlus8B/
+
+      - name: Extract Necessary Resources
+        uses: DuckSoft/extract-7z-action@v1.0
+        with:
+          pathSource: InstaGibPlus8B/Build/BuildEnv.zip
+          pathTarget: .
+
+      # Runs a single command using the runners shell
+      - name: Build IG+
+        run: InstaGibPlus8B/build.bat
+
+      - name: Save UCC.log
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: ucc-output
+          path: System/UCC.log
+
+      - name: Save IG+ Package
+        if: success()
+        uses: actions/upload-artifact@v2
+        with:
+          name: InstaGibPlus8B
+          path: |
+            InstaGibPlus8B/System/
+            InstaGibPlus8B/LICENSE
+            InstaGibPlus8B/README.md
