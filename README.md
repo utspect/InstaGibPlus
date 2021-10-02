@@ -813,9 +813,9 @@ Extract the zipped files to your system folder.
 Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or Deepu's Ultimate NewNet.  
 Add the following lines to your server's **UnrealTournament.ini** under **[Engine.GameEngine]**:
 
-**ServerPackages=InstaGibPlus8B**
-**ServerActors=InstaGibPlus8B.NewNetServer**
-**ServerActors=InstaGibPlus8B.PureStats**
+**ServerPackages=InstaGibPlus8B**  
+**ServerActors=InstaGibPlus8B.NewNetServer**  
+**ServerActors=InstaGibPlus8B.PureStats**  
 
 <b>It is highly recommended to set your server's tickrate to 100.</b>
 
