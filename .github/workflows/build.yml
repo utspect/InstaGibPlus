@@ -32,7 +32,7 @@ jobs:
       - name: Extract Patch
         uses: DuckSoft/extract-7z-action@v1.0
         with:
-          pathSource: OldUnreal-UTPatch469b-Windows.zip
+          pathSource: "OldUnreal-UTPatch469b-Windows.zip"
           pathTarget: .
 
       - name: Checkout IG+
