@@ -899,9 +899,10 @@ Server settings can be found inside InstaGibPlus.ini.
 57. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
 58. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
 59. [bEnableJitterBounding](#benablejitterbounding)
-60. [ShowTouchedPackage](#showtouchedpackage)
-61. [ExcludeMapsForKickers](#excludemapsforkickers)
-62. [ForcedSettings](#forcedsettings)
+60. [bEnableWarpFix](#benablewarpfix)
+61. [ShowTouchedPackage](#showtouchedpackage)
+62. [ExcludeMapsForKickers](#excludemapsforkickers)
+63. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1297,6 +1298,14 @@ Disable to restore default netcode behavior.
 If enabled, updates by clients over more than [MaxJitterTime](#maxjittertime) will be cut down to MaxJitterTime in order to reduce visible warping for other players.
 
 Disable to restore default netcode behavior.
+
+## bEnableWarpFix
+
+**Type: bool**  
+**Default: True**  
+
+If enabled, other players will not be extrapolated indefinitely on clients. Instead, after a short amount of time they will be forcibly reset to the last position the client received from the server.
+
 
 ## KillCamDelay
 
