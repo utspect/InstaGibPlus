@@ -300,6 +300,21 @@ var ReplicationInfo IGPlus_AdditionalReplicationInfo;
 var bool IGPlus_TryOpenSettingsMenu;
 var IGPlus_SettingsDialog IGPlus_SettingsMenu;
 
+struct IGPlus_WarpFix {
+	var vector OldLocation;
+	var int Counter;
+};
+
+struct IGPlus_WarpFixClient {
+	var IGPlus_WarpFix Last;
+	var float TimeStamp;
+};
+
+var bool IGPlus_EnableWarpFix;
+var bool IGPlus_WarpFixUpdate;
+var IGPlus_WarpFix IGPlus_WarpFixData;
+var IGPlus_WarpFixClient IGPlus_WarpFixClientData;
+
 replication
 {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -315,6 +330,7 @@ replication
 		bUseFastWeaponSwitch,
 		bUseFlipAnimation,
 		HUDInfo,
+		IGPlus_EnableWarpFix,
 		KillCamDelay,
 		KillCamDuration,
 		LastKiller,
@@ -335,7 +351,8 @@ replication
 
 	unreliable if ( Role == ROLE_Authority )
 		DuckFractionRepl,
-		IGPlus_AdditionalReplicationInfo;
+		IGPlus_AdditionalReplicationInfo,
+		IGPlus_WarpFixData;
 
 	unreliable if ( bDrawDebugData && RemoteRole == ROLE_AutonomousProxy )
 		clientForcedPosition,
@@ -1025,6 +1042,7 @@ event Possess()
 		bDodgePreserveZMomentum = class'UTPure'.default.bDodgePreserveZMomentum;
 		bUseFastWeaponSwitch = class'UTPure'.default.bUseFastWeaponSwitch;
 		bAlwaysRelevant = class'UTPure'.default.bPlayersAlwaysRelevant;
+		IGPlus_EnableWarpFix = class 'UTPure'.default.bEnableWarpFix;
 
 		if(!zzUTPure.bExludeKickers)
 		{
@@ -2123,6 +2141,12 @@ function IGPlus_ProcessRemoteMovement() {
 	else
 		IGPlus_CheckClientError();
 
+	if (IGPlus_WarpFixUpdate && IGPlus_EnableWarpFix) {
+		IGPlus_WarpFixData.OldLocation = Location;
+		IGPlus_WarpFixData.Counter += 1;
+		IGPlus_WarpFixUpdate = false;
+	}
+
 	if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval && ServerTimeStamp >= NextRealCAPTime) {
 		xxFakeCAP(CurrentTimeStamp);
 		LastCAPTime = ServerTimeStamp;
@@ -2882,6 +2906,8 @@ function xxServerMove(
 		IGPlus_ApplyServerMove(SM);
 		IGPlus_DestroyServerMove(SM);
 	}
+
+	IGPlus_WarpFixUpdate = true;
 }
 
 function xxServerMoveDead(
@@ -6850,8 +6876,27 @@ function ApplyBrightskins(PlayerReplicationInfo PRI) {
 		P.Weapon.bUnlit = false;
 }
 
+function IGPlus_ApplyWarpFix(PlayerReplicationInfo PRI) {
+	if (PRI == PlayerReplicationInfo)
+		return;
+
+	if (IGPlus_EnableWarpFix == false)
+		return;
+
+	if (IGPlus_WarpFixData.Counter != IGPlus_WarpFixClientData.Last.Counter) {
+		IGPlus_WarpFixClientData.Last = IGPlus_WarpFixData;
+		IGPlus_WarpFixClientData.TimeStamp = Level.TimeSeconds;
+	}
+
+	if (IGPlus_WarpFixClientData.TimeStamp + 0.1 >= Level.TimeSeconds)
+		return;
+
+	PRI.Owner.SetLocation(IGPlus_WarpFixClientData.Last.OldLocation);
+}
+
 event PreRender( canvas zzCanvas )
 {
+	local int i;
 	local PlayerReplicationInfo zzPRI;
 	local WindowConsole C;
 
@@ -6860,12 +6905,15 @@ event PreRender( canvas zzCanvas )
 	Super.PreRender(zzCanvas);
 
 	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
-		foreach AllActors(class'PlayerReplicationInfo', zzPRI) {
+		for (i = 0; i < arraycount(GameReplicationInfo.PRIArray); ++i) {
+			zzPRI = GameReplicationInfo.PRIArray[i];
+			if (zzPRI == none) break;
 			if (zzPRI.Owner == none) continue;
 			if (zzPRI.bIsSpectator) continue;
 
 			ApplyForcedSkins(zzPRI);
 			ApplyBrightskins(zzPRI);
+			IGPlus_ApplyWarpFix(zzPRI);
 		}
 	}
 

@@ -94,6 +94,7 @@ var config bool bEnableLoosePositionCheck;
 var config bool bPlayersAlwaysRelevant;
 var config bool bEnablePingCompensatedSpawn;
 var config bool bEnableJitterBounding;
+var config bool bEnableWarpFix;
 var config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
@@ -1499,4 +1500,5 @@ defaultproperties
 	bPlayersAlwaysRelevant=True
 	bEnablePingCompensatedSpawn=True
 	bEnableJitterBounding=True
+	bEnableWarpFix=True
 }
