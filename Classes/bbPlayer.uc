@@ -2141,12 +2141,6 @@ function IGPlus_ProcessRemoteMovement() {
 	else
 		IGPlus_CheckClientError();
 
-	if (IGPlus_WarpFixUpdate && IGPlus_EnableWarpFix) {
-		IGPlus_WarpFixData.OldLocation = Location;
-		IGPlus_WarpFixData.Counter += 1;
-		IGPlus_WarpFixUpdate = false;
-	}
-
 	if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval && ServerTimeStamp >= NextRealCAPTime) {
 		xxFakeCAP(CurrentTimeStamp);
 		LastCAPTime = ServerTimeStamp;
@@ -4935,6 +4929,12 @@ event ServerTick(float DeltaTime) {
 	AverageServerDeltaTime = (AverageServerDeltaTime*99 + DeltaTime) * 0.01;
 	IGPlus_ProcessRemoteMovement();
 	xxRememberPosition();
+
+	if (IGPlus_WarpFixUpdate && IGPlus_EnableWarpFix) {
+		IGPlus_WarpFixData.OldLocation = Location;
+		IGPlus_WarpFixData.Counter += 1;
+		IGPlus_WarpFixUpdate = false;
+	}
 
 	if (DelayedNavPoint != none) {
 		if (DelayedNavPoint.Class.Name == 'swJumpPad')
