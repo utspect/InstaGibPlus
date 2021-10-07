@@ -4062,9 +4062,6 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 {
 	local Pawn PTarget;
 
-	if (zzInfoThing != None)
-			zzInfoThing.zzPlayerCalcViewCalls--;
-
 	if ( ViewTarget != None )
 	{
 		ViewActor = ViewTarget;
@@ -6174,9 +6171,6 @@ state Dying
 		} else {
 			KillCamTargetRotation = ViewRotation;
 		}
-
-		if (zzInfoThing != None)
-			zzInfoThing.zzPlayerCalcViewCalls = 1;
 	}
 
 	function EndState()
@@ -6325,8 +6319,6 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 			}
 			ViewRotation.Yaw += 4096;
 		}
-		if (zzInfoThing != None)
-			zzInfoThing.zzPlayerCalcViewCalls = 1;
 
 		ViewRotation.Yaw = startYaw + besttry * 4096;
 	}
@@ -6578,8 +6570,6 @@ function xxPlayerTickEvents(float DeltaTime)
 	if (zzbReportScreenshot)
 		xxDoShot();
 
-	zzInfoThing.zzTickOff++;
-	zzInfoThing.zzLastTick = 0.0;
 	if (zzForceSettingsLevel != zzOldForceSettingsLevel)
 	{
 		zzOldForceSettingsLevel = zzForceSettingsLevel;

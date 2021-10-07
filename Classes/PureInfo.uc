@@ -6,10 +6,6 @@
 
 class PureInfo extends Info;
 
-var float zzLastTick;
-var int zzTickOff;
-var int zzPlayerCalcViewCalls;
-
 struct xxWeaponShakeFix {
 	var class<Weapon> zzWeaponClass;
 	var float zzShakeMag,zzShakeTime,zzShakeVert;
@@ -18,15 +14,6 @@ struct xxWeaponShakeFix {
 };
 
 var private xxWeaponShakeFix WeaponFixes[10];
-
-event Tick(float zzdelta)
-{
-	if (zzdelta <= 0.0)
-		return;
-	zzLastTick += zzdelta;
-	zzTickOff--;
-	zzPlayerCalcViewCalls = 1;
-}
 
 function xxInstallSpawnNotify(PlayerPawn zzPP)
 {
