@@ -6951,7 +6951,6 @@ simulated function RenderDroppedFlags(Canvas C) {
 	local CTFReplicationInfo CRI;
 	local byte Team;
 	local CTFFlag F;
-	local string S;
 
 	CRI = CTFReplicationInfo(GameReplicationInfo);
 	if (CRI == none)
