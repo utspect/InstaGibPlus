@@ -315,6 +315,8 @@ var bool IGPlus_WarpFixUpdate;
 var IGPlus_WarpFix IGPlus_WarpFixData;
 var IGPlus_WarpFixClient IGPlus_WarpFixClientData;
 
+var bool IGPlus_AlwaysRenderFlagCarrier;
+
 replication
 {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -330,6 +332,7 @@ replication
 		bUseFastWeaponSwitch,
 		bUseFlipAnimation,
 		HUDInfo,
+		IGPlus_AlwaysRenderFlagCarrier,
 		IGPlus_EnableWarpFix,
 		KillCamDelay,
 		KillCamDuration,
@@ -1043,6 +1046,7 @@ event Possess()
 		bUseFastWeaponSwitch = class'UTPure'.default.bUseFastWeaponSwitch;
 		bAlwaysRelevant = class'UTPure'.default.bPlayersAlwaysRelevant;
 		IGPlus_EnableWarpFix = class 'UTPure'.default.bEnableWarpFix;
+		IGPlus_AlwaysRenderFlagCarrier = class'UTPure'.default.bAlwaysRenderFlagCarrier;
 
 		if(!zzUTPure.bExludeKickers)
 		{
@@ -6931,6 +6935,39 @@ event PreRender( canvas zzCanvas )
 
 		IGPlus_OpenSettingsMenu();
 	}
+}
+
+simulated function RenderFlagCarrier(Canvas C) {
+	local CTFReplicationInfo CRI;
+	local int i;
+	local int j;
+	local PlayerReplicationInfo PRI;
+
+	CRI = CTFReplicationInfo(GameReplicationInfo);
+	if (CRI == none)
+		return;
+
+	if (PlayerReplicationInfo == none)
+		return;
+
+	for (i = 0; i < arraycount(CRI.PRIArray); i++) {
+		PRI = CRI.PRIArray[i];
+		if (PRI == none) break; // end of PRIArray
+		if (PRI == PlayerReplicationInfo) continue;
+		if (PRI.Team != PlayerReplicationInfo.Team) continue;
+		if (PRI.HasFlag == none) continue;
+
+		for (j = 0; j < arraycount(CRI.FlagList); j++)
+			if (PRI.HasFlag == CRI.FlagList[j])
+				C.DrawActor(PRI.Owner, false, true);
+	}
+}
+
+simulated event RenderOverlays(Canvas C) {
+	super.RenderOverlays(C);
+
+	if (IGPlus_AlwaysRenderFlagCarrier)
+		RenderFlagCarrier(C);
 }
 
 event PostRender( canvas zzCanvas )

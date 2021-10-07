@@ -1391,6 +1391,13 @@ What brightskin mode is allowed for clients.
 
 Scale factor for player models. Scales both DrawScale (visuals) and CollisionRadius/-Height (hitbox).
 
+## bAlwaysRenderFlagCarrier
+
+**Type: bool**  
+**Default: False**  
+
+If True, team-mates of flag carriers will be able to see the carrier through walls.
+
 ## ForcedSettings
 
 **Type: ForcedSettingsEntry\[128\]**

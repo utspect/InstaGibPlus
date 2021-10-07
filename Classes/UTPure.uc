@@ -66,6 +66,7 @@ var config bool bDodgePreserveZMomentum;
 var config int MaxMultiDodges;
 var config int BrightskinMode; //0=None,1=Unlit
 var config float PlayerScale;
+var config bool bAlwaysRenderFlagCarrier;
 
 // Nice variables.
 var float zzTeamChangeTime;			// This would be to Prevent Team Change Spamming
@@ -1494,6 +1495,7 @@ defaultproperties
 	MaxMultiDodges=1
 	BrightskinMode=1
 	PlayerScale=1.0
+	bAlwaysRenderFlagCarrier=False
 	bEnableServerExtrapolation=True
 	bEnableServerPacketReordering=False
 	bEnableLoosePositionCheck=True
