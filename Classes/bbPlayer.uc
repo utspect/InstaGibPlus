@@ -2963,6 +2963,7 @@ function xxServerMoveDead(
 
 	CurrentTimeStamp = TimeStamp;
 	ServerTimeStamp = Level.TimeSeconds;
+	IGPlus_WarpFixUpdate = true;
 
 	LastUpdateTime = ServerTimeStamp;
 	clientLastUpdateTime = LastUpdateTime;
