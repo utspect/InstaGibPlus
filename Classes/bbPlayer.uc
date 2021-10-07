@@ -6884,21 +6884,27 @@ function ApplyBrightskins(PlayerReplicationInfo PRI) {
 }
 
 function IGPlus_ApplyWarpFix(PlayerReplicationInfo PRI) {
+	local bbPlayer P;
 	if (PRI == PlayerReplicationInfo)
+		return;
+
+	if (PRI.Owner.IsA('bbPlayer') == false)
 		return;
 
 	if (IGPlus_EnableWarpFix == false)
 		return;
 
-	if (IGPlus_WarpFixData.Counter != IGPlus_WarpFixClientData.Last.Counter) {
-		IGPlus_WarpFixClientData.Last = IGPlus_WarpFixData;
-		IGPlus_WarpFixClientData.TimeStamp = Level.TimeSeconds;
+	P = bbPlayer(PRI.Owner);
+
+	if (P.IGPlus_WarpFixData.Counter != P.IGPlus_WarpFixClientData.Last.Counter) {
+		P.IGPlus_WarpFixClientData.Last = P.IGPlus_WarpFixData;
+		P.IGPlus_WarpFixClientData.TimeStamp = Level.TimeSeconds;
 	}
 
-	if (IGPlus_WarpFixClientData.TimeStamp + 0.1 >= Level.TimeSeconds)
+	if (P.IGPlus_WarpFixClientData.TimeStamp + 0.1 >= Level.TimeSeconds)
 		return;
 
-	PRI.Owner.SetLocation(IGPlus_WarpFixClientData.Last.OldLocation);
+	P.SetLocation(P.IGPlus_WarpFixClientData.Last.OldLocation);
 }
 
 event PreRender( canvas zzCanvas )
