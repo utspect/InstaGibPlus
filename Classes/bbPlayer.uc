@@ -316,6 +316,7 @@ var IGPlus_WarpFix IGPlus_WarpFixData;
 var IGPlus_WarpFixClient IGPlus_WarpFixClientData;
 
 var bool IGPlus_AlwaysRenderFlagCarrier;
+var bool IGPlus_AlwaysRenderDroppedFlags;
 
 replication
 {
@@ -332,6 +333,7 @@ replication
 		bUseFastWeaponSwitch,
 		bUseFlipAnimation,
 		HUDInfo,
+		IGPlus_AlwaysRenderDroppedFlags,
 		IGPlus_AlwaysRenderFlagCarrier,
 		IGPlus_EnableWarpFix,
 		KillCamDelay,
@@ -1047,6 +1049,7 @@ event Possess()
 		bAlwaysRelevant = class'UTPure'.default.bPlayersAlwaysRelevant;
 		IGPlus_EnableWarpFix = class 'UTPure'.default.bEnableWarpFix;
 		IGPlus_AlwaysRenderFlagCarrier = class'UTPure'.default.bAlwaysRenderFlagCarrier;
+		IGPlus_AlwaysRenderDroppedFlags = class'UTPure'.default.bAlwaysRenderDroppedFlags;
 
 		if(!zzUTPure.bExludeKickers)
 		{
@@ -6937,6 +6940,31 @@ event PreRender( canvas zzCanvas )
 	}
 }
 
+simulated function RenderDroppedFlags(Canvas C) {
+	local CTFReplicationInfo CRI;
+	local byte Team;
+	local CTFFlag F;
+	local string S;
+
+	CRI = CTFReplicationInfo(GameReplicationInfo);
+	if (CRI == none)
+		return;
+
+	if (PlayerReplicationInfo == none)
+		return;
+
+	Team = PlayerReplicationInfo.Team;
+	if (Team >= arraycount(CRI.FlagList))
+		return;
+
+	F = CRI.FlagList[Team];
+	if (F == none)
+		return;
+
+	if (F.bHome == false && F.bHeld == false)
+		C.DrawActor(CRI.FlagList[Team], false, true);
+}
+
 simulated function RenderFlagCarrier(Canvas C) {
 	local CTFReplicationInfo CRI;
 	local int i;
@@ -6965,6 +6993,9 @@ simulated function RenderFlagCarrier(Canvas C) {
 
 simulated event RenderOverlays(Canvas C) {
 	super.RenderOverlays(C);
+
+	if (IGPlus_AlwaysRenderDroppedFlags)
+		RenderDroppedFlags(C);
 
 	if (IGPlus_AlwaysRenderFlagCarrier)
 		RenderFlagCarrier(C);

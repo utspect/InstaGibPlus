@@ -887,22 +887,24 @@ Server settings can be found inside InstaGibPlus.ini.
 45. [MaxMultiDodges](#maxmultidodges)
 46. [BrightskinMode](#brightskinmode)
 47. [PlayerScale](#playerscale)
-48. [MinPosError](#minposerror)
-49. [MaxPosError](#maxposerror)
-50. [MaxHitError](#maxhiterror)
-51. [MaxJitterTime](#maxjittertime)
-52. [MinNetUpdateRate](#minnetupdaterate)
-53. [MaxNetUpdateRate](#maxnetupdaterate)
-54. [bEnableServerExtrapolation](#benableserverextrapolation)
-55. [bEnableServerPacketReordering](#benableserverpacketreordering)
-56. [bEnableLoosePositionCheck](#benableloosepositioncheck)
-57. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
-58. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
-59. [bEnableJitterBounding](#benablejitterbounding)
-60. [bEnableWarpFix](#benablewarpfix)
-61. [ShowTouchedPackage](#showtouchedpackage)
-62. [ExcludeMapsForKickers](#excludemapsforkickers)
-63. [ForcedSettings](#forcedsettings)
+48. [bAlwaysRenderFlagCarrier](#balwaysrenderflagcarrier)
+49. [bAlwaysRenderDroppedFlags](#balwaysrenderdroppedflags)
+50. [MinPosError](#minposerror)
+51. [MaxPosError](#maxposerror)
+52. [MaxHitError](#maxhiterror)
+53. [MaxJitterTime](#maxjittertime)
+54. [MinNetUpdateRate](#minnetupdaterate)
+55. [MaxNetUpdateRate](#maxnetupdaterate)
+56. [bEnableServerExtrapolation](#benableserverextrapolation)
+57. [bEnableServerPacketReordering](#benableserverpacketreordering)
+58. [bEnableLoosePositionCheck](#benableloosepositioncheck)
+59. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
+60. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
+61. [bEnableJitterBounding](#benablejitterbounding)
+62. [bEnableWarpFix](#benablewarpfix)
+63. [ShowTouchedPackage](#showtouchedpackage)
+64. [ExcludeMapsForKickers](#excludemapsforkickers)
+65. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1397,6 +1399,13 @@ Scale factor for player models. Scales both DrawScale (visuals) and CollisionRad
 **Default: False**  
 
 If True, team-mates of flag carriers will be able to see the carrier through walls.
+
+## bAlwaysRenderDroppedFlags
+
+**Type: bool**  
+**Default: False**  
+
+If True, players are able to see their own flags through walls if those flags are currently dropped on the ground.
 
 ## ForcedSettings
 
