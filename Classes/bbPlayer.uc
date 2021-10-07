@@ -6862,6 +6862,7 @@ function ApplyBrightskins(PlayerReplicationInfo PRI) {
 
 event PreRender( canvas zzCanvas )
 {
+	local int i;
 	local PlayerReplicationInfo zzPRI;
 	local WindowConsole C;
 
@@ -6870,7 +6871,9 @@ event PreRender( canvas zzCanvas )
 	Super.PreRender(zzCanvas);
 
 	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
-		foreach AllActors(class'PlayerReplicationInfo', zzPRI) {
+		for (i = 0; i < arraycount(GameReplicationInfo.PRIArray); ++i) {
+			zzPRI = GameReplicationInfo.PRIArray[i];
+			if (zzPRI == none) break;
 			if (zzPRI.Owner == none) continue;
 			if (zzPRI.bIsSpectator) continue;
 
