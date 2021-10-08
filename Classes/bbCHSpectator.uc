@@ -55,6 +55,9 @@ replication
 	reliable if (ROLE < ROLE_Authority)
 		ShowStats; //, xxServerActivateMover;
 
+	reliable if (RemoteRole == ROLE_AutonomousProxy)
+		IGPlus_NotifyPlayerRestart;
+		
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
 		NewCAP;
 
