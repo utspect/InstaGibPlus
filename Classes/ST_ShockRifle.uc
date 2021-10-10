@@ -122,6 +122,16 @@ simulated function TweenDown()
 	PlayAnim('Down', 100.0, 0.0);
 }
 
+state ClientFiring {
+	simulated function bool ClientFire(float Value) {
+		return false;
+	}
+
+	simulated function bool ClientAltFire(float Value) {
+		return false;
+	}
+}
+
 defaultproperties {
 	AltProjectileClass=Class'ST_ShockProj'
 }
