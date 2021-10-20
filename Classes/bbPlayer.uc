@@ -5598,7 +5598,8 @@ state PlayerWaiting
 		if (!bIsFinishedLoading)
 			return;
 		xxServerSetReadyToPlay();
-		bReadyToPlay = Settings.bAutoReady;
+		if (Settings.bAutoReady)
+			bReadyToPlay = true;
 	}
 
 	exec function AltFire(optional float F)
