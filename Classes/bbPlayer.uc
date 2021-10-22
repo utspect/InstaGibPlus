@@ -6903,7 +6903,7 @@ function IGPlus_ApplyWarpFix(PlayerReplicationInfo PRI) {
 		P.IGPlus_WarpFixClientData.TimeStamp = Level.TimeSeconds;
 	}
 
-	if (P.IGPlus_WarpFixClientData.TimeStamp + 0.1 >= Level.TimeSeconds)
+	if (P.IGPlus_WarpFixClientData.TimeStamp + 0.25 >= Level.TimeSeconds)
 		return;
 
 	P.SetLocation(P.IGPlus_WarpFixClientData.Last.OldLocation);
