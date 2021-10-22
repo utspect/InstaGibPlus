@@ -11,7 +11,7 @@ auto state Pickup {
 		if (Disruption == OldDisruption)
 			return;
 
-		if (Master != none && Master.Owner != none && Master.Owner.IsA('PlayerPawn'))
-			PlayerPawn(Master.Owner).ClientMessage("TTarget took"@Damage@"damage (Total"@int(Disruption)$")");
+		if (Master != none && Master.Owner != none && Master.Owner.IsA('bbPlayer'))
+			bbPlayer(Master.Owner).ClientDebugMessage("TTarget took"@Damage@"damage (Total"@int(Disruption)$")");
 	}
 }
