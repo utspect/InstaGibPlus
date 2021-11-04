@@ -10,11 +10,12 @@ var bool bNewNet;		// Self-explanatory lol
 var Rotator GV;
 var Vector CDO;
 var float yMod;
-var float HitDamage;
-var float HeadDamage;
 var float BodyHeight;
-var float SniperSpeed;
 var int zzWin;
+
+var float ReloadTime;
+var float BodyDamage;
+var float HeadDamage;
 enum EZoomState {
 	ZS_None,
 	ZS_Zooming,
@@ -22,6 +23,36 @@ enum EZoomState {
 	ZS_Reset
 };
 var EZoomState ZoomState;
+
+var WeaponSettings WeaponSettings;
+
+replication
+{
+	unreliable if (bNetInitial && Role == ROLE_Authority)
+		BodyDamage,
+		HeadDamage,
+		ReloadTime;
+}
+
+function PostBeginPlay() {
+	local Mutator A;
+	local string S;
+	super.PostBeginPlay();
+
+	ForEach AllActors(class'Mutator', A) {
+		if (class'StringUtils'.static.PackageOfObject(A) == class'StringUtils'.static.GetPackage()) {
+			S = A.GetPropertyText("WeaponSettings");
+			if (S != "") {
+				SetPropertyText("WeaponSettings", S);
+				break;
+			}
+		}
+	}
+
+	BodyDamage = WeaponSettings.SniperDamage;
+	HeadDamage = WeaponSettings.SniperHeadshotDamage;
+	ReloadTime = WeaponSettings.SniperReloadTime;
+}
 
 simulated function RenderOverlays(Canvas Canvas)
 {
@@ -274,7 +305,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}
-	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, HitDamage, MyDamageType);
+	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, BodyDamage, MyDamageType);
 	return false;
 }
 
@@ -299,6 +330,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local Pawn PawnOwner, POther;
 	local PlayerPawn PPOther;
 	local bbPlayer bbP;
+	local vector Momentum;
 
 	if (Owner.IsA('Bot'))
 	{
@@ -336,17 +368,26 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			Other.bIsPawn && (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight)
 			&& (instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice))))
 		{
-			if (HeadDamage > 0)
-				Other.TakeDamage(HeadDamage, PawnOwner, HitLocation, 35000 * X, AltDamageType); // was 100 (150) dmg
-			else
-				Other.TakeDamage(class'UTPure'.default.HeadshotDamage, PawnOwner, HitLocation, 35000 * X, AltDamageType);
+			Other.TakeDamage(
+				HeadDamage,
+				PawnOwner,
+				HitLocation,
+				WeaponSettings.SniperHeadshotMomentum * 35000 * X,
+				AltDamageType);
 		}
 		else
 		{
-			if (HitDamage > 0)
-				Other.TakeDamage(HitDamage,  PawnOwner, HitLocation, 30000.0*X, MyDamageType);	 // was 45 (67) dmg
+			if (Other.bIsPawn)
+				Momentum = WeaponSettings.SniperMomentum * 30000 * X;
 			else
-				Other.TakeDamage(class'UTPure'.default.SniperDamagePri,  PawnOwner, HitLocation, 30000.0*X, MyDamageType);
+				Momentum = 30000 * X;
+
+			Other.TakeDamage(
+				BodyDamage,
+				PawnOwner,
+				HitLocation,
+				Momentum,
+				MyDamageType);
 		}
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 		{
@@ -445,10 +486,7 @@ simulated function AnimEnd ()
 simulated function PlayFiring()
 {
 	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*3.0);
-	if (SniperSpeed > 0)
-		PlayAnim(FireAnims[Rand(5)], 0.5 * SniperSpeed + 0.5 * FireAdjust, 0.05);
-	else
-		PlayAnim(FireAnims[Rand(5)], 0.5 * class'UTPure'.default.SniperSpeed + 0.5 * FireAdjust, 0.05);
+	PlayAnim(FireAnims[Rand(5)], 0.66666666 / ReloadTime, 0.05);
 
 	if ( (PlayerPawn(Owner) != None)
 		&& (PlayerPawn(Owner).DesiredFOV == PlayerPawn(Owner).DefaultFOV) )
