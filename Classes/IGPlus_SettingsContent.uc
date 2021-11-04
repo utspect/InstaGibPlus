@@ -81,6 +81,10 @@ var localized string MoreInformationText;
 	var localized string DebugMovementText;
 	var localized string DebugMovementHelp;
 
+	var UWindowCheckbox Chk_LocationOffsetFix;
+	var localized string LocationOffsetFixText;
+	var localized string LocationOffsetFixHelp;
+
 // Auto Demo
 	var UWindowLabelControl Lbl_AutoDemo;
 	var localized string AutoDemoLblText;
@@ -740,6 +744,7 @@ function Created() {
 	Lbl_Advanced = CreateSeparator(AdvancedText);
 	Chk_LogClientMessages = CreateCheckbox(LogClientMessagesText, LogClientMessagesHelp);
 	Chk_DebugMovement = CreateCheckbox(DebugMovementText, DebugMovementHelp);
+	Chk_LocationOffsetFix = CreateCheckbox(LocationOffsetFixText, LocationOffsetFixHelp);
 
 	Lbl_AutoDemo = CreateSeparator(AutoDemoLblText);
 	Chk_AutoDemo = CreateCheckbox(AutoDemoText, AutoDemoHelp);
@@ -891,6 +896,7 @@ function Load() {
 
 	Chk_LogClientMessages.bChecked = Settings.bLogClientMessages;
 	Chk_DebugMovement.bChecked = Settings.bDebugMovement;
+	Chk_LocationOffsetFix.bChecked = Settings.bEnableLocationOffsetFix;
 
 	Chk_AutoDemo.bChecked = Settings.bAutoDemo;
 	Edit_DemoMask.SetValue(Settings.DemoMask);
@@ -987,6 +993,7 @@ function Save() {
 
 	Settings.bLogClientMessages = Chk_LogClientMessages.bChecked;
 	Settings.bDebugMovement = Chk_DebugMovement.bChecked;
+	Settings.bEnableLocationOffsetFix = Chk_LocationOffsetFix.bChecked;
 
 	Settings.bAutoDemo = Chk_AutoDemo.bChecked;
 	Settings.DemoMask = Edit_DemoMask.GetValue();
@@ -1130,6 +1137,9 @@ defaultproperties
 
 		DebugMovementText="Trace Movement Input"
 		DebugMovementHelp="If checked, trace movement input to demo"
+
+		LocationOffsetFixText="Location Offset Fix"
+		LocationOffsetFixHelp="If checked, tries to work around a UT bug that prevents synchronized player locations "
 
 	AutoDemoLblText="Auto Demo"
 

@@ -74,6 +74,7 @@ var config bool   bAllowWeaponShake;
 var config bool   bAutoReady;
 var config bool   bShowDeathReport;
 var config bool   bSmoothFOVChanges;
+var config bool   bEnableLocationOffsetFix;
 var config bool   bEnableKillFeed;
 var config float  KillFeedX;
 var config float  KillFeedY;
@@ -297,6 +298,7 @@ simulated function string DumpSettings() {
 		GetSetting("bAutoReady")$
 		GetSetting("bShowDeathReport")$
 		GetSetting("bSmoothFOVChanges")$
+		GetSetting("bEnableLocationOffsetFix")$
 		GetSetting("bEnableKillFeed")$
 		GetSetting("KillFeedX")$
 		GetSetting("KillFeedY")$
@@ -377,6 +379,7 @@ defaultproperties
 	bAutoReady=True
 	bShowDeathReport=False
 	bSmoothFOVChanges=False
+	bEnableLocationOffsetFix=True
 	bEnableKillFeed=True
 	KillFeedX=0.0
 	KillFeedY=0.5

@@ -315,6 +315,11 @@ var bool IGPlus_WarpFixUpdate;
 var IGPlus_WarpFix IGPlus_WarpFixData;
 var IGPlus_WarpFixClient IGPlus_WarpFixClientData;
 
+var bool IGPlus_LocationOffsetFix_Moved;
+var vector IGPlus_LocationOffsetFix_OldLocation;
+var vector IGPlus_LocationOffsetFix_SafeLocation;
+var Actor IGPlus_LocationOffsetFix_CollisionDummy;
+
 var bool IGPlus_AlwaysRenderFlagCarrier;
 var bool IGPlus_AlwaysRenderDroppedFlags;
 
@@ -3188,8 +3193,10 @@ exec function Fire( optional float F )
 		if (xxCanFire())
 			Super.Fire(F);
 	} else if (Role < ROLE_Authority && GameReplicationInfo.GameEndedComments == "") {
+		IGPlus_LocationOffsetFix_RestoreAll();
 		if (Weapon != none)
 			Weapon.ClientFire(1);
+		IGPlus_LocationOffsetFix_TickBefore();
 	} else {
 		Super.Fire(F);
 	}
@@ -7008,6 +7015,109 @@ simulated event RenderOverlays(Canvas C) {
 		RenderFlagCarrier(C);
 }
 
+simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
+	local vector Delta;
+
+	if (IGPlus_LocationOffsetFix_Moved == false)
+		return;
+
+	if (IGPlus_LocationOffsetFix_CollisionDummy != none) {
+		IGPlus_LocationOffsetFix_CollisionDummy.bCollideWorld = false;
+		IGPlus_LocationOffsetFix_CollisionDummy.SetCollision(false, false, false);
+	}
+
+	Delta = Location - IGPlus_LocationOffsetFix_SafeLocation;
+	if (VSize(Delta) < VSize(2*Velocity*DeltaTime)) {
+		SetLocation(IGPlus_LocationOffsetFix_OldLocation);
+		MoveSmooth(Velocity*DeltaTime);
+	}
+	
+	IGPlus_LocationOffsetFix_Moved = false;
+}
+
+simulated event Tick(float DeltaTime) {
+	super.Tick(DeltaTime);
+
+	if (Settings.bEnableLocationOffsetFix)
+		IGPlus_LocationOffsetFix_After(DeltaTime);
+}
+
+simulated function IGPlus_LocationOffsetFix_Restore() {
+	if (IGPlus_LocationOffsetFix_Moved == false)
+		return;
+
+	if (IGPlus_LocationOffsetFix_CollisionDummy != none) {
+		IGPlus_LocationOffsetFix_CollisionDummy.bCollideWorld = false;
+		IGPlus_LocationOffsetFix_CollisionDummy.SetCollision(false, false, false);
+	}
+
+	SetLocation(IGPlus_LocationOffsetFix_OldLocation);
+
+	IGPlus_LocationOffsetFix_Moved = false;
+}
+
+function IGPlus_LocationOffsetFix_RestoreAll() {
+	local int i;
+	local PlayerReplicationInfo PRI;
+	local bbPlayer P;
+
+	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
+		for (i = 0; i < arraycount(GameReplicationInfo.PRIArray); ++i) {
+			PRI = GameReplicationInfo.PRIArray[i];
+			if (PRI == none) break;
+			P = bbPlayer(PRI.Owner);
+			if (P == none) continue;
+			if (P.Role != ROLE_SimulatedProxy) continue;
+
+			P.IGPlus_LocationOffsetFix_Restore();
+		}
+	}
+}
+
+simulated function IGPlus_LocationOffsetFix_SpawnCollisionDummy() {
+	IGPlus_LocationOffsetFix_CollisionDummy = Spawn(class'IGPlus_CollisionDummy');
+}
+
+simulated function IGPlus_LocationOffsetFix_Before() {
+	if (IGPlus_LocationOffsetFix_Moved)
+		return;
+
+	if (IGPlus_LocationOffsetFix_CollisionDummy == none)
+		IGPlus_LocationOffsetFix_SpawnCollisionDummy();
+
+	IGPlus_LocationOffsetFix_OldLocation = Location;
+	SetLocation(vect(65535, 65535, 65535));
+	IGPlus_LocationOffsetFix_SafeLocation = Location;
+
+	IGPlus_LocationOffsetFix_CollisionDummy.SetLocation(IGPlus_LocationOffsetFix_OldLocation);
+	IGPlus_LocationOffsetFix_CollisionDummy.SetCollisionSize(CollisionRadius, CollisionHeight);
+	IGPlus_LocationOffsetFix_CollisionDummy.bCollideWorld = true;
+	IGPlus_LocationOffsetFix_CollisionDummy.SetCollision(bCollideActors, bBlockActors, bBlockPlayers);
+
+	IGPlus_LocationOffsetFix_Moved = true;
+}
+
+function IGPlus_LocationOffsetFix_TickBefore() {
+	local int i;
+	local PlayerReplicationInfo PRI;
+	local bbPlayer P;
+
+	if (Settings.bEnableLocationOffsetFix == false)
+		return;
+
+	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
+		for (i = 0; i < arraycount(GameReplicationInfo.PRIArray); ++i) {
+			PRI = GameReplicationInfo.PRIArray[i];
+			if (PRI == none) break;
+			P = bbPlayer(PRI.Owner);
+			if (P == none) continue;
+			if (P.Role != ROLE_SimulatedProxy) continue;
+
+			P.IGPlus_LocationOffsetFix_Before();
+		}
+	}
+}
+
 event PostRender( canvas zzCanvas )
 {
 	local int CH;
@@ -7095,6 +7205,8 @@ event PostRender( canvas zzCanvas )
 		PendingMove.Destroy();
 		PendingMove = none;
 	}
+
+	IGPlus_LocationOffsetFix_TickBefore();
 
 	IGPlus_FrameCount += 1;
 }
