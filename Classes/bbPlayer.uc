@@ -322,6 +322,8 @@ var Actor IGPlus_LocationOffsetFix_CollisionDummy;
 
 var bool IGPlus_AlwaysRenderFlagCarrier;
 var bool IGPlus_AlwaysRenderDroppedFlags;
+var bool IGPlus_InitFlagSprites;
+var IGPlus_FlagSprite IGPlus_TeamFlagSprite[4];
 
 replication
 {
@@ -4977,6 +4979,8 @@ event ServerTick(float DeltaTime) {
 		DuckFraction = FClamp(DuckFraction - DeltaTime/DuckTransitionTime, 0.0, 1.0);
 	}
 	DuckFractionRepl = byte(DuckFraction * 255.0);
+
+	bAlwaysRelevant = class'UTPure'.default.bPlayersAlwaysRelevant || (PlayerReplicationInfo.HasFlag != none);
 }
 
 /** STATES
@@ -6955,6 +6959,16 @@ event PreRender( canvas zzCanvas )
 	}
 }
 
+simulated function RenderFlagSprite(Canvas C, IGPlus_FlagSprite S, vector Where) {
+	local vector Delta;
+	Delta = Where - Location;
+
+	S.SetLocation(Where);
+	S.DrawScale = FClamp(500/VSize(Delta), 0.125, 0.5);
+	S.ScaleGlow = Lerp(1-(Normal(Delta) dot vector(ViewRotation)), 0.5, 4.0);
+	C.DrawActor(S, false, true);
+}
+
 simulated function RenderDroppedFlags(Canvas C) {
 	local CTFReplicationInfo CRI;
 	local byte Team;
@@ -6975,15 +6989,17 @@ simulated function RenderDroppedFlags(Canvas C) {
 	if (F == none)
 		return;
 
-	if (F.bHome == false && F.bHeld == false)
-		C.DrawActor(CRI.FlagList[Team], false, true);
+	if (F.bHome == false && F.bHeld == false) {
+		RenderFlagSprite(C, IGPlus_TeamFlagSprite[Team], F.Location);
+		//C.DrawActor(CRI.FlagList[Team], false, true);
+	}
 }
 
 simulated function RenderFlagCarrier(Canvas C) {
 	local CTFReplicationInfo CRI;
 	local int i;
-	local int j;
 	local PlayerReplicationInfo PRI;
+	local CTFFlag F;
 
 	CRI = CTFReplicationInfo(GameReplicationInfo);
 	if (CRI == none)
@@ -6998,15 +7014,32 @@ simulated function RenderFlagCarrier(Canvas C) {
 		if (PRI == PlayerReplicationInfo) continue;
 		if (PRI.Team != PlayerReplicationInfo.Team) continue;
 		if (PRI.HasFlag == none) continue;
+		F = CTFFlag(PRI.HasFlag);
+		if (F == none) continue;
+		if (F != CRI.FlagList[F.Team]) continue;
+		if (PRI.Owner == none) continue;
 
-		for (j = 0; j < arraycount(CRI.FlagList); j++)
-			if (PRI.HasFlag == CRI.FlagList[j])
-				C.DrawActor(PRI.Owner, false, true);
+		RenderFlagSprite(C, IGPlus_TeamFlagSprite[F.Team], PRI.Owner.Location);
+		//C.DrawActor(PRI.Owner, false, true);
+	}
+}
+
+function InitFlagSprites() {
+	local int i;
+
+	if (IGPlus_InitFlagSprites == false) {
+		IGPlus_InitFlagSprites = true;
+		for(i = 0; i < arraycount(IGPlus_TeamFlagSprite); i++) {
+			IGPlus_TeamFlagSprite[i] = Spawn(class'IGPlus_FlagSprite', self);
+			IGPlus_TeamFlagSprite[i].ConfigureForTeam(i);
+		}
 	}
 }
 
 simulated event RenderOverlays(Canvas C) {
 	super.RenderOverlays(C);
+
+	InitFlagSprites();
 
 	if (IGPlus_AlwaysRenderDroppedFlags)
 		RenderDroppedFlags(C);
