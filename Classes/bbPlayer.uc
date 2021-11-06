@@ -317,6 +317,9 @@ var IGPlus_WarpFixClient IGPlus_WarpFixClientData;
 
 var bool IGPlus_LocationOffsetFix_Moved;
 var vector IGPlus_LocationOffsetFix_OldLocation;
+var vector IGPlus_LocationOffsetFix_PredictionOffset;
+var vector IGPlus_LocationOffsetFix_Velocity;
+var bool IGPlus_LocationOffsetFix_OnGround;
 var vector IGPlus_LocationOffsetFix_SafeLocation;
 var Actor IGPlus_LocationOffsetFix_CollisionDummy;
 
@@ -7059,12 +7062,30 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 		IGPlus_LocationOffsetFix_CollisionDummy.SetCollision(false, false, false);
 	}
 
-	Delta = Location - IGPlus_LocationOffsetFix_SafeLocation;
-	if (VSize(Delta) < VSize(2*Velocity*DeltaTime)) {
-		SetLocation(IGPlus_LocationOffsetFix_OldLocation);
-		MoveSmooth(Velocity*DeltaTime);
+	if (Velocity.X == 0.0123 && Velocity.Y == 0.0123) {
+		Velocity = IGPlus_LocationOffsetFix_Velocity;
+		if (IGPlus_LocationOffsetFix_OnGround == false)
+			Velocity += 0.5 * Region.Zone.ZoneGravity * DeltaTime;
 	}
-	
+
+	Delta = Location - IGPlus_LocationOffsetFix_SafeLocation;
+	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) >= VSize(Location - IGPlus_LocationOffsetFix_OldLocation)) {
+		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - Location;
+		IGPlus_LocationOffsetFix_OldLocation = Location;
+	} else {
+		IGPlus_LocationOffsetFix_OldLocation -= IGPlus_LocationOffsetFix_PredictionOffset;
+	}
+
+	IGPlus_LocationOffsetFix_PredictionOffset *= Exp(-30*DeltaTime);
+
+	if (VSize(IGPlus_LocationOffsetFix_PredictionOffset) > 40)
+		IGPlus_LocationOffsetFix_PredictionOffset = vect(0,0,0);
+
+	bCollideWorld = false;
+	SetLocation(IGPlus_LocationOffsetFix_OldLocation+IGPlus_LocationOffsetFix_PredictionOffset);
+	bCollideWorld = true;
+	MoveSmooth(Velocity*DeltaTime);
+
 	IGPlus_LocationOffsetFix_Moved = false;
 }
 
@@ -7112,6 +7133,10 @@ simulated function IGPlus_LocationOffsetFix_SpawnCollisionDummy() {
 }
 
 simulated function IGPlus_LocationOffsetFix_Before() {
+	local Actor HitActor;
+	local vector HitLocation, HitNormal;
+	local vector Extent;
+
 	if (IGPlus_LocationOffsetFix_Moved)
 		return;
 
@@ -7119,7 +7144,25 @@ simulated function IGPlus_LocationOffsetFix_Before() {
 		IGPlus_LocationOffsetFix_SpawnCollisionDummy();
 
 	IGPlus_LocationOffsetFix_OldLocation = Location;
+	IGPlus_LocationOffsetFix_Velocity = Velocity;
+
+	if (bCanFly == false && Region.Zone.bWaterZone == false) {
+		Extent.X = CollisionRadius;
+		Extent.Y = CollisionRadius;
+		Extent.Z = CollisionHeight;
+		HitActor = Trace(HitLocation, HitNormal, Location - vect(0,0,8), Location, false, Extent);
+		if (HitActor == none) {
+			IGPlus_LocationOffsetFix_OnGround = false;
+		} else {
+			IGPlus_LocationOffsetFix_OnGround = 
+				(HitActor == Level || HitActor.IsA('Mover')) && (HitNormal.Z >= 0.7);
+		}
+	} else {
+		IGPlus_LocationOffsetFix_OnGround = true;
+	}
+
 	SetLocation(vect(65535, 65535, 65535));
+	Velocity = vect(0.0123,0.0123,0);
 	IGPlus_LocationOffsetFix_SafeLocation = Location;
 
 	IGPlus_LocationOffsetFix_CollisionDummy.SetLocation(IGPlus_LocationOffsetFix_OldLocation);
@@ -7401,7 +7444,9 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 			"Anim:"@P.AnimSequence@
 			"Frame:"@P.AnimFrame@
 			"Rate:"@Rate@
-			"Duck:"@bbPlayer(P).DuckFractionRepl
+			"Duck:"@bbPlayer(P).DuckFractionRepl@
+			"Loc:"@P.Location@
+			"Vel:"@int(P.Velocity.X)@int(P.Velocity.Y)@int(P.Velocity.Z)
 		);
 		y += 20;
 	}
