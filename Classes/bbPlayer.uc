@@ -7056,8 +7056,6 @@ simulated event RenderOverlays(Canvas C) {
 }
 
 simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
-	local vector Delta;
-
 	if (IGPlus_LocationOffsetFix_Moved == false)
 		return;
 
@@ -7066,13 +7064,20 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 		IGPlus_LocationOffsetFix_CollisionDummy.SetCollision(false, false, false);
 	}
 
+	// undo what super.Tick() did
+	MoveSmooth(-DeltaTime*Velocity);
+
+	// detect whether server replicated new velocity
 	if (Velocity.X == 0.0123 && Velocity.Y == 0.0123) {
 		Velocity = IGPlus_LocationOffsetFix_Velocity;
-		if (IGPlus_LocationOffsetFix_OnGround == false)
+
+		if (IGPlus_LocationOffsetFix_OnGround)
+			Velocity.Z = 0;
+		else
 			Velocity += 0.5 * Region.Zone.ZoneGravity * DeltaTime;
 	}
 
-	Delta = Location - IGPlus_LocationOffsetFix_SafeLocation;
+	// detect whether server replicated new location
 	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) >= VSize(Location - IGPlus_LocationOffsetFix_OldLocation)) {
 		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - Location;
 		IGPlus_LocationOffsetFix_OldLocation = Location;
@@ -7082,6 +7087,8 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 
 	IGPlus_LocationOffsetFix_PredictionOffset *= Exp(-30*DeltaTime);
 
+	// dont let misprediction grow too large
+	// also, dont smoothly relocate teleporting players
 	if (VSize(IGPlus_LocationOffsetFix_PredictionOffset) > 40)
 		IGPlus_LocationOffsetFix_PredictionOffset = vect(0,0,0);
 
@@ -7110,6 +7117,7 @@ simulated function IGPlus_LocationOffsetFix_Restore() {
 	}
 
 	SetLocation(IGPlus_LocationOffsetFix_OldLocation);
+	Velocity = IGPlus_LocationOffsetFix_Velocity;
 
 	IGPlus_LocationOffsetFix_Moved = false;
 }
@@ -7153,8 +7161,8 @@ simulated function IGPlus_LocationOffsetFix_Before() {
 	if (bCanFly == false && Region.Zone.bWaterZone == false) {
 		Extent.X = CollisionRadius;
 		Extent.Y = CollisionRadius;
-		Extent.Z = CollisionHeight;
-		HitActor = Trace(HitLocation, HitNormal, Location - vect(0,0,8), Location, false, Extent);
+		Extent.Z = CollisionHeight-1;
+		HitActor = Trace(HitLocation, HitNormal, Location - vect(0,0,9), Location, false, Extent);
 		if (HitActor == none) {
 			IGPlus_LocationOffsetFix_OnGround = false;
 		} else {
