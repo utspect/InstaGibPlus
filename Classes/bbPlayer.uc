@@ -3192,8 +3192,12 @@ exec function Fire( optional float F )
 	}
 
 	xxEnableCarcasses();
-	if (Weapon != none)
-		ClientDebugMessage("Fire"@Weapon.Name@ViewRotation);
+	if (Weapon != none) {
+		if (Level.NetMode == NM_Client)
+			ClientDebugMessage("Client Fire"@Weapon.Name@ViewRotation);
+		else
+			ClientDebugMessage("Server Fire"@Weapon.Name@ViewRotation);
+	}
 	if (!bNewNet || !xxWeaponIsNewNet()) {
 		if (xxCanFire())
 			Super.Fire(F);
