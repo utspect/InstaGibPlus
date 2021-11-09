@@ -7179,8 +7179,8 @@ simulated function IGPlus_LocationOffsetFix_Before() {
 
 	if (bHidden == false &&
 		Mesh != none &&
-		PlayerReplicationInfo.bIsSpectator == false &&
-		PlayerReplicationInfo.Health > 0
+		Health > 0 &&
+		PlayerReplicationInfo.bIsSpectator == false
 	) {
 		IGPlus_LocationOffsetFix_CollisionDummy.SetLocation(IGPlus_LocationOffsetFix_OldLocation);
 		IGPlus_LocationOffsetFix_CollisionDummy.SetCollisionSize(CollisionRadius, CollisionHeight);
