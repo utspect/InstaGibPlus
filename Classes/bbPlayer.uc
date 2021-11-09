@@ -7177,10 +7177,16 @@ simulated function IGPlus_LocationOffsetFix_Before() {
 	Velocity = vect(0.0123,0.0123,0);
 	IGPlus_LocationOffsetFix_SafeLocation = Location;
 
-	IGPlus_LocationOffsetFix_CollisionDummy.SetLocation(IGPlus_LocationOffsetFix_OldLocation);
-	IGPlus_LocationOffsetFix_CollisionDummy.SetCollisionSize(CollisionRadius, CollisionHeight);
-	IGPlus_LocationOffsetFix_CollisionDummy.bCollideWorld = true;
-	IGPlus_LocationOffsetFix_CollisionDummy.SetCollision(bCollideActors, bBlockActors, bBlockPlayers);
+	if (bHidden == false &&
+		Mesh != none &&
+		PlayerReplicationInfo.bIsSpectator == false &&
+		PlayerReplicationInfo.Health > 0
+	) {
+		IGPlus_LocationOffsetFix_CollisionDummy.SetLocation(IGPlus_LocationOffsetFix_OldLocation);
+		IGPlus_LocationOffsetFix_CollisionDummy.SetCollisionSize(CollisionRadius, CollisionHeight);
+		IGPlus_LocationOffsetFix_CollisionDummy.bCollideWorld = true;
+		IGPlus_LocationOffsetFix_CollisionDummy.SetCollision(bCollideActors, bBlockActors, bBlockPlayers);
+	}
 
 	IGPlus_LocationOffsetFix_Moved = true;
 }
