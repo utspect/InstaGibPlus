@@ -7078,7 +7078,7 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	}
 
 	// detect whether server replicated new location
-	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) >= VSize(Location - IGPlus_LocationOffsetFix_OldLocation)) {
+	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) > 2) {
 		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - Location;
 		IGPlus_LocationOffsetFix_OldLocation = Location;
 	} else {
