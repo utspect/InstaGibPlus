@@ -615,6 +615,10 @@ simulated event Destroyed() {
 	if ((Level.NetMode == NM_Client && Role == ROLE_AutonomousProxy) || Role == ROLE_Authority) {
 		IGPlus_ForcedSettingsRestore();
 	}
+	if (Role == ROLE_SimulatedProxy) {
+		IGPlus_LocationOffsetFix_CollisionDummy.Destroy();
+		IGPlus_LocationOffsetFix_CollisionDummy = none;
+	}
 	super.Destroyed();
 }
 
