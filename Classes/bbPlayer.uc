@@ -7093,7 +7093,7 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 
 	// dont let misprediction grow too large
 	// also, dont smoothly relocate teleporting players
-	if (VSize(IGPlus_LocationOffsetFix_PredictionOffset) > 40)
+	if (VSize(IGPlus_LocationOffsetFix_PredictionOffset) > 60)
 		IGPlus_LocationOffsetFix_PredictionOffset = vect(0,0,0);
 
 	bCollideWorld = false;
