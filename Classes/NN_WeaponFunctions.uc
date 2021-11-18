@@ -119,3 +119,35 @@ static function vector IGPlus_CalcDrawOffset(PlayerPawn P, Weapon W) {
 		return (P.EyeHeight * vect(0,0,1)) + P.WalkBob;
 	}
 }
+
+static final function IGPlus_BeforeClientFire(TournamentWeapon W) {
+	local bbPlayer P;
+	if (W.Owner != none && W.Owner.IsA('bbPlayer')) {
+		P = bbPlayer(W.Owner);
+		P.IGPlus_LocationOffsetFix_RestoreAll();
+	}
+}
+
+static final function IGPlus_AfterClientFire(TournamentWeapon W) {
+	local bbPlayer P;
+	if (W.Owner != none && W.Owner.IsA('bbPlayer')) {
+		P = bbPlayer(W.Owner);
+		P.IGPlus_LocationOffsetFix_TickBefore();
+	}
+}
+
+static final function IGPlus_BeforeClientAltFire(TournamentWeapon W) {
+	local bbPlayer P;
+	if (W.Owner != none && W.Owner.IsA('bbPlayer')) {
+		P = bbPlayer(W.Owner);
+		P.IGPlus_LocationOffsetFix_RestoreAll();
+	}
+}
+
+static final function IGPlus_AfterClientAltFire(TournamentWeapon W) {
+	local bbPlayer P;
+	if (W.Owner != none && W.Owner.IsA('bbPlayer')) {
+		P = bbPlayer(W.Owner);
+		P.IGPlus_LocationOffsetFix_TickBefore();
+	}
+}

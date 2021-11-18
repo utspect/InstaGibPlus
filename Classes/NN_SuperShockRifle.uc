@@ -50,9 +50,12 @@ simulated function yModInit()
 simulated function bool ClientFire(float Value)
 {
 	local bbPlayer bbP;
+	local bool Result;
 
 	if (Owner.IsA('Bot'))
 		return Super.ClientFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_BeforeClientFire(self);
 
 	if (AmmoType == None)
 		AmmoType = Ammo(Pawn(Owner).FindInventoryType(AmmoName));
@@ -79,15 +82,22 @@ simulated function bool ClientFire(float Value)
 			LastFiredTime = Level.TimeSeconds;
 		}
 	}
-	return Super.ClientFire(Value);
+	Result = Super.ClientFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
+
+	return Result;
 }
 
 simulated function bool ClientAltFire(float Value) {
 
 	local bbPlayer bbP;
+	local bool Result;
 
 	if (Owner.IsA('Bot'))
 		return Super.ClientFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_BeforeClientAltFire(self);
 
 	if (AmmoType == None)
 		AmmoType = Ammo(Pawn(Owner).FindInventoryType(AmmoName));
@@ -114,7 +124,11 @@ simulated function bool ClientAltFire(float Value) {
 			LastFiredTime = Level.TimeSeconds;
 		}
 	}
-	return Super.ClientFire(Value);
+	Result = Super.ClientFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_AfterClientAltFire(self);
+
+	return Result;
 }
 
 function Fire( float Value )

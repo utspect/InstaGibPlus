@@ -3206,10 +3206,8 @@ exec function Fire( optional float F )
 		if (xxCanFire())
 			Super.Fire(F);
 	} else if (Role < ROLE_Authority && GameReplicationInfo.GameEndedComments == "") {
-		IGPlus_LocationOffsetFix_RestoreAll();
 		if (Weapon != none)
 			Weapon.ClientFire(1);
-		IGPlus_LocationOffsetFix_TickBefore();
 	} else {
 		Super.Fire(F);
 	}

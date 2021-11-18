@@ -91,10 +91,13 @@ simulated function yModInit()
 simulated function bool ClientFire(float Value)
 {
 	local bbPlayer bbP;
+	local bool Result;
 
 	if (Owner.IsA('Bot'))
 		return Super.ClientFire(Value);
 
+	class'NN_WeaponFunctions'.static.IGPlus_BeforeClientFire(self);
+	
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
@@ -116,7 +119,11 @@ simulated function bool ClientFire(float Value)
 			NN_TraceFire();
 		}
 	}
-	return Super.ClientFire(Value);
+	Result = Super.ClientFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
+
+	return Result;
 }
 
 simulated function bool ClientAltFire( float Value ) {
