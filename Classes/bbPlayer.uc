@@ -7057,6 +7057,13 @@ simulated event RenderOverlays(Canvas C) {
 		RenderFlagCarrier(C);
 }
 
+simulated function vector IGPlus_CurrentLocation() {
+	if (IGPlus_LocationOffsetFix_Moved)
+		return IGPlus_LocationOffsetFix_OldLocation;
+	else
+		return Location;
+}
+
 simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	if (IGPlus_LocationOffsetFix_Moved == false)
 		return;
