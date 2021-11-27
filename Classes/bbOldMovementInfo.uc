@@ -2,7 +2,7 @@ class bbOldMovementInfo extends Object;
 
 var vector Loc, Vel, Acc;
 var float ServerTimeStamp;
-var float ClientTimeStamp
+var float ClientTimeStamp;
 
 var bbOldMovementInfo Next;
 
