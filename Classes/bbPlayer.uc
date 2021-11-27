@@ -3090,6 +3090,33 @@ function xxRememberPosition()
 
 }
 
+function bool IsClientLocationPlausible(vector ClientLoc, float TimeStamp) {
+	local vector Delta;
+	local bbOldMovementInfo MI;
+	
+	if (TimeStamp >= CurrentTimeStamp) {
+		Delta = ClientLoc - Location;
+		Delta -= (TimeStamp - CurrentTimeStamp)*Velocity;
+		return (VSize(Delta) < CollisionRadius);
+	}
+
+	MI = OldestMI;
+	if (MI == none)
+		// not keeping track
+		return false;
+
+	if (MI.ClientTimeStamp > TimeStamp)
+		// too old
+		return false;
+
+	while(MI.Next != none && MI.Next.ClientTimeStamp < TimeStamp)
+		MI = MI.Next;
+
+	Delta = ClientLoc - MI.Loc;
+	Delta -= (TimeStamp - MI.ClientTimeStamp)*MI.Vel;
+	return (VSize(Delta) < CollisionRadius);
+}
+
 function bool xxCloseEnough(vector HitLoc, optional int HitRadius)
 {
 	local int i, MaxHitError;
@@ -3222,6 +3249,9 @@ function xxNN_Fire( float TimeStamp, int ProjIndex, vector ClientLoc, vector Cli
 	if (!bNewNet || !xxWeaponIsNewNet() || Role < ROLE_Authority)
 		return;
 
+	if (IsClientLocationPlausible(ClientLoc, TimeStamp) == false)
+		return;
+
 	if (TimeStamp <= LastFireTimeStamp)
 		return;
 	LastFireTimeStamp = TimeStamp;
@@ -3300,6 +3330,9 @@ exec function AltFire( optional float F )
 function xxNN_AltFire( float TimeStamp, int ProjIndex, vector ClientLoc, vector ClientVel, rotator ViewRot, optional actor HitActor, optional vector HitLoc, optional vector HitDiff, optional bool bSpecial, optional int ClientFRVI, optional float ClientAccuracy )
 {
 	if (!bNewNet || !xxWeaponIsNewNet(true) || Role < ROLE_Authority)
+		return;
+
+	if (IsClientLocationPlausible(ClientLoc, TimeStamp) == false)
 		return;
 
 	if (TimeStamp <= LastAltFireTimeStamp)
