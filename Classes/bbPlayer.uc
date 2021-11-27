@@ -7065,6 +7065,7 @@ simulated function vector IGPlus_CurrentLocation() {
 }
 
 simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
+	local bool bReplicatedLocation;
 	if (IGPlus_LocationOffsetFix_Moved == false)
 		return;
 
@@ -7072,9 +7073,6 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 		IGPlus_LocationOffsetFix_CollisionDummy.bCollideWorld = false;
 		IGPlus_LocationOffsetFix_CollisionDummy.SetCollision(false, false, false);
 	}
-
-	// undo what super.Tick() did
-	MoveSmooth(-DeltaTime*Velocity);
 
 	// detect whether server replicated new velocity
 	if (Velocity.X == 0.0123 && Velocity.Y == 0.0123) {
@@ -7087,11 +7085,13 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	}
 
 	// detect whether server replicated new location
-	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) > 2) {
+	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) > VSize(2*DeltaTime*Velocity)+MaxStepHeight) {
 		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - Location;
 		IGPlus_LocationOffsetFix_OldLocation = Location;
+		bReplicatedLocation = true;
 	} else {
 		IGPlus_LocationOffsetFix_OldLocation -= IGPlus_LocationOffsetFix_PredictionOffset;
+		bReplicatedLocation = false;
 	}
 
 	IGPlus_LocationOffsetFix_PredictionOffset *= Exp(-30*DeltaTime);
@@ -7104,7 +7104,8 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	bCollideWorld = false;
 	SetLocation(IGPlus_LocationOffsetFix_OldLocation+IGPlus_LocationOffsetFix_PredictionOffset);
 	bCollideWorld = true;
-	MoveSmooth(Velocity*DeltaTime);
+	if (bReplicatedLocation == false)
+		MoveSmooth(Velocity*DeltaTime);
 
 	IGPlus_LocationOffsetFix_Moved = false;
 }
