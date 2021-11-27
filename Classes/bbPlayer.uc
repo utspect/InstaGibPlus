@@ -7125,7 +7125,11 @@ simulated function IGPlus_LocationOffsetFix_Restore() {
 		IGPlus_LocationOffsetFix_CollisionDummy.SetCollision(false, false, false);
 	}
 
-	SetLocation(IGPlus_LocationOffsetFix_OldLocation);
+	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) < CollisionRadius+CollisionHeight) {
+		bCollideWorld = false;
+		SetLocation(IGPlus_LocationOffsetFix_OldLocation);
+		bCollideWorld = true;
+	}
 	Velocity = IGPlus_LocationOffsetFix_Velocity;
 
 	IGPlus_LocationOffsetFix_Moved = false;
