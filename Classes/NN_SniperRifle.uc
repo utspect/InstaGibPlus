@@ -101,8 +101,10 @@ simulated function bool ClientFire(float Value)
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
-		if (bbP.ClientCannotShoot() || bbP.Weapon != Self)
+		if (bbP.ClientCannotShoot() || bbP.Weapon != Self) {
+			class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
 			return false;
+		}
 		if ( (AmmoType == None) && (AmmoName != None) )
 		{
 			// ammocheck

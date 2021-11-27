@@ -63,8 +63,10 @@ simulated function bool ClientFire(float Value)
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
-		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.9)
+		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.9) {
+			class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
 			return false;
+		}
 		if ( (AmmoType == None) && (AmmoName != None) )
 		{
 			// ammocheck
@@ -105,8 +107,10 @@ simulated function bool ClientAltFire(float Value) {
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
-		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.9)
+		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.9) {
+			class'NN_WeaponFunctions'.static.IGPlus_AfterClientAltFire(self);
 			return false;
+		}
 		if ( (AmmoType == None) && (AmmoName != None) )
 		{
 			// ammocheck
