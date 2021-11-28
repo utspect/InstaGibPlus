@@ -312,6 +312,7 @@ struct IGPlus_WarpFixClient {
 
 var bool IGPlus_EnableWarpFix;
 var bool IGPlus_WarpFixUpdate;
+var float IGPlus_WarpFixDelay;
 var IGPlus_WarpFix IGPlus_WarpFixData;
 var IGPlus_WarpFixClient IGPlus_WarpFixClientData;
 
@@ -346,6 +347,7 @@ replication
 		IGPlus_AlwaysRenderDroppedFlags,
 		IGPlus_AlwaysRenderFlagCarrier,
 		IGPlus_EnableWarpFix,
+		IGPlus_WarpFixDelay,
 		KillCamDelay,
 		KillCamDuration,
 		LastKiller,
@@ -1062,6 +1064,7 @@ event Possess()
 		bUseFastWeaponSwitch = class'UTPure'.default.bUseFastWeaponSwitch;
 		bAlwaysRelevant = class'UTPure'.default.bPlayersAlwaysRelevant;
 		IGPlus_EnableWarpFix = class 'UTPure'.default.bEnableWarpFix;
+		IGPlus_WarpFixDelay = class'UTPure'.default.WarpFixDelay;
 		IGPlus_AlwaysRenderFlagCarrier = class'UTPure'.default.bAlwaysRenderFlagCarrier;
 		IGPlus_AlwaysRenderDroppedFlags = class'UTPure'.default.bAlwaysRenderDroppedFlags;
 
@@ -2409,7 +2412,9 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	LastAddVelocityAppliedIndex = AddVelocityId;
 
 	// Predict new position
-	if ((Level.Pauser == "") && (DeltaTime > 0)) {
+	if ((Level.Pauser == "") && (DeltaTime > 0) &&
+		(class'UTPure'.default.bEnableWarpFix == false || DeltaTime <= class'UTPure'.default.WarpFixDelay)
+	) {
 		if (class'UTPure'.default.bEnableJitterBounding && DeltaTime > class'UTPure'.default.MaxJitterTime) {
 			SimTime = DeltaTime - class'UTPure'.default.MaxJitterTime;
 			if (SimTime >= 0.005 || bIs469Server) {
@@ -2759,6 +2764,10 @@ function bool IGPlus_OldServerMove(float TimeStamp, int OldMoveData1, int OldMov
 		return false;
 
 	DeltaTime = OldTimeStamp - CurrentTimeStamp;
+	if (class'UTPure'.default.bEnableWarpFix && DeltaTime > class'UTPure'.default.WarpFixDelay) {
+		return false;
+	}
+
 	OldJump   = (OldMoveData1 & 0x0400) != 0;
 	OldRun    = (OldMoveData1 & 0x0800) != 0;
 	OldDuck   = (OldMoveData1 & 0x1000) != 0;
@@ -6956,7 +6965,7 @@ function IGPlus_ApplyWarpFix(PlayerReplicationInfo PRI) {
 		P.IGPlus_WarpFixClientData.TimeStamp = Level.TimeSeconds;
 	}
 
-	if (P.IGPlus_WarpFixClientData.TimeStamp + 0.25 >= Level.TimeSeconds)
+	if (P.IGPlus_WarpFixClientData.TimeStamp + IGPlus_WarpFixDelay >= Level.TimeSeconds)
 		return;
 
 	P.SetLocation(P.IGPlus_WarpFixClientData.Last.OldLocation);

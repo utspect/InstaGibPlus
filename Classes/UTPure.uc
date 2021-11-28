@@ -88,6 +88,7 @@ var float	zzPauseCountdown;		// Give 120 seconds of "ignore FT"
 var config int MaxPosError;
 var config int MaxHitError;
 var config float MaxJitterTime;
+var config float WarpFixDelay;
 var config float MinNetUpdateRate;
 var config float MaxNetUpdateRate;
 var config bool bEnableServerExtrapolation;
@@ -1479,6 +1480,7 @@ defaultproperties
 	MaxPosError=1000
 	MaxHitError=10000
 	MaxJitterTime=0.1
+	WarpFixDelay=0.25
 	MinNetUpdateRate=60.0
 	MaxNetUpdateRate=200.0
 	ShowTouchedPackage=False
