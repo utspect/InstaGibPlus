@@ -3239,8 +3239,7 @@ exec function Fire( optional float F )
 			ClientDebugMessage("Server Fire"@Weapon.Name@ViewRotation);
 	}
 	if (!bNewNet || !xxWeaponIsNewNet()) {
-		if (xxCanFire())
-			Super.Fire(F);
+		Super.Fire(F);
 	} else if (Role < ROLE_Authority && GameReplicationInfo.GameEndedComments == "") {
 		if (Weapon != none)
 			Weapon.ClientFire(1);
@@ -3291,7 +3290,7 @@ function xxNN_Fire( float TimeStamp, int ProjIndex, vector ClientLoc, vector Cli
 		IH.PlayFiring();
 		IH.GoToState('FireBlast');
 	}
-	else if (xxCanFire())
+	else
 	{
 		if (class'UTPure'.default.bRestrictTrading && IsInState('Dying')) {
 			if (bbPlayer(LastKiller) != none)
@@ -3326,8 +3325,7 @@ exec function AltFire( optional float F )
 	xxEnableCarcasses();
 	if (!bNewNet || !xxWeaponIsNewNet(true))
 	{
-		if (xxCanFire())
-			Super.AltFire(F);
+		Super.AltFire(F);
 	}
 	else if (Role < ROLE_Authority)
 	{
@@ -3363,10 +3361,8 @@ function xxNN_AltFire( float TimeStamp, int ProjIndex, vector ClientLoc, vector 
 	zzbNN_ReleasedAltFire = false;
 	zzbNN_Special = bSpecial;
 
-	if (xxCanFire())
-	{
-		Super.AltFire(1);
-	}
+	Super.AltFire(1);
+
 	zzNN_HitActor = None;
 	zzbNN_Special = false;
 	xxDisableCarcasses();
@@ -8758,11 +8754,6 @@ function Typing( bool bTyping )
 ////////////////////////////
 // Tracebot stopper: By DB
 ////////////////////////////
-
-function bool xxCanFire()
-{
-	return true;
-}
 
 function xxCleanAvars()
 {
