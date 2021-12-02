@@ -324,6 +324,9 @@ var bool IGPlus_LocationOffsetFix_OnGround;
 var vector IGPlus_LocationOffsetFix_SafeLocation;
 var Actor IGPlus_LocationOffsetFix_CollisionDummy;
 
+var float LocalExtrapolationOwnPingFactor;
+var float LocalExtrapolationOtherPingFactor;
+
 var bool IGPlus_AlwaysRenderFlagCarrier;
 var bool IGPlus_AlwaysRenderDroppedFlags;
 var bool IGPlus_InitFlagSprites;
@@ -6820,7 +6823,10 @@ simulated function vector IGPlus_CurrentLocation() {
 }
 
 simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
+	local float ExtrapolationTime;
 	local bool bReplicatedLocation;
+	local vector ExtrapolationLocation;
+	local bbPlayer LocalPlayer;
 	if (IGPlus_LocationOffsetFix_Moved == false)
 		return;
 
@@ -6841,8 +6847,17 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 
 	// detect whether server replicated new location
 	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) > VSize(2*DeltaTime*Velocity)+MaxStepHeight) {
-		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - Location;
-		IGPlus_LocationOffsetFix_OldLocation = Location;
+		LocalPlayer = bbPlayer(GetLocalPlayer());
+		ExtrapolationTime = 0;
+		if (LocalPlayer != none)
+			ExtrapolationTime += LocalPlayer.PingAverage * 0.001 * default.LocalExtrapolationOwnPingFactor;
+		if (PlayerReplicationInfo != none)
+			ExtrapolationTime += PlayerReplicationInfo.Ping * 0.001 * default.LocalExtrapolationOtherPingFactor;
+
+		ExtrapolationLocation = Location + Velocity * ExtrapolationTime;
+		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - ExtrapolationLocation;
+		IGPlus_LocationOffsetFix_OldLocation = ExtrapolationLocation;
+
 		bReplicatedLocation = true;
 	} else {
 		IGPlus_LocationOffsetFix_OldLocation -= IGPlus_LocationOffsetFix_PredictionOffset;
@@ -9006,4 +9021,7 @@ defaultproperties
 
 	IGPlus_ZoomToggle_SensitivityFactorX=1.0
 	IGPlus_ZoomToggle_SensitivityFactorY=1.0
+
+	LocalExtrapolationOwnPingFactor=0.5;
+	LocalExtrapolationOtherPingFactor=0.0;
 }
