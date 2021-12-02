@@ -6913,11 +6913,25 @@ simulated function IGPlus_LocationOffsetFix_SpawnCollisionDummy() {
 	IGPlus_LocationOffsetFix_CollisionDummy = Spawn(class'IGPlus_CollisionDummy');
 }
 
-simulated function IGPlus_LocationOffsetFix_Before() {
+simulated function bool IGPlus_LocationOffsetFix_IsOnGround() {
 	local Actor HitActor;
 	local vector HitLocation, HitNormal;
 	local vector Extent;
 
+	if (bCanFly || Region.Zone.bWaterZone)
+		return true;
+
+	Extent.X = CollisionRadius;
+	Extent.Y = CollisionRadius;
+	Extent.Z = CollisionHeight-1;
+	HitActor = Trace(HitLocation, HitNormal, Location - vect(0,0,9), Location, false, Extent);
+
+	return (HitActor != none)
+		&& (HitActor == Level || HitActor.IsA('Mover'))
+		&& (HitNormal.Z >= 0.7);
+}
+
+simulated function IGPlus_LocationOffsetFix_Before() {
 	if (IGPlus_LocationOffsetFix_Moved)
 		return;
 
@@ -6926,21 +6940,7 @@ simulated function IGPlus_LocationOffsetFix_Before() {
 
 	IGPlus_LocationOffsetFix_OldLocation = Location;
 	IGPlus_LocationOffsetFix_Velocity = Velocity;
-
-	if (bCanFly == false && Region.Zone.bWaterZone == false) {
-		Extent.X = CollisionRadius;
-		Extent.Y = CollisionRadius;
-		Extent.Z = CollisionHeight-1;
-		HitActor = Trace(HitLocation, HitNormal, Location - vect(0,0,9), Location, false, Extent);
-		if (HitActor == none) {
-			IGPlus_LocationOffsetFix_OnGround = false;
-		} else {
-			IGPlus_LocationOffsetFix_OnGround = 
-				(HitActor == Level || HitActor.IsA('Mover')) && (HitNormal.Z >= 0.7);
-		}
-	} else {
-		IGPlus_LocationOffsetFix_OnGround = true;
-	}
+	IGPlus_LocationOffsetFix_OnGround = IGPlus_LocationOffsetFix_IsOnGround();
 
 	SetLocation(vect(65535, 65535, 65535));
 	Velocity = vect(0.0123,0.0123,0);
