@@ -2893,7 +2893,7 @@ function IGPlus_InsertServerMove(IGPlus_ServerMove SM) {
 // +------------------------------------------------+------------------------------------------------+
 function xxServerMove(
 	float TimeStamp,
-	float MoveDeltaTime,
+	int MoveDeltaTime,
 	vector Accel,
 	float ClientLocX,
 	float ClientLocY,
@@ -2911,7 +2911,7 @@ function xxServerMove(
 	SM = IGPlus_CreateServerMove();
 
 	SM.TimeStamp = TimeStamp;
-	SM.MoveDeltaTime = MoveDeltaTime;
+	SM.MoveDeltaTime = MoveDeltaTime * 0.0000152587890625;
 	SM.ClientAcceleration = Accel * 0.1;
 	SM.ClientLocation.X = ClientLocX;
 	SM.ClientLocation.Y = ClientLocY;
@@ -3866,7 +3866,7 @@ function SendSavedMove(IGPlus_SavedMove Move, optional IGPlus_SavedMove OldMove)
 
 	xxServerMove(
 		Move.TimeStamp,
-		Move.Delta,
+		int(Move.Delta * 65536),
 		Move.Acceleration * 10.0,
 		RelLoc.X,
 		RelLoc.Y,
@@ -5039,7 +5039,7 @@ state FeigningDeath
 	function xxServerMove
 	(
 		float TimeStamp,
-		float MoveDeltaTime,
+		int MoveDeltaTime,
 		vector Accel,
 		float ClientLocX,
 		float ClientLocY,
@@ -6074,7 +6074,7 @@ state Dying
 	function xxServerMove
 	(
 		float TimeStamp,
-		float MoveDeltaTime,
+		int MoveDeltaTime,
 		vector Accel,
 		float ClientLocX,
 		float ClientLocY,
@@ -6205,7 +6205,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	function xxServerMove
 	(
 		float TimeStamp,
-		float MoveDeltaTime,
+		int MoveDeltaTime,
 		vector Accel,
 		float ClientLocX,
 		float ClientLocY,
