@@ -322,6 +322,7 @@ var vector IGPlus_LocationOffsetFix_ExtrapolationOffset;
 var vector IGPlus_LocationOffsetFix_PredictionOffset;
 var vector IGPlus_LocationOffsetFix_Velocity;
 var bool IGPlus_LocationOffsetFix_OnGround;
+var bool IGPlus_LocationOffsetFix_FootstepQueued;
 var vector IGPlus_LocationOffsetFix_SafeLocation;
 var Actor IGPlus_LocationOffsetFix_CollisionDummy;
 
@@ -6276,6 +6277,11 @@ simulated function FootStepping()
 		if (Role == ROLE_AutonomousProxy || (Player != none && Player.IsA('Viewport')) || GetLocalPlayer().ViewTarget == self)
 			return;
 
+	if (IGPlus_LocationOffsetFix_Moved) {
+		IGPlus_LocationOffsetFix_FootstepQueued = true;
+		return;
+	}
+
 	super.FootStepping();
 }
 
@@ -6864,6 +6870,11 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	}
 
 	IGPlus_LocationOffsetFix_Moved = false;
+
+	if (IGPlus_LocationOffsetFix_FootstepQueued) {
+		FootStepping();
+		IGPlus_LocationOffsetFix_FootstepQueued = false;
+	}
 }
 
 simulated event Tick(float DeltaTime) {
