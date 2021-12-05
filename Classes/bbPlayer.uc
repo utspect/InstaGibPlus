@@ -2894,9 +2894,7 @@ function IGPlus_InsertServerMove(IGPlus_ServerMove SM) {
 function xxServerMove(
 	float TimeStamp,
 	float MoveDeltaTime,
-	float AccelX,
-	float AccelY,
-	float AccelZ,
+	vector Accel,
 	float ClientLocX,
 	float ClientLocY,
 	float ClientLocZ,
@@ -2914,9 +2912,7 @@ function xxServerMove(
 
 	SM.TimeStamp = TimeStamp;
 	SM.MoveDeltaTime = MoveDeltaTime;
-	SM.ClientAcceleration.X = AccelX;
-	SM.ClientAcceleration.Y = AccelY;
-	SM.ClientAcceleration.Z = AccelZ;
+	SM.ClientAcceleration = Accel * 0.1;
 	SM.ClientLocation.X = ClientLocX;
 	SM.ClientLocation.Y = ClientLocY;
 	SM.ClientLocation.Z = ClientLocZ;
@@ -3871,9 +3867,7 @@ function SendSavedMove(IGPlus_SavedMove Move, optional IGPlus_SavedMove OldMove)
 	xxServerMove(
 		Move.TimeStamp,
 		Move.Delta,
-		Move.Acceleration.X,
-		Move.Acceleration.Y,
-		Move.Acceleration.Z,
+		Move.Acceleration * 10.0,
 		RelLoc.X,
 		RelLoc.Y,
 		RelLoc.Z,
@@ -5046,9 +5040,7 @@ state FeigningDeath
 	(
 		float TimeStamp,
 		float MoveDeltaTime,
-		float AccelX,
-		float AccelY,
-		float AccelZ,
+		vector Accel,
 		float ClientLocX,
 		float ClientLocY,
 		float ClientLocZ,
@@ -5064,9 +5056,7 @@ state FeigningDeath
 		Global.xxServerMove(
 			TimeStamp,
 			MoveDeltaTime,
-			AccelX,
-			AccelY,
-			AccelZ,
+			Accel,
 			ClientLocX,
 			ClientLocY,
 			ClientLocZ,
@@ -6085,9 +6075,7 @@ state Dying
 	(
 		float TimeStamp,
 		float MoveDeltaTime,
-		float AccelX,
-		float AccelY,
-		float AccelZ,
+		vector Accel,
 		float ClientLocX,
 		float ClientLocY,
 		float ClientLocZ,
@@ -6103,9 +6091,7 @@ state Dying
 		Global.xxServerMove(
 			TimeStamp,
 			MoveDeltaTime,
-			AccelX,
-			AccelY,
-			AccelZ,
+			Accel,
 			ClientLocX,
 			ClientLocY,
 			ClientLocZ,
@@ -6220,9 +6206,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 	(
 		float TimeStamp,
 		float MoveDeltaTime,
-		float AccelX,
-		float AccelY,
-		float AccelZ,
+		vector Accel,
 		float ClientLocX,
 		float ClientLocY,
 		float ClientLocZ,
@@ -6238,9 +6222,7 @@ ignores SeePlayer, HearNoise, KilledBy, Bump, HitWall, HeadZoneChange, FootZoneC
 		Global.xxServerMove(
 			TimeStamp,
 			MoveDeltaTime,
-			AccelX,
-			AccelY,
-			AccelZ,
+			Accel,
 			ClientLocX,
 			ClientLocY,
 			ClientLocZ,
