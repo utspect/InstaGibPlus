@@ -318,6 +318,7 @@ var IGPlus_WarpFixClient IGPlus_WarpFixClientData;
 
 var bool IGPlus_LocationOffsetFix_Moved;
 var vector IGPlus_LocationOffsetFix_OldLocation;
+var vector IGPlus_LocationOffsetFix_ExtrapolationOffset;
 var vector IGPlus_LocationOffsetFix_PredictionOffset;
 var vector IGPlus_LocationOffsetFix_Velocity;
 var bool IGPlus_LocationOffsetFix_OnGround;
@@ -6825,8 +6826,6 @@ simulated function vector IGPlus_CurrentLocation() {
 simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	local float ExtrapolationTime;
 	local bool bReplicatedLocation;
-	local vector ExtrapolationLocation;
-	local bbPlayer LocalPlayer;
 	if (IGPlus_LocationOffsetFix_Moved == false)
 		return;
 
@@ -6847,24 +6846,15 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 
 	// detect whether server replicated new location
 	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) > VSize(2*DeltaTime*Velocity)+MaxStepHeight) {
-		LocalPlayer = bbPlayer(GetLocalPlayer());
-		ExtrapolationTime = 0;
-		if (LocalPlayer != none)
-			ExtrapolationTime += LocalPlayer.PingAverage * 0.001 * default.LocalExtrapolationOwnPingFactor;
-		if (PlayerReplicationInfo != none)
-			ExtrapolationTime += PlayerReplicationInfo.Ping * 0.001 * default.LocalExtrapolationOtherPingFactor;
-
-		ExtrapolationLocation = Location + Velocity * ExtrapolationTime;
-		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - ExtrapolationLocation;
-		IGPlus_LocationOffsetFix_OldLocation = ExtrapolationLocation;
-
+		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - Location - IGPlus_LocationOffsetFix_ExtrapolationOffset;
+		IGPlus_LocationOffsetFix_OldLocation = Location;
 		bReplicatedLocation = true;
 	} else {
 		IGPlus_LocationOffsetFix_OldLocation -= IGPlus_LocationOffsetFix_PredictionOffset;
 		bReplicatedLocation = false;
 	}
 
-	IGPlus_LocationOffsetFix_PredictionOffset *= Exp(-30*DeltaTime);
+	IGPlus_LocationOffsetFix_PredictionOffset *= Exp(-27*DeltaTime);
 
 	// dont let misprediction grow too large
 	// also, dont smoothly relocate teleporting players
@@ -6874,8 +6864,22 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	bCollideWorld = false;
 	SetLocation(IGPlus_LocationOffsetFix_OldLocation+IGPlus_LocationOffsetFix_PredictionOffset);
 	bCollideWorld = true;
-	if (bReplicatedLocation == false)
+	if (bReplicatedLocation == false) {
 		MoveSmooth(Velocity*DeltaTime);
+	} else {
+		IGPlus_LocationOffsetFix_ExtrapolationOffset = Location;
+		ExtrapolationTime = 0;
+		ExtrapolationTime += GetLocalPlayer().PlayerReplicationInfo.Ping * 0.001 * default.LocalExtrapolationOwnPingFactor;
+		if (PlayerReplicationInfo != none)
+			ExtrapolationTime += PlayerReplicationInfo.Ping * 0.001 * default.LocalExtrapolationOtherPingFactor;
+
+		if (ExtrapolationTime > 0) {
+			MoveSmooth(Velocity * ExtrapolationTime);
+			IGPlus_LocationOffsetFix_ExtrapolationOffset = Location - IGPlus_LocationOffsetFix_ExtrapolationOffset;
+		} else {
+			IGPlus_LocationOffsetFix_ExtrapolationOffset = vect(0,0,0);
+		}
+	}
 
 	IGPlus_LocationOffsetFix_Moved = false;
 }
@@ -9022,6 +9026,6 @@ defaultproperties
 	IGPlus_ZoomToggle_SensitivityFactorX=1.0
 	IGPlus_ZoomToggle_SensitivityFactorY=1.0
 
-	LocalExtrapolationOwnPingFactor=0.5;
+	LocalExtrapolationOwnPingFactor=0.25;
 	LocalExtrapolationOtherPingFactor=0.0;
 }
