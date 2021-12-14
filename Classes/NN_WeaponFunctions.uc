@@ -132,7 +132,7 @@ static final function IGPlus_AfterClientFire(TournamentWeapon W) {
 	local bbPlayer P;
 	if (W.Owner != none && W.Owner.IsA('bbPlayer')) {
 		P = bbPlayer(W.Owner);
-		P.IGPlus_LocationOffsetFix_TickBefore();
+		P.IGPlus_LocationOffsetFix_UndoRestoreAll();
 	}
 }
 
@@ -148,6 +148,6 @@ static final function IGPlus_AfterClientAltFire(TournamentWeapon W) {
 	local bbPlayer P;
 	if (W.Owner != none && W.Owner.IsA('bbPlayer')) {
 		P = bbPlayer(W.Owner);
-		P.IGPlus_LocationOffsetFix_TickBefore();
+		P.IGPlus_LocationOffsetFix_UndoRestoreAll();
 	}
 }

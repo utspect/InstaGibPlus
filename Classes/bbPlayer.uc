@@ -317,6 +317,7 @@ var IGPlus_WarpFix IGPlus_WarpFixData;
 var IGPlus_WarpFixClient IGPlus_WarpFixClientData;
 
 var bool IGPlus_LocationOffsetFix_Moved;
+var bool IGPlus_LocationOffsetFix_Restored;
 var vector IGPlus_LocationOffsetFix_OldLocation;
 var vector IGPlus_LocationOffsetFix_ExtrapolationOffset;
 var vector IGPlus_LocationOffsetFix_PredictionOffset;
@@ -6900,6 +6901,7 @@ simulated function IGPlus_LocationOffsetFix_Restore() {
 	}
 	Velocity = IGPlus_LocationOffsetFix_Velocity;
 
+	IGPlus_LocationOffsetFix_Restored = true;
 	IGPlus_LocationOffsetFix_Moved = false;
 }
 
@@ -6917,6 +6919,32 @@ function IGPlus_LocationOffsetFix_RestoreAll() {
 			if (P.Role != ROLE_SimulatedProxy) continue;
 
 			P.IGPlus_LocationOffsetFix_Restore();
+		}
+	}
+}
+
+simulated function IGPlus_LocationOffsetFix_UndoRestore() {
+	if (IGPlus_LocationOffsetFix_Restored == false)
+		return;
+
+	IGPlus_LocationOffsetFix_Restored = false;
+	IGPlus_LocationOffsetFix_Before();
+}
+
+function IGPlus_LocationOffsetFix_UndoRestoreAll() {
+	local int i;
+	local PlayerReplicationInfo PRI;
+	local bbPlayer P;
+
+	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
+		for (i = 0; i < arraycount(GameReplicationInfo.PRIArray); ++i) {
+			PRI = GameReplicationInfo.PRIArray[i];
+			if (PRI == none) break;
+			P = bbPlayer(PRI.Owner);
+			if (P == none) continue;
+			if (P.Role != ROLE_SimulatedProxy) continue;
+
+			P.IGPlus_LocationOffsetFix_UndoRestore();
 		}
 	}
 }
