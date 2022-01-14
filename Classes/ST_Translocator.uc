@@ -8,6 +8,25 @@ class ST_Translocator extends Translocator;
 
 var ST_Mutator STM;
 
+var WeaponSettingsRepl WSettings;
+
+simulated final function WeaponSettingsRepl FindWeaponSettings() {
+	local WeaponSettingsRepl S;
+
+	foreach AllActors(class'WeaponSettingsRepl', S)
+		return S;
+
+	return none;
+}
+
+simulated final function WeaponSettingsRepl GetWeaponSettings() {
+	if (WSettings != none)
+		return WSettings;
+
+	WSettings = FindWeaponSettings();
+	return WSettings;
+}
+
 function PostBeginPlay()
 {
 	Super.PostBeginPlay();
@@ -63,9 +82,23 @@ function ThrowTarget()
 	else GotoState('Idle');
 }
 
-simulated function TweenDown()
-{
-	PlayAnim('Down', 100.0, 0.0);
+simulated function PlaySelect() {
+	bForceFire = false;
+	bForceAltFire = false;
+	if ( bTTargetOut )
+		TweenAnim('ThrownFrame', GetWeaponSettings().TranslocatorOutSelectTime);
+	else
+		PlayAnim('Select',GetWeaponSettings().TranslocatorSelectAnimSpeed(), 0.0);
+	PlaySound(SelectSound, SLOT_Misc,Pawn(Owner).SoundDampening);		
+}
+
+simulated function TweenDown() {
+	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
+		TweenAnim( AnimSequence, AnimFrame * 0.36 );
+	else if ( bTTargetOut )
+		PlayAnim('Down2', GetWeaponSettings().TranslocatorDownAnimSpeed(), 0.05);
+	else
+		PlayAnim('Down', GetWeaponSettings().TranslocatorDownAnimSpeed(), 0.05);
 }
 
 defaultproperties {

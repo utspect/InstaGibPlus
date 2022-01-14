@@ -31,8 +31,13 @@ auto state Flying
 			if ( Role == ROLE_Authority )
 			{
 				STM.PlayerHit(Instigator, 12, Other.IsA('Pawn'));	// 12 = Ripper Secondary, Direct if Pawn
-				Other.TakeDamage(damage, instigator,HitLocation,
-					(MomentumTransfer * Normal(Velocity)), MyDamageType );
+				Other.TakeDamage(
+					STM.WeaponSettings.RipperSecondaryDamage,
+					instigator,
+					HitLocation,
+					STM.WeaponSettings.RipperSecondaryMomentum * MomentumTransfer * Normal(Velocity),
+					MyDamageType
+				);
 				STM.PlayerClear();
 			}
 			s = spawn(class'RipperPulse',,,HitLocation);	
@@ -47,12 +52,14 @@ auto state Flying
 		local actor Victims;
 		local float damageScale, dist;
 		local vector dir;
+		local float HurtRadius;
 
 		if( bHurtEntry )
 			return;
 
+		HurtRadius = STM.WeaponSettings.RipperSecondaryHurtRadius;
 		bHurtEntry = true;
-		foreach VisibleCollidingActors( class 'Actor', Victims, 180, HitLocation )
+		foreach VisibleCollidingActors( class 'Actor', Victims, HurtRadius, HitLocation )
 		{
 			// Comment:
 			// Ripper secondary makes no sense. All other Splash weapons use HurtRadius. Why this difference?
@@ -63,14 +70,13 @@ auto state Flying
 				dist = FMax(1,VSize(dir));
 				dir = dir/dist;
 				dir.Z = FMin(0.45, dir.Z); 
-				damageScale = 1 - FMax(0,(dist - Victims.CollisionRadius)/180);
+				damageScale = 1 - FMax(0,(dist - Victims.CollisionRadius)/HurtRadius);
 				STM.PlayerHit(Instigator, 12, False);		// 12 = Ripper Secondary
-				Victims.TakeDamage
-				(
-					damageScale * Damage,
+				Victims.TakeDamage (
+					damageScale * STM.WeaponSettings.RipperSecondaryDamage,
 					Instigator, 
 					Victims.Location - 0.5 * (Victims.CollisionHeight + Victims.CollisionRadius) * dir,
-					damageScale * MomentumTransfer * dir,
+					STM.WeaponSettings.RipperSecondaryMomentum * damageScale * MomentumTransfer * dir,
 					MyDamageType
 				);
 				STM.PlayerClear();

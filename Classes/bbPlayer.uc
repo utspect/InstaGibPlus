@@ -141,8 +141,6 @@ var PlayerPawn LocalPlayer;
 var TranslocatorTarget zzClientTTarget, TTarget;
 var float LastTick, AvgTickDiff;
 
-var bool bUseFastWeaponSwitch;
-
 // Net Updates
 var float TimeBetweenNetUpdates;
 var bool bForcePacketSplit;
@@ -347,7 +345,6 @@ replication
 		bJumpingPreservesMomentum,
 		bOldLandingMomentum,
 		BrightskinMode,
-		bUseFastWeaponSwitch,
 		bUseFlipAnimation,
 		HUDInfo,
 		IGPlus_AlwaysRenderDroppedFlags,
@@ -1067,7 +1064,6 @@ event Possess()
 		bUseFlipAnimation = class'UTPure'.default.bUseFlipAnimation;
 		bCanWallDodge = class'UTPure'.default.bEnableWallDodging;
 		bDodgePreserveZMomentum = class'UTPure'.default.bDodgePreserveZMomentum;
-		bUseFastWeaponSwitch = class'UTPure'.default.bUseFastWeaponSwitch;
 		bAlwaysRelevant = class'UTPure'.default.bPlayersAlwaysRelevant;
 		IGPlus_EnableWarpFix = class 'UTPure'.default.bEnableWarpFix;
 		IGPlus_WarpFixDelay = class'UTPure'.default.WarpFixDelay;
@@ -2385,9 +2381,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 			}
 		}
 	}
-
-	if (bUseFastWeaponSwitch && PendingWeapon != None)
-		ChangedWeapon();
 
 	CurrentTimeStamp = SM.TimeStamp;
 	ServerTimeStamp = Level.TimeSeconds;
@@ -8302,16 +8295,6 @@ exec function bool SwitchToBestWeapon()
 	if ( Weapon != PendingWeapon )
 		Weapon.PutDown();
 	return (usealt > 0);
-}
-
-simulated function ChangedWeapon()
-{
-	if (Weapon != None && bUseFastWeaponSwitch)
-	{
-		Weapon.GotoState('');
-		ClientPutDown(none, PendingWeapon);
-	}
-	Super.ChangedWeapon();
 }
 
 function ClientPutDown(Weapon Current, Weapon Next)
