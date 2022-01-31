@@ -231,7 +231,7 @@ static function PlayHitSound(PlayerPawn Me, ClientSettings Settings, float Damag
 
 	if (bEnable) {
 		if (bPitchShift)
-			Pitch = FClamp(42/Damage, 0.22, 3.2);
+			Pitch = FClamp(42/Damage, 0.18, 4.2);
 		else
 			Pitch = 1.0;
 
