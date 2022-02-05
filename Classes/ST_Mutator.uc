@@ -805,8 +805,6 @@ function PreBeginPlay()
 
 function Mutate(string MutateString, PlayerPawn Sender)
 {
-	local bbPlayer bbP;
-
 	if (MutateString ~= "PurePlayerHelp")
 	{
 		Sender.ClientMessage("UTPure Stats Extended commands:");
