@@ -41,7 +41,6 @@ var int debugServerMoveCallsSent;
 var int debugServerMoveCallsReceived;
 
 // Control stuff
-var PureInfo zzInfoThing;	// Registers diverse stuff.
 var float	zzTick;			// The Length of Last Tick
 var bool	zzbNoMultiWeapon;	// Server-Side only! tells if multiweapon bug can be used.
 var int     zzThrowVelocity;
@@ -416,8 +415,7 @@ replication
 		xxClientDoEndShot,
 		xxClientDoScreenshot,
 		xxClientKeys,
-		xxClientReadINT,
-		xxClientSet;
+		xxClientReadINT;
 
 	reliable if ((Role == ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ClientProjExplode;
@@ -1001,7 +999,6 @@ event Possess()
 	{	// Only do this for clients.
 		SetTimer(3, false);
 		Log("Possessed PlayerPawn (bbPlayer) by InstaGib Plus");
-		zzInfoThing = Spawn(Class'PureInfo');
 		SetNetUpdateRate(Settings.DesiredNetUpdateRate);
 		xxServerSetForceModels(Settings.bForceModels);
 		xxServerSetTeamInfo(Settings.bTeamInfo);
@@ -6369,10 +6366,6 @@ function xxPlayerTickEvents(float DeltaTime)
 	if (zzForceSettingsLevel != zzOldForceSettingsLevel)
 	{
 		zzOldForceSettingsLevel = zzForceSettingsLevel;
-		if (zzForceSettingsLevel > 0)
-			zzInfoThing.xxStartupCheck(Self);
-		if (zzForceSettingsLevel > 1)
-			zzInfoThing.xxInstallSpawnNotify(Self);
 	}
 
 	if (PureLevel != None)	// Why would this be None?!
@@ -7495,12 +7488,6 @@ static function bool xxValidSP(string zzSkinName, string zzMeshName, optional Ac
 	return (Left(zzPackName, Len(zzMeshName)) ~= zzMeshName && !(Right(zzSkinName,2) ~= "t_"));
 }
 
-function xxClientSet(string zzS)
-{
-	if (!zzbDemoPlayback)
-		zzInfoThing.ConsoleCommand(zzS);
-}
-
 simulated function xxClientDoEndShot()
 {
 	if (Settings.bDoEndShot)
@@ -7944,7 +7931,7 @@ simulated function xxClientConsole(string zzcon, int zzC)
 		return;		// Dont run on server (in case of disconnect)
 	}
 
-	zzRes = zzInfoThing.ConsoleCommand(zzcon);
+	zzRes = ConsoleCommand(zzcon);
 
 	zzl = Len(zzRes);
 	while (zzl > zzx)
