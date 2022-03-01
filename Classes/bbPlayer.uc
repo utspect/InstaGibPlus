@@ -332,6 +332,8 @@ var bool IGPlus_AlwaysRenderDroppedFlags;
 var bool IGPlus_InitFlagSprites;
 var IGPlus_FlagSprite IGPlus_TeamFlagSprite[4];
 
+var bool IGPlus_EnableDualButtonSwitch;
+
 replication
 {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -389,6 +391,7 @@ replication
 		bIsFinishedLoading,
 		FakeCAPInterval,
 		IGPlus_DamageEvent_ShowOnDeath,
+		IGPlus_EnableDualButtonSwitch,
 		PingAverage,
 		zzbDemoRecording,
 		zzNetspeed;
@@ -1098,7 +1101,28 @@ event Possess()
 		IGPlus_ForcedSettingsInit();
 	}
 
+	if (Role == ROLE_AutonomousProxy || (Role == ROLE_Authority && RemoteRole != ROLE_AutonomousProxy)) {
+		IGPlus_EnableDualButtonSwitch = IGPlus_DetermineDualButtonSwitchSetting();
+	}
+
 	Super.Possess();
+}
+
+function bool IGPlus_DetermineDualButtonSwitchSetting() {
+	local Translocator T;
+	local bool Result;
+	
+	T = Spawn(class'Translocator');
+	T.RemoteRole = ROLE_None;
+	T.bHidden = true;
+
+	Result = true;
+	if (T.GetPropertyText("bEnableDualButtonSwitch") ~= "False")
+		Result = false;
+	
+	T.Destroy();
+
+	return Result;
 }
 
 function IGPlus_ForcedSettingsInit() {
@@ -8970,4 +8994,6 @@ defaultproperties
 
 	LocalExtrapolationOwnPingFactor=0.25;
 	LocalExtrapolationOtherPingFactor=0.0;
+
+	IGPlus_EnableDualButtonSwitch=True
 }

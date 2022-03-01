@@ -36,8 +36,8 @@ function PostBeginPlay()
 }
 
 function ReturnToPreviousWeapon()
-{	// This fixes the "both buttons goes back to old weapon" annoyance.
-	if (GetPropertyText("bClientDualButtonSwitch") ~= "false")
+{
+	if (Owner.IsA('bbPlayer') && bbPlayer(Owner).IGPlus_EnableDualButtonSwitch == false)
 		return;
 	Super.ReturnToPreviousWeapon();
 }
