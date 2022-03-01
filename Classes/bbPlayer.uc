@@ -8050,7 +8050,7 @@ exec function GetWeapon(class<Weapon> NewWeaponClass )
 
 	if ( (Inventory == None) || (NewWeaponClass == None)
 		|| ((Weapon != None) && Weapon.IsA(NewWeaponClass.Name))
-		|| IsInState('Dying') )
+		|| IsInState('Dying') || Level.Game.bGameEnded )
 		return;
 
 	for ( Inv=Inventory; Inv!=None; Inv=Inv.Inventory )
@@ -8059,7 +8059,7 @@ exec function GetWeapon(class<Weapon> NewWeaponClass )
 			PendingWeapon = Weapon(Inv);
 			if ( PendingWeapon != None && (PendingWeapon.AmmoType != None) && (PendingWeapon.AmmoType.AmmoAmount <= 0) )
 			{
-				Pawn(Owner).ClientMessage( PendingWeapon.ItemName$PendingWeapon.MessageNoAmmo );
+				ClientMessage( PendingWeapon.ItemName$PendingWeapon.MessageNoAmmo );
 				PendingWeapon = None;
 				return;
 			}
@@ -8073,25 +8073,27 @@ exec function SwitchWeapon(byte F)
 {
 	local weapon newWeapon;
 
-	if ( bShowMenu || Level.Pauser!="" || IsInState('Dying') )
-	{
-		if ( myHud != None )
-			myHud.InputNumber(F);
+	if ( bShowMenu || Level.Pauser!="" || IsInState('Dying') || Level.Game.bGameEnded )
 		return;
-	}
+	
 	if ( Inventory == None )
 		return;
+
 	if ( (Weapon != None) && (Weapon.Inventory != None) )
 		newWeapon = Weapon.Inventory.WeaponChange(F);
 	else
 		newWeapon = None;
+
 	if ( newWeapon == None )
 		newWeapon = Inventory.WeaponChange(F);
+
 	if ( newWeapon == None )
 		return;
 
-	if ( Weapon != newWeapon )
-	{
+	if ( Weapon == none ) {
+		PendingWeapon = newWeapon;
+		ChangedWeapon();
+	} else if ( Weapon != newWeapon ) {
 		PendingWeapon = newWeapon;
 		if ( Weapon != None && !Weapon.PutDown() )
 			PendingWeapon = None;
@@ -8255,57 +8257,6 @@ exec function NextWeapon()
 		return;
 
 	Weapon.PutDown();
-}
-
-exec function bool SwitchToBestWeapon()
-{
-	local float rating;
-	local int usealt;
-
-	if (Inventory == None)
-		return false;
-
-	if (PendingWeapon == None)
-		PendingWeapon = Inventory.RecommendWeapon(rating, usealt);
-
-	if ( PendingWeapon == Weapon )
-		PendingWeapon = None;
-	if ( PendingWeapon == None )
-		return false;
-
-	if ( Weapon == None )
-	{
-		ChangedWeapon();
-		return false;
-	}
-
-	if ( Weapon != PendingWeapon )
-		Weapon.PutDown();
-	return (usealt > 0);
-}
-
-function ClientPutDown(Weapon Current, Weapon Next)
-{
-	if ( Role == ROLE_Authority )
-		return;
-	bNeedActivate = false;
-	if ( (Current != None) && (Current != Next) )
-		Current.ClientPutDown(Next);
-	else if ( Weapon != None )
-	{
-		if ( Weapon != Next )
-			Weapon.ClientPutDown(Next);
-		else
-		{
-			bNeedActivate = false;
-			ClientPending = None;
-			if ( Weapon.IsInState('ClientDown') || !Weapon.IsAnimating() )
-			{
-				Weapon.GotoState('');
-				Weapon.TweenToStill();
-			}
-		}
-	}
 }
 
 exec function Say(string Msg) {
