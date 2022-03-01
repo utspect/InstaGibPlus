@@ -48,7 +48,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Build IG+
-        run: InstaGibPlus9/build.bat
+        run: InstaGibPlus9/build.bat silent noint
 
       - name: Save UCC.log
         if: failure()
