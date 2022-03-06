@@ -176,7 +176,7 @@ simulated function DrawStatus(Canvas Canvas)
 		Canvas.DrawColor = GoldColor;
 	else
 		Canvas.DrawColor = WhiteColor;
-	if (PawnOwner.IsA('PlayerPawn') == false || PlayerPawn(PawnOwner).Player.IsA('ViewPort') == false) {
+	if (PawnOwner.IsA('PlayerPawn') == false || (PlayerPawn(PawnOwner).Player != None && PlayerPawn(PawnOwner).Player.IsA('ViewPort') == false)) {
 		if (PawnOwner.PlayerReplicationInfo.IsA('bbPlayerReplicationInfo'))
 			ArmorAmount = bbPlayerReplicationInfo(PawnOwner.PlayerReplicationInfo).Armor;
 	}
