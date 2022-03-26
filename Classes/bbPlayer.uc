@@ -6676,6 +6676,11 @@ function IGPlus_ApplyWarpFix(PlayerReplicationInfo PRI) {
 
 	P = bbPlayer(PRI.Owner);
 
+	if (Level.Pauser != "") {
+		P.IGPlus_WarpFixClientData.TimeStamp = Level.TimeSeconds;
+		return;
+	}
+
 	if (P.IGPlus_WarpFixData.Counter != P.IGPlus_WarpFixClientData.Last.Counter) {
 		P.IGPlus_WarpFixClientData.Last = P.IGPlus_WarpFixData;
 		P.IGPlus_WarpFixClientData.TimeStamp = Level.TimeSeconds;
@@ -6724,6 +6729,10 @@ event PreRender( canvas zzCanvas )
 
 		IGPlus_OpenSettingsMenu();
 	}
+
+	// Tick does not get called when the game is paused, so this is here to
+	// ensure players are visible during pauses
+	IGPlus_LocationOffsetFix_AfterAll(0);
 }
 
 simulated function RenderFlagSprite(Canvas C, IGPlus_FlagSprite S, vector Where) {
@@ -6825,6 +6834,7 @@ simulated function vector IGPlus_CurrentLocation() {
 simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	local float ExtrapolationTime;
 	local bool bReplicatedLocation;
+
 	if (IGPlus_LocationOffsetFix_Moved == false)
 		return;
 
@@ -6888,6 +6898,26 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	}
 }
 
+function IGPlus_LocationOffsetFix_AfterAll(float DeltaTime) {
+	local int i;
+	local PlayerReplicationInfo PRI;
+	local bbPlayer P;
+
+	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
+		for (i = 0; i < arraycount(GameReplicationInfo.PRIArray); ++i) {
+			PRI = GameReplicationInfo.PRIArray[i];
+			if (PRI == none) break;
+			P = bbPlayer(PRI.Owner);
+			if (P == none) continue;
+			if (P.Role != ROLE_SimulatedProxy) continue;
+
+			P.IGPlus_LocationOffsetFix_After(DeltaTime);
+		}
+	}
+}
+
+// This event is only executed on Pawns with Role=ROLE_SimulatedProxy
+// PlayerTick is used if Role=ROLE_AutonomousProxy or ROLE_Authority
 simulated event Tick(float DeltaTime) {
 	super.Tick(DeltaTime);
 
@@ -7016,6 +7046,9 @@ function IGPlus_LocationOffsetFix_TickBefore() {
 	local bbPlayer P;
 
 	if (Settings.bEnableLocationOffsetFix == false)
+		return;
+
+	if (Level.Pauser != "")
 		return;
 
 	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
