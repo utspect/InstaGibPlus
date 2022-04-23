@@ -30,7 +30,6 @@ Object=(Name=InstaGibPlus9.ST_ut_biorifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_Translocator,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_WildcardsWeapons,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.NN_SniperArenaRifle,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus9.ST_DummyWeapon,Class=Class,MetaClass=Engine.Weapon)
 
 [IGPlus_SettingsContent]
 MoreInformationText="Right-click on settings to get more information"
