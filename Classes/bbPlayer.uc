@@ -1113,6 +1113,9 @@ function bool IGPlus_DetermineDualButtonSwitchSetting() {
 	local bool Result;
 	
 	T = Spawn(class'Translocator');
+	if (T == none)
+		return true;
+
 	T.RemoteRole = ROLE_None;
 	T.bHidden = true;
 
