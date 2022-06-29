@@ -9028,7 +9028,7 @@ defaultproperties
 	IGPlus_ZoomToggle_SensitivityFactorX=1.0
 	IGPlus_ZoomToggle_SensitivityFactorY=1.0
 
-	LocalExtrapolationOwnPingFactor=0.25
+	LocalExtrapolationOwnPingFactor=0.0
 	LocalExtrapolationOtherPingFactor=0.0
 
 	IGPlus_EnableDualButtonSwitch=True
