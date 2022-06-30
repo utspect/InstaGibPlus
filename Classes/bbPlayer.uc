@@ -1399,7 +1399,7 @@ event ClientMessage(coerce string zzS, optional Name zzType, optional bool zzbBe
 	zzPrevClientMessage = zzS;
 	Super.ClientMessage(zzS, zzType, zzbBeep);
 	zzPrevClientMessage = "";
-	if (Settings.bLogClientMessages) {
+	if (Settings != none && Settings.bLogClientMessages) {
 		if (zzType == 'IGPlusDebug') {
 			Log(zzS, zzType);
 		} else {
