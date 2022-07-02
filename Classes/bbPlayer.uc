@@ -7060,6 +7060,7 @@ function IGPlus_LocationOffsetFix_TickBefore() {
 			if (PRI == none) break;
 			P = bbPlayer(PRI.Owner);
 			if (P == none) continue;
+			if (P.bDeleteMe) continue;
 			if (P.Role != ROLE_SimulatedProxy) continue;
 
 			P.IGPlus_LocationOffsetFix_Before();
