@@ -3276,9 +3276,6 @@ function xxNN_Fire( float TimeStamp, int ProjIndex, vector ClientLoc, vector Cli
 	if (!bNewNet || !xxWeaponIsNewNet() || Role < ROLE_Authority)
 		return;
 
-	if (IsClientLocationPlausible(ClientLoc, TimeStamp) == false)
-		return;
-
 	if (TimeStamp <= LastFireTimeStamp)
 		return;
 	LastFireTimeStamp = TimeStamp;
@@ -3356,9 +3353,6 @@ exec function AltFire( optional float F )
 function xxNN_AltFire( float TimeStamp, int ProjIndex, vector ClientLoc, vector ClientVel, rotator ViewRot, optional actor HitActor, optional vector HitLoc, optional vector HitDiff, optional bool bSpecial, optional int ClientFRVI, optional float ClientAccuracy )
 {
 	if (!bNewNet || !xxWeaponIsNewNet(true) || Role < ROLE_Authority)
-		return;
-
-	if (IsClientLocationPlausible(ClientLoc, TimeStamp) == false)
 		return;
 
 	if (TimeStamp <= LastAltFireTimeStamp)
