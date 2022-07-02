@@ -12,4 +12,6 @@ function Save(bbPlayer P) {
 	Loc = P.Location;
 	Vel = P.Velocity;
 	Acc = P.Acceleration;
+	if (P.Base != none)
+		Vel += P.Base.Velocity;
 }
