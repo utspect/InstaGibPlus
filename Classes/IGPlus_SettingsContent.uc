@@ -470,11 +470,11 @@ function IGPlus_EditControl CreateEditResizable(
 	switch(ECT) {
 		case ECT_Text:
 			Edit.SetNumericOnly(false);
-			Edit.SetNumericOnly(false);
+			Edit.SetNumericFloat(false);
 			break;
 		case ECT_Integer:
 			Edit.SetNumericOnly(true);
-			Edit.SetNumericOnly(false);
+			Edit.SetNumericFloat(false);
 			break;
 		case ECT_Real:
 			Edit.SetNumericOnly(true);
