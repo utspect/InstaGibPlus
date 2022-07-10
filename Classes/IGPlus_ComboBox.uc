@@ -62,3 +62,9 @@ function RClick(float X, float Y)
 	W = MessageBox(Text, HelpText, MB_OK, MR_OK);
 	W.bLeaveOnscreen = true;
 }
+
+defaultproperties {
+	EditBoxMinWidth=0
+	EditBoxMaxWidth=65535
+	EditBoxWidthFraction=0.5
+}

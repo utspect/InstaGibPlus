@@ -363,6 +363,19 @@ var localized string MoreInformationText;
 	var localized string HitMarkerTeamColorBText;
 	var localized string HitMarkerTeamColorBHelp;
 
+// Crosshair Factory
+	var UWindowLabelControl Lbl_CrosshairFactory;
+	var localized string CrosshairFactoryText;
+
+	var UWindowCheckbox Chk_UseCrosshairFactory;
+	var localized string UseCrosshairFactoryText;
+	var localized string UseCrosshairFactoryHelp;
+
+	var IGPlus_Button Btn_CrosshairSettings;
+	var localized string CrosshairSettingsText;
+
+	var IGPlus_CrosshairSettingsDialog Wnd_CrosshairSettingsDialog;
+
 var float PaddingX;
 var float PaddingY;
 var float LineSpacing;
@@ -602,6 +615,24 @@ function IGPlus_ScreenLocationControl CreateScreenLocation(
 	return Sloc;
 }
 
+function IGPlus_Button CreateButton(
+	string T,
+	optional string HT
+) {
+	local IGPlus_Button Btn;
+
+	Btn = IGPlus_Button(CreateControl(class'IGPlus_Button', PaddingX, ControlOffset, 200, 1));
+	Btn.SetText(T);
+	Btn.SetHelpText(HT);
+	Btn.Align = TA_Left;
+	ControlOffset += LineSpacing;
+
+	InsertControl(Btn);
+
+	return Btn;
+
+}
+
 function SetUpForcedModelComboBox(IGPlus_ComboBox Cmb) {
 	Cmb.AddItem(ForcedModelDefault);
 	Cmb.AddItem(ForcedModelAphex);
@@ -710,6 +741,21 @@ function SaveHitSounds() {
 		Settings.sHitSound[i++] = Item.Value;
 		Item = UWindowComboListItem(Item.Next);
 	}
+}
+
+function ShowCrosshairFactoryDialog() {
+	if (Wnd_CrosshairSettingsDialog == none) {
+		Wnd_CrosshairSettingsDialog = IGPlus_CrosshairSettingsDialog(Root.CreateWindow(class'IGPlus_CrosshairSettingsDialog', 0, 0, 0, 0, none, false, 'CrosshairSettingsDialog'));
+
+		if (Wnd_CrosshairSettingsDialog == none) {
+			GetPlayerOwner().ClientMessage("Failed to create Crosshair Factory window (Could not create Dialog)");
+			return;
+		}
+	}
+
+	Wnd_CrosshairSettingsDialog.bLeaveOnscreen = true;
+	Wnd_CrosshairSettingsDialog.ShowWindow();
+	Wnd_CrosshairSettingsDialog.Load();
 }
 
 function Created() {
@@ -832,6 +878,10 @@ function Created() {
 	HSld_HitMarkerTeamColorG = CreateSlider(0, 255, 1, HitMarkerTeamColorGText, HitMarkerTeamColorGHelp, 150);
 	HSld_HitMarkerTeamColorB = CreateSlider(0, 255, 1, HitMarkerTeamColorBText, HitMarkerTeamColorBHelp, 150);
 
+	Lbl_CrosshairFactory = CreateSeparator(CrosshairFactoryText);
+	Chk_UseCrosshairFactory = CreateCheckbox(UseCrosshairFactoryText, UseCrosshairFactoryHelp);
+	Btn_CrosshairSettings = CreateButton(CrosshairSettingsText);
+
 	ControlOffset += PaddingY-4;
 
 	Load();
@@ -870,6 +920,9 @@ function Notify(UWindowDialogControl C, byte E) {
 
 	if (E == DE_Change && (C == Cmb_SelectedHitSound || C == Cmb_SelectedTeamHitSound))
 		UpdateHitSoundComboBox(UWindowComboControl(C));
+
+	if (E == DE_Click && C == Btn_CrosshairSettings)
+		ShowCrosshairFactoryDialog();
 }
 
 function Load() {
@@ -962,6 +1015,8 @@ function Load() {
 	HSld_HitMarkerTeamColorR.SetValue(Settings.HitMarkerTeamColor.R);
 	HSld_HitMarkerTeamColorG.SetValue(Settings.HitMarkerTeamColor.G);
 	HSld_HitMarkerTeamColorB.SetValue(Settings.HitMarkerTeamColor.B);
+
+	Chk_UseCrosshairFactory.bChecked = Settings.bUseCrosshairFactory;
 
 	bLoadSucceeded = true;
 }
@@ -1060,6 +1115,8 @@ function Save() {
 	Settings.HitMarkerTeamColor.R = HSld_HitMarkerTeamColorR.GetValue();
 	Settings.HitMarkerTeamColor.G = HSld_HitMarkerTeamColorG.GetValue();
 	Settings.HitMarkerTeamColor.B = HSld_HitMarkerTeamColorB.GetValue();
+
+	Settings.bUseCrosshairFactory = Chk_UseCrosshairFactory.bChecked;
 
 	Settings.SaveConfig();
 }
@@ -1351,6 +1408,13 @@ defaultproperties
 
 		HitMarkerTeamColorBText="Color (Team) - Blue"
 		HitMarkerTeamColorBHelp="Blue color component of hit markers for team-mates"
+
+	CrosshairFactoryText="Crosshair Factory"
+
+		UseCrosshairFactoryText="Use Crosshair Factory"
+		UseCrosshairFactoryHelp="If checked, replace standard crosshair with custom crosshair"
+
+		CrosshairSettingsText="Crosshair Settings"
 
 	PaddingX=20
 	PaddingY=20

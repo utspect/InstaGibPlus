@@ -127,21 +127,9 @@ simulated function AppendLayer(CrosshairLayer L) {
 	}
 }
 
-simulated function CheckConfig() {
+simulated function CreateCrosshairLayers() {
 	local int i;
-	local string PackageName;
 	local CrosshairLayer L;
-
-	PackageName = class'StringUtils'.static.GetPackage();
-
-	for (i = 0; i < arraycount(sHitSound); i++) {
-		if (Left(sHitSound[i], 12) ~= "InstaGibPlus") {
-			sHitSound[i] = PackageName$Mid(sHitSound[i], InStr(sHitSound[i], "."));
-		}
-		if (sHitSound[i] == "" && sHitSound[i] != default.sHitSound[i]) {
-			sHitSound[i] = default.sHitSound[i];
-		}
-	}
 
 	for (i = 0; i < arraycount(CrosshairLayers); i++) {
 		if (CrosshairLayers[i].bUse) {
@@ -158,6 +146,24 @@ simulated function CheckConfig() {
 			AppendLayer(L);
 		}
 	}
+}
+
+simulated function CheckConfig() {
+	local int i;
+	local string PackageName;
+
+	PackageName = class'StringUtils'.static.GetPackage();
+
+	for (i = 0; i < arraycount(sHitSound); i++) {
+		if (Left(sHitSound[i], 12) ~= "InstaGibPlus") {
+			sHitSound[i] = PackageName$Mid(sHitSound[i], InStr(sHitSound[i], "."));
+		}
+		if (sHitSound[i] == "" && sHitSound[i] != default.sHitSound[i]) {
+			sHitSound[i] = default.sHitSound[i];
+		}
+	}
+
+	CreateCrosshairLayers();
 
 	if (FPSCounterSmoothingStrength <= 0)
 		FPSCounterSmoothingStrength = 1;
@@ -194,11 +200,11 @@ simulated function string DumpHitSounds() {
 	return Result;
 }
 
-simulated function string DumpColor(out Color C) {
+static function string DumpColor(out Color C) {
 	return "(R="$C.R$",G="$C.G$",B="$C.B$",A="$C.A$")";
 }
 
-simulated function string DumpCrosshairLayer(out CrosshairLayerDescr L) {
+static function string DumpCrosshairLayer(out CrosshairLayerDescr L) {
 	return "(Texture="$L.Texture$",OffsetX="$L.OffsetX$",OffsetY="$L.OffsetY$",ScaleX="$L.ScaleX$",ScaleY="$L.ScaleY$",Color="$DumpColor(L.Color)$",Style="$L.Style$",bSmooth="$L.bSmooth$",bUse="$L.bUse$")";
 }
 
@@ -214,7 +220,47 @@ simulated function string DumpCrosshairLayers() {
 	return Result;
 }
 
-simulated function EHitSoundSource IntToHitSoundSource(int A) {
+simulated function CrosshairLayerDescr GetCrosshairLayer(int i) {
+	return CrosshairLayers[i];
+}
+
+simulated function SetCrosshairLayerTexture(int i, coerce string T) {
+	CrosshairLayers[i].Texture = T;
+}
+
+simulated function SetCrosshairLayerOffsetX(int i, int O) {
+	CrosshairLayers[i].OffsetX = O;
+}
+
+simulated function SetCrosshairLayerOffsetY(int i, int O) {
+	CrosshairLayers[i].OffsetY = O;
+}
+
+simulated function SetCrosshairLayerScaleX(int i, float S) {
+	CrosshairLayers[i].ScaleX = S;
+}
+
+simulated function SetCrosshairLayerScaleY(int i, float S) {
+	CrosshairLayers[i].ScaleY = S;
+}
+
+simulated function SetCrosshairLayerColor(int i, color C) {
+	CrosshairLayers[i].Color = C;
+}
+
+simulated function SetCrosshairLayerStyle(int i, int S) {
+	CrosshairLayers[i].Style = S;
+}
+
+simulated function SetCrosshairLayerSmooth(int i, bool S) {
+	CrosshairLayers[i].bSmooth = S;
+}
+
+simulated function SetCrosshairLayerUse(int i, bool U) {
+	CrosshairLayers[i].bUse = U;
+}
+
+static function EHitSoundSource IntToHitSoundSource(int A) {
 	switch(A) {
 		case 0: return HSSRC_Server;
 		case 1: return HSSRC_Client;
@@ -222,7 +268,7 @@ simulated function EHitSoundSource IntToHitSoundSource(int A) {
 	return HSSRC_Server;
 }
 
-simulated function EHitMarkerSource IntToHitMarkerSource(int A) {
+static function EHitMarkerSource IntToHitMarkerSource(int A) {
 	switch(A) {
 		case 0: return HMSRC_Server;
 		case 1: return HMSRC_Client;
@@ -230,7 +276,7 @@ simulated function EHitMarkerSource IntToHitMarkerSource(int A) {
 	return HMSRC_Server;
 }
 
-simulated function EHitMarkerColorMode IntToHitMarkerColorMode(int A) {
+static function EHitMarkerColorMode IntToHitMarkerColorMode(int A) {
 	switch(A) {
 		case 0: return HMCM_FriendOrFoe;
 		case 1: return HMCM_TeamColor;

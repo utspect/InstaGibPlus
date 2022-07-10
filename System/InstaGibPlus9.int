@@ -216,6 +216,29 @@ HitMarkerTeamColorGText="Color (Team) - Green"
 HitMarkerTeamColorGHelp="Green color component of hit markers for team-mates"
 HitMarkerTeamColorBText="Color (Team) - Blue"
 HitMarkerTeamColorBHelp="Blue color component of hit markers for team-mates"
+CrosshairFactoryText="Crosshair Factory"
+UseCrosshairFactoryText="Use Crosshair Factory"
+UseCrosshairFactoryHelp="If checked, replace standard crosshair with custom crosshair"
+CrosshairSettingsText="Crosshair Settings"
+
+[IGPlus_CrosshairSettingsContent]
+ScaleText="Scale"
+OffsetText="Offset"
+TextureText="Texture"
+OffsetXText="Offset X"
+OffsetYText="Offset Y"
+ScaleXText="Scale X"
+ScaleYText="Scale Y"
+ColorRedText="Red"
+ColorGreenText="Green"
+ColorBlueText="Blue"
+ColorAlphaText="Alpha"
+StyleText="Style"
+StyleNormal="Normal"
+StyleMasked="Masked"
+StyleTranslucent="Translucent"
+StyleModulated="Modulated"
+SmoothText="Smooth"
 
 [NN_ASMD]
 WeaponDescription="Classification: Energy RiflenPrimary Fire: Lightning-Fast Burst of focused energy.nSecondary Fire: Unstable Energy projectile, expands radially.nTechniques: Hitting the secondary fire energy projectiles with the regular fire's energy will cause an immensely powerful explosion."
@@ -233,6 +256,9 @@ MenuName="Boss"
 
 [IGPlus_SettingsDialog]
 WindowTitle="IG+ Settings"
+
+[IGPlus_CrosshairSettingsDialog]
+WindowTitle="IG+ Crosshair Factory Settings"
 
 [IGPlus_SettingsScroll]
 SaveButtonText="Save"
