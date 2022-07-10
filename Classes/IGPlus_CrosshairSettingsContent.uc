@@ -586,6 +586,13 @@ function Paint(Canvas C, float X, float Y) {
 	C.DrawColor.A = 255;
 	DrawStretchedTexture(C, 0, 0, 256, 256, Texture'WhiteTexture');
 
+	C.DrawColor.R = C.DrawColor.R ^ 0xFF;
+	C.DrawColor.G = C.DrawColor.G ^ 0xFF;
+	C.DrawColor.B = C.DrawColor.B ^ 0xFF;
+	C.DrawColor.A = 255;
+	DrawStretchedTexture(C, 127, 0, 2, 256, Texture'CrossHairBase');
+	DrawStretchedTexture(C, 0, 127, 256, 2, Texture'CrossHairBase');
+
 	DrawCrosshair(C);
 
 	class'CanvasUtils'.static.RestoreCanvas(C);
