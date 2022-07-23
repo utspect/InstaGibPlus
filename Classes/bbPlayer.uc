@@ -6699,6 +6699,10 @@ event PreRender( canvas zzCanvas )
 
 	Super.PreRender(zzCanvas);
 
+	// Tick does not get called when the game is paused, so this is here to
+	// ensure players are visible during pauses
+	IGPlus_LocationOffsetFix_AfterAll(0);
+
 	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
 		for (i = 0; i < arraycount(GameReplicationInfo.PRIArray); ++i) {
 			zzPRI = GameReplicationInfo.PRIArray[i];
@@ -6726,10 +6730,6 @@ event PreRender( canvas zzCanvas )
 
 		IGPlus_OpenSettingsMenu();
 	}
-
-	// Tick does not get called when the game is paused, so this is here to
-	// ensure players are visible during pauses
-	IGPlus_LocationOffsetFix_AfterAll(0);
 }
 
 simulated function RenderFlagSprite(Canvas C, IGPlus_FlagSprite S, vector Where) {
