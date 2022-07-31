@@ -1091,6 +1091,10 @@ function Save() {
 	Settings.HitSoundTeamVolume = float(Edit_HitSoundTeamVolume.GetValue());
 	Settings.SelectedTeamHitSound = Cmb_SelectedTeamHitSound.GetSelectedIndex2();
 
+	// force reloading of hit sounds in case the selected ones changed
+	class'bbPlayerStatics'.default.PlayedHitSound = none;
+	class'bbPlayerStatics'.default.PlayedTeamHitSound = none;
+
 	SaveHitSounds();
 
 	Settings.bEnableKillCam = Chk_EnableKillCam.bChecked;
