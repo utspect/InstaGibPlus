@@ -6874,10 +6874,9 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 		MoveSmooth(Velocity*DeltaTime);
 	} else {
 		IGPlus_LocationOffsetFix_ExtrapolationOffset = Location;
-		ExtrapolationTime = 0;
-		ExtrapolationTime += GetLocalPlayer().PlayerReplicationInfo.Ping * 0.001 * default.LocalExtrapolationOwnPingFactor;
+		ExtrapolationTime = GetLocalPlayer().PlayerReplicationInfo.Ping * 0.001 * LocalExtrapolationOwnPingFactor;
 		if (PlayerReplicationInfo != none)
-			ExtrapolationTime += PlayerReplicationInfo.Ping * 0.001 * default.LocalExtrapolationOtherPingFactor;
+			ExtrapolationTime += PlayerReplicationInfo.Ping * 0.001 * LocalExtrapolationOtherPingFactor;
 
 		if (ExtrapolationTime > 0) {
 			MoveSmooth(Velocity * ExtrapolationTime);
