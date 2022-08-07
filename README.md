@@ -90,18 +90,19 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 62. [KillFeedY](#killfeedy)
 63. [KillFeedSpeed](#killfeedspeed)
 64. [KillFeedScale](#killfeedscale)
-65. [bEnableHitMarker](#benablehitmarker)
-66. [bEnableTeamHitMarker](#benableteamhitmarker)
-67. [HitMarkerColorMode](#hitmarkercolormode)
-68. [HitMarkerColor](#hitmarkercolor)
-69. [HitMarkerTeamColor](#hitmarkerteamcolor)
-70. [HitMarkerSize](#hitmarkersize)
-71. [HitMarkerOffset](#hitmarkeroffset)
-72. [HitMarkerDuration](#hitmarkerduration)
-73. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-74. [HitMarkerSource](#hitmarkersource)
-75. [bUseCrosshairFactory](#busecrosshairfactory)
-76. [CrosshairLayers](#crosshairlayers)
+65. [FraggerScopeChoice](#fraggerscopechoice)
+66. [bEnableHitMarker](#benablehitmarker)
+67. [bEnableTeamHitMarker](#benableteamhitmarker)
+68. [HitMarkerColorMode](#hitmarkercolormode)
+69. [HitMarkerColor](#hitmarkercolor)
+70. [HitMarkerTeamColor](#hitmarkerteamcolor)
+71. [HitMarkerSize](#hitmarkersize)
+72. [HitMarkerOffset](#hitmarkeroffset)
+73. [HitMarkerDuration](#hitmarkerduration)
+74. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+75. [HitMarkerSource](#hitmarkersource)
+76. [bUseCrosshairFactory](#busecrosshairfactory)
+77. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -532,6 +533,16 @@ Increase to make lines disappear sooner. Decrease to make lines disappear later.
 **Default: 1.0**  
 
 Scales the size of individual lines of the KillFeed.
+
+## FraggerScopeChoice
+**Type: EFraggerScopeChoice**  
+**Default: `FSC_Moveable`**  
+
+Which scope the FraggerRifle uses when zoming.
+
+* `FSC_None` ➜ Keeps the default crosshair
+* `FSC_Static` ➜ Few moving parts when zooming in
+* `FSC_Moveable` ➜ More moving parts when zooming in
 
 ## bEnableHitMarker
 **Type: bool**  

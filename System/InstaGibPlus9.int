@@ -1,35 +1,43 @@
 [Public]
-Object=(Name=InstaGibPlus9.ST_Mutator,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 ST_Mutator,InstaGibPlus9 ST_Mutator")
+Object=(Name=InstaGibPlus9.ST_Mutator,Class=Class,MetaClass=Engine.Mutator,Description="IG+9 ST_Mutator,InstaGibPlus9 ST_Mutator")
 Object=(Name=InstaGibPlus9.PureStatMutator,Class=Class,MetaClass=Engine.Mutator,Description="PureStatMutator,<Insert description here>")
-Object=(Name=InstaGibPlus9.UTPure,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 UTPure,InstaGibPlus9 UTPure")
-Object=(Name=InstaGibPlus9.MutKillFeed,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 Kill Feed,InstaGibPlus9 Kill Feed Mutator")
+Object=(Name=InstaGibPlus9.UTPure,Class=Class,MetaClass=Engine.Mutator,Description="IG+9 UTPure,InstaGibPlus9 UTPure")
+Object=(Name=InstaGibPlus9.MutKillFeed,Class=Class,MetaClass=Engine.Mutator,Description="IG+9 Kill Feed,InstaGibPlus9 Kill Feed Mutator")
 Object=(Name=InstaGibPlus9.PureClickBoard,Class=Class,MetaClass=Engine.Mutator,Description="PureClickBoard,<Insert description here>")
+Object=(Name=InstaGibPlus9.MutFraggerArena,Class=Class,MetaClass=Engine.Mutator,Description="Fragger Arena,Sniper+Translocator camping combat")
 Object=(Name=InstaGibPlus9.NewNetArena,Class=Class,MetaClass=Engine.Mutator,Description="NewNetArena,<Insert description here>")
-Object=(Name=InstaGibPlus9.NewNetIG,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 NewNetIG,InstaGibPlus9 NewNetIG")
+Object=(Name=InstaGibPlus9.NewNetIG,Class=Class,MetaClass=Engine.Mutator,Description="IG+9 NewNetIG,InstaGibPlus9 NewNetIG")
 Object=(Name=InstaGibPlus9.NNAnnouncer,Class=Class,MetaClass=Engine.Mutator,Description="NNAnnouncer,<Insert description here>")
+Object=(Name=InstaGibPlus9.NewNetSA,Class=Class,MetaClass=Engine.Mutator,Description="IG+9 NewNetSA,InstaGibPlus9 NewNetSA")
 Object=(Name=InstaGibPlus9.DisableNewNet,Class=Class,MetaClass=Engine.Mutator,Description="DisableNewNet,<Insert description here>")
 Object=(Name=InstaGibPlus9.DisableWeapons,Class=Class,MetaClass=Engine.Mutator,Description="DisableWeapons,<Insert description here>")
-Object=(Name=InstaGibPlus9.NewNetSA,Class=Class,MetaClass=Engine.Mutator,Description="IG+8 NewNetSA,InstaGibPlus9 NewNetSA")
+Object=(Name=InstaGibPlus9.NN_FraggerRifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus9.NN_SniperRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.NN_ShockRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_sgShockRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.NN_ASMD,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.NN_SuperShockRifle,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus9.NN_SniperRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_ImpactHammer,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_enforcer,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_UT_FlakCannon,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_SniperRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_WarheadLauncher,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus9.ST_ut_biorifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus9.ST_ShockRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_minigun2,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus9.ST_SuperShockRifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus9.ST_UT_Eightball,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_ripper,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_PulseGun,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus9.ST_ShockRifle,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus9.ST_UT_Eightball,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus9.ST_ut_biorifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus9.ST_SuperShockRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_Translocator,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus9.ST_FraggerTranslocator,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.ST_WildcardsWeapons,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus9.NN_SniperArenaRifle,Class=Class,MetaClass=Engine.Weapon)
+
+[NN_FraggerRifle]
+WeaponDescription="Fragger Rifle"
+DeathMessage="%k Killed %o with the FraggerRifle"
+PickupMessage="you got the Fragger Rifle"
 
 [IGPlus_SettingsContent]
 MoreInformationText="Right-click on settings to get more information"
@@ -263,6 +271,24 @@ WindowTitle="IG+ Crosshair Factory Settings"
 [IGPlus_SettingsScroll]
 SaveButtonText="Save"
 SaveButtonToolTip="Saves the current settings to InstaGibPlus.ini"
+
+[ST_FraggerTranslocator]
+WeaponDescription="Classification:FraggerXLoc"
+DeathMessage="%k just got telefragged %o"
+PickupMessage="You got the Fragger Translocator."
+ItemName="FraggerXLoc"
+
+[LlamaMessage]
+LlamaMessages[0]="Houston, we have a Llama."
+LlamaMessages[1]="Telefragging is not allowed here."
+LlamaMessages[2]="%k tried to telefrag %o, but Failed!"
+LlamaMessages[3]="%o is laughing at you %k"
+LlamaMessages[4]="%k  telefragger wannabe"
+LlamaMessages[5]="FAIL %k"
+LlamaMessages[6]="%k it was good, but its not quite right!"
+LlamaMessages[7]="Anyone else what to telefrag?"
+LlamaMessages[8]="%o Was Very Happy that %k's is a bit stupid."
+LlamaMessages[9]="%k went BOOM!"
 
 [MMultiKillMessage]
 DoubleKillString="Double Kill!"

@@ -24,34 +24,32 @@ enum EZoomState {
 };
 var EZoomState ZoomState;
 
+var Object WeaponSettingsHelper;
 var WeaponSettings WeaponSettings;
 
 replication
 {
-	unreliable if (bNetInitial && Role == ROLE_Authority)
+	unreliable if (Role == ROLE_Authority)
 		BodyDamage,
 		HeadDamage,
 		ReloadTime;
 }
 
 function PostBeginPlay() {
-	local Mutator A;
-	local string S;
-	super.PostBeginPlay();
+	super(SniperRifle).PostBeginPlay();
 
-	ForEach AllActors(class'Mutator', A) {
-		if (class'StringUtils'.static.PackageOfObject(A) == class'StringUtils'.static.GetPackage()) {
-			S = A.GetPropertyText("WeaponSettings");
-			if (S != "") {
-				SetPropertyText("WeaponSettings", S);
-				break;
-			}
-		}
+	WeaponSettingsHelper = new(none, 'InstaGibPlus') class'Object';
+	WeaponSettings = new(WeaponSettingsHelper, 'WeaponSettingsNewNet') class'WeaponSettings';
+
+	if (WeaponSettings != none) {
+		BodyDamage = WeaponSettings.SniperDamage;
+		HeadDamage = WeaponSettings.SniperHeadshotDamage;
+		ReloadTime = WeaponSettings.SniperReloadTime;
+	} else {
+		BodyDamage = 45;
+		HeadDamage = 100;
+		ReloadTime = 0.6666666;
 	}
-
-	BodyDamage = WeaponSettings.SniperDamage;
-	HeadDamage = WeaponSettings.SniperHeadshotDamage;
-	ReloadTime = WeaponSettings.SniperReloadTime;
 }
 
 simulated function RenderOverlays(Canvas Canvas)
@@ -252,7 +250,7 @@ state ClientFiring
 	}
 }
 
-simulated function NN_TraceFire()
+simulated function NN_TraceFire(optional float Accuracy)
 {
 	local vector HitLocation, HitDiff, HitNormal, StartTrace, EndTrace, X,Y,Z;
 	local actor Other;
@@ -270,30 +268,23 @@ simulated function NN_TraceFire()
 
 	GetAxes(GV,X,Y,Z);
 	StartTrace = Owner.Location + bbP.EyeHeight * vect(0,0,1);
-	EndTrace = StartTrace + (100000 * vector(GV));
+	EndTrace = StartTrace + (100000 * X) + Accuracy * (FRand() - 0.5)* Y * 1000 + Accuracy * (FRand() - 0.5) * Z * 1000;
 
 	Other = bbP.NN_TraceShot(HitLocation,HitNormal,EndTrace,StartTrace,bbP);
 	if (Other.IsA('Pawn'))
 		HitDiff = HitLocation - Other.Location;
 
-	bHeadshot = NN_ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z,yMod);
+	bHeadshot = NN_ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z);
 	bbP.xxNN_Fire(Level.TimeSeconds, -1, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, bHeadshot);
 }
 
-simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z, float yMod)
+simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
-	local UT_Shellcase s;
-
 	if (Owner.IsA('Bot'))
 		return false;
 
-	s = Spawn(class'UT_ShellCase',, '', Owner.Location + CDO + 30 * X + (2.8 * yMod+5.0) * Y - Z * 1);
-	if ( s != None )
-	{
-		s.DrawScale = 2.0;
-		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
-		s.RemoteRole = ROLE_None;
-	}
+	NN_DoShellCase(PlayerPawn(Owner), Owner.Location + CDO + 30 * X + (2.8 * yMod+5.0) * Y - Z * 1, X, Y, Z);
+
 	if (Other == Level || Other.IsA('Mover'))
 	{
 		Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
@@ -408,6 +399,18 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	}
 }
 
+simulated function NN_DoShellCase(PlayerPawn Pwner, vector HitLoc, Vector X, Vector Y, Vector Z) {
+	local UT_ShellCase s;
+
+	s = Spawn(class'UT_ShellCase', Pwner,, HitLoc);
+	if ( s != None )
+	{
+		s.DrawScale = 2.0;
+		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
+		s.RemoteRole = ROLE_None;
+	}
+}
+
 simulated function DoShellCase(PlayerPawn Pwner, vector HitLoc, Vector X, Vector Y, Vector Z)
 {
 	local UT_Shellcase s;
@@ -448,7 +451,7 @@ function TraceFire( float Accuracy )
 	StartTrace = Owner.Location + bbP.Eyeheight * vect(0,0,1);
 	AdjustedAim = bbP.AdjustAim(1000000, StartTrace, 2*AimError, False, False);
 	X = vector(AdjustedAim);
-	EndTrace = StartTrace + 100000 * X;
+	EndTrace = StartTrace + 100000 * X + Accuracy * (FRand() - 0.5)* Y * 1000 + Accuracy * (FRand() - 0.5) * Z * 1000;
 
 	if (bbP.zzNN_HitActor != None && VSize(bbP.zzNN_HitDiff) > bbP.zzNN_HitActor.CollisionRadius + bbP.zzNN_HitActor.CollisionHeight)
 		bbP.zzNN_HitDiff = vect(0,0,0);
@@ -456,7 +459,6 @@ function TraceFire( float Accuracy )
 	if (bbP.zzNN_HitActor != None && (bbP.zzNN_HitActor.IsA('Pawn') || bbP.zzNN_HitActor.IsA('Projectile')) && FastTrace(bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff, StartTrace))
 	{
 		NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
-		bbP.TraceShot(HitLocation,HitNormal,NN_HitLoc,StartTrace);
 	}
 	else
 	{

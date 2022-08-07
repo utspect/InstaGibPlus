@@ -44,20 +44,23 @@ function ReturnToPreviousWeapon()
 
 function Translocate()
 {
-	STM.PlayerHit(Pawn(Owner), 2, False);			// 2 = Translocator
+	if (STM != none)
+		STM.PlayerHit(Pawn(Owner), 2, False);			// 2 = Translocator
 	if (Owner.IsA('bbPlayer'))
 		bbPlayer(Owner).IGPlus_BeforeTranslocate();
 	Super.Translocate();
 	if (Owner.IsA('bbPlayer'))
 		bbPlayer(Owner).IGPlus_AfterTranslocate();
-	STM.PlayerClear();
+	if (STM != none)
+		STM.PlayerClear();
 }
 
 function ThrowTarget()
 {
 	local Vector Start, X,Y,Z;
 
-	STM.PlayerFire(Pawn(Owner), 2);		// 2 = Translocator
+	if (STM != none)
+		STM.PlayerFire(Pawn(Owner), 2);		// 2 = Translocator
 
 	if (Level.Game.LocalLog != None)
 		Level.Game.LocalLog.LogSpecialEvent("throw_translocator", Pawn(Owner).PlayerReplicationInfo.PlayerID);
@@ -74,7 +77,7 @@ function ThrowTarget()
 	{
 		bTTargetOut = true;
 		TTarget.Master = self;
-		TTarget.DisruptionThreshold = STM.WeaponSettings.TranslocatorHealth;
+		TTarget.DisruptionThreshold = GetWeaponSettings().TranslocatorHealth;
 		if ( Owner.IsA('Bot') )
 			TTarget.SetCollisionSize(0,0);
 		TTarget.Throw(Pawn(Owner), MaxTossForce, Start);
