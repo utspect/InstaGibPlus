@@ -2062,7 +2062,7 @@ function CorrectTeleporterVelocity() {
 
 		if (Best == none) {
 			if (Level.NetMode == NM_Client) {
-				ClientMessage("Teleporter target could not be determined (bStatic not set to True?)");
+				ClientMessage("Teleporter target could not be determined (bNoDelete not set to True?)");
 			} else {
 				ClientMessage("No teleporter found with tag '"$IGPlus_TPFix_URL$"'");
 			}
