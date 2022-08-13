@@ -488,7 +488,6 @@ defaultproperties {
 
 	PickupViewMesh=LodMesh'PUGroundg'
 	ThirdPersonMesh=LodMesh'PUHandg'
-	PickupSound=Sound'HolyShit'
 	Mesh=LodMesh'PUGroundg'
 	MultiSkins(0)=Texture'AA'
 	MultiSkins(1)=Texture'SR'
