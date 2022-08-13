@@ -98,7 +98,6 @@ simulated function PostRender( canvas Canvas )
     local vector HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
     local actor HitActor;
     local int TC;
-    local pawn PC;
     local string ScopeText;
 
     Super(TournamentWeapon).PostRender(Canvas);
@@ -107,7 +106,7 @@ simulated function PostRender( canvas Canvas )
     if (P == none)
     	return;
 
-    TC = Min(PC.PlayerReplicationInfo.Team, 4);
+    TC = Min(P.PlayerReplicationInfo.Team, 4);
 
     // Calc range
     XLength=255.0;
