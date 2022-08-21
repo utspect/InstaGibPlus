@@ -8997,6 +8997,10 @@ function IGPlus_OpenSettingsMenu() {
 	IGPlus_SettingsMenu.Load();
 }
 
+exec function PrintWeaponState() {
+	if (Weapon != none) ClientMessage(Weapon.Name@Weapon.GetStateName());
+}
+
 defaultproperties
 {
 	bNewNet=True
