@@ -333,7 +333,7 @@ function TraceFire( float Accuracy )
 {
 	local bbPlayer bbP;
 	local actor NN_Other;
-	local vector NN_HitLoc, HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
+	local vector NN_HitLoc, HitNormal, StartTrace, EndTrace, X,Y,Z;
 
 	if (Owner.IsA('Bot'))
 	{
@@ -379,7 +379,6 @@ function TraceFire( float Accuracy )
 	}
 	else
 	{
-		bbP.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
 		NN_HitLoc = bbP.zzNN_HitLoc;
 	}
 	ProcessTraceHit(bbP.zzNN_HitActor, NN_HitLoc, HitNormal, vector(AdjustedAim), Y, Z);
