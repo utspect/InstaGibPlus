@@ -64,8 +64,6 @@ simulated function RenderOverlays(Canvas Canvas)
 	{
 		if (bbP.bFire != 0 && !IsInState('ClientFiring'))
 			ClientFire(1);
-		else if (bbP.bAltFire != 0 && !IsInState('ClientAltFiring'))
-			ClientAltFire(1);
 	}
 }
 
@@ -132,7 +130,8 @@ simulated function bool ClientAltFire( float Value ) {
 		Pawn(Owner).bAltFire = 0;
 		Global.Fire(0);
 	} else {
-		GotoState('Idle');
+		if (Level.NetMode != NM_Client)
+			GotoState('Idle');
 	}
 
 	return true;
@@ -152,22 +151,6 @@ function Fire ( float Value )
 	if (bbP != None && bNewNet && Value < 1)
 		return;
 	Super.Fire(Value);
-}
-
-function AltFire( float Value )
-{
-	local bbPlayer bbP;
-
-	if (Owner.IsA('Bot'))
-	{
-		Super.AltFire(Value);
-		return;
-	}
-
-	bbP = bbPlayer(Owner);
-	if (bbP != None && bNewNet && Value < 1)
-		return;
-	Super.AltFire(Value);
 }
 
 State ClientActive
@@ -245,8 +228,25 @@ state ClientFiring
 		local bbPlayer O;
 		O = bbPlayer(Owner);
 		if (O != none)
-			O.ClientDebugMessage("Sniper AnimEnd"@O.ViewRotation.Yaw@O.ViewRotation.Pitch);
-		super.AnimEnd();
+			O.ClientDebugMessage("Sniper AnimEnd"@O.ViewRotation.Yaw@O.ViewRotation.Pitch@O.bAltFire);
+
+		if ( (Pawn(Owner) == None)
+			|| ((AmmoType != None) && (AmmoType.AmmoAmount <= 0)) )
+		{
+			PlayIdleAnim();
+			GotoState('');
+		}
+		else if ( !bCanClientFire )
+			GotoState('');
+		else if ( Pawn(Owner).bFire != 0 )
+			Global.ClientFire(0);
+		// else if ( Pawn(Owner).bAltFire != 0 ) // SniperRifle has no AltFire
+		// 	Global.ClientAltFire(0);
+		else
+		{
+			PlayIdleAnim();
+			GotoState('');
+		}
 	}
 }
 
@@ -574,6 +574,62 @@ simulated function Tick(float DeltaTime) {
 			break;
 		}
 	}
+}
+
+// NOTE: this entire function was copied from Botpack.TournamentWeapon
+// comments within are IG+ specific and prevent the weapon from getting stuck.
+// Finish a firing sequence
+function Finish()
+{
+	local Pawn PawnOwner;
+	local bool bForce, bForceAlt;
+
+
+	if ( (Pawn(Owner).bFire!=0) && (FRand() < 0.6) )
+		Timer();
+
+	bForce = bForceFire;
+	bForceAlt = bForceAltFire;
+	bForceFire = false;
+	bForceAltFire = false;
+
+	if ( bChangeWeapon )
+	{
+		GotoState('DownWeapon');
+		return;
+	}
+
+	PawnOwner = Pawn(Owner);
+	if ( PawnOwner == None )
+		return;
+	if ( PlayerPawn(Owner) == None )
+	{
+		if ( (AmmoType != None) && (AmmoType.AmmoAmount<=0) )
+		{
+			PawnOwner.StopFiring();
+			PawnOwner.SwitchToBestWeapon();
+			if ( bChangeWeapon )
+				GotoState('DownWeapon');
+		}
+		else if ( (PawnOwner.bFire != 0) && (FRand() < RefireRate) )
+			Global.Fire(0);
+		else if ( (PawnOwner.bAltFire != 0) && (FRand() < AltRefireRate) )
+			Global.AltFire(0);	
+		else 
+		{
+			PawnOwner.StopFiring();
+			GotoState('Idle');
+		}
+		return;
+	}
+	// if ( ((AmmoType != None) && (AmmoType.AmmoAmount<=0)) || (PawnOwner.Weapon != self) )
+	// 	GotoState('Idle');
+	// else if ( (PawnOwner.bFire!=0) || bForce )
+	// 	Global.Fire(0);
+	// else if ( (PawnOwner.bAltFire!=0) || bForceAlt ) // SniperRifle has no AltFire
+	// 	Global.AltFire(0);
+	// else
+		GotoState('Idle');
 }
 
 defaultproperties
