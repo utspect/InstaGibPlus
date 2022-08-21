@@ -456,6 +456,7 @@ replication
 		Hold,
 		IGPlus_ForcedSettingsRetry,
 		IGPlus_ForcedSettingsOK,
+		PrintWeaponState,
 		ShowStats,
 		xxExplodeOther,
 		xxNN_AltFire,
@@ -3257,9 +3258,8 @@ exec function Fire( optional float F )
 		else
 			ClientDebugMessage("Server Fire"@Weapon.Name@ViewRotation);
 	}
-	if (!bNewNet || !xxWeaponIsNewNet()) {
-		Super.Fire(F);
-	} else if (Role < ROLE_Authority && GameReplicationInfo.GameEndedComments == "") {
+
+	if (Role < ROLE_Authority && GameReplicationInfo.GameEndedComments == "" && bNewNet && xxWeaponIsNewNet()) {
 		if (Weapon != none)
 			Weapon.ClientFire(1);
 	} else {
@@ -3339,13 +3339,22 @@ function xxNN_Fire( float TimeStamp, int ProjIndex, vector ClientLoc, vector Cli
 exec function AltFire( optional float F )
 {
 	xxEnableCarcasses();
-	if (!bNewNet || !xxWeaponIsNewNet(true))
+
+	if (Weapon != none) {
+		if (Level.NetMode == NM_Client)
+			ClientDebugMessage("Client AltFire"@Weapon.Name@ViewRotation);
+		else
+			ClientDebugMessage("Server AltFire"@Weapon.Name@ViewRotation);
+	}
+
+	if (Role < ROLE_Authority && GameReplicationInfo.GameEndedComments == "" && bNewNet && xxWeaponIsNewNet(true))
+	{
+		if (Weapon != none)
+			Weapon.ClientAltFire(1);
+	}
+	else
 	{
 		Super.AltFire(F);
-	}
-	else if (Role < ROLE_Authority)
-	{
-		Weapon.ClientAltFire(1);
 	}
 	xxDisableCarcasses();
 }
