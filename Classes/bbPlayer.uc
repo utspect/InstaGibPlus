@@ -7272,12 +7272,16 @@ simulated function xxDrawDebugData(canvas zzC, float zzx, float zzY) {
 	zzC.DrawText("zzbForceUpdate:"@debugClientForceUpdate);
 	zzC.SetPos(zzx, zzY + 240);
 	zzC.DrawText("ForcedUpdates:"@debugNumOfForcedUpdates);
-	zzC.SetPos(zzx, zzY + 260);
-	// empty line
-	zzC.SetPos(zzx, zzY + 280);
-	// empty line
-	zzC.SetPos(zzx, zzY + 300);
-	// empty line
+	if (Weapon != none) {
+		zzC.SetPos(zzx, zzY + 260);
+		zzC.DrawText("Weapon:"@Weapon.Name@"Class:"@Weapon.Class);
+		zzC.SetPos(zzx, zzY + 280);
+		zzC.DrawText("    State:"@Weapon.GetStateName());
+	}
+	if (PendingWeapon != none) {
+		zzC.SetPos(zzx, zzY + 300);
+		zzC.DrawText("PendingWeapon:"@PendingWeapon.Name@"Class:"@PendingWeapon.Class);
+	}
 	zzC.SetPos(zzx, zzY + 320);
 	zzC.DrawText("LastUpdateTime:"@clientLastUpdateTime);
 	zzC.SetPos(zzx, zzY + 340);
