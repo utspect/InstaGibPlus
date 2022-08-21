@@ -323,6 +323,10 @@ var bool IGPlus_LocationOffsetFix_OnGround;
 var bool IGPlus_LocationOffsetFix_FootstepQueued;
 var vector IGPlus_LocationOffsetFix_SafeLocation;
 var Actor IGPlus_LocationOffsetFix_CollisionDummy;
+var vector IGPlus_LocationOffsetFix_ServerLocation;
+var float IGPlus_LocationOffsetFix_ServerLocationTime;
+var bool IGPlus_LocationOffsetFix_DrawServerLocation;
+var Actor IGPlus_LocationOffsetFix_DrawDummy;
 
 var float LocalExtrapolationOwnPingFactor;
 var float LocalExtrapolationOtherPingFactor;
@@ -398,6 +402,11 @@ replication
 
 	unreliable if (Role == ROLE_AutonomousProxy || RemoteRole <= ROLE_SimulatedProxy)
 		bIs469Client;
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Variables Client -> Demo
+	unreliable if (bClientDemoRecording)
+		IGPlus_LocationOffsetFix_ServerLocation;
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Functions Server -> Client
@@ -6773,7 +6782,6 @@ simulated function RenderDroppedFlags(Canvas C) {
 
 	if (F.bHome == false && F.bHeld == false) {
 		RenderFlagSprite(C, IGPlus_TeamFlagSprite[Team], F.Location);
-		//C.DrawActor(CRI.FlagList[Team], false, true);
 	}
 }
 
@@ -6802,7 +6810,6 @@ simulated function RenderFlagCarrier(Canvas C) {
 		if (PRI.Owner == none) continue;
 
 		RenderFlagSprite(C, IGPlus_TeamFlagSprite[F.Team], PRI.Owner.Location);
-		//C.DrawActor(PRI.Owner, false, true);
 	}
 }
 
@@ -6818,6 +6825,46 @@ function InitFlagSprites() {
 	}
 }
 
+simulated function IGPlus_DrawServerLocation(Canvas C) {
+	if (IGPlus_LocationOffsetFix_DrawDummy == none) {
+		IGPlus_LocationOffsetFix_DrawDummy = Spawn(class'IGPlus_CollisionDummy');
+		IGPlus_LocationOffsetFix_DrawDummy.bCollideWorld = false;
+		IGPlus_LocationOffsetFix_DrawDummy.SetCollision(false, false, false);
+		IGPlus_LocationOffsetFix_DrawDummy.SetCollisionSize(0.0, 0.0);
+		IGPlus_LocationOffsetFix_DrawDummy.DrawType = DT_Mesh;
+	}
+
+	IGPlus_LocationOffsetFix_DrawDummy.bHidden = false;
+	IGPlus_LocationOffsetFix_DrawDummy.SetLocation(IGPlus_LocationOffsetFix_ServerLocation);
+	IGPlus_LocationOffsetFix_DrawDummy.SetRotation(Rotation);
+	IGPlus_LocationOffsetFix_DrawDummy.Mesh = Mesh;
+	IGPlus_LocationOffsetFix_DrawDummy.AnimSequence = AnimSequence;
+	IGPlus_LocationOffsetFix_DrawDummy.AnimFrame = AnimFrame;
+
+	C.DrawActor(IGPlus_LocationOffsetFix_DrawDummy, true);
+
+	IGPlus_LocationOffsetFix_DrawDummy.bHidden = true;
+}
+
+function IGPlus_DrawServerLocations(Canvas C) {
+	local int i;
+	local PlayerReplicationInfo PRI;
+	local bbPlayer P;
+
+	for (i = 0; i < arraycount(GameReplicationInfo.PRIArray); i++) {
+		PRI = GameReplicationInfo.PRIArray[i];
+		if (PRI == none) break;
+		if (PRI.Owner == none) continue;
+		P = bbPlayer(PRI.Owner);
+		if (P == none) continue;
+		if (P.bHidden) continue;
+		if (P.Role != ROLE_SimulatedProxy) continue;
+
+		P.IGPlus_DrawServerLocation(C);
+	}
+
+}
+
 simulated event RenderOverlays(Canvas C) {
 	super.RenderOverlays(C);
 
@@ -6828,6 +6875,9 @@ simulated event RenderOverlays(Canvas C) {
 
 	if (IGPlus_AlwaysRenderFlagCarrier)
 		RenderFlagCarrier(C);
+
+	if (IGPlus_LocationOffsetFix_DrawServerLocation)
+		IGPlus_DrawServerLocations(C);
 }
 
 simulated function vector IGPlus_CurrentLocation() {
@@ -6863,6 +6913,8 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) > VSize(2*DeltaTime*Velocity)+MaxStepHeight) {
 		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - Location - IGPlus_LocationOffsetFix_ExtrapolationOffset;
 		IGPlus_LocationOffsetFix_OldLocation = Location;
+		IGPlus_LocationOffsetFix_ServerLocation = Location;
+		IGPlus_LocationOffsetFix_ServerLocationTime = Level.TimeSeconds;
 		bReplicatedLocation = true;
 	} else {
 		IGPlus_LocationOffsetFix_OldLocation -= IGPlus_LocationOffsetFix_PredictionOffset;
@@ -9012,6 +9064,10 @@ function IGPlus_OpenSettingsMenu() {
 
 exec function PrintWeaponState() {
 	if (Weapon != none) ClientMessage(Weapon.Name@Weapon.GetStateName());
+}
+
+exec function DrawServerLocation() {
+	IGPlus_LocationOffsetFix_DrawServerLocation = !IGPlus_LocationOffsetFix_DrawServerLocation;
 }
 
 defaultproperties
