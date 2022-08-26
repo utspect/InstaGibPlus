@@ -576,6 +576,18 @@ simulated function Tick(float DeltaTime) {
 	}
 }
 
+state Idle
+{
+Begin:
+	bPointing=False;
+	if ( (AmmoType != None) && (AmmoType.AmmoAmount<=0) ) 
+		Pawn(Owner).SwitchToBestWeapon();  //Goto Weapon that has Ammo
+	// if ( Pawn(Owner).bFire!=0 ) Fire(0.0);
+	// if ( Pawn(Owner).bAltFire!=0 ) AltFire(0.0);	
+	Disable('AnimEnd');
+	PlayIdleAnim();
+}
+
 // NOTE: this entire function was copied from Botpack.TournamentWeapon
 // comments within are IG+ specific and prevent the weapon from getting stuck.
 // Finish a firing sequence
