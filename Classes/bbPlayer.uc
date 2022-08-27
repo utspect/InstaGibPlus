@@ -6915,6 +6915,8 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	if (IGPlus_LocationOffsetFix_OnGround) {
 		VelXpol = Velocity;
 		VelXpol.Z = 0.0;
+
+		// Deal with predicting movement up/down ramps
 		CosAlpha = Normal(VelXpol) dot IGPlus_LocationOffsetFix_GroundNormal;
 		SinAlpha = Sqrt(1.0 - CosAlpha*CosAlpha); // sin(a)² + cos(a)² = 1 // sin(a) = sqrt(1 - cos(a)²)
 		
@@ -6949,7 +6951,9 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 		bReplicatedLocation = false;
 	}
 
-	IGPlus_LocationOffsetFix_PredictionOffset *= Exp(-FMax(VSize(IGPlus_LocationOffsetFix_PredictionOffset)*10, 27) * DeltaTime);
+	// 
+	IGPlus_LocationOffsetFix_PredictionOffset *=
+		Exp(-FMax(VSize(IGPlus_LocationOffsetFix_PredictionOffset)*10, 27) * DeltaTime);
 
 	// dont let misprediction grow too large
 	// also, dont smoothly relocate teleporting players

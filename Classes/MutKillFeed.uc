@@ -41,7 +41,7 @@ var float LastTimeStamp;
 var FontInfo MyFonts;
 var Font NameFont;
 
-var Object SettingsHelper
+var Object SettingsHelper;
 var ClientSettings Settings;
 
 replication {
