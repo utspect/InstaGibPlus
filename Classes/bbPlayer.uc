@@ -319,6 +319,7 @@ var vector IGPlus_LocationOffsetFix_OldLocation;
 var vector IGPlus_LocationOffsetFix_ExtrapolationOffset;
 var vector IGPlus_LocationOffsetFix_PredictionOffset;
 var vector IGPlus_LocationOffsetFix_Velocity;
+var vector IGPlus_LocationOffsetFix_GroundNormal;
 var bool IGPlus_LocationOffsetFix_OnGround;
 var bool IGPlus_LocationOffsetFix_FootstepQueued;
 var vector IGPlus_LocationOffsetFix_SafeLocation;
@@ -6890,6 +6891,9 @@ simulated function vector IGPlus_CurrentLocation() {
 simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	local float ExtrapolationTime;
 	local bool bReplicatedLocation;
+	local vector VelXpol;
+	local float CosAlpha;
+	local float SinAlpha;
 
 	if (IGPlus_LocationOffsetFix_Moved == false)
 		return;
@@ -6902,11 +6906,35 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	// detect whether server replicated new velocity
 	if (Velocity.X == 0.0123 && Velocity.Y == 0.0123) {
 		Velocity = IGPlus_LocationOffsetFix_Velocity;
-
-		if (IGPlus_LocationOffsetFix_OnGround)
-			Velocity.Z = 0;
-		else
+		
+		if (IGPlus_LocationOffsetFix_OnGround == false) {
 			Velocity += 0.5 * Region.Zone.ZoneGravity * DeltaTime;
+		}
+	}
+
+	if (IGPlus_LocationOffsetFix_OnGround) {
+		VelXpol = Velocity;
+		VelXpol.Z = 0.0;
+		CosAlpha = Normal(VelXpol) dot IGPlus_LocationOffsetFix_GroundNormal;
+		SinAlpha = Sqrt(1.0 - CosAlpha*CosAlpha); // sin(a)² + cos(a)² = 1 // sin(a) = sqrt(1 - cos(a)²)
+		
+		// Given the following:
+		// sin(Gamma + 90°) = cos(Gamma)
+		// sin(Gamma + 180°) = -sin(Gamma)
+		// sin(Gamma + 270°) = -cos(Gamma)
+		// 
+		// cos(Gamma + 90°) = -sin(Gamma)
+		// cos(Gamma + 180°) = -cos(Gamma)
+		// cos(Gamma + 270°) = sin(Gamma)
+
+		// Because Alpha is the angle between the ground normal and Velocity, we
+		// need to subtract 90° in order to get the right angle between the ramp
+		// and velocity.
+		// Alpha* = Alpha - 90° = Alpha + 270°
+		// tan(Alpha*) = -cos(Alpha)/sin(Alpha)
+		VelXpol.Z = (-CosAlpha / SinAlpha) * VSize(VelXpol);
+	} else {
+		VelXpol = Velocity;
 	}
 
 	// detect whether server replicated new location
@@ -6921,7 +6949,7 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 		bReplicatedLocation = false;
 	}
 
-	IGPlus_LocationOffsetFix_PredictionOffset *= Exp(-27*DeltaTime);
+	IGPlus_LocationOffsetFix_PredictionOffset *= Exp(-FMax(VSize(IGPlus_LocationOffsetFix_PredictionOffset)*10, 27) * DeltaTime);
 
 	// dont let misprediction grow too large
 	// also, dont smoothly relocate teleporting players
@@ -6932,7 +6960,7 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	SetLocation(IGPlus_LocationOffsetFix_OldLocation+IGPlus_LocationOffsetFix_PredictionOffset);
 	bCollideWorld = true;
 	if (bReplicatedLocation == false) {
-		MoveSmooth(Velocity*DeltaTime);
+		MoveSmooth(VelXpol*DeltaTime);
 	} else {
 		IGPlus_LocationOffsetFix_ExtrapolationOffset = Location;
 		ExtrapolationTime = GetLocalPlayer().PlayerReplicationInfo.Ping * 0.001 * LocalExtrapolationOwnPingFactor;
@@ -6940,7 +6968,7 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 			ExtrapolationTime += PlayerReplicationInfo.Ping * 0.001 * LocalExtrapolationOtherPingFactor;
 
 		if (ExtrapolationTime > 0) {
-			MoveSmooth(Velocity * ExtrapolationTime);
+			MoveSmooth(VelXpol * ExtrapolationTime);
 			IGPlus_LocationOffsetFix_ExtrapolationOffset = Location - IGPlus_LocationOffsetFix_ExtrapolationOffset;
 		} else {
 			IGPlus_LocationOffsetFix_ExtrapolationOffset = vect(0,0,0);
@@ -7060,8 +7088,9 @@ simulated function bool IGPlus_LocationOffsetFix_IsOnGround() {
 
 	Extent.X = CollisionRadius;
 	Extent.Y = CollisionRadius;
-	Extent.Z = CollisionHeight-1;
-	HitActor = Trace(HitLocation, HitNormal, Location - vect(0,0,9), Location, false, Extent);
+	Extent.Z = CollisionHeight;
+	HitActor = Trace(HitLocation, HitNormal, Location - vect(0,0,8), Location, false, Extent);
+	IGPlus_LocationOffsetFix_GroundNormal = HitNormal;
 
 	return (HitActor != none)
 		&& (HitActor == Level || HitActor.IsA('Mover'))
