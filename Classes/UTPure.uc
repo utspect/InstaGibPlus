@@ -285,6 +285,7 @@ function PostBeginPlay()
 		Spawn(Class'PureDPS');
 
 	Spawn(class'NN_SpawnNotify');
+	Spawn(class'IGPlus_UnlagPause');
 
 	if (NNAnnouncer)
 		Spawn(class'NNAnnouncerSA');
