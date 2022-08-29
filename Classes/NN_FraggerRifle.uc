@@ -91,247 +91,247 @@ function PostBeginPlay() {
 
 simulated function PostRender( canvas Canvas )
 {
-    local bbPlayer P;
-    local float Scale;
-    local float Xlength;
-    local float range;
-    local vector HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
-    local actor HitActor;
-    local int TC;
-    local string ScopeText;
+	local bbPlayer P;
+	local float Scale;
+	local float Xlength;
+	local float range;
+	local vector HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
+	local actor HitActor;
+	local int TC;
+	local string ScopeText;
 
-    Super(TournamentWeapon).PostRender(Canvas);
+	Super(TournamentWeapon).PostRender(Canvas);
 
-    P = bbPlayer(Owner);
-    if (P == none)
-    	return;
+	P = bbPlayer(Owner);
+	if (P == none)
+		return;
 
-    TC = Min(P.PlayerReplicationInfo.Team, 4);
+	TC = Min(P.PlayerReplicationInfo.Team, 4);
 
-    // Calc range
-    XLength=255.0;
-    GetAxes(Pawn(owner).ViewRotation,X,Y,Z);
+	// Calc range
+	XLength=255.0;
+	GetAxes(Pawn(owner).ViewRotation,X,Y,Z);
 
-    StartTrace = P.Location + P.EyeHeight*vect(0,0,1);
-    EndTrace = StartTrace + (20000.0 * X);
-    HitActor = P.NN_TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, P);
-    range = VSize(StartTrace-HitLocation)/48-0.25;
+	StartTrace = P.Location + P.EyeHeight*vect(0,0,1);
+	EndTrace = StartTrace + (20000.0 * X);
+	HitActor = P.NN_TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, P);
+	range = VSize(StartTrace-HitLocation)/48-0.25;
 
-    if ( (P != None) && (P.DesiredFOV != P.DefaultFOV) )
-    {
-        Canvas.Font = Font'Botpack.WhiteFont';
+	if ( (P != None) && (P.DesiredFOV != P.DefaultFOV) )
+	{
+		Canvas.Font = Font'Botpack.WhiteFont';
 
-        if (range>=200)
-        {
-            Canvas.DrawColor.R = 0;
-            Canvas.DrawColor.G = 255;
-            Canvas.DrawColor.B = 0;
-            Canvas.SetPos( 100*Canvas.ClipX/401, 4*Canvas.ClipY/7 + Canvas.ClipY/401 -25 );
-            Canvas.DrawText( "VERY FAR" );
-        }
-        if (range<=199.9 && range>=150)
-        {
-            Canvas.DrawColor.R = 255;
-            Canvas.DrawColor.G = 255;
-            Canvas.DrawColor.B = 0;
-            Canvas.SetPos( 100*Canvas.ClipX/401, 4*Canvas.ClipY/7 + Canvas.ClipY/401 -25 );
-            Canvas.DrawText( "FAR" );
-        }
-        if (range<=149.9 && range>=100)
-        {
-            Canvas.DrawColor.R = 255;
-            Canvas.DrawColor.G = 255;
-            Canvas.DrawColor.B = 255;
-            Canvas.SetPos( 100*Canvas.ClipX/401, 4*Canvas.ClipY/7 + Canvas.ClipY/401 -25 );
-            Canvas.DrawText( "MEDIUM" );
-        }
-        if (range<=99.9 && range>=50)
-        {
-            Canvas.DrawColor.R = 255;
-            Canvas.DrawColor.G = 0;
-            Canvas.DrawColor.B = 255;
-            Canvas.SetPos( 100*Canvas.ClipX/401, 4*Canvas.ClipY/7 + Canvas.ClipY/401 -25 );
-            Canvas.DrawText( "CLOSE" );
-        }
-        if (range<=49.99)
-        {
-            Canvas.DrawColor.R = 255;
-            Canvas.DrawColor.G = 0;
-            Canvas.DrawColor.B = 0;
-            Canvas.SetPos( 100*Canvas.ClipX/401, 4*Canvas.ClipY/7 + Canvas.ClipY/401 -25 );
-            Canvas.DrawText( "VERY CLOSE" );
-        }
-    }
-    switch (int(P.Settings.FraggerScopeChoice))
-    {
-        case 1:         //crosshair #1 Movable #1
+		if (range>=200)
+		{
+			Canvas.DrawColor.R = 0;
+			Canvas.DrawColor.G = 255;
+			Canvas.DrawColor.B = 0;
+			Canvas.SetPos( 100*Canvas.ClipX/401, 4*Canvas.ClipY/7 + Canvas.ClipY/401 -25 );
+			Canvas.DrawText( "VERY FAR" );
+		}
+		if (range<=199.9 && range>=150)
+		{
+			Canvas.DrawColor.R = 255;
+			Canvas.DrawColor.G = 255;
+			Canvas.DrawColor.B = 0;
+			Canvas.SetPos( 100*Canvas.ClipX/401, 4*Canvas.ClipY/7 + Canvas.ClipY/401 -25 );
+			Canvas.DrawText( "FAR" );
+		}
+		if (range<=149.9 && range>=100)
+		{
+			Canvas.DrawColor.R = 255;
+			Canvas.DrawColor.G = 255;
+			Canvas.DrawColor.B = 255;
+			Canvas.SetPos( 100*Canvas.ClipX/401, 4*Canvas.ClipY/7 + Canvas.ClipY/401 -25 );
+			Canvas.DrawText( "MEDIUM" );
+		}
+		if (range<=99.9 && range>=50)
+		{
+			Canvas.DrawColor.R = 255;
+			Canvas.DrawColor.G = 0;
+			Canvas.DrawColor.B = 255;
+			Canvas.SetPos( 100*Canvas.ClipX/401, 4*Canvas.ClipY/7 + Canvas.ClipY/401 -25 );
+			Canvas.DrawText( "CLOSE" );
+		}
+		if (range<=49.99)
+		{
+			Canvas.DrawColor.R = 255;
+			Canvas.DrawColor.G = 0;
+			Canvas.DrawColor.B = 0;
+			Canvas.SetPos( 100*Canvas.ClipX/401, 4*Canvas.ClipY/7 + Canvas.ClipY/401 -25 );
+			Canvas.DrawText( "VERY CLOSE" );
+		}
+	}
+	switch (int(P.Settings.FraggerScopeChoice))
+	{
+		case 1:         //crosshair #1 Movable #1
 
-            if ( (P != None) && (P.DesiredFOV != P.DefaultFOV) )
-            {
-                // Draw crosshair
-                bOwnsCrossHair = true;
-                scale = Canvas.ClipX/640;
+			if ( (P != None) && (P.DesiredFOV != P.DefaultFOV) )
+			{
+				// Draw crosshair
+				bOwnsCrossHair = true;
+				scale = Canvas.ClipX/640;
 
-                if ( Level.bHighDetailMode ) Canvas.Style = ERenderStyle.STY_Translucent;
-                else Canvas.Style = ERenderStyle.STY_Normal;
+				if ( Level.bHighDetailMode ) Canvas.Style = ERenderStyle.STY_Translucent;
+				else Canvas.Style = ERenderStyle.STY_Normal;
 
-                // Square
-                Canvas.SetPos( 3*Canvas.ClipX/7, 3*Canvas.ClipY/7 );
-                Canvas.DrawColor = TeamColor[TC];
-                Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/7, Canvas.ClipY/7, 0, 0, 256, 191 );
+				// Square
+				Canvas.SetPos( 3*Canvas.ClipX/7, 3*Canvas.ClipY/7 );
+				Canvas.DrawColor = TeamColor[TC];
+				Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/7, Canvas.ClipY/7, 0, 0, 256, 191 );
 
-                // Top Line
-                Canvas.SetPos( 200*Canvas.ClipX/401, Canvas.ClipY/229*(90-P.DesiredFOV)+0.6*Canvas.ClipY/28 );
-                Canvas.DrawColor = TeamColor[TC];
-                Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/401, Canvas.ClipY/28, 0, 20, 3, 10 );
+				// Top Line
+				Canvas.SetPos( 200*Canvas.ClipX/401, Canvas.ClipY/229*(90-P.DesiredFOV)+0.6*Canvas.ClipY/28 );
+				Canvas.DrawColor = TeamColor[TC];
+				Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/401, Canvas.ClipY/28, 0, 20, 3, 10 );
 
-                // Bottom Line
-                Canvas.SetPos( 200*Canvas.ClipX/401, 15.35*Canvas.ClipY/28 + Canvas.ClipY/229*P.DesiredFOV );
-                Canvas.DrawColor = TeamColor[TC];
-                Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/401, Canvas.ClipY/28, 0, 20, 3, 10 );
+				// Bottom Line
+				Canvas.SetPos( 200*Canvas.ClipX/401, 15.35*Canvas.ClipY/28 + Canvas.ClipY/229*P.DesiredFOV );
+				Canvas.DrawColor = TeamColor[TC];
+				Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/401, Canvas.ClipY/28, 0, 20, 3, 10 );
 
-                // Left Line
-                Canvas.SetPos( Canvas.ClipX/229*(90-P.DesiredFOV)+0.6*Canvas.ClipX/28, 200*Canvas.ClipY/401 );
-                Canvas.DrawColor = TeamColor[TC];
-                Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/28, Canvas.ClipY/401, 10, 0, 10, 3 );
+				// Left Line
+				Canvas.SetPos( Canvas.ClipX/229*(90-P.DesiredFOV)+0.6*Canvas.ClipX/28, 200*Canvas.ClipY/401 );
+				Canvas.DrawColor = TeamColor[TC];
+				Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/28, Canvas.ClipY/401, 10, 0, 10, 3 );
 
-                // Right Line
-                Canvas.SetPos( 15.35*Canvas.ClipX/28 + Canvas.ClipX/229*P.DesiredFOV, 200*Canvas.ClipY/401 );
-                Canvas.DrawColor = TeamColor[TC];
-                Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/28, Canvas.ClipY/401, 10, 0, 10, 3 );
-
-
-                Canvas.SetPos( 199.5*Canvas.ClipX/401, 199.5*Canvas.ClipY/401 );
-                Canvas.DrawColor.R = 255;
-                Canvas.DrawColor.G = 0;
-                Canvas.DrawColor.B = 0;
-                Canvas.DrawTile( Texture 'Cross', 2*Canvas.ClipX/401, 2*Canvas.ClipY/401, 0, 202, 53, 53 );
-
-                // Top Gradient
-                Canvas.SetPos( 200*Canvas.ClipX/401, 4*Canvas.ClipY/9 );
-                Canvas.DrawColor = TeamColor[TC];
-                Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 129, 197, 3, 54 );
-
-                // Left Gradient
-                Canvas.SetPos( 4*Canvas.ClipX/9, 200*Canvas.ClipY/401 );
-                Canvas.DrawColor = TeamColor[TC];
-                Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 69, 200, 54, 3 );
-
-                //Bottom Gradient
-                Canvas.SetPos( 200*Canvas.ClipX/401, 5*Canvas.ClipY/9 - Canvas.ClipY/1360*(90-P.DesiredFOV) );
-                Canvas.DrawColor = TeamColor[TC];
-                Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 144, 199, 3, 54 );
-
-                //Right Gradient
-                Canvas.SetPos( 5*Canvas.ClipX/9 - Canvas.ClipX/1360*(90-P.DesiredFOV), 200*Canvas.ClipY/401 );
-                Canvas.DrawColor = TeamColor[TC];
-                Canvas.DrawTile( texture 'Cross', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 163, 199, 54, 3 );
+				// Right Line
+				Canvas.SetPos( 15.35*Canvas.ClipX/28 + Canvas.ClipX/229*P.DesiredFOV, 200*Canvas.ClipY/401 );
+				Canvas.DrawColor = TeamColor[TC];
+				Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/28, Canvas.ClipY/401, 10, 0, 10, 3 );
 
 
-                // Magnification Display
-                Canvas.SetPos( 205*Canvas.ClipX/401-75, 4*Canvas.ClipY/7 + Canvas.ClipY/401 );
-                Canvas.Font = Font'Botpack.medFont';
-                Canvas.DrawColor = TeamColor[TC];
-                scale = P.DefaultFOV/P.DesiredFOV;
-                ScopeText = "FN  Z:"$int(Scale)$"."$int(10 * scale - 10 * int(Scale));
-                //if (bUseRange) {
-                	ScopeText = ScopeText $ "  R: "$int(range)$"."$int(10 * range -10 * int(range));
-                //}
-                Canvas.DrawText(ScopeText);
+				Canvas.SetPos( 199.5*Canvas.ClipX/401, 199.5*Canvas.ClipY/401 );
+				Canvas.DrawColor.R = 255;
+				Canvas.DrawColor.G = 0;
+				Canvas.DrawColor.B = 0;
+				Canvas.DrawTile( Texture 'Cross', 2*Canvas.ClipX/401, 2*Canvas.ClipY/401, 0, 202, 53, 53 );
 
-                //if (bUseBlack) {
+				// Top Gradient
+				Canvas.SetPos( 200*Canvas.ClipX/401, 4*Canvas.ClipY/9 );
+				Canvas.DrawColor = TeamColor[TC];
+				Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 129, 197, 3, 54 );
 
-                    Canvas.Style = ERenderStyle.STY_modulated;
+				// Left Gradient
+				Canvas.SetPos( 4*Canvas.ClipX/9, 200*Canvas.ClipY/401 );
+				Canvas.DrawColor = TeamColor[TC];
+				Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 69, 200, 54, 3 );
 
-                    // Top Gradient
-                    Canvas.SetPos( 200*Canvas.ClipX/401, 4*Canvas.ClipY/9 );
-                    Canvas.DrawTile( texture 'black', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 129, 197, 3, 54 );
+				//Bottom Gradient
+				Canvas.SetPos( 200*Canvas.ClipX/401, 5*Canvas.ClipY/9 - Canvas.ClipY/1360*(90-P.DesiredFOV) );
+				Canvas.DrawColor = TeamColor[TC];
+				Canvas.DrawTile( Texture 'Cross', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 144, 199, 3, 54 );
 
-                    // Left Gradient
-                    Canvas.SetPos( 4*Canvas.ClipX/9, 200*Canvas.ClipY/401 );
-                    Canvas.DrawTile( texture 'black', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 69, 200, 54, 3 );
-
-                    //Bottom Gradient
-                    Canvas.SetPos( 200*Canvas.ClipX/401, 5*Canvas.ClipY/9 - Canvas.ClipY/1360*(90-P.DesiredFOV) );
-                    Canvas.DrawTile( texture 'black', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 144, 199, 3, 54 );
-
-                    //Right Gradient
-                    Canvas.SetPos( 5*Canvas.ClipX/9 - Canvas.ClipX/1360*(90-P.DesiredFOV), 200*Canvas.ClipY/401 );
-                    Canvas.DrawTile( texture 'black', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 163, 199, 54, 3 );
-                //}
-            }
-            else
-                bOwnsCrossHair = false;
-            break;
-
-        case 2:         //Crosshair # 3 static crosshair    #1
-
-            if ( (P != None) && (P.DesiredFOV != P.DefaultFOV) )
-            {
-                bOwnsCrossHair = true;
-                scale = (Canvas.ClipX/1024);
-
-                if ( Level.bHighDetailMode )
-                    Canvas.Style = ERenderStyle.STY_Translucent;
-                else
-                    Canvas.Style = ERenderStyle.STY_Normal;
-                Canvas.DrawColor = TeamColor[5];
-                Canvas.SetPos(0.5 * Canvas.ClipX - 128 * Scale, 0.5 * Canvas.ClipY - 128 * scale );
-                Canvas.DrawIcon( texture 'simple', Scale);
-
-                // Magnification Display
-                Canvas.SetPos( 205*Canvas.ClipX/401-75, 4*Canvas.ClipY/7 + Canvas.ClipY/401 );
-                Canvas.Font = Font'Botpack.medFont';
-                Canvas.DrawColor = TeamColor[TC];
-                scale = P.DefaultFOV/P.DesiredFOV;
-                ScopeText = "FN  Z:"$int(Scale)$"."$int(10 * scale - 10 * int(Scale));
-                //if (bUseRange) {
-                	ScopeText = ScopeText $ "  R: "$int(range)$"."$int(10 * range -10 * int(range));
-                //}
-                Canvas.DrawText(ScopeText);
-
-                //if (bUseBlack) {
-                    Canvas.Style = ERenderStyle.STY_modulated;
+				//Right Gradient
+				Canvas.SetPos( 5*Canvas.ClipX/9 - Canvas.ClipX/1360*(90-P.DesiredFOV), 200*Canvas.ClipY/401 );
+				Canvas.DrawColor = TeamColor[TC];
+				Canvas.DrawTile( texture 'Cross', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 163, 199, 54, 3 );
 
 
-                    // Top Gradient
-                    Canvas.SetPos( 200*Canvas.ClipX/401, 4*Canvas.ClipY/9 );
-                    Canvas.DrawTile( texture 'black', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 129, 197, 3, 54 );
+				// Magnification Display
+				Canvas.SetPos( 205*Canvas.ClipX/401-75, 4*Canvas.ClipY/7 + Canvas.ClipY/401 );
+				Canvas.Font = Font'Botpack.medFont';
+				Canvas.DrawColor = TeamColor[TC];
+				scale = P.DefaultFOV/P.DesiredFOV;
+				ScopeText = "FN  Z:"$int(Scale)$"."$int(10 * scale - 10 * int(Scale));
+				//if (bUseRange) {
+					ScopeText = ScopeText $ "  R: "$int(range)$"."$int(10 * range -10 * int(range));
+				//}
+				Canvas.DrawText(ScopeText);
 
-                    // Left Gradient
-                    Canvas.SetPos( 4*Canvas.ClipX/9, 200*Canvas.ClipY/401 );
-                    Canvas.DrawTile( texture 'black', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 69, 200, 54, 3 );
+				//if (bUseBlack) {
 
-                    //Bottom Gradient
-                    Canvas.SetPos( 200*Canvas.ClipX/401, 5*Canvas.ClipY/9 - Canvas.ClipY/1360*(90-P.DesiredFOV) );
-                    Canvas.DrawTile( texture 'black', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 144, 199, 3, 54 );
+					Canvas.Style = ERenderStyle.STY_modulated;
 
-                    //Right Gradient
-                    Canvas.SetPos( 5*Canvas.ClipX/9 - Canvas.ClipX/1360*(90-P.DesiredFOV), 200*Canvas.ClipY/401 );
-                    Canvas.DrawTile( texture 'black', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 163, 199, 54, 3 );
-                //}
-            }
-            else
-                bOwnsCrossHair = false;
+					// Top Gradient
+					Canvas.SetPos( 200*Canvas.ClipX/401, 4*Canvas.ClipY/9 );
+					Canvas.DrawTile( texture 'black', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 129, 197, 3, 54 );
 
-            break;
+					// Left Gradient
+					Canvas.SetPos( 4*Canvas.ClipX/9, 200*Canvas.ClipY/401 );
+					Canvas.DrawTile( texture 'black', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 69, 200, 54, 3 );
 
-        case 0:
+					//Bottom Gradient
+					Canvas.SetPos( 200*Canvas.ClipX/401, 5*Canvas.ClipY/9 - Canvas.ClipY/1360*(90-P.DesiredFOV) );
+					Canvas.DrawTile( texture 'black', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 144, 199, 3, 54 );
 
-            if ( (P != None) && (P.DesiredFOV != P.DefaultFOV) )
-            {
-                bOwnsCrosshair = False;
-                if ( Level.bHighDetailMode )
-                    Canvas.Style = ERenderStyle.STY_Normal;
-                else
-                    Canvas.Style = ERenderStyle.STY_Normal;
-            }
-            else
-            {
-                bOwnsCrossHair = False;
-            }
-            break;
-    } //switch end
+					//Right Gradient
+					Canvas.SetPos( 5*Canvas.ClipX/9 - Canvas.ClipX/1360*(90-P.DesiredFOV), 200*Canvas.ClipY/401 );
+					Canvas.DrawTile( texture 'black', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 163, 199, 54, 3 );
+				//}
+			}
+			else
+				bOwnsCrossHair = false;
+			break;
+
+		case 2:         //Crosshair # 3 static crosshair    #1
+
+			if ( (P != None) && (P.DesiredFOV != P.DefaultFOV) )
+			{
+				bOwnsCrossHair = true;
+				scale = (Canvas.ClipX/1024);
+
+				if ( Level.bHighDetailMode )
+					Canvas.Style = ERenderStyle.STY_Translucent;
+				else
+					Canvas.Style = ERenderStyle.STY_Normal;
+				Canvas.DrawColor = TeamColor[5];
+				Canvas.SetPos(0.5 * Canvas.ClipX - 128 * Scale, 0.5 * Canvas.ClipY - 128 * scale );
+				Canvas.DrawIcon( texture 'simple', Scale);
+
+				// Magnification Display
+				Canvas.SetPos( 205*Canvas.ClipX/401-75, 4*Canvas.ClipY/7 + Canvas.ClipY/401 );
+				Canvas.Font = Font'Botpack.medFont';
+				Canvas.DrawColor = TeamColor[TC];
+				scale = P.DefaultFOV/P.DesiredFOV;
+				ScopeText = "FN  Z:"$int(Scale)$"."$int(10 * scale - 10 * int(Scale));
+				//if (bUseRange) {
+					ScopeText = ScopeText $ "  R: "$int(range)$"."$int(10 * range -10 * int(range));
+				//}
+				Canvas.DrawText(ScopeText);
+
+				//if (bUseBlack) {
+					Canvas.Style = ERenderStyle.STY_modulated;
+
+
+					// Top Gradient
+					Canvas.SetPos( 200*Canvas.ClipX/401, 4*Canvas.ClipY/9 );
+					Canvas.DrawTile( texture 'black', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 129, 197, 3, 54 );
+
+					// Left Gradient
+					Canvas.SetPos( 4*Canvas.ClipX/9, 200*Canvas.ClipY/401 );
+					Canvas.DrawTile( texture 'black', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 69, 200, 54, 3 );
+
+					//Bottom Gradient
+					Canvas.SetPos( 200*Canvas.ClipX/401, 5*Canvas.ClipY/9 - Canvas.ClipY/1360*(90-P.DesiredFOV) );
+					Canvas.DrawTile( texture 'black', Canvas.ClipX/401, Canvas.ClipY/1360*(90-P.DesiredFOV), 144, 199, 3, 54 );
+
+					//Right Gradient
+					Canvas.SetPos( 5*Canvas.ClipX/9 - Canvas.ClipX/1360*(90-P.DesiredFOV), 200*Canvas.ClipY/401 );
+					Canvas.DrawTile( texture 'black', Canvas.ClipX/1360*(90-P.DesiredFOV), Canvas.ClipY/401, 163, 199, 54, 3 );
+				//}
+			}
+			else
+				bOwnsCrossHair = false;
+
+			break;
+
+		case 0:
+
+			if ( (P != None) && (P.DesiredFOV != P.DefaultFOV) )
+			{
+				bOwnsCrosshair = False;
+				if ( Level.bHighDetailMode )
+					Canvas.Style = ERenderStyle.STY_Normal;
+				else
+					Canvas.Style = ERenderStyle.STY_Normal;
+			}
+			else
+			{
+				bOwnsCrossHair = False;
+			}
+			break;
+	} //switch end
 }
 
 
@@ -343,9 +343,9 @@ simulated exec function Scope()
 	if (P == none)
 		return;
 
-    if (Role < ROLE_Authority || Level.NetMode < NM_Client) {
-        P.Settings.CycleFraggerScope();
-    }
+	if (Role < ROLE_Authority || Level.NetMode < NM_Client) {
+		P.Settings.CycleFraggerScope();
+	}
 }
 
 simulated function PlayFiring()
@@ -416,11 +416,11 @@ simulated function float GetMinHeadshotZ(Pawn Other) {
 }
 
 function setHand(float Hand) {
-    Super.SetHand(Hand);
-    MultiSkins[0] = Texture'AA';
-    MultiSkins[1] = Texture'SR';
-    MultiSkins[2] = Texture'Rifle2c';
-    MultiSkins[3] = Texture'Rifle2d';
+	Super.SetHand(Hand);
+	MultiSkins[0] = Texture'AA';
+	MultiSkins[1] = Texture'SR';
+	MultiSkins[2] = Texture'Rifle2c';
+	MultiSkins[3] = Texture'Rifle2d';
 }
 
 simulated function Tick(float DeltaTime) {
