@@ -497,4 +497,8 @@ defaultproperties {
 	WeaponDescription="Fragger Rifle"
 	DeathMessage="%k Killed %o with the FraggerRifle"
 	PickupMessage="you got the Fragger Rifle"
+
+	shakemag=0.0
+	shaketime=0.0
+	shakevert=0.0
 }
