@@ -6953,7 +6953,7 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 
 	// 
 	IGPlus_LocationOffsetFix_PredictionOffset *=
-		Exp(-FMax(VSize(IGPlus_LocationOffsetFix_PredictionOffset)*10, 27) * DeltaTime);
+		Exp(-FMax(VSize(IGPlus_LocationOffsetFix_PredictionOffset)*5, 27) * DeltaTime);
 
 	// dont let misprediction grow too large
 	// also, dont smoothly relocate teleporting players
