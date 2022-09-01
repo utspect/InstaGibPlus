@@ -6891,6 +6891,7 @@ simulated function vector IGPlus_CurrentLocation() {
 simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	local float ExtrapolationTime;
 	local bool bReplicatedLocation;
+	local bool bReplicatedVelocity;
 	local vector VelXpol;
 	local float CosAlpha;
 	local float SinAlpha;
@@ -6905,15 +6906,29 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 
 	// detect whether server replicated new velocity
 	if (Velocity.X == 0.0123 && Velocity.Y == 0.0123) {
+		bReplicatedVelocity = false;
 		Velocity = IGPlus_LocationOffsetFix_Velocity;
-		
-		if (IGPlus_LocationOffsetFix_OnGround == false) {
+
+		if (IGPlus_LocationOffsetFix_OnGround == false)
 			Velocity += 0.5 * Region.Zone.ZoneGravity * DeltaTime;
-		}
+	} else {
+		bReplicatedVelocity = true;
 	}
 
-	if (IGPlus_LocationOffsetFix_OnGround) {
-		VelXpol = Velocity;
+	// detect whether server replicated new location
+	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) > VSize(2*DeltaTime*Velocity)+MaxStepHeight) {
+		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - Location - IGPlus_LocationOffsetFix_ExtrapolationOffset;
+		IGPlus_LocationOffsetFix_OldLocation = Location;
+		IGPlus_LocationOffsetFix_ServerLocation = Location;
+		IGPlus_LocationOffsetFix_ServerLocationTime = Level.TimeSeconds;
+		bReplicatedLocation = true;
+	} else {
+		IGPlus_LocationOffsetFix_OldLocation -= IGPlus_LocationOffsetFix_PredictionOffset;
+		bReplicatedLocation = false;
+	}
+
+	VelXpol = Velocity;
+	if (IGPlus_LocationOffsetFix_OnGround && bCanFly == false && Region.Zone.bWaterZone == false) {
 		VelXpol.Z = 0.0;
 
 		// Deal with predicting movement up/down ramps
@@ -6935,20 +6950,6 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 		// Alpha* = Alpha - 90° = Alpha + 270°
 		// tan(Alpha*) = -cos(Alpha)/sin(Alpha)
 		VelXpol.Z = (-CosAlpha / SinAlpha) * VSize(VelXpol);
-	} else {
-		VelXpol = Velocity;
-	}
-
-	// detect whether server replicated new location
-	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) > VSize(2*DeltaTime*Velocity)+MaxStepHeight) {
-		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - Location - IGPlus_LocationOffsetFix_ExtrapolationOffset;
-		IGPlus_LocationOffsetFix_OldLocation = Location;
-		IGPlus_LocationOffsetFix_ServerLocation = Location;
-		IGPlus_LocationOffsetFix_ServerLocationTime = Level.TimeSeconds;
-		bReplicatedLocation = true;
-	} else {
-		IGPlus_LocationOffsetFix_OldLocation -= IGPlus_LocationOffsetFix_PredictionOffset;
-		bReplicatedLocation = false;
 	}
 
 	// 
