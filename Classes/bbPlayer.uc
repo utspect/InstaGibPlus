@@ -323,11 +323,12 @@ var vector IGPlus_LocationOffsetFix_GroundNormal;
 var bool IGPlus_LocationOffsetFix_OnGround;
 var bool IGPlus_LocationOffsetFix_FootstepQueued;
 var vector IGPlus_LocationOffsetFix_SafeLocation;
-var Actor IGPlus_LocationOffsetFix_CollisionDummy;
+var IGPlus_CollisionDummy IGPlus_LocationOffsetFix_CollisionDummy;
 var vector IGPlus_LocationOffsetFix_ServerLocation;
 var float IGPlus_LocationOffsetFix_ServerLocationTime;
 var bool IGPlus_LocationOffsetFix_DrawServerLocation;
 var Actor IGPlus_LocationOffsetFix_DrawDummy;
+var IGPlus_CollisionDummy IGPlus_LocationOffsetFix_DummyList;
 
 var float LocalExtrapolationOwnPingFactor;
 var float LocalExtrapolationOtherPingFactor;
@@ -633,8 +634,7 @@ simulated event Destroyed() {
 		IGPlus_ForcedSettingsRestore();
 	}
 	if (Role == ROLE_SimulatedProxy && IGPlus_LocationOffsetFix_CollisionDummy != none) {
-		IGPlus_LocationOffsetFix_CollisionDummy.Destroy();
-		IGPlus_LocationOffsetFix_CollisionDummy = none;
+		IGPlus_LocationOffsetFix_DestroyCollisionDummy();
 	}
 	super.Destroyed();
 }
@@ -6991,6 +6991,7 @@ function IGPlus_LocationOffsetFix_AfterAll(float DeltaTime) {
 	local int i;
 	local PlayerReplicationInfo PRI;
 	local bbPlayer P;
+	local IGPlus_CollisionDummy D;
 
 	if (GameReplicationInfo != None && PlayerReplicationInfo != None) {
 		for (i = 0; i < arraycount(GameReplicationInfo.PRIArray); ++i) {
@@ -7002,6 +7003,11 @@ function IGPlus_LocationOffsetFix_AfterAll(float DeltaTime) {
 
 			P.IGPlus_LocationOffsetFix_After(DeltaTime);
 		}
+	}
+
+	for (D = IGPlus_LocationOffsetFix_DummyList; D != none; D = D.NextCollDummy) {
+		D.bCollideWorld = false;
+		D.SetCollision(false, false, false);
 	}
 }
 
@@ -7079,7 +7085,41 @@ function IGPlus_LocationOffsetFix_UndoRestoreAll() {
 }
 
 simulated function IGPlus_LocationOffsetFix_SpawnCollisionDummy() {
+	local bbPlayer P;
+
 	IGPlus_LocationOffsetFix_CollisionDummy = Spawn(class'IGPlus_CollisionDummy');
+
+	P = bbPlayer(GetLocalPlayer());
+	if (P == none)
+		return;
+
+	IGPlus_LocationOffsetFix_CollisionDummy.NextCollDummy = P.IGPlus_LocationOffsetFix_DummyList;
+	P.IGPlus_LocationOffsetFix_DummyList = IGPlus_LocationOffsetFix_CollisionDummy;
+}
+
+simulated function IGPlus_LocationOffsetFix_DestroyCollisionDummy() {
+	local bbPlayer P;
+	local IGPlus_CollisionDummy D;
+
+	P = bbPlayer(GetLocalPlayer());
+	if (P == none)
+		goto Destruction;
+
+	if (IGPlus_LocationOffsetFix_CollisionDummy == P.IGPlus_LocationOffsetFix_DummyList) {
+		P.IGPlus_LocationOffsetFix_DummyList = IGPlus_LocationOffsetFix_CollisionDummy.NextCollDummy;
+		goto Destruction;
+	}
+
+	for (D = P.IGPlus_LocationOffsetFix_DummyList; D != none; D = D.NextCollDummy)
+		if (D.NextCollDummy == IGPlus_LocationOffsetFix_CollisionDummy)
+			break;
+	
+	if (D != none)
+		D.NextCollDummy = IGPlus_LocationOffsetFix_CollisionDummy.NextCollDummy;
+
+Destruction:
+	IGPlus_LocationOffsetFix_CollisionDummy.Destroy();
+	IGPlus_LocationOffsetFix_CollisionDummy = none;
 }
 
 simulated function bool IGPlus_LocationOffsetFix_IsOnGround() {
