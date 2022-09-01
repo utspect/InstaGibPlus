@@ -7122,10 +7122,12 @@ Destruction:
 	IGPlus_LocationOffsetFix_CollisionDummy = none;
 }
 
-simulated function bool IGPlus_LocationOffsetFix_IsOnGround() {
+simulated function bool IGPlus_LocationOffsetFix_IsOnGround(out vector HitNormal) {
 	local Actor HitActor;
-	local vector HitLocation, HitNormal;
+	local vector HitLocation;
 	local vector Extent;
+
+	HitNormal = vect(0.0, 0.0, 0.0);
 
 	if (bCanFly || Region.Zone.bWaterZone)
 		return true;
@@ -7134,7 +7136,6 @@ simulated function bool IGPlus_LocationOffsetFix_IsOnGround() {
 	Extent.Y = CollisionRadius;
 	Extent.Z = CollisionHeight;
 	HitActor = Trace(HitLocation, HitNormal, Location - vect(0,0,8), Location, false, Extent);
-	IGPlus_LocationOffsetFix_GroundNormal = HitNormal;
 
 	return (HitActor != none)
 		&& (HitActor == Level || HitActor.IsA('Mover'))
@@ -7150,7 +7151,7 @@ simulated function IGPlus_LocationOffsetFix_Before() {
 
 	IGPlus_LocationOffsetFix_OldLocation = Location;
 	IGPlus_LocationOffsetFix_Velocity = Velocity;
-	IGPlus_LocationOffsetFix_OnGround = IGPlus_LocationOffsetFix_IsOnGround();
+	IGPlus_LocationOffsetFix_OnGround = IGPlus_LocationOffsetFix_IsOnGround(IGPlus_LocationOffsetFix_GroundNormal);
 
 	SetLocation(vect(65535, 65535, 65535));
 	Velocity = vect(0.0123,0.0123,0);
