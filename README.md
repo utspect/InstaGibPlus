@@ -90,18 +90,19 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 62. [KillFeedY](#killfeedy)
 63. [KillFeedSpeed](#killfeedspeed)
 64. [KillFeedScale](#killfeedscale)
-65. [bEnableHitMarker](#benablehitmarker)
-66. [bEnableTeamHitMarker](#benableteamhitmarker)
-67. [HitMarkerColorMode](#hitmarkercolormode)
-68. [HitMarkerColor](#hitmarkercolor)
-69. [HitMarkerTeamColor](#hitmarkerteamcolor)
-70. [HitMarkerSize](#hitmarkersize)
-71. [HitMarkerOffset](#hitmarkeroffset)
-72. [HitMarkerDuration](#hitmarkerduration)
-73. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-74. [HitMarkerSource](#hitmarkersource)
-75. [bUseCrosshairFactory](#busecrosshairfactory)
-76. [CrosshairLayers](#crosshairlayers)
+65. [FraggerScopeChoice](#fraggerscopechoice)
+66. [bEnableHitMarker](#benablehitmarker)
+67. [bEnableTeamHitMarker](#benableteamhitmarker)
+68. [HitMarkerColorMode](#hitmarkercolormode)
+69. [HitMarkerColor](#hitmarkercolor)
+70. [HitMarkerTeamColor](#hitmarkerteamcolor)
+71. [HitMarkerSize](#hitmarkersize)
+72. [HitMarkerOffset](#hitmarkeroffset)
+73. [HitMarkerDuration](#hitmarkerduration)
+74. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+75. [HitMarkerSource](#hitmarkersource)
+76. [bUseCrosshairFactory](#busecrosshairfactory)
+77. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -533,6 +534,16 @@ Increase to make lines disappear sooner. Decrease to make lines disappear later.
 
 Scales the size of individual lines of the KillFeed.
 
+## FraggerScopeChoice
+**Type: EFraggerScopeChoice**  
+**Default: `FSC_Moveable`**  
+
+Which scope the FraggerRifle uses when zoming.
+
+* `FSC_None` ➜ Keeps the default crosshair
+* `FSC_Static` ➜ Few moving parts when zooming in
+* `FSC_Moveable` ➜ More moving parts when zooming in
+
 ## bEnableHitMarker
 **Type: bool**  
 **Default: False** 
@@ -813,14 +824,14 @@ Extract the zipped files to your system folder.
 Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or Deepu's Ultimate NewNet.  
 Add the following lines to your server's **UnrealTournament.ini** under **[Engine.GameEngine]**:
 
-**ServerPackages=InstaGibPlus8**  
-**ServerActors=InstaGibPlus8.NewNetServer**  
-**ServerActors=InstaGibPlus8.PureStats**  
+**ServerPackages=InstaGibPlus9**
+**ServerActors=InstaGibPlus9.NewNetServer**
+**ServerActors=InstaGibPlus9.PureStats**
 
 <b>It is highly recommended to set your server's tickrate to 100.</b>
 
 # Usage
-For InstaGib, make sure the mutator **InstaGibPlus8.NewNetIG** is loaded via your map vote configuration or during server launch.
+For InstaGib, make sure the mutator **InstaGibPlus9.NewNetIG** is loaded via your map vote configuration or during server launch.
 
 InstaGib+ has minimal weapons code and will load the default UT weapons if the NewNetIG mutator is not loaded, so it is absolutely unusable in normal weapons, make sure to use it only if your objective is to play or to run an InstaGib centered server.
 
@@ -887,21 +898,25 @@ Server settings can be found inside InstaGibPlus.ini.
 45. [MaxMultiDodges](#maxmultidodges)
 46. [BrightskinMode](#brightskinmode)
 47. [PlayerScale](#playerscale)
-48. [MinPosError](#minposerror)
-49. [MaxPosError](#maxposerror)
-50. [MaxHitError](#maxhiterror)
-51. [MaxJitterTime](#maxjittertime)
-52. [MinNetUpdateRate](#minnetupdaterate)
-53. [MaxNetUpdateRate](#maxnetupdaterate)
-54. [bEnableServerExtrapolation](#benableserverextrapolation)
-55. [bEnableServerPacketReordering](#benableserverpacketreordering)
-56. [bEnableLoosePositionCheck](#benableloosepositioncheck)
-57. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
-58. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
-59. [bEnableJitterBounding](#benablejitterbounding)
-60. [ShowTouchedPackage](#showtouchedpackage)
-61. [ExcludeMapsForKickers](#excludemapsforkickers)
-62. [ForcedSettings](#forcedsettings)
+48. [bAlwaysRenderFlagCarrier](#balwaysrenderflagcarrier)
+49. [bAlwaysRenderDroppedFlags](#balwaysrenderdroppedflags)
+50. [MinPosError](#minposerror)
+51. [MaxPosError](#maxposerror)
+52. [MaxHitError](#maxhiterror)
+53. [MaxJitterTime](#maxjittertime)
+54. [MinNetUpdateRate](#minnetupdaterate)
+55. [MaxNetUpdateRate](#maxnetupdaterate)
+56. [bEnableServerExtrapolation](#benableserverextrapolation)
+57. [bEnableServerPacketReordering](#benableserverpacketreordering)
+58. [bEnableLoosePositionCheck](#benableloosepositioncheck)
+59. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
+60. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
+61. [bEnableJitterBounding](#benablejitterbounding)
+62. [bEnableWarpFix](#benablewarpfix)
+63. [WarpFixDelay](#warpfixdelay)
+64. [ShowTouchedPackage](#showtouchedpackage)
+65. [ExcludeMapsForKickers](#excludemapsforkickers)
+66. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1298,6 +1313,21 @@ If enabled, updates by clients over more than [MaxJitterTime](#maxjittertime) wi
 
 Disable to restore default netcode behavior.
 
+## bEnableWarpFix
+
+**Type: bool**  
+**Default: True**  
+
+If enabled, other players will not be extrapolated indefinitely on clients. Instead, after a short amount of time they will be forcibly reset to the last position the client received from the server.
+
+## WarpFixDelay
+
+**Type: float**  
+**Default: 0.25**  
+**Unit: s**  
+
+The amount of time that has to pass without an update from a player before forcing them back to their position on the server for all other clients. Also controls 
+
 ## KillCamDelay
 
 **Type: float**  
@@ -1382,6 +1412,20 @@ What brightskin mode is allowed for clients.
 
 Scale factor for player models. Scales both DrawScale (visuals) and CollisionRadius/-Height (hitbox).
 
+## bAlwaysRenderFlagCarrier
+
+**Type: bool**  
+**Default: False**  
+
+If True, team-mates of flag carriers will be able to see the carrier through walls.
+
+## bAlwaysRenderDroppedFlags
+
+**Type: bool**  
+**Default: False**  
+
+If True, players are able to see their own flags through walls if those flags are currently dropped on the ground.
+
 ## ForcedSettings
 
 **Type: ForcedSettingsEntry\[128\]**
@@ -1407,8 +1451,8 @@ Each entry can be used to force a setting on clients:
 # Building
 
 1. Go to the installation directory of UT99 in a command shell
-2. Use `git clone https://github.com/utspect/InstaGibPlus InstaGibPlus8` to clone the repo
-3. Navigate to the newly created directory `InstaGibPlus8`
+2. Use `git clone https://github.com/utspect/InstaGibPlus InstaGibPlus9` to clone the repo
+3. Navigate to the newly created directory `InstaGibPlus9`
 4. Execute `build.bat`
 5. The result of the build process will be available in the `System` folder that is next to `build.bat`
 

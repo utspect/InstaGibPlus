@@ -18,13 +18,13 @@ static function Play(
 	if (Player.Level.NetMode == NM_DedicatedServer) return;
 
 	if (SourcePRI.Owner != none && Settings.BeamOriginMode == 1) {
-		SmokeLocation = SourcePRI.Owner.Location + SourceOffset;
+		SmokeLocation = GetPlayerLocation(SourcePRI.Owner) + SourceOffset;
 	} else {
 		SmokeLocation = SourceLocation;
 	}
 
 	if (Target != none && Settings.BeamDestinationMode == 1) {
-		HitLocation = Target.Location + TargetOffset;
+		HitLocation = GetPlayerLocation(Target) + TargetOffset;
 	} else {
 		HitLocation = TargetLocation;
 	}

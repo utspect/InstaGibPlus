@@ -8,6 +8,25 @@ class ST_Translocator extends Translocator;
 
 var ST_Mutator STM;
 
+var WeaponSettingsRepl WSettings;
+
+simulated final function WeaponSettingsRepl FindWeaponSettings() {
+	local WeaponSettingsRepl S;
+
+	foreach AllActors(class'WeaponSettingsRepl', S)
+		return S;
+
+	return none;
+}
+
+simulated final function WeaponSettingsRepl GetWeaponSettings() {
+	if (WSettings != none)
+		return WSettings;
+
+	WSettings = FindWeaponSettings();
+	return WSettings;
+}
+
 function PostBeginPlay()
 {
 	Super.PostBeginPlay();
@@ -17,28 +36,31 @@ function PostBeginPlay()
 }
 
 function ReturnToPreviousWeapon()
-{	// This fixes the "both buttons goes back to old weapon" annoyance.
-	if (GetPropertyText("bEnableDualButtonSwitch") ~= "false")
+{
+	if (Owner.IsA('bbPlayer') && bbPlayer(Owner).IGPlus_EnableDualButtonSwitch == false)
 		return;
 	Super.ReturnToPreviousWeapon();
 }
 
 function Translocate()
 {
-	STM.PlayerHit(Pawn(Owner), 2, False);			// 2 = Translocator
+	if (STM != none)
+		STM.PlayerHit(Pawn(Owner), 2, False);			// 2 = Translocator
 	if (Owner.IsA('bbPlayer'))
 		bbPlayer(Owner).IGPlus_BeforeTranslocate();
 	Super.Translocate();
 	if (Owner.IsA('bbPlayer'))
 		bbPlayer(Owner).IGPlus_AfterTranslocate();
-	STM.PlayerClear();
+	if (STM != none)
+		STM.PlayerClear();
 }
 
 function ThrowTarget()
 {
 	local Vector Start, X,Y,Z;
 
-	STM.PlayerFire(Pawn(Owner), 2);		// 2 = Translocator
+	if (STM != none)
+		STM.PlayerFire(Pawn(Owner), 2);		// 2 = Translocator
 
 	if (Level.Game.LocalLog != None)
 		Level.Game.LocalLog.LogSpecialEvent("throw_translocator", Pawn(Owner).PlayerReplicationInfo.PlayerID);
@@ -55,7 +77,7 @@ function ThrowTarget()
 	{
 		bTTargetOut = true;
 		TTarget.Master = self;
-		TTarget.DisruptionThreshold = STM.WeaponSettings.TranslocatorHealth;
+		TTarget.DisruptionThreshold = GetWeaponSettings().TranslocatorHealth;
 		if ( Owner.IsA('Bot') )
 			TTarget.SetCollisionSize(0,0);
 		TTarget.Throw(Pawn(Owner), MaxTossForce, Start);
@@ -63,9 +85,23 @@ function ThrowTarget()
 	else GotoState('Idle');
 }
 
-simulated function TweenDown()
-{
-	PlayAnim('Down', 100.0, 0.0);
+simulated function PlaySelect() {
+	bForceFire = false;
+	bForceAltFire = false;
+	if ( bTTargetOut )
+		TweenAnim('ThrownFrame', GetWeaponSettings().TranslocatorOutSelectTime);
+	else
+		PlayAnim('Select',GetWeaponSettings().TranslocatorSelectAnimSpeed(), 0.0);
+	PlaySound(SelectSound, SLOT_Misc,Pawn(Owner).SoundDampening);		
+}
+
+simulated function TweenDown() {
+	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
+		TweenAnim( AnimSequence, AnimFrame * 0.36 );
+	else if ( bTTargetOut )
+		PlayAnim('Down2', GetWeaponSettings().TranslocatorDownAnimSpeed(), 0.05);
+	else
+		PlayAnim('Down', GetWeaponSettings().TranslocatorDownAnimSpeed(), 0.05);
 }
 
 defaultproperties {

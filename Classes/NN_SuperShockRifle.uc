@@ -50,9 +50,12 @@ simulated function yModInit()
 simulated function bool ClientFire(float Value)
 {
 	local bbPlayer bbP;
+	local bool Result;
 
 	if (Owner.IsA('Bot'))
 		return Super.ClientFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_BeforeClientFire(self);
 
 	if (AmmoType == None)
 		AmmoType = Ammo(Pawn(Owner).FindInventoryType(AmmoName));
@@ -60,8 +63,10 @@ simulated function bool ClientFire(float Value)
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
-		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.9)
+		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.9) {
+			class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
 			return false;
+		}
 		if ( (AmmoType == None) && (AmmoName != None) )
 		{
 			// ammocheck
@@ -79,15 +84,22 @@ simulated function bool ClientFire(float Value)
 			LastFiredTime = Level.TimeSeconds;
 		}
 	}
-	return Super.ClientFire(Value);
+	Result = Super.ClientFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
+
+	return Result;
 }
 
 simulated function bool ClientAltFire(float Value) {
 
 	local bbPlayer bbP;
+	local bool Result;
 
 	if (Owner.IsA('Bot'))
 		return Super.ClientFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_BeforeClientAltFire(self);
 
 	if (AmmoType == None)
 		AmmoType = Ammo(Pawn(Owner).FindInventoryType(AmmoName));
@@ -95,8 +107,10 @@ simulated function bool ClientAltFire(float Value) {
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
-		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.9)
+		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.9) {
+			class'NN_WeaponFunctions'.static.IGPlus_AfterClientAltFire(self);
 			return false;
+		}
 		if ( (AmmoType == None) && (AmmoName != None) )
 		{
 			// ammocheck
@@ -114,7 +128,11 @@ simulated function bool ClientAltFire(float Value) {
 			LastFiredTime = Level.TimeSeconds;
 		}
 	}
-	return Super.ClientFire(Value);
+	Result = Super.ClientFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_AfterClientAltFire(self);
+
+	return Result;
 }
 
 function Fire( float Value )
@@ -315,7 +333,7 @@ function TraceFire( float Accuracy )
 {
 	local bbPlayer bbP;
 	local actor NN_Other;
-	local vector NN_HitLoc, HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
+	local vector NN_HitLoc, HitNormal, StartTrace, EndTrace, X,Y,Z;
 
 	if (Owner.IsA('Bot'))
 	{
@@ -361,7 +379,6 @@ function TraceFire( float Accuracy )
 	}
 	else
 	{
-		bbP.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
 		NN_HitLoc = bbP.zzNN_HitLoc;
 	}
 	ProcessTraceHit(bbP.zzNN_HitActor, NN_HitLoc, HitNormal, vector(AdjustedAim), Y, Z);

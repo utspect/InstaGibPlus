@@ -12,3 +12,9 @@ static function Play(
 	vector TargetOffset,
 	vector HitNormal
 );
+
+static final function vector GetPlayerLocation(Actor PotentialPlayer) {
+	if (PotentialPlayer.IsA('bbPlayer'))
+		return bbPlayer(PotentialPlayer).IGPlus_CurrentLocation();
+	return PotentialPlayer.Location;
+}

@@ -8,7 +8,6 @@ class ST_SniperRifle extends SniperRifle;
 
 var ST_Mutator STM;
 
-var float ReloadTime;
 enum EZoomState {
 	ZS_None,
 	ZS_Zooming,
@@ -17,10 +16,23 @@ enum EZoomState {
 };
 var EZoomState ZoomState;
 
-replication
-{
-	unreliable if (Role == ROLE_Authority)
-		ReloadTime;
+var WeaponSettingsRepl WSettings;
+
+simulated final function WeaponSettingsRepl FindWeaponSettings() {
+	local WeaponSettingsRepl S;
+
+	foreach AllActors(class'WeaponSettingsRepl', S)
+		return S;
+
+	return none;
+}
+
+simulated final function WeaponSettingsRepl GetWeaponSettings() {
+	if (WSettings != none)
+		return WSettings;
+
+	WSettings = FindWeaponSettings();
+	return WSettings;
 }
 
 function PostBeginPlay()
@@ -29,8 +41,6 @@ function PostBeginPlay()
 
 	ForEach AllActors(Class'ST_Mutator', STM)
 		break;		// Find master :D
-
-	ReloadTime = STM.WeaponSettings.SniperReloadTime;
 }
 
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
@@ -119,19 +129,30 @@ function SetSwitchPriority(pawn Other)
 	}
 }
 
-simulated function PlayFiring()
-{
+simulated function PlayFiring() {
 	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*3.0);
-	PlayAnim(FireAnims[Rand(5)], 0.66666666 / ReloadTime, 0.05);
+	PlayAnim(FireAnims[Rand(5)], GetWeaponSettings().SniperReloadAnimSpeed(), 0.05);
 
 	if ( (PlayerPawn(Owner) != None)
 		&& (PlayerPawn(Owner).DesiredFOV == PlayerPawn(Owner).DefaultFOV) )
 		bMuzzleFlash++;
 }
 
-simulated function TweenDown()
-{
-	PlayAnim('Down', 100.0, 0.0);
+simulated function PlaySelect() {
+	bForceFire = false;
+	bForceAltFire = false;
+	bCanClientFire = false;
+	if ( !IsAnimating() || (AnimSequence != 'Select') )
+		PlayAnim('Select',GetWeaponSettings().SniperSelectAnimSpeed(),0.0);
+	Owner.PlaySound(SelectSound, SLOT_Misc, Pawn(Owner).SoundDampening);	
+}
+
+simulated function TweenDown() {
+	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
+		TweenAnim( AnimSequence, AnimFrame * 0.4 );
+	else
+		PlayAnim('Down', GetWeaponSettings().SniperDownAnimSpeed(), 0.05);
+
 	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
 		ZoomState = ZS_None;
 		PlayerPawn(Owner).EndZoom();

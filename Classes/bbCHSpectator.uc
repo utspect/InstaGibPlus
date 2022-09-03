@@ -55,6 +55,9 @@ replication
 	reliable if (ROLE < ROLE_Authority)
 		ShowStats; //, xxServerActivateMover;
 
+	reliable if (RemoteRole == ROLE_AutonomousProxy)
+		IGPlus_NotifyPlayerRestart;
+		
 	unreliable if (RemoteRole == ROLE_AutonomousProxy)
 		NewCAP;
 
@@ -423,7 +426,7 @@ event PlayerCalcView(out actor ViewActor, out vector CameraLocation, out rotator
 		}
 		CameraRotation.Roll = 0;
 
-		if ( bBehindView || ViewTarget.bHidden || (ViewTarget.IsA('Pawn') && Pawn(ViewTarget).Health <= 0) )
+		if ( bBehindView || (ViewTarget.IsA('Pawn') && (ViewTarget.bHidden || Pawn(ViewTarget).Health <= 0)) )
 			xxCalcBehindView(CameraLocation, CameraRotation, 180);
 		return;
 	}
@@ -997,6 +1000,20 @@ function IGPlus_OpenSettingsMenu() {
 	IGPlus_SettingsMenu.bLeaveOnscreen = true;
 	IGPlus_SettingsMenu.ShowWindow();
 	IGPlus_SettingsMenu.Load();
+}
+
+// Notification of other player respawning, play effects locally
+function IGPlus_NotifyPlayerRestart(vector Loc, rotator Dir, bbPlayer Other) {
+	local UTTeleportEffect PTE;
+
+	PTE = Spawn(class'UTTeleportEffect', self, , Loc, Dir);
+	if (Level.bHighDetailMode == false) {
+		PTE.bOwnerNoSee = (Other == self);
+		PTE.Disable('Tick');
+	}
+	PTE.Initialize(Other, true);
+	PTE.PlaySound(sound'Resp2A',, 10.0);
+	PTE.RemoteRole = ROLE_None;
 }
 
 defaultproperties

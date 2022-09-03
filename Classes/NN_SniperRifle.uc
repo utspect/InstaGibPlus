@@ -10,11 +10,12 @@ var bool bNewNet;		// Self-explanatory lol
 var Rotator GV;
 var Vector CDO;
 var float yMod;
-var float HitDamage;
-var float HeadDamage;
 var float BodyHeight;
-var float SniperSpeed;
 var int zzWin;
+
+var float ReloadTime;
+var float BodyDamage;
+var float HeadDamage;
 enum EZoomState {
 	ZS_None,
 	ZS_Zooming,
@@ -22,6 +23,34 @@ enum EZoomState {
 	ZS_Reset
 };
 var EZoomState ZoomState;
+
+var Object WeaponSettingsHelper;
+var WeaponSettings WeaponSettings;
+
+replication
+{
+	unreliable if (Role == ROLE_Authority)
+		BodyDamage,
+		HeadDamage,
+		ReloadTime;
+}
+
+function PostBeginPlay() {
+	super(SniperRifle).PostBeginPlay();
+
+	WeaponSettingsHelper = new(none, 'InstaGibPlus') class'Object';
+	WeaponSettings = new(WeaponSettingsHelper, 'WeaponSettingsNewNet') class'WeaponSettings';
+
+	if (WeaponSettings != none) {
+		BodyDamage = WeaponSettings.SniperDamage;
+		HeadDamage = WeaponSettings.SniperHeadshotDamage;
+		ReloadTime = WeaponSettings.SniperReloadTime;
+	} else {
+		BodyDamage = 45;
+		HeadDamage = 100;
+		ReloadTime = 0.6666666;
+	}
+}
 
 simulated function RenderOverlays(Canvas Canvas)
 {
@@ -35,8 +64,6 @@ simulated function RenderOverlays(Canvas Canvas)
 	{
 		if (bbP.bFire != 0 && !IsInState('ClientFiring'))
 			ClientFire(1);
-		else if (bbP.bAltFire != 0 && !IsInState('ClientAltFiring'))
-			ClientAltFire(1);
 	}
 }
 
@@ -60,15 +87,20 @@ simulated function yModInit()
 simulated function bool ClientFire(float Value)
 {
 	local bbPlayer bbP;
+	local bool Result;
 
 	if (Owner.IsA('Bot'))
 		return Super.ClientFire(Value);
 
+	class'NN_WeaponFunctions'.static.IGPlus_BeforeClientFire(self);
+	
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
-		if (bbP.ClientCannotShoot() || bbP.Weapon != Self)
+		if (bbP.ClientCannotShoot() || bbP.Weapon != Self) {
+			class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
 			return false;
+		}
 		if ( (AmmoType == None) && (AmmoName != None) )
 		{
 			// ammocheck
@@ -85,7 +117,11 @@ simulated function bool ClientFire(float Value)
 			NN_TraceFire();
 		}
 	}
-	return Super.ClientFire(Value);
+	Result = Super.ClientFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
+
+	return Result;
 }
 
 simulated function bool ClientAltFire( float Value ) {
@@ -94,7 +130,8 @@ simulated function bool ClientAltFire( float Value ) {
 		Pawn(Owner).bAltFire = 0;
 		Global.Fire(0);
 	} else {
-		GotoState('Idle');
+		if (Level.NetMode != NM_Client)
+			GotoState('Idle');
 	}
 
 	return true;
@@ -114,22 +151,6 @@ function Fire ( float Value )
 	if (bbP != None && bNewNet && Value < 1)
 		return;
 	Super.Fire(Value);
-}
-
-function AltFire( float Value )
-{
-	local bbPlayer bbP;
-
-	if (Owner.IsA('Bot'))
-	{
-		Super.AltFire(Value);
-		return;
-	}
-
-	bbP = bbPlayer(Owner);
-	if (bbP != None && bNewNet && Value < 1)
-		return;
-	Super.AltFire(Value);
 }
 
 State ClientActive
@@ -207,12 +228,29 @@ state ClientFiring
 		local bbPlayer O;
 		O = bbPlayer(Owner);
 		if (O != none)
-			O.ClientDebugMessage("Sniper AnimEnd"@O.ViewRotation.Yaw@O.ViewRotation.Pitch);
-		super.AnimEnd();
+			O.ClientDebugMessage("Sniper AnimEnd"@O.ViewRotation.Yaw@O.ViewRotation.Pitch@O.bAltFire);
+
+		if ( (Pawn(Owner) == None)
+			|| ((AmmoType != None) && (AmmoType.AmmoAmount <= 0)) )
+		{
+			PlayIdleAnim();
+			GotoState('');
+		}
+		else if ( !bCanClientFire )
+			GotoState('');
+		else if ( Pawn(Owner).bFire != 0 )
+			Global.ClientFire(0);
+		// else if ( Pawn(Owner).bAltFire != 0 ) // SniperRifle has no AltFire
+		// 	Global.ClientAltFire(0);
+		else
+		{
+			PlayIdleAnim();
+			GotoState('');
+		}
 	}
 }
 
-simulated function NN_TraceFire()
+simulated function NN_TraceFire(optional float Accuracy)
 {
 	local vector HitLocation, HitDiff, HitNormal, StartTrace, EndTrace, X,Y,Z;
 	local actor Other;
@@ -230,30 +268,23 @@ simulated function NN_TraceFire()
 
 	GetAxes(GV,X,Y,Z);
 	StartTrace = Owner.Location + bbP.EyeHeight * vect(0,0,1);
-	EndTrace = StartTrace + (100000 * vector(GV));
+	EndTrace = StartTrace + (100000 * X) + Accuracy * (FRand() - 0.5)* Y * 1000 + Accuracy * (FRand() - 0.5) * Z * 1000;
 
 	Other = bbP.NN_TraceShot(HitLocation,HitNormal,EndTrace,StartTrace,bbP);
 	if (Other.IsA('Pawn'))
 		HitDiff = HitLocation - Other.Location;
 
-	bHeadshot = NN_ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z,yMod);
+	bHeadshot = NN_ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z);
 	bbP.xxNN_Fire(Level.TimeSeconds, -1, bbP.Location, bbP.Velocity, bbP.ViewRotation, Other, HitLocation, HitDiff, bHeadshot);
 }
 
-simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z, float yMod)
+simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
-	local UT_Shellcase s;
-
 	if (Owner.IsA('Bot'))
 		return false;
 
-	s = Spawn(class'UT_ShellCase',, '', Owner.Location + CDO + 30 * X + (2.8 * yMod+5.0) * Y - Z * 1);
-	if ( s != None )
-	{
-		s.DrawScale = 2.0;
-		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
-		s.RemoteRole = ROLE_None;
-	}
+	NN_DoShellCase(PlayerPawn(Owner), Owner.Location + CDO + 30 * X + (2.8 * yMod+5.0) * Y - Z * 1, X, Y, Z);
+
 	if (Other == Level || Other.IsA('Mover'))
 	{
 		Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
@@ -274,7 +305,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}
-	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, HitDamage, MyDamageType);
+	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, BodyDamage, MyDamageType);
 	return false;
 }
 
@@ -299,6 +330,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local Pawn PawnOwner, POther;
 	local PlayerPawn PPOther;
 	local bbPlayer bbP;
+	local vector Momentum;
 
 	if (Owner.IsA('Bot'))
 	{
@@ -336,17 +368,26 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			Other.bIsPawn && (HitLocation.Z - Other.Location.Z > BodyHeight * Other.CollisionHeight)
 			&& (instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice))))
 		{
-			if (HeadDamage > 0)
-				Other.TakeDamage(HeadDamage, PawnOwner, HitLocation, 35000 * X, AltDamageType); // was 100 (150) dmg
-			else
-				Other.TakeDamage(class'UTPure'.default.HeadshotDamage, PawnOwner, HitLocation, 35000 * X, AltDamageType);
+			Other.TakeDamage(
+				HeadDamage,
+				PawnOwner,
+				HitLocation,
+				WeaponSettings.SniperHeadshotMomentum * 35000 * X,
+				AltDamageType);
 		}
 		else
 		{
-			if (HitDamage > 0)
-				Other.TakeDamage(HitDamage,  PawnOwner, HitLocation, 30000.0*X, MyDamageType);	 // was 45 (67) dmg
+			if (Other.bIsPawn)
+				Momentum = WeaponSettings.SniperMomentum * 30000 * X;
 			else
-				Other.TakeDamage(class'UTPure'.default.SniperDamagePri,  PawnOwner, HitLocation, 30000.0*X, MyDamageType);
+				Momentum = 30000 * X;
+
+			Other.TakeDamage(
+				BodyDamage,
+				PawnOwner,
+				HitLocation,
+				Momentum,
+				MyDamageType);
 		}
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 		{
@@ -355,6 +396,18 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			else
 				spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 		}
+	}
+}
+
+simulated function NN_DoShellCase(PlayerPawn Pwner, vector HitLoc, Vector X, Vector Y, Vector Z) {
+	local UT_ShellCase s;
+
+	s = Spawn(class'UT_ShellCase', Pwner,, HitLoc);
+	if ( s != None )
+	{
+		s.DrawScale = 2.0;
+		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
+		s.RemoteRole = ROLE_None;
 	}
 }
 
@@ -398,7 +451,7 @@ function TraceFire( float Accuracy )
 	StartTrace = Owner.Location + bbP.Eyeheight * vect(0,0,1);
 	AdjustedAim = bbP.AdjustAim(1000000, StartTrace, 2*AimError, False, False);
 	X = vector(AdjustedAim);
-	EndTrace = StartTrace + 100000 * X;
+	EndTrace = StartTrace + 100000 * X + Accuracy * (FRand() - 0.5)* Y * 1000 + Accuracy * (FRand() - 0.5) * Z * 1000;
 
 	if (bbP.zzNN_HitActor != None && VSize(bbP.zzNN_HitDiff) > bbP.zzNN_HitActor.CollisionRadius + bbP.zzNN_HitActor.CollisionHeight)
 		bbP.zzNN_HitDiff = vect(0,0,0);
@@ -406,7 +459,6 @@ function TraceFire( float Accuracy )
 	if (bbP.zzNN_HitActor != None && (bbP.zzNN_HitActor.IsA('Pawn') || bbP.zzNN_HitActor.IsA('Projectile')) && FastTrace(bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff, StartTrace))
 	{
 		NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
-		bbP.TraceShot(HitLocation,HitNormal,NN_HitLoc,StartTrace);
 	}
 	else
 	{
@@ -445,10 +497,7 @@ simulated function AnimEnd ()
 simulated function PlayFiring()
 {
 	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*3.0);
-	if (SniperSpeed > 0)
-		PlayAnim(FireAnims[Rand(5)], 0.5 * SniperSpeed + 0.5 * FireAdjust, 0.05);
-	else
-		PlayAnim(FireAnims[Rand(5)], 0.5 * class'UTPure'.default.SniperSpeed + 0.5 * FireAdjust, 0.05);
+	PlayAnim(FireAnims[Rand(5)], 0.66666666 / ReloadTime, 0.05);
 
 	if ( (PlayerPawn(Owner) != None)
 		&& (PlayerPawn(Owner).DesiredFOV == PlayerPawn(Owner).DefaultFOV) )
@@ -525,6 +574,74 @@ simulated function Tick(float DeltaTime) {
 			break;
 		}
 	}
+}
+
+state Idle
+{
+Begin:
+	bPointing=False;
+	if ( (AmmoType != None) && (AmmoType.AmmoAmount<=0) ) 
+		Pawn(Owner).SwitchToBestWeapon();  //Goto Weapon that has Ammo
+	// if ( Pawn(Owner).bFire!=0 ) Fire(0.0);
+	// if ( Pawn(Owner).bAltFire!=0 ) AltFire(0.0);	
+	Disable('AnimEnd');
+	PlayIdleAnim();
+}
+
+// NOTE: this entire function was copied from Botpack.TournamentWeapon
+// comments within are IG+ specific and prevent the weapon from getting stuck.
+// Finish a firing sequence
+function Finish()
+{
+	local Pawn PawnOwner;
+	local bool bForce, bForceAlt;
+
+
+	if ( (Pawn(Owner).bFire!=0) && (FRand() < 0.6) )
+		Timer();
+
+	bForce = bForceFire;
+	bForceAlt = bForceAltFire;
+	bForceFire = false;
+	bForceAltFire = false;
+
+	if ( bChangeWeapon )
+	{
+		GotoState('DownWeapon');
+		return;
+	}
+
+	PawnOwner = Pawn(Owner);
+	if ( PawnOwner == None )
+		return;
+	if ( PlayerPawn(Owner) == None )
+	{
+		if ( (AmmoType != None) && (AmmoType.AmmoAmount<=0) )
+		{
+			PawnOwner.StopFiring();
+			PawnOwner.SwitchToBestWeapon();
+			if ( bChangeWeapon )
+				GotoState('DownWeapon');
+		}
+		else if ( (PawnOwner.bFire != 0) && (FRand() < RefireRate) )
+			Global.Fire(0);
+		else if ( (PawnOwner.bAltFire != 0) && (FRand() < AltRefireRate) )
+			Global.AltFire(0);	
+		else 
+		{
+			PawnOwner.StopFiring();
+			GotoState('Idle');
+		}
+		return;
+	}
+	// if ( ((AmmoType != None) && (AmmoType.AmmoAmount<=0)) || (PawnOwner.Weapon != self) )
+	// 	GotoState('Idle');
+	// else if ( (PawnOwner.bFire!=0) || bForce )
+	// 	Global.Fire(0);
+	// else if ( (PawnOwner.bAltFire!=0) || bForceAlt ) // SniperRifle has no AltFire
+	// 	Global.AltFire(0);
+	// else
+		GotoState('Idle');
 }
 
 defaultproperties

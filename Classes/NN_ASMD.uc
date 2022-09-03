@@ -66,15 +66,20 @@ function inventory SpawnCopy( pawn Other )
 simulated function bool ClientFire(float Value)
 {
 	local bbPlayer bbP;
+	local bool Result;
 
 	if (Owner.IsA('Bot'))
 		return Super.ClientFire(Value);
 
+	class'NN_WeaponFunctions'.static.IGPlus_BeforeClientFire(self);
+
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
-		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.4)
+		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.4) {
+			class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
 			return false;
+		}
 		if ( (AmmoType == None) && (AmmoName != None) )
 		{
 			// ammocheck
@@ -92,7 +97,11 @@ simulated function bool ClientFire(float Value)
 			LastFiredTime = Level.TimeSeconds;
 		}
 	}
-	return Super.ClientFire(Value);
+	Result = Super.ClientFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
+
+	return Result;
 }
 
 simulated function NN_TraceFire()
@@ -441,15 +450,20 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 simulated function bool ClientAltFire(float Value)
 {
 	local bbPlayer bbP;
+	local bool Result;
 
 	if (Owner.IsA('Bot'))
 		return Super.ClientAltFire(Value);
 
+	class'NN_WeaponFunctions'.static.IGPlus_BeforeClientAltFire(self);
+
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
-		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.4)
+		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.4) {
+			class'NN_WeaponFunctions'.static.IGPlus_AfterClientAltFire(self);
 			return false;
+		}
 		if ( AmmoType.AmmoAmount > 0 )
 		{
 			Instigator = Pawn(Owner);
@@ -461,7 +475,11 @@ simulated function bool ClientAltFire(float Value)
 			LastFiredTime = Level.TimeSeconds;
 		}
 	}
-	return Super.ClientAltFire(Value);
+	Result = Super.ClientAltFire(Value);
+
+	class'NN_WeaponFunctions'.static.IGPlus_AfterClientAltFire(self);
+
+	return Result;
 }
 
 function TraceFire( float Accuracy )

@@ -225,6 +225,169 @@ simulated function vector TraceGround( vector Origin )
     return JumpTarget.Location + vect(0,0,-1)*JumpTarget.CollisionHeight;
 }
 
+simulated function LaunchPawn(Pawn Other, optional bool bApply) {
+    local vector Origin;
+    local vector Target;
+    local vector Delta;
+    local rotator Direction;
+    local float Distance;
+    local float OffsetZ;
+    local float Gravity;
+
+    local float Alpha;
+    local float MinAlpha;
+    local float MaxAlpha;
+    local float TanAlpha;
+
+    local float Time;
+    local float SpeedH;
+    local float SpeedV;
+
+    local Bot B;
+
+    local float Peak;
+
+    Origin = Other.Location - vect(0,0,1)*Other.CollisionHeight;
+
+    if(bTraceGround)
+        Target = TraceGround(JumpTarget.Location);
+    else
+        Target = JumpTarget.Location - vect(0,0,1)*JumpTarget.CollisionHeight;
+    Target += VRand()*TargetRand;
+    Target.Z += TargetZOffset;
+
+    Delta = Target - Origin;
+    Direction = rotator(Delta);
+    Direction.Pitch = 0;
+    Distance = VSize(vect(1,1,0)*Delta);
+    OffsetZ = Delta.Z;
+    Gravity = Region.Zone.ZoneGravity.Z;
+
+    Alpha = FClamp(JumpAngle, -90, 90) * DegreeToRadian;
+    TanAlpha = Tan(Alpha);
+
+    if (Distance != 0.0) {
+        MinAlpha = Atan(OffsetZ/Distance);
+        MaxAlpha = Pi/2.0;
+    } else if (OffsetZ > 0.0) {
+        MinAlpha = Pi/2.0;
+        MaxAlpha = Pi/2.0;
+    } else if (OffsetZ < 0.0) {
+        MinAlpha = -Pi/2.0;
+        MaxAlpha = -Pi/2.0;
+    } else {
+        return; // already there
+    }
+
+    if ((Alpha <= MinAlpha) || (TanAlpha > 1000.0)) {
+        // JumpAngle too shallow or too steep
+        // pick an angle half-way between Min and Max
+        Alpha = Lerp(0.5, MinAlpha, MaxAlpha);
+        TanAlpha = Tan(Alpha);
+
+        if (Alpha != MinAlpha)
+            ShowMessage("WARNING: Minimum theoretical jump angle is" @(MinAlpha * RadianToDegree)$ ". JumpAngle=" $int(JumpAngle)$ ". Trying angle=" $(Alpha * RadianToDegree), Other, true);
+    }
+
+    // First, lets define a curve of order 2 (ax²+bx+c) that goes through Point
+    // (0,0) and (Distance,OffsetZ) with the angle between the curve and the
+    // X-axis at x=0 being Alpha.
+    // Trivially, if y is 0 when x is 0, then c must be 0.
+    // --> c = 0
+    // To determine b we rotate a unit vector u along the X-axis by Alpha which
+    // results in u=(cos(Alpha),sin(Alpha)). Then scale the vector u so it has
+    // the form u=(1,b), so divide by cos(Alpha), which gives b as Tan(Alpha).
+    // --> b = Tan(Alpha)
+    // To determine a we insert what we know already together with the second
+    // known point and then solve for a.
+    // a*Distance²+Tan(Alpha)*Distance = OffsetZ
+    // --> a = (OffsetZ - Tan(Alpha)*Distance) / Distance²
+    // 
+    // Second, we will need to know when this curve intersects the X-axis again,
+    // so we solve that now as well.
+    // The first solution has already been given, (x=0).
+    // The second solution can be derived like so:
+    // ax² + bx = 0
+    // x(ax + b) = 0
+    // ax + b = 0
+    // x = -b/a
+    // So the second intersection of the X-Axis happens at
+    // --> x = (-Tan(Alpha)*Distance²) / (OffsetZ - Tan(Alpha)*Distance)
+    //
+    // Third, if we launch an object with velocity v straight upwards under
+    // gravity g, it arrives back at the point where we launched it from after
+    // some time t with the same velocity, but opposite direction. If we add a
+    // horizontal velocity h we can cover some distance s until the object
+    // impacts the ground.
+    // 1) 2v = gt
+    // 2) s = ht
+    // 3) h = v / Tan(Alpha)
+    // 
+    // s = vt/Tan(Alpha)
+    // t = s*Tan(Alpha) / v
+    // 2v = g*s*Tan(Alpha) / v
+    // 2v² = g*s*Tan(Alpha)
+    // v² = g*s*Tan(Alpha) / 2
+    // v = Sqrt(g*s*Tan(Alpha) / 2)
+    // 
+    // s is equal to x from the second step, so insert that here.
+    //
+    // v = Sqrt( Tan(Alpha)² * Distance² * -g / (2(OffsetZ - Tan(Alpha)*Distance)) )
+    //   = Tan(Alpha)*Distance * Sqrt(-0.5g / (OffsetZ - Tan(Alpha)*Distance))
+    //
+    // h = v/Tan(Alpha)
+    //   = Distance * Sqrt(-0.5g / (OffsetZ - Tan(Alpha)*Distance))
+    //
+    // t = Distance / h
+    // --> t = Sqrt((OffsetZ - Tan(Alpha)*Distance) / -0.5g)
+    // --> h = Distance / t
+    // --> v = Tan(Alpha) * h
+
+    if (Distance != 0.0) {
+        Time = Sqrt((OffsetZ - TanAlpha*Distance) / (0.5*Gravity));
+        SpeedH = Distance / Time;
+        SpeedV = SpeedH * TanAlpha;
+    } else if (OffsetZ > 0.0) {
+        SpeedV = Sqrt(-2*OffsetZ*Gravity);
+        Time = SpeedV / -Gravity;
+    }
+
+    // Update pawn's physics
+    if (Other.Physics == PHYS_Walking)
+        Other.SetPhysics(PHYS_Falling);
+    Other.Velocity = vector(Direction)*SpeedH + vect(0,0,1)*SpeedV;
+    Other.Acceleration = vect(0,0,0);
+
+    // AI hints
+    B = Bot(Other);
+    if(B != none) {
+        B.Focus = JumpTarget.Location;
+        B.MoveTarget = JumpTarget;
+        B.MoveTimer = Time - 0.1;
+        B.Destination = JumpTarget.Location;
+        B.bJumpOffPawn = true;
+        B.SetFall();
+        B.DesiredRotation = Direction;
+    }
+
+    if (bLogParams) {
+        Peak = -0.5 * SpeedV * SpeedV / Gravity;
+
+        ShowMessage(
+             "A="  $int(Alpha * RadianToDegree)
+            @"IV=" $int(SpeedV - Gravity*Time)
+            @"IS=" $int(SpeedH)
+            @"IH=" $int(Peak - OffsetZ)
+            @"T="  $int(Time*1000)
+            @"P="  $int(Peak)
+            @"V="  $int(VSize(Other.Velocity))
+            @"G="  $int(Gravity),
+            Other,
+            true
+        );
+    }
+}
+
 simulated function vector CalcVelocity( Pawn Other )
 {
     local vector vel;
@@ -409,8 +572,7 @@ simulated event PostTouch( Actor Other )
         }
         else return;
 
-        // Launch player
-        CalcVelocity( P );
+        CalcVelocity(P);
 
         // Broadcast event
         Instigator = P;

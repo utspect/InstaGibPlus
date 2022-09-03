@@ -81,6 +81,10 @@ var localized string MoreInformationText;
 	var localized string DebugMovementText;
 	var localized string DebugMovementHelp;
 
+	var UWindowCheckbox Chk_LocationOffsetFix;
+	var localized string LocationOffsetFixText;
+	var localized string LocationOffsetFixHelp;
+
 // Auto Demo
 	var UWindowLabelControl Lbl_AutoDemo;
 	var localized string AutoDemoLblText;
@@ -359,6 +363,19 @@ var localized string MoreInformationText;
 	var localized string HitMarkerTeamColorBText;
 	var localized string HitMarkerTeamColorBHelp;
 
+// Crosshair Factory
+	var UWindowLabelControl Lbl_CrosshairFactory;
+	var localized string CrosshairFactoryText;
+
+	var UWindowCheckbox Chk_UseCrosshairFactory;
+	var localized string UseCrosshairFactoryText;
+	var localized string UseCrosshairFactoryHelp;
+
+	var IGPlus_Button Btn_CrosshairSettings;
+	var localized string CrosshairSettingsText;
+
+	var IGPlus_CrosshairSettingsDialog Wnd_CrosshairSettingsDialog;
+
 var float PaddingX;
 var float PaddingY;
 var float LineSpacing;
@@ -453,11 +470,11 @@ function IGPlus_EditControl CreateEditResizable(
 	switch(ECT) {
 		case ECT_Text:
 			Edit.SetNumericOnly(false);
-			Edit.SetNumericOnly(false);
+			Edit.SetNumericFloat(false);
 			break;
 		case ECT_Integer:
 			Edit.SetNumericOnly(true);
-			Edit.SetNumericOnly(false);
+			Edit.SetNumericFloat(false);
 			break;
 		case ECT_Real:
 			Edit.SetNumericOnly(true);
@@ -598,6 +615,24 @@ function IGPlus_ScreenLocationControl CreateScreenLocation(
 	return Sloc;
 }
 
+function IGPlus_Button CreateButton(
+	string T,
+	optional string HT
+) {
+	local IGPlus_Button Btn;
+
+	Btn = IGPlus_Button(CreateControl(class'IGPlus_Button', PaddingX, ControlOffset, 200, 1));
+	Btn.SetText(T);
+	Btn.SetHelpText(HT);
+	Btn.Align = TA_Left;
+	ControlOffset += LineSpacing;
+
+	InsertControl(Btn);
+
+	return Btn;
+
+}
+
 function SetUpForcedModelComboBox(IGPlus_ComboBox Cmb) {
 	Cmb.AddItem(ForcedModelDefault);
 	Cmb.AddItem(ForcedModelAphex);
@@ -708,6 +743,21 @@ function SaveHitSounds() {
 	}
 }
 
+function ShowCrosshairFactoryDialog() {
+	if (Wnd_CrosshairSettingsDialog == none) {
+		Wnd_CrosshairSettingsDialog = IGPlus_CrosshairSettingsDialog(Root.CreateWindow(class'IGPlus_CrosshairSettingsDialog', 0, 0, 0, 0, none, false, 'CrosshairSettingsDialog'));
+
+		if (Wnd_CrosshairSettingsDialog == none) {
+			GetPlayerOwner().ClientMessage("Failed to create Crosshair Factory window (Could not create Dialog)");
+			return;
+		}
+	}
+
+	Wnd_CrosshairSettingsDialog.bLeaveOnscreen = true;
+	Wnd_CrosshairSettingsDialog.ShowWindow();
+	Wnd_CrosshairSettingsDialog.Load();
+}
+
 function Created() {
 	local float ControlWidth;
 
@@ -740,6 +790,7 @@ function Created() {
 	Lbl_Advanced = CreateSeparator(AdvancedText);
 	Chk_LogClientMessages = CreateCheckbox(LogClientMessagesText, LogClientMessagesHelp);
 	Chk_DebugMovement = CreateCheckbox(DebugMovementText, DebugMovementHelp);
+	Chk_LocationOffsetFix = CreateCheckbox(LocationOffsetFixText, LocationOffsetFixHelp);
 
 	Lbl_AutoDemo = CreateSeparator(AutoDemoLblText);
 	Chk_AutoDemo = CreateCheckbox(AutoDemoText, AutoDemoHelp);
@@ -827,6 +878,10 @@ function Created() {
 	HSld_HitMarkerTeamColorG = CreateSlider(0, 255, 1, HitMarkerTeamColorGText, HitMarkerTeamColorGHelp, 150);
 	HSld_HitMarkerTeamColorB = CreateSlider(0, 255, 1, HitMarkerTeamColorBText, HitMarkerTeamColorBHelp, 150);
 
+	Lbl_CrosshairFactory = CreateSeparator(CrosshairFactoryText);
+	Chk_UseCrosshairFactory = CreateCheckbox(UseCrosshairFactoryText, UseCrosshairFactoryHelp);
+	Btn_CrosshairSettings = CreateButton(CrosshairSettingsText);
+
 	ControlOffset += PaddingY-4;
 
 	Load();
@@ -865,6 +920,9 @@ function Notify(UWindowDialogControl C, byte E) {
 
 	if (E == DE_Change && (C == Cmb_SelectedHitSound || C == Cmb_SelectedTeamHitSound))
 		UpdateHitSoundComboBox(UWindowComboControl(C));
+
+	if (E == DE_Click && C == Btn_CrosshairSettings)
+		ShowCrosshairFactoryDialog();
 }
 
 function Load() {
@@ -891,6 +949,7 @@ function Load() {
 
 	Chk_LogClientMessages.bChecked = Settings.bLogClientMessages;
 	Chk_DebugMovement.bChecked = Settings.bDebugMovement;
+	Chk_LocationOffsetFix.bChecked = Settings.bEnableLocationOffsetFix;
 
 	Chk_AutoDemo.bChecked = Settings.bAutoDemo;
 	Edit_DemoMask.SetValue(Settings.DemoMask);
@@ -957,6 +1016,8 @@ function Load() {
 	HSld_HitMarkerTeamColorG.SetValue(Settings.HitMarkerTeamColor.G);
 	HSld_HitMarkerTeamColorB.SetValue(Settings.HitMarkerTeamColor.B);
 
+	Chk_UseCrosshairFactory.bChecked = Settings.bUseCrosshairFactory;
+
 	bLoadSucceeded = true;
 }
 
@@ -987,6 +1048,7 @@ function Save() {
 
 	Settings.bLogClientMessages = Chk_LogClientMessages.bChecked;
 	Settings.bDebugMovement = Chk_DebugMovement.bChecked;
+	Settings.bEnableLocationOffsetFix = Chk_LocationOffsetFix.bChecked;
 
 	Settings.bAutoDemo = Chk_AutoDemo.bChecked;
 	Settings.DemoMask = Edit_DemoMask.GetValue();
@@ -1029,6 +1091,10 @@ function Save() {
 	Settings.HitSoundTeamVolume = float(Edit_HitSoundTeamVolume.GetValue());
 	Settings.SelectedTeamHitSound = Cmb_SelectedTeamHitSound.GetSelectedIndex2();
 
+	// force reloading of hit sounds in case the selected ones changed
+	class'bbPlayerStatics'.default.PlayedHitSound = none;
+	class'bbPlayerStatics'.default.PlayedTeamHitSound = none;
+
 	SaveHitSounds();
 
 	Settings.bEnableKillCam = Chk_EnableKillCam.bChecked;
@@ -1053,6 +1119,8 @@ function Save() {
 	Settings.HitMarkerTeamColor.R = HSld_HitMarkerTeamColorR.GetValue();
 	Settings.HitMarkerTeamColor.G = HSld_HitMarkerTeamColorG.GetValue();
 	Settings.HitMarkerTeamColor.B = HSld_HitMarkerTeamColorB.GetValue();
+
+	Settings.bUseCrosshairFactory = Chk_UseCrosshairFactory.bChecked;
 
 	Settings.SaveConfig();
 }
@@ -1130,6 +1198,9 @@ defaultproperties
 
 		DebugMovementText="Trace Movement Input"
 		DebugMovementHelp="If checked, trace movement input to demo"
+
+		LocationOffsetFixText="Location Offset Fix"
+		LocationOffsetFixHelp="If checked, tries to work around a UT bug that prevents synchronized player locations "
 
 	AutoDemoLblText="Auto Demo"
 
@@ -1341,6 +1412,13 @@ defaultproperties
 
 		HitMarkerTeamColorBText="Color (Team) - Blue"
 		HitMarkerTeamColorBHelp="Blue color component of hit markers for team-mates"
+
+	CrosshairFactoryText="Crosshair Factory"
+
+		UseCrosshairFactoryText="Use Crosshair Factory"
+		UseCrosshairFactoryHelp="If checked, replace standard crosshair with custom crosshair"
+
+		CrosshairSettingsText="Crosshair Settings"
 
 	PaddingX=20
 	PaddingY=20

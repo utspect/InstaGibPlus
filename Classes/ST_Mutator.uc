@@ -30,6 +30,7 @@ var Pawn NextCTFVictim;			// The Guy that just got killed who had flag
 
 var Object WeaponSettingsHelper;
 var WeaponSettings WeaponSettings;
+var WeaponSettingsRepl WSettingsRepl;
 
 function ST_PureStats GetStats(Pawn P)
 {
@@ -796,47 +797,23 @@ function PreBeginPlay()
 	WeaponSettingsHelper = new(none, 'InstaGibPlus') class'Object';
 	WeaponSettings = new(WeaponSettingsHelper, 'WeaponSettingsOldNet') class'WeaponSettings';
 	WeaponSettings.SaveConfig();
+	WSettingsRepl = Spawn(class'WeaponSettingsRepl');
+	WSettingsRepl.InitFromWeaponSettings(WeaponSettings);
 
 	Super.PreBeginPlay();
 }
 
 function Mutate(string MutateString, PlayerPawn Sender)
 {
-	local bbPlayer bbP;
-
 	if (MutateString ~= "PurePlayerHelp")
 	{
 		Sender.ClientMessage("UTPure Stats Extended commands:");
 		Sender.ClientMessage("- ShowStats x (0 = Current Game, 1 = Current Month, 2 = All Time, Default = 0)");
 		Sender.ClientMessage("- NoRevert x (0 = Off, 1 = On, Default = 0)");
-		if (Class'UTPure'.Default.bUseFastWeaponSwitch)
-			Sender.ClientMessage("- Mutate FWS (Toggles FWS on/off)");
 	}
 	else if (MutateString ~= "CheatInfo")
 	{
 		Sender.ClientMessage(WelcomeMessage);
-		Sender.ClientMessage("PureStats Settings:");
-		Sender.ClientMessage("- FWS Enabled:"@Class'UTPure'.Default.bUseFastWeaponSwitch);
-		bbP = bbPlayer(Sender);
-		if (bbP != None)
-		{
-			Sender.ClientMessage("Your Settings:");
-			Sender.ClientMessage("- FWS Enabled:"@bbP.bUseFastWeaponSwitch);
-		}
-	}
-	else if (MutateString ~= "FWS")
-	{
-		if (Class'UTPure'.Default.bUseFastWeaponSwitch)
-		{
-			bbP = bbPlayer(Sender);
-			if (bbP != None)
-			{
-				bbP.bUseFastWeaponSwitch = !bbP.bUseFastWeaponSwitch;
-				Sender.ClientMessage("Faster Weapon Switch:"@bbP.bUseFastWeaponSwitch);
-			}
-		}
-		else
-			Sender.ClientMessage("Faster Weapon Switch is disabled by serveradmin!");
 	}
 	if ( NextMutator != None )
 		NextMutator.Mutate(MutateString, Sender);

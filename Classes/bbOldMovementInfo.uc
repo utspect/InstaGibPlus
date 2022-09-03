@@ -1,13 +1,17 @@
 class bbOldMovementInfo extends Object;
 
 var vector Loc, Vel, Acc;
-var float TimeStamp;
+var float ServerTimeStamp;
+var float ClientTimeStamp;
 
 var bbOldMovementInfo Next;
 
 function Save(bbPlayer P) {
-	TimeStamp = P.Level.TimeSeconds;
+	ServerTimeStamp = P.Level.TimeSeconds;
+	ClientTimeStamp = P.CurrentTimeStamp;
 	Loc = P.Location;
 	Vel = P.Velocity;
 	Acc = P.Acceleration;
+	if (P.Base != none)
+		Vel += P.Base.Velocity;
 }

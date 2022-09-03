@@ -8,6 +8,25 @@ class ST_UT_Eightball extends UT_Eightball;
 
 var ST_Mutator STM;
 
+var WeaponSettingsRepl WSettings;
+
+simulated final function WeaponSettingsRepl FindWeaponSettings() {
+	local WeaponSettingsRepl S;
+
+	foreach AllActors(class'WeaponSettingsRepl', S)
+		return S;
+
+	return none;
+}
+
+simulated final function WeaponSettingsRepl GetWeaponSettings() {
+	if (WSettings != none)
+		return WSettings;
+
+	WSettings = FindWeaponSettings();
+	return WSettings;
+}
+
 function PostBeginPlay()
 {
 	Super.PostBeginPlay();
@@ -204,9 +223,20 @@ function SetSwitchPriority(pawn Other)
 	}		
 }
 
-simulated function TweenDown()
-{
-	PlayAnim('Down', 100.0, 0.0);
+simulated function PlaySelect() {
+	bForceFire = false;
+	bForceAltFire = false;
+	bCanClientFire = false;
+	if ( !IsAnimating() || (AnimSequence != 'Select') )
+		PlayAnim('Select',GetWeaponSettings().EightballSelectAnimSpeed(),0.0);
+	Owner.PlaySound(SelectSound, SLOT_Misc, Pawn(Owner).SoundDampening);	
+}
+
+simulated function TweenDown() {
+	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
+		TweenAnim( AnimSequence, AnimFrame * 0.4 );
+	else
+		PlayAnim('Down', GetWeaponSettings().EightballDownAnimSpeed(), 0.05);
 }
 
 defaultproperties {

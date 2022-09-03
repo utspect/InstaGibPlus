@@ -74,11 +74,19 @@ var config bool   bAllowWeaponShake;
 var config bool   bAutoReady;
 var config bool   bShowDeathReport;
 var config bool   bSmoothFOVChanges;
+var config bool   bEnableLocationOffsetFix;
 var config bool   bEnableKillFeed;
 var config float  KillFeedX;
 var config float  KillFeedY;
 var config float  KillFeedSpeed;
 var config float  KillFeedScale;
+
+enum EFraggerScopeChoice {
+	FSC_None,
+	FSC_Moveable,
+	FSC_Static
+};
+var config EFraggerScopeChoice FraggerScopeChoice;
 
 enum EHitMarkerSource {
 	HMSRC_Server,
@@ -126,21 +134,9 @@ simulated function AppendLayer(CrosshairLayer L) {
 	}
 }
 
-simulated function CheckConfig() {
+simulated function CreateCrosshairLayers() {
 	local int i;
-	local string PackageName;
 	local CrosshairLayer L;
-
-	PackageName = class'StringUtils'.static.GetPackage();
-
-	for (i = 0; i < arraycount(sHitSound); i++) {
-		if (Left(sHitSound[i], 12) ~= "InstaGibPlus") {
-			sHitSound[i] = PackageName$Mid(sHitSound[i], InStr(sHitSound[i], "."));
-		}
-		if (sHitSound[i] == "" && sHitSound[i] != default.sHitSound[i]) {
-			sHitSound[i] = default.sHitSound[i];
-		}
-	}
 
 	for (i = 0; i < arraycount(CrosshairLayers); i++) {
 		if (CrosshairLayers[i].bUse) {
@@ -157,6 +153,24 @@ simulated function CheckConfig() {
 			AppendLayer(L);
 		}
 	}
+}
+
+simulated function CheckConfig() {
+	local int i;
+	local string PackageName;
+
+	PackageName = class'StringUtils'.static.GetPackage();
+
+	for (i = 0; i < arraycount(sHitSound); i++) {
+		if (Left(sHitSound[i], 12) ~= "InstaGibPlus") {
+			sHitSound[i] = PackageName$Mid(sHitSound[i], InStr(sHitSound[i], "."));
+		}
+		if (sHitSound[i] == "" && sHitSound[i] != default.sHitSound[i]) {
+			sHitSound[i] = default.sHitSound[i];
+		}
+	}
+
+	CreateCrosshairLayers();
 
 	if (FPSCounterSmoothingStrength <= 0)
 		FPSCounterSmoothingStrength = 1;
@@ -193,11 +207,11 @@ simulated function string DumpHitSounds() {
 	return Result;
 }
 
-simulated function string DumpColor(out Color C) {
+static function string DumpColor(out Color C) {
 	return "(R="$C.R$",G="$C.G$",B="$C.B$",A="$C.A$")";
 }
 
-simulated function string DumpCrosshairLayer(out CrosshairLayerDescr L) {
+static function string DumpCrosshairLayer(out CrosshairLayerDescr L) {
 	return "(Texture="$L.Texture$",OffsetX="$L.OffsetX$",OffsetY="$L.OffsetY$",ScaleX="$L.ScaleX$",ScaleY="$L.ScaleY$",Color="$DumpColor(L.Color)$",Style="$L.Style$",bSmooth="$L.bSmooth$",bUse="$L.bUse$")";
 }
 
@@ -213,7 +227,47 @@ simulated function string DumpCrosshairLayers() {
 	return Result;
 }
 
-simulated function EHitSoundSource IntToHitSoundSource(int A) {
+simulated function CrosshairLayerDescr GetCrosshairLayer(int i) {
+	return CrosshairLayers[i];
+}
+
+simulated function SetCrosshairLayerTexture(int i, coerce string T) {
+	CrosshairLayers[i].Texture = T;
+}
+
+simulated function SetCrosshairLayerOffsetX(int i, int O) {
+	CrosshairLayers[i].OffsetX = O;
+}
+
+simulated function SetCrosshairLayerOffsetY(int i, int O) {
+	CrosshairLayers[i].OffsetY = O;
+}
+
+simulated function SetCrosshairLayerScaleX(int i, float S) {
+	CrosshairLayers[i].ScaleX = S;
+}
+
+simulated function SetCrosshairLayerScaleY(int i, float S) {
+	CrosshairLayers[i].ScaleY = S;
+}
+
+simulated function SetCrosshairLayerColor(int i, color C) {
+	CrosshairLayers[i].Color = C;
+}
+
+simulated function SetCrosshairLayerStyle(int i, int S) {
+	CrosshairLayers[i].Style = S;
+}
+
+simulated function SetCrosshairLayerSmooth(int i, bool S) {
+	CrosshairLayers[i].bSmooth = S;
+}
+
+simulated function SetCrosshairLayerUse(int i, bool U) {
+	CrosshairLayers[i].bUse = U;
+}
+
+static function EHitSoundSource IntToHitSoundSource(int A) {
 	switch(A) {
 		case 0: return HSSRC_Server;
 		case 1: return HSSRC_Client;
@@ -221,7 +275,7 @@ simulated function EHitSoundSource IntToHitSoundSource(int A) {
 	return HSSRC_Server;
 }
 
-simulated function EHitMarkerSource IntToHitMarkerSource(int A) {
+static function EHitMarkerSource IntToHitMarkerSource(int A) {
 	switch(A) {
 		case 0: return HMSRC_Server;
 		case 1: return HMSRC_Client;
@@ -229,12 +283,21 @@ simulated function EHitMarkerSource IntToHitMarkerSource(int A) {
 	return HMSRC_Server;
 }
 
-simulated function EHitMarkerColorMode IntToHitMarkerColorMode(int A) {
+static function EHitMarkerColorMode IntToHitMarkerColorMode(int A) {
 	switch(A) {
 		case 0: return HMCM_FriendOrFoe;
 		case 1: return HMCM_TeamColor;
 	}
 	return HMCM_FriendOrFoe;
+}
+
+simulated function CycleFraggerScope() {
+	switch(FraggerScopeChoice) {
+		case FSC_None:     FraggerScopeChoice = FSC_Moveable; break;
+		case FSC_Moveable: FraggerScopeChoice = FSC_Static; break;
+		case FSC_Static:   FraggerScopeChoice = FSC_None; break;
+	}
+	SaveConfig();
 }
 
 simulated function string DumpSettings() {
@@ -297,11 +360,13 @@ simulated function string DumpSettings() {
 		GetSetting("bAutoReady")$
 		GetSetting("bShowDeathReport")$
 		GetSetting("bSmoothFOVChanges")$
+		GetSetting("bEnableLocationOffsetFix")$
 		GetSetting("bEnableKillFeed")$
 		GetSetting("KillFeedX")$
 		GetSetting("KillFeedY")$
 		GetSetting("KillFeedSpeed")$
 		GetSetting("KillFeedScale")$
+		GetSetting("FraggerScopeChoice")$
 		GetSetting("bEnableHitMarker")$
 		GetSetting("bEnableTeamHitMarker")$
 		GetSetting("HitMarkerColorMode")$
@@ -343,10 +408,10 @@ defaultproperties
 	SelectedTeamHitSound=2
 	HitSoundVolume=4
 	HitSoundTeamVolume=4
-	sHitSound(0)="InstaGibPlus8.HitSound"
+	sHitSound(0)="InstaGibPlus9.HitSound"
 	sHitSound(1)="UnrealShare.StingerFire"
-	sHitSound(2)="InstaGibPlus8.HitSoundFriendly"
-	sHitSound(3)="InstaGibPlus8.HitSound1"
+	sHitSound(2)="InstaGibPlus9.HitSoundFriendly"
+	sHitSound(3)="InstaGibPlus9.HitSound1"
 	cShockBeam=1
 	bHideOwnBeam=False
 	BeamScale=0.45
@@ -377,11 +442,13 @@ defaultproperties
 	bAutoReady=True
 	bShowDeathReport=False
 	bSmoothFOVChanges=False
+	bEnableLocationOffsetFix=True
 	bEnableKillFeed=True
 	KillFeedX=0.0
 	KillFeedY=0.5
 	KillFeedSpeed=1.0
 	KillFeedScale=1.0
+	FraggerScopeChoice=FSC_Moveable
 	bEnableHitMarker=False
 	bEnableTeamHitMarker=False
 	HitMarkerColorMode=HMCM_FriendOrFoe

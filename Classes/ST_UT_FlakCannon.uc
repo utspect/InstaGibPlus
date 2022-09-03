@@ -8,6 +8,25 @@ class ST_UT_FlakCannon extends UT_FlakCannon;
 
 var ST_Mutator STM;
 
+var WeaponSettingsRepl WSettings;
+
+simulated final function WeaponSettingsRepl FindWeaponSettings() {
+	local WeaponSettingsRepl S;
+
+	foreach AllActors(class'WeaponSettingsRepl', S)
+		return S;
+
+	return none;
+}
+
+simulated final function WeaponSettingsRepl GetWeaponSettings() {
+	if (WSettings != none)
+		return WSettings;
+
+	WSettings = FindWeaponSettings();
+	return WSettings;
+}
+
 function PostBeginPlay()
 {
 	Super.PostBeginPlay();
@@ -135,14 +154,26 @@ function SetSwitchPriority(pawn Other)
 	}		
 }
 
-simulated function TweenDown()
-{
-	PlayAnim('Down', 100.0, 0.0);
+simulated function TweenDown() {
+	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
+		TweenAnim( AnimSequence, AnimFrame * 0.4 );
+	else if ( AmmoType.AmmoAmount < 1 )
+		TweenAnim('Select', GetWeaponSettings().FlakDownTime + 0.05);
+	else
+		PlayAnim('Down',GetWeaponSettings().FlakDownAnimSpeed(), 0.05);
 }
 
-simulated function PlayPostSelect()
-{
-	PlayAnim('Loading', 100.0, 0.0);
+simulated function PlaySelect() {
+	bForceFire = false;
+	bForceAltFire = false;
+	bCanClientFire = false;
+	if ( !IsAnimating() || (AnimSequence != 'Select') )
+		PlayAnim('Select',GetWeaponSettings().FlakSelectAnimSpeed(),0.0);
+	Owner.PlaySound(SelectSound, SLOT_Misc, Pawn(Owner).SoundDampening);	
+}
+
+simulated function PlayPostSelect() {
+	PlayAnim('Loading', GetWeaponSettings().FlakPostSelectAnimSpeed(), 0.05);
 	Owner.PlayOwnedSound(Misc2Sound, SLOT_None,1.3*Pawn(Owner).SoundDampening);
 }
 

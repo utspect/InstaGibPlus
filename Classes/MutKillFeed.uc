@@ -41,6 +41,7 @@ var float LastTimeStamp;
 var FontInfo MyFonts;
 var Font NameFont;
 
+var Object SettingsHelper;
 var ClientSettings Settings;
 
 replication {
@@ -65,6 +66,9 @@ simulated function FindSettings() {
 			Settings = S.Settings;
 			return;
 		}
+
+	SettingsHelper = new(none, 'InstaGibPlus') class'Object';
+	Settings = new(SettingsHelper, 'ClientSettings') class'ClientSettings';
 }
 
 simulated event Destroyed() {

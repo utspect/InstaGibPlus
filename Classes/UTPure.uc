@@ -44,7 +44,6 @@ var config bool bAutoPause;		// Enable or disable autopause. (bTournament only)
 var config byte ForceModels;		// 0 = Disallow, 1 = Client Selectable, 2 = Forced
 var config byte ImprovedHUD;		// 0 = Disabled, 1 = Boots/Clock, 2 = Enhanced Team Info
 var config bool bDelayedPickupSpawn;	// Enable or disable delayed first pickup spawn.
-var config bool bUseFastWeaponSwitch;
 var config bool bTellSpectators;	// Enable or disable telling spectators of reason for kicks.
 var config string PlayerPacks[8];	// Config list of supported player packs
 var config int DefaultHitSound, DefaultTeamHitSound;
@@ -66,6 +65,8 @@ var config bool bDodgePreserveZMomentum;
 var config int MaxMultiDodges;
 var config int BrightskinMode; //0=None,1=Unlit
 var config float PlayerScale;
+var config bool bAlwaysRenderFlagCarrier;
+var config bool bAlwaysRenderDroppedFlags;
 
 // Nice variables.
 var float zzTeamChangeTime;			// This would be to Prevent Team Change Spamming
@@ -86,6 +87,7 @@ var float	zzPauseCountdown;		// Give 120 seconds of "ignore FT"
 var config int MaxPosError;
 var config int MaxHitError;
 var config float MaxJitterTime;
+var config float WarpFixDelay;
 var config float MinNetUpdateRate;
 var config float MaxNetUpdateRate;
 var config bool bEnableServerExtrapolation;
@@ -94,6 +96,7 @@ var config bool bEnableLoosePositionCheck;
 var config bool bPlayersAlwaysRelevant;
 var config bool bEnablePingCompensatedSpawn;
 var config bool bEnableJitterBounding;
+var config bool bEnableWarpFix;
 var config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
@@ -282,6 +285,7 @@ function PostBeginPlay()
 		Spawn(Class'PureDPS');
 
 	Spawn(class'NN_SpawnNotify');
+	Spawn(class'IGPlus_UnlagPause');
 
 	if (NNAnnouncer)
 		Spawn(class'NNAnnouncerSA');
@@ -1460,7 +1464,6 @@ defaultproperties
 	ForceModels=1
 	ImprovedHUD=1
 	bDelayedPickupSpawn=False
-	bUseFastWeaponSwitch=True
 	PlayerPacks(0)=""
 	DefaultHitSound=2
 	DefaultTeamHitSound=3
@@ -1468,14 +1471,15 @@ defaultproperties
 	ThrowVelocity=750
 	VersionStr="IG+"
 	LongVersion=""
-	ThisVer="8"
-	NiceVer="8"
+	ThisVer="9"
+	NiceVer="9"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
 	MaxPosError=1000
 	MaxHitError=10000
 	MaxJitterTime=0.1
+	WarpFixDelay=0.25
 	MinNetUpdateRate=60.0
 	MaxNetUpdateRate=200.0
 	ShowTouchedPackage=False
@@ -1493,10 +1497,13 @@ defaultproperties
 	MaxMultiDodges=1
 	BrightskinMode=1
 	PlayerScale=1.0
+	bAlwaysRenderFlagCarrier=False
+	bAlwaysRenderDroppedFlags=False
 	bEnableServerExtrapolation=True
 	bEnableServerPacketReordering=False
 	bEnableLoosePositionCheck=True
 	bPlayersAlwaysRelevant=True
 	bEnablePingCompensatedSpawn=True
 	bEnableJitterBounding=True
+	bEnableWarpFix=True
 }

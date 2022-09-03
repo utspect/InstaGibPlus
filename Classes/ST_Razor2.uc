@@ -32,15 +32,25 @@ auto state Flying
 					&& (!Instigator.IsA('Bot') || !Bot(Instigator).bNovice) )
 				{
 					STM.PlayerHit(Instigator, 11, True);		// 11 = Ripper Primary Headshot
-					Other.TakeDamage(3.5 * damage, instigator,HitLocation,
-						(MomentumTransfer * Normal(Velocity)), 'decapitated' );
+					Other.TakeDamage(
+						STM.WeaponSettings.RipperHeadshotDamage,
+						Instigator,
+						HitLocation,
+						STM.WeaponSettings.RipperHeadshotMomentum * MomentumTransfer * Normal(Velocity),
+						'decapitated'
+					);
 					STM.PlayerClear();
 				}
 				else			 
 				{
 					STM.PlayerHit(Instigator, 11, False);		// 11 = Ripper Primary
-					Other.TakeDamage(damage, instigator,HitLocation,
-						(MomentumTransfer * Normal(Velocity)), 'shredded' );
+					Other.TakeDamage(
+						STM.WeaponSettings.RipperPrimaryDamage,
+						instigator,
+						HitLocation,
+						STM.WeaponSettings.RipperPrimaryMomentum * MomentumTransfer * Normal(Velocity),
+						'shredded'
+					);
 					STM.PlayerClear();
 				}
 			}
