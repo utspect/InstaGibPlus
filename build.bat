@@ -135,6 +135,8 @@ if %VERBOSE% GEQ 1 (
     echo VERBOSE=%VERBOSE%
 )
 
+call %BUILD_DIR%Build\CreateVersionInfo.bat %PACKAGE_NAME% dev %PACKAGE_NAME%
+
 pushd "%BUILD_DIR%..\System"
 
 set MAKEINI="%BUILD_TEMP%make.ini"

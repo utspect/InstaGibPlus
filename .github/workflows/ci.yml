@@ -32,10 +32,13 @@ jobs:
         run: |
           if ("${{ github.ref_type }}" -eq "tag") {
             echo ("PKG_NAME=${{ github.event.repository.name }}_"+"${{ github.ref }}".SubString(10)) >> $env:GITHUB_ENV
+            echo ("PKG_VER="${{ github.ref }}".SubString(10)) >> $env:GITHUB_ENV
           } elseif ("${{ github.ref }}".StartsWith("refs/pull/:")) {
             echo ("PKG_NAME=${{ github.event.repository.name }}_pr_"+"${{ github.ref }}".SubString(11, $length - 17)) >> $env:GITHUB_ENV
+            echo ("PKG_VER="pr_"+"${{ github.ref }}".SubString(11, $length - 17)) >> $env:GITHUB_ENV
           } else {
             echo ("PKG_NAME=${{ github.event.repository.name }}_"+"${{ github.ref }}".SubString(11)+"-"+"${{ github.sha }}".SubString(0,8)) >> $env:GITHUB_ENV
+            echo ("PKG_VER="${{ github.ref }}".SubString(11)+"-"+"${{ github.sha }}".SubString(0,8)) >> $env:GITHUB_ENV
           }
 
       - name: Save Package Name In File
@@ -86,6 +89,12 @@ jobs:
         with:
           pathSource: "${{ env.PKG_NAME }}/Build/BuildEnv.zip"
           pathTarget: .
+
+      - name: Create VersionInfo.uc
+        shell: cmd
+        run: |
+          set BUILD_DIR=${{ env.PKG_NAME }}
+          ${{ env.PKG_NAME }}/Build/CreateVersionInfo.bat ${{ github.event.repository.name }} ${{ env.PKG_VER }} ${{ env.PKG_NAME }}
 
       - name: Build ${{ github.event.repository.name }}
         run: "${{ env.PKG_NAME }}/Build.bat silent noint nouz verbose"
