@@ -93,7 +93,7 @@ jobs:
       - name: Create VersionInfo.uc
         shell: cmd
         run: |
-          set BUILD_DIR=${{ env.PKG_NAME }}
+          set BUILD_DIR=${{ env.PKG_NAME }}/
           ${{ env.PKG_NAME }}/Build/CreateVersionInfo.bat ${{ github.event.repository.name }} ${{ env.PKG_VER }} ${{ env.PKG_NAME }}
 
       - name: Build ${{ github.event.repository.name }}
