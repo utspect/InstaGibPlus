@@ -72,10 +72,6 @@ var config bool bAlwaysRenderDroppedFlags;
 var float zzTeamChangeTime;			// This would be to Prevent Team Change Spamming
 var bool zzbWarmupPlayers;			// Do we have any players warming up?
 var DeathMatchPlus zzDMP;			// A place to store the Game Object.
-var string VersionStr;				// Holds the version code from VUC++
-var string LongVersion;				// Holds the version code from VUC++
-var string ThisVer;					// Holds the version letters
-var string NiceVer;					// Holds the version letters (no underscore)
 var string BADminText;				// Text to give players that want admin commands without being admin.
 var bool bDidEndWarn;				// True if screenshot warning has been sent to players.
 var bool bDidShot;
@@ -160,11 +156,11 @@ function PreBeginPlay()
 
 function PrintVersionInfo() {
 	local string LongStr;
-	LongStr = VersionStr@LongVersion$NiceVer;
+	LongStr = class'VersionInfo'.default.PackageBaseName@class'VersionInfo'.default.PackageVersion;
 
 	if (Len(LongStr) > 20) {
-		xxLog("#"$class'StringUtils'.static.CenteredString(VersionStr, 29, " ")$"#");
-		LongStr = LongVersion$NiceVer;
+		xxLog("#"$class'StringUtils'.static.CenteredString(class'VersionInfo'.default.PackageBaseName, 29, " ")$"#");
+		LongStr = class'VersionInfo'.default.PackageVersion;
 	}
 
 	xxLog("#"$class'StringUtils'.static.CenteredString(LongStr, 29, " ")$"#");
@@ -235,7 +231,7 @@ function PostBeginPlay()
 	{
 
 		// Verify that the PlayerPack Package is in ServerPackages
-		curMLHPack = PlayerPacks[i]$"H"$ThisVer;
+		curMLHPack = PlayerPacks[i]$"H"$class'VersionInfo'.default.PackageVersion;
 		fullpack = curMLHPack$"."$PlayerPacks[i]$"LoginHandler";
 		if (Instr(CAPS(ServPacks), Caps(Chr(34)$curMLHPack$Chr(34))) != -1)
 		{
@@ -894,7 +890,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 
 	if (MutateString ~= "CheatInfo")
 	{
-		Sender.ClientMessage("This server is running "$VersionStr@NiceVer);
+		Sender.ClientMessage("This server is running "$class'VersionInfo'.default.PackageBaseName@class'VersionInfo'.default.PackageVersion);
 		if (bUTPureEnabled)
 		{
 			Sender.ClientMessage("UTPure settings:");
@@ -1469,10 +1465,6 @@ defaultproperties
 	DefaultTeamHitSound=3
 	TeleRadius=210
 	ThrowVelocity=750
-	VersionStr="IG+"
-	LongVersion=""
-	ThisVer="9"
-	NiceVer="9"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
 	NNAnnouncer=True
