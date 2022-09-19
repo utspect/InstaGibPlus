@@ -1,12 +1,9 @@
-*.old
-*.old2
-*.uc_ig
-*.uc_nn
+/Classes/VersionInfo.uc
 
 *.sublime-workspace
-
 PostBuildHook.bat
 
 /Build/Temp/**/*
-/System/**/*
-!/System/**/InstaGibPlus*.int
+/System/**/*.u
+/System/**/*.uz
+

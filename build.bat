@@ -1,50 +1,157 @@
+:: UT99 Build System For Windows
+:: 
+:: Expects to have been placed in the root directory of the
+:: package you want to build.
+:: 
+:: Options:
+::   BuildDir <directory> - Manually specify the root directory of the package
+::     Example: C:\UT99\MyPackage\Build\Build.bat BuildDir "C:\UT99\MyPackage\"
+::   NoInt - Do not automatically generate a .int for the package
+::   NoUz - Do not automatically generate a .u.uz for the package
+::   Silent - Suppresses compatibility warnings, automatically resolves them
+::   NoBind - Prevents binding native functions to C++ implementations, useful when adding new natives
+::   Verbose - Can be used multiple times. More verbose -> More output from script
+:: 
+:: Dependencies:
+::   There is a way to specify dependencies.
+::   First, you need to add them to the list of dependencies
+::    in BuildSettings.bat, which can be found next to this
+::    file.
+::   Second, you need to add a new folder under
+::    Build/Dependencies/ with the name of the dependency.
+::   Third, place inside it all resources for the dependency
+::    in the same folder structure the game expects packages
+::    to be in. That means .u files need to be inside a
+::    System subfolder, .utx in a Textures subfolder, etc.
+::   Example:
+::    Lets say you have a package called MyPackage which
+::    depends on a package called MyDependency. Here is what
+::    the (simplified) folder structure should look like:
+::      C:\UT99\MyPackage\
+::      ├─Build\
+::      │ └─Dependencies\
+::      │   └─MyDependency\
+::      │     ├─System\
+::      │     │ └─MyDependency.u
+::      │     └─Textures\
+::      │       └─MyDependencyTex.utx
+::      ├─Classes\
+::      │ └─MyClass.uc
+::      ├─Build.bat
+::      └─BuildSettings.bat
+:: 
+:: A non-exhaustive list of reason you depend on a package:
+::   - When you extend a class of another package
+::      Example:
+::       class MyClass extends MyDependency.CoolBaseClass;
+::   - When you declare a variable/member of a type from
+::     your dependency within one of your classes
+::      Example:
+::       var MyDependency.CoolClass MyVar;
+::   - When you cast to a class from another package
+::      Example:
+::       MyVar = CoolClass(SomeActor);
+::   - When you refer to an object from a dependency
+::      Examples:
+::       SomeClass = class'MyDependency.CoolClass';
+::       SomeTex = Texture'MyDependency.CoolTexture';
+::       SomeMesh = LodMesh'MyDependency.CoolMesh';
+:: 
+:: Be careful about what packages you depend on.
+:: - Server admins need to install them together with your
+::    package, which also means they need to redirect them
+::    for people to download. More work for server admins
+::    slows adoption of your package by them.
+:: - Packages without obvious versioning might have multiple
+::    different and incompatible versions using the same
+::    name and being depended on by various other mods.
+:: - Server admins might run into problems where your
+::    package depends on version 2 of MyDependency, but
+::    another package the server admin wants to use depends
+::    on version 1 of MyDependency, which cant be resolved.
+:: - As a consequence, make sure every package you release
+::    has version information in the name, especially if you
+::    expect to be depended on by someone else.
+::
+:: PostBuildHook:
+::   PostBuildHook.bat is executed after a successful build
+::    if it exists next to this file. This is intended for
+::    use with automation, like, for example, updating a
+::    server with the shiny new version of MyPackage that
+::    was just built.
+::   For this reason PostBuildHook.bat should not be
+::    archived in version control or shared with others.
+::
+::   If the NoBind option is specified, PostBuildHook will
+::    never be called because NoBind is an intermediary step
+::    towards the final package.
+::
 @echo off
 setlocal enabledelayedexpansion enableextensions
-set VERBOSE=0
+
 set BUILD_DIR=%~dp0
-set BUILD_TEMP=%BUILD_DIR%Build\Temp\
 set BUILD_NOINT=0
 set BUILD_NOUZ=0
 set BUILD_SILENT=0
+set BUILD_NOBIND=0
+set BUILD_BYTEHAX=0
+set VERBOSE=0
 
 :ParseArgs
-    if /I "%1" EQU "NoInt"  ( set BUILD_NOINT=1 )
-    if /I "%1" EQU "NoUz"   ( set BUILD_NOUZ=1 )
-    if /I "%1" EQU "Silent" ( set BUILD_SILENT=1 )
-    if /I "%1" EQU "Verbose" ( set /A VERBOSE+=1 )
+    if /I "%1" EQU "BuildDir" (
+        set BUILD_DIR=%~f2
+        shift /1
+    )
+
+    if /I "%1" EQU "NoInt"    ( set BUILD_NOINT=1 )
+    if /I "%1" EQU "NoUz"     ( set BUILD_NOUZ=1 )
+
+    if /I "%1" EQU "Silent"   ( set BUILD_SILENT=1 )
+    if /I "%1" EQU "NoBind"   ( set BUILD_NOBIND=1 )
+    if /I "%1" EQU "ByteHax"  ( set BUILD_BYTEHAX=1 )
+
+    if /I "%1" EQU "Verbose"  ( set /A VERBOSE+=1 )
+    
     shift /1
     if [%1] NEQ [] goto ParseArgs
 
-call :SetPackageName "%~dp0."
+if %VERBOSE% GEQ 3 echo on
+
+call :SetPackageName "%BUILD_DIR%."
+call "%~dp0BuildSettings.bat"
+
+set BUILD_TEMP=%BUILD_DIR%Build\Temp\
 
 if %VERBOSE% GEQ 1 (
-    echo VERBOSE=%VERBOSE%
+    echo PACKAGE_NAME=%PACKAGE_NAME%
+    echo DEPENDENCIES=%DEPENDENCIES%
     echo BUILD_DIR=%BUILD_DIR%
     echo BUILD_TEMP=%BUILD_TEMP%
     echo BUILD_NOINT=%BUILD_NOINT%
     echo BUILD_NOUZ=%BUILD_NOUZ%
     echo BUILD_SILENT=%BUILD_SILENT%
-    echo PACKAGE_NAME=%PACKAGE_NAME%
+    echo BUILD_NOBIND=%BUILD_NOBIND%
+    echo BUILD_BYTEHAX=%BUILD_BYTEHAX%
+    echo VERBOSE=%VERBOSE%
 )
 
-pushd "%BUILD_DIR%"
+pushd "%BUILD_DIR%..\System"
 
 set MAKEINI="%BUILD_TEMP%make.ini"
-set DEPENDENCIES=
-
 call :GenerateMakeIni %MAKEINI% %DEPENDENCIES% %PACKAGE_NAME%
-
-pushd ..\System
+call :PrepareDependencies %DEPENDENCIES%
 
 :: make sure to always rebuild the package
 :: New package GUID, No doubts about staleness
-del %PACKAGE_NAME%.u
+if exist "%PACKAGE_NAME%.u" del %PACKAGE_NAME%.u
 
-if %BUILD_SILENT% == 1 (
-    call :Invoke ucc make -ini=%MAKEINI% -Silent
-) else (
-    call :Invoke ucc make -ini=%MAKEINI%
-)
+set MAKE_PARAMS=-ini=%MAKEINI%
+
+if %BUILD_SILENT% == 1 set MAKE_PARAMS=!MAKE_PARAMS! -Silent
+if %BUILD_NOBIND% == 1 set MAKE_PARAMS=!MAKE_PARAMS! -NoBind
+if %BUILD_BYTEHAX% == 1 set MAKE_PARAMS=!MAKE_PARAMS! -ByteHax
+
+call :Invoke ucc make %MAKE_PARAMS%
 
 :: dont do the post-process steps if compilation failed
 if ERRORLEVEL 1 goto compile_failed
@@ -65,9 +172,13 @@ if %BUILD_NOINT% == 0 (
     copy %PACKAGE_NAME%.int "%BUILD_DIR%System" >NUL
 )
 
-popd
-
-if exist "PostBuildHook.bat" call "PostBuildHook.bat"
+:: The reason we dont call PostBuildHook is because if youre using NoBind, this
+:: is not the actual build of the package. This just generates header files for
+:: C++. These are then used to build the native library thats bound to the
+:: package, which can (and should) then be built without NoBind.
+if %BUILD_NOBIND% == 0 (
+    call :Hook "%~dp0PostBuildHook.bat"
+)
 
 echo [Finished at %Date% %Time%]
 
@@ -77,9 +188,22 @@ exit /B 0
 
 :compile_failed
 popd
-popd
 endlocal
 exit /B 1
+
+:Hook
+if exist %1 (
+    @setlocal enabledelayedexpansion enableextensions
+    @call %1
+    @endlocal
+    @if %VERBOSE% GEQ 3 (
+        @echo on
+    ) else (
+        @echo off
+    )
+    
+)
+exit /B %ERRORLEVEL%
 
 :Invoke
 if %VERBOSE% GEQ 1 echo %*
@@ -103,10 +227,12 @@ exit /B %ERRORLEVEL%
     if not exist %1 mkdir "%~dp1"
     call :GenerateMakeIniPreamble %1
 
-    :GenerateMakeIniNextDependency
+    :GenerateMakeIni_Loop
+        if [%2] EQU [] goto GenerateMakeIni_EndLoop
         call :GenerateMakeIniDependency %1 %2
         shift /2
-        if [%2] NEQ [] goto GenerateMakeIniNextDependency
+        goto GenerateMakeIni_Loop
+    :GenerateMakeIni_EndLoop
 
     call :GenerateMakeIniPostscript %1
 exit /B %ERRORLEVEL%
@@ -153,3 +279,20 @@ exit /B %ERRORLEVEL%
 :GenerateMakeIniDependency
     echo EditPackages=%2>>%1
 exit /B %ERRORLEVEL%
+
+:PrepareDependencies
+    if [%1] EQU [] exit /B %ERRORLEVEL%
+    if exist "%BUILD_DIR%Build/Dependencies/%1/" (
+    	if %VERBOSE% GEQ 1 echo Copying Dependency %1
+        if %VERBOSE% GEQ 1 (
+        	robocopy "%BUILD_DIR%Build/Dependencies/%1/" .. *.* /S /NJH /NJS /NS /NC /NP
+        ) else (
+        	robocopy "%BUILD_DIR%Build/Dependencies/%1/" .. *.* /S >NUL
+        )
+    ) else (
+        echo "Could not locate dependency '%1' in '%BUILD_DIR%Build/Dependencies/'"
+    )
+    shift /1
+    goto PrepareDependencies
+exit /B %ERRORLEVEL%
+

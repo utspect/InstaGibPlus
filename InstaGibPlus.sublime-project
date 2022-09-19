@@ -18,7 +18,7 @@
         {
             "name": "Build IG+",
             "file_patterns": ["*.uc"],
-            "cmd": ["$project_path/build.bat", "silent"]
+            "cmd": ["$project_path/Build.bat", "silent"]
         }
     ]
 }
