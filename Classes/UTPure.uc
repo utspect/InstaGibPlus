@@ -787,7 +787,7 @@ function ModifyLogout(Pawn Exiting) {
 	local TeamGamePlus TGP;
 
 	bbPRI = bbPlayerReplicationInfo(Exiting.PlayerReplicationInfo);
-	if (bbPRI != none) {
+	if (bbPRI != none && bbPRI.SkinIndex >= 0) {
 		TGP = TeamGamePlus(Level.Game);
 		if (TGP != none) {
 			SkinIndexToPRIMap[(bbPRI.Team << 4) + bbPRI.SkinIndex] = none;
