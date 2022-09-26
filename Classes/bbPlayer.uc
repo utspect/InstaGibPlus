@@ -4643,7 +4643,8 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 
 	if ( Level.Game.DamageMutator != None )
 		Level.Game.DamageMutator.MutatorTakeDamage( ActualDamage, Self, InstigatedBy, HitLocation, Momentum, DamageType );
-	IGPlus_DamageEvent_Add(InstigatedBy.PlayerReplicationInfo, ModifiedDamage1, DamageType);
+	if (InstigatedBy != none)
+		IGPlus_DamageEvent_Add(InstigatedBy.PlayerReplicationInfo, ModifiedDamage1, DamageType);
 
 	if (zzStatMut != None)
 	{	// Damn epic. Damn Damn. Why is armor handled before mutator gets it? Instead of doing it simple, I now have
