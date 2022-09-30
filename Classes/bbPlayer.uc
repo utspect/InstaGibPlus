@@ -2733,7 +2733,9 @@ function IGPlus_SendCAP() {
 		xxCAP(CurrentTimeStamp, GetStateName(), CAPMiscData | (Physics << 2), ClientLoc.X, ClientLoc.Y, ClientLoc.Z, Velocity.X, Velocity.Y, Velocity.Z, Base);
 
 	LastCAPTime = ServerTimeStamp;
-	NextRealCAPTime = ServerTimeStamp + PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation + AverageServerDeltaTime;
+	NextRealCAPTime = ServerTimeStamp;
+	if (class'UTPure'.default.bEnableLoosePositionCheck)
+		NextRealCAPTime += PlayerReplicationInfo.Ping * 0.001 * Level.TimeDilation + AverageServerDeltaTime;
 	zzLastClientErr = 0;
 	IGPlus_WantCAP = false;
 	IGPlus_NotifiedTranslocate = true;
