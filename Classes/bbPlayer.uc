@@ -3605,15 +3605,23 @@ function IGPlus_SavedMove PickRedundantMove(IGPlus_SavedMove Old, IGPlus_SavedMo
 }
 
 function bool CanMergeMove(IGPlus_SavedMove Pending, vector Accel) {
+	local vector OldAccel, NewAccel;
+	local vector OldAccelNorm, NewAccelNorm;
+
 	if (Pending.IGPlus_MergeCount >= 31)
 		return false;
 
-	if (bIs469Server || Pending.Delta >= 0.005) // only 469 servers like updates for <5ms
+	if (bIs469Server || Pending.Delta >= 0.005) { // only 469 servers like updates for <5ms
+		OldAccelNorm = Normal(Pending.Acceleration);
+		NewAccelNorm = Normal(Accel);
+		OldAccel = OldAccelNorm * Min(VSize(Pending.Acceleration), AccelRate);
+		NewAccel = NewAccelNorm * Min(VSize(Accel), AccelRate);
 		return bForcePacketSplit == false &&
-			(VSize(Accel - Pending.Acceleration) < 1 || Normal(Accel) dot Normal(Pending.Acceleration) > 0.95) &&
+			(VSize(NewAccel - OldAccel) < 1 || NewAccelNorm dot OldAccelNorm > 0.95) &&
 			Pending.bForceFire == false && Pending.bForceAltFire == false &&
 			Pending.bPressedJump == false && (Pending.DodgeMove == DODGE_None || Pending.DodgeMove >= DODGE_Active) &&
 			LastAddVelocityAppliedIndex == LastAddVelocityIndex;
+	}
 
 	return true;
 }
@@ -3698,8 +3706,8 @@ function xxReplicateMove(
 		IGPlus_AdjustLocationAlpha -= AdjustAlpha;
 	}
 
-	if ( VSize(NewAccel) > 3072)
-		NewAccel = 3072 * Normal(NewAccel);
+	if ( VSize(NewAccel) > 3072.0)
+		NewAccel = 3072.0 * Normal(NewAccel);
 	OldAccel = Acceleration;
 
 	if (bDrawDebugData) {
