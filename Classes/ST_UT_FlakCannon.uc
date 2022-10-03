@@ -156,7 +156,7 @@ function SetSwitchPriority(pawn Other)
 
 simulated function TweenDown() {
 	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
-		TweenAnim( AnimSequence, AnimFrame * etWeaponSettings().FlakDownAnimSpeed() );
+		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().FlakDownAnimSpeed() );
 	else if ( AmmoType.AmmoAmount < 1 )
 		TweenAnim('Select', GetWeaponSettings().FlakDownTime + 0.05);
 	else
