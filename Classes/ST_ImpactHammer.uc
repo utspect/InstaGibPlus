@@ -239,7 +239,7 @@ simulated function PlaySelect() {
 
 simulated function TweenDown() {
 	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
-		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().HammerDownAnimSpeed() );
+		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().HammerDownTime );
 	else
 		PlayAnim('Down', GetWeaponSettings().HammerDownAnimSpeed(), 0.05);
 }

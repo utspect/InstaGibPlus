@@ -234,7 +234,7 @@ simulated function PlaySelect() {
 
 simulated function TweenDown() {
 	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
-		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().EightballDownAnimSpeed() );
+		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().EightballDownTime );
 	else
 		PlayAnim('Down', GetWeaponSettings().EightballDownAnimSpeed(), 0.05);
 }

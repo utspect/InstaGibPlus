@@ -346,7 +346,7 @@ simulated function PlaySelect() {
 
 simulated function TweenDown() {
 	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
-		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().MinigunDownAnimSpeed() );
+		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().MinigunDownTime );
 	else
 		PlayAnim('Down', GetWeaponSettings().MinigunDownAnimSpeed(), 0.05);
 }

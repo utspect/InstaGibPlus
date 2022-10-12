@@ -137,7 +137,7 @@ simulated function PlaySelect() {
 
 simulated function TweenDown() {
 	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
-		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().EnforcerDownAnimSpeed() );
+		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().EnforcerDownTime );
 	else
 		PlayAnim('Down', GetWeaponSettings().EnforcerDownAnimSpeed(), 0.05);
 }

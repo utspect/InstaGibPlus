@@ -97,7 +97,7 @@ simulated function PlaySelect() {
 
 simulated function TweenDown() {
 	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
-		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().TranslocatorDownAnimSpeed() );
+		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().TranslocatorDownTime );
 	else if ( bTTargetOut )
 		PlayAnim('Down2', GetWeaponSettings().TranslocatorDownAnimSpeed(), 0.05);
 	else
