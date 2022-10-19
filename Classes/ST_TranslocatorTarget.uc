@@ -15,3 +15,7 @@ auto state Pickup {
 			bbPlayer(Master.Owner).ClientDebugMessage("TTarget took"@Damage@"damage (Total"@int(Disruption)$")");
 	}
 }
+
+defaultproperties {
+	bSimFall=True
+}

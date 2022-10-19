@@ -151,7 +151,7 @@ state FireRockets
 					r.NumExtraRockets = DupRockets;
 					if (RocketsLoaded>4 && bTightWad) r.bRing=True;
 					if ( Angle > 0 )
-						r.Velocity *= (0.9 + 0.2 * FRand());			
+						r.Velocity *= (0.9 + 0.2 * FRand());
 				}
 			}
 			else 
