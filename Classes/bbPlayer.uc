@@ -510,9 +510,6 @@ replication
 		DemoReceiveWeaponEffect;
 }
 
-//XC_Engine interface
-native(1719) final function bool IsInPackageMap( optional string PkgName, optional bool bServerPackagesOnly);
-
 static final operator(34) int or_eq (out int A, int B) {
 	A = A | B;
 	return A;
@@ -7672,16 +7669,14 @@ static function bool xxValidSP(string zzSkinName, string zzMeshName, optional Ac
 	zzPackName = xxGetClass(zzSkinName);
 
 	//Attempt to use XC_Engine natives
-   if ( bbPlayer(SkinActor) != none && SkinActor.Role == ROLE_Authority )
-   {
-	  XC_Version = int(SkinActor.ConsoleCommand("get ini:Unreali.SkaarjPlayer XC_Version"));
-	  if ( XC_Version >= 13 )
-	  {
-		 if ( !bbPlayer(SkinActor).IsInPackageMap( zzPackName, true) )
+	if ( bbPlayer(SkinActor) != none && SkinActor.Role == ROLE_Authority )
+	{
+		XC_Version = int(SkinActor.ConsoleCommand("get ini:Unreali.SkaarjPlayer XC_Version"));
+		if ( XC_Version >= 13 )
+		{
 			return false;
-		 return (Left(zzPackName, Len(zzMeshName)) ~= zzMeshName && !(Right(zzSkinName,2) ~= "t_"));
-	  }
-   }
+		}
+	}
 	//Extra pass before potentially crash code
 	if ( zzPackName ~= "BOTPACK" || zzPackName ~= "UNREALI" || zzPackName ~= "UNREALSHARE")
 		return false;

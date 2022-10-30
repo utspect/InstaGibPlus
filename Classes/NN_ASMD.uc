@@ -906,7 +906,7 @@ defaultproperties
 	//AltProjectileClass=Class'ST_TazerProj'
 	bNewNet=True
     hitdamage=35
-    WeaponDescription="Classification: Energy Rifle\n\nPrimary Fire: Lightning-Fast Burst of focused energy.\n\nSecondary Fire: Unstable Energy projectile, expands radially.\n\nTechniques: Hitting the secondary fire energy projectiles with the regular fire's energy will cause an immensely powerful explosion."
+    WeaponDescription="Classification: Energy Rifle\\n\\nPrimary Fire: Lightning-Fast Burst of focused energy.\\n\\nSecondary Fire: Unstable Energy projectile, expands radially.\\n\\nTechniques: Hitting the secondary fire energy projectiles with the regular fire's energy will cause an immensely powerful explosion."
     PickupAmmoCount=20
     bInstantHit=True
     bAltWarnTarget=True

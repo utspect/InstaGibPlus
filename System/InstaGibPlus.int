@@ -249,7 +249,7 @@ StyleModulated="Modulated"
 SmoothText="Smooth"
 
 [NN_ASMD]
-WeaponDescription="Classification: Energy RiflenPrimary Fire: Lightning-Fast Burst of focused energy.nSecondary Fire: Unstable Energy projectile, expands radially.nTechniques: Hitting the secondary fire energy projectiles with the regular fire's energy will cause an immensely powerful explosion."
+WeaponDescription="Classification: Energy Rifle\n\nPrimary Fire: Lightning-Fast Burst of focused energy.\n\nSecondary Fire: Unstable Energy projectile, expands radially.\n\nTechniques: Hitting the secondary fire energy projectiles with the regular fire's energy will cause an immensely powerful explosion."
 PickupMessage="You got the ASMD"
 ItemName="ASMD"
 

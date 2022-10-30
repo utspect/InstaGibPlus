@@ -15,17 +15,17 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Download 469b Patch
+      - name: Download 469c Patch
         uses: robinraju/release-downloader@v1.2
         with:
           repository: "OldUnreal/UnrealTournamentPatches"
-          tag: "v469b"
-          fileName: "OldUnreal-UTPatch469b-Windows.zip"
+          tag: "v469c"
+          fileName: "OldUnreal-UTPatch469c-Windows.zip"
           
       - name: Extract Patch
         uses: DuckSoft/extract-7z-action@v1.0
         with:
-          pathSource: "OldUnreal-UTPatch469b-Windows.zip"
+          pathSource: "OldUnreal-UTPatch469c-Windows.zip"
           pathTarget: .
 
       - name: Determine Package Name

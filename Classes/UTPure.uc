@@ -122,19 +122,8 @@ replication
 		zzAutoPauser;
 }
 
-//XC_Engine interface
-native(1718) final function bool AddToPackageMap( optional string PkgName);
-
 function PreBeginPlay()
 {
-	local int XC_Version;
-
-	XC_Version = int(ConsoleCommand("get ini:engine.engine.gameengine XC_Version"));
-	if ( XC_Version >= 11 )
-	{
-		AddToPackageMap();
-	}
-
 	zzDMP = DeathMatchPlus(Level.Game);
 	if (zzDMP == None)
 		return;
