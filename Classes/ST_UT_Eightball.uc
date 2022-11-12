@@ -140,18 +140,13 @@ state FireRockets
 					s = Spawn( class 'ST_ut_SeekingRocket',, '', FireLocation,FireRot);
 					s.STM = STM;
 					s.Seeking = LockedTarget;
-					s.NumExtraRockets = DupRockets;					
-					if ( Angle > 0 )
-						s.Velocity *= (0.9 + 0.2 * FRand());			
+					s.NumExtraRockets = DupRockets;
 				}
 				else 
 				{
 					r = Spawn( class'ST_rocketmk2',, '', FireLocation,FireRot);
 					r.STM = STM;
 					r.NumExtraRockets = DupRockets;
-					if (RocketsLoaded>4 && bTightWad) r.bRing=True;
-					if ( Angle > 0 )
-						r.Velocity *= (0.9 + 0.2 * FRand());
 				}
 			}
 			else 
