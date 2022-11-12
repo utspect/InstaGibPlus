@@ -67,7 +67,8 @@ state FireRockets
 		local pawn BestTarget, PawnOwner;
 		local PlayerPawn PlayerOwner;
 		local int DupRockets;
-		local bool bMultiRockets;
+		local float Spread;
+		local int i;
 
 		PawnOwner = Pawn(Owner);
 		if ( PawnOwner == None )
@@ -112,28 +113,31 @@ state FireRockets
 		bPendingLock = false;
 		bPointing = true;
 		FireRot = AdjustedAim;
-		RocketRad = 4;
-		if (bTightWad || !bFireLoad) RocketRad=7;
-		bMultiRockets = ( RocketsLoaded > 1 );
+		if (bTightWad || !bFireLoad)
+			RocketRad = 7;
+		else
+			RocketRad = 4;
 
-		While ( RocketsLoaded > 0 )
+		for (i = 0; i < RocketsLoaded; i++)
 		{
-			
-			if ( bMultiRockets )
-				Firelocation = StartLoc - (Sin(Angle)*RocketRad - 7.5)*Y + (Cos(Angle)*RocketRad - 7)*Z;
-			else
+			Spread = (-0.5 * (RocketsLoaded-1) + i);
+
+			if (RocketsLoaded == 1) {
 				FireLocation = StartLoc;
+			} else if (bTightWad || bFireLoad == false) {
+				FireLocation = StartLoc - (Sin(Angle)*RocketRad - 7.5)*Y + (Cos(Angle)*RocketRad - 7)*Z;
+			} else {
+				FireLocation = StartLoc + (Spread*4.0*Y);
+			}
+			
 			if (bFireLoad)
 			{
-				if ( Angle > 0 )
-				{
-					if ( Angle < 3 && !bTightWad)
-						FireRot.Yaw = AdjustedAim.Yaw - Angle * 600;
-					else if ( Angle > 3.5 && !bTightWad)
-						FireRot.Yaw = AdjustedAim.Yaw + (Angle - 3)  * 600;
-					else
-						FireRot.Yaw = AdjustedAim.Yaw;
+				if (bTightWad) {
+					FireRot.Yaw = AdjustedAim.Yaw;
+				} else {
+					FireRot.Yaw = AdjustedAim.Yaw + Spread*660.0;
 				}
+
 				STM.PlayerFire(PawnOwner, 16);		// 16 = Rockets
 				if ( LockedTarget != None )
 				{
@@ -164,8 +168,7 @@ state FireRockets
 				}
 			}
 
-			Angle += 1.0484; //2*3.1415/6;
-			RocketsLoaded--;
+			Angle += 1.04719755; //2*Pi/6;
 		}
 		bTightWad=False;
 		bRotated = false;
