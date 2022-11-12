@@ -120,7 +120,7 @@ state FireRockets
 		{
 			
 			if ( bMultiRockets )
-				Firelocation = StartLoc - (Sin(Angle)*RocketRad - 7.5)*Y + (Cos(Angle)*RocketRad - 7)*Z - X * 4 * FRand();
+				Firelocation = StartLoc - (Sin(Angle)*RocketRad - 7.5)*Y + (Cos(Angle)*RocketRad - 7)*Z;
 			else
 				FireLocation = StartLoc;
 			if (bFireLoad)
