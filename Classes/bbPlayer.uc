@@ -6421,6 +6421,8 @@ function xxPlayerTickEvents(float DeltaTime)
 		zzbDemoRecording = PureLevel.zzDemoRecDriver != None;
 		if (!zzbDemoRecording && zzbGameStarted && (zzbForceDemo || Settings.bAutoDemo && (DeathMatchPlus(Level.Game) == none || DeathMatchPlus(Level.Game).CountDown < 1)))
 			xxClientDemoRec();
+		if (zzbDemoRecording && GameReplicationInfo.GameEndedComments != "" && (zzbForceDemo || Settings.bAutoDemo))
+			ConsoleCommand("StopDemo");
 	}
 }
 
