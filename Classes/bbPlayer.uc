@@ -9085,6 +9085,19 @@ exec function ZoomToggle(float SensitivityX, optional float SensitivityY) {
 	}
 }
 
+exec function IGPlus_FOV(float NewFov) {
+	if( (NewFov >= 80.0) || Level.bAllowFOV || bAdmin || (Level.Netmode==NM_Standalone) )
+	{
+		// stijn: fix for game types not enforcing FOV limits
+		MinFOV = FClamp(MinFOV, 1.0  , 80.0  );
+		MaxFOV = FClamp(MaxFOV, 130.0, 360.0 );
+		// end fix
+		
+		DefaultFOV = FClamp(NewFov, MinFOV, MaxFOV);
+		DesiredFOV = DefaultFOV;
+	}
+}
+
 exec function IGPlusMenu() {
 	local WindowConsole C;
 
