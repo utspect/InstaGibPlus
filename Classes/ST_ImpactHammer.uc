@@ -7,8 +7,14 @@
 class ST_ImpactHammer extends ImpactHammer;
 
 var ST_Mutator STM;
-
 var WeaponSettingsRepl WSettings;
+
+var byte ChargeSizeRepl;
+
+replication {
+	reliable if (bNetOwner && Role == ROLE_Authority)
+		ChargeSizeRepl;
+}
 
 simulated final function WeaponSettingsRepl FindWeaponSettings() {
 	local WeaponSettingsRepl S;
@@ -39,6 +45,8 @@ simulated function Tick(float deltaTime)
 {	// This fixes the really annoying issue regarding IH sound
 	if (Pawn(Owner) == None || Pawn(Owner).Weapon != Self)
 		AmbientSound = None;
+
+	ChargeSizeRepl = byte(Clamp(int(ChargeSize*170.0), 0, 255));
 }
 
 State ClientDown
@@ -68,6 +76,63 @@ State ClientDown
 	simulated function BeginState();
 }
 
+simulated function ClientWeaponEvent(name EventType) {
+	if (EventType == 'FireBlast' && GetStateName() != 'ClientFireBlast') {
+		PlayFiring();
+		GotoState('ClientFireBlast');
+	}
+}
+
+state ClientFiring {
+	simulated function Tick(float Delta) {
+		global.Tick(Delta);
+
+		if (Owner == none || Owner.IsA('bbPlayer') == false)
+			return;
+
+		if (Pawn(Owner).bFire == 0) {
+			ClientTraceFire(0);
+			PlayFiring();
+			GotoState('ClientFireBlast');
+		}
+	}
+}
+
+simulated function ClientTraceFire(float Accuracy) {
+	local vector HitLocation, HitNormal, StartTrace, EndTrace, X, Y, Z;
+	local actor Other;
+	local bbPlayer P;
+	local WeaponSettingsRepl WS;
+	local vector Momentum;
+
+	P = bbPlayer(Owner);
+	WS = GetWeaponSettings();
+	if (P == none || WS == none)
+		return;
+
+	GetAxes(P.ViewRotation, X, Y, Z);
+	StartTrace = Owner.Location + vect(0,0,1)*P.EyeHeight;
+	AdjustedAim = P.ViewRotation;
+	EndTrace = StartTrace + 120.0 * vector(AdjustedAim);
+	Other = P.NN_TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, P);
+
+	if ((Other == Level) || (Other != none && Other.IsA('Mover'))) {
+		Momentum = WS.HammerSelfMomentum * -69000.0 * FMax(ChargeSizeRepl / 170.0, 1.0) * X;
+		if (P.Physics == PHYS_Walking)
+			Momentum.Z = FMax(Momentum.Z, 0.4 * VSize(Momentum));
+		Momentum = Momentum * 0.6 / P.Mass;
+		P.AddVelocity(Momentum);
+	}
+}
+
+state Firing {
+	function Tick(float DeltaTime) {
+		super.Tick(DeltaTime);
+
+		ChargeSizeRepl = byte(Clamp(int(ChargeSize*170.0), 0, 255));
+	}
+}
+
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
 	local Pawn PawnOwner;
@@ -90,10 +155,23 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			STM.WeaponSettings.HammerSelfDamage,
 			PawnOwner,
 			HitLocation,
-			STM.WeaponSettings.HammerSelfMomentum * -69000.0 * ChargeSize * X,
+			vect(0,0,0),
 			MyDamageType
 		);
 		STM.PlayerClear();
+
+		// Manually do what PawnOwner.AddVelocity from PawnOwner.TakeDamage would do.
+		// Cant use AddVelocity because it takes an additional round trip.
+		// Client does the same manual modification of PawnOwner.Velocity in parallel, so it should all work out.
+		Momentum = GetWeaponSettings().HammerSelfMomentum * -69000.0 * ChargeSize * X;
+		if (PawnOwner.Physics == PHYS_Walking)
+			Momentum.Z = FMax(Momentum.Z, 0.4 * VSize(Momentum));
+		Momentum = Momentum * 0.6 / PawnOwner.Mass;
+		if (PawnOwner.Physics == PHYS_Walking)
+			PawnOwner.SetPhysics(PHYS_Falling);
+		if ((PawnOwner.Velocity.Z > 380) && (Momentum.Z > 0))
+			Momentum.Z *= 0.5;
+		PawnOwner.Velocity += Momentum;
 	}
 	if ( Other != Level )
 	{
