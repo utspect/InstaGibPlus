@@ -135,7 +135,7 @@ state FireRockets
 				if (bTightWad) {
 					FireRot.Yaw = AdjustedAim.Yaw;
 				} else {
-					FireRot.Yaw = AdjustedAim.Yaw + Spread*660.0;
+					FireRot.Yaw = AdjustedAim.Yaw + Spread*WSettings.RocketSpreadSpacingDegrees*(65536.0/360.0);
 				}
 
 				STM.PlayerFire(PawnOwner, 16);		// 16 = Rockets

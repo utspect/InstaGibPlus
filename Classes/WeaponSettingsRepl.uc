@@ -16,6 +16,7 @@ var float EightballDownTime;
 var float RocketDamage;
 var float RocketHurtRadius;
 var float RocketMomentum;
+var float RocketSpreadSpacingDegrees;
 var float GrenadeDamage;
 var float GrenadeHurtRadius;
 var float GrenadeMomentum;
@@ -366,6 +367,7 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	RocketDamage = S.RocketDamage;
 	RocketHurtRadius = S.RocketHurtRadius;
 	RocketMomentum = S.RocketMomentum;
+	RocketSpreadSpacingDegrees = S.RocketSpreadSpacingDegrees;
 	GrenadeDamage = S.GrenadeDamage;
 	GrenadeHurtRadius = S.GrenadeHurtRadius;
 	GrenadeMomentum = S.GrenadeMomentum;
@@ -472,6 +474,7 @@ defaultproperties
 	RocketDamage=75
 	RocketHurtRadius=220
 	RocketMomentum=1.0
+	RocketSpreadSpacingDegrees=3.6
 	GrenadeDamage=80
 	GrenadeHurtRadius=200
 	GrenadeMomentum=1.0

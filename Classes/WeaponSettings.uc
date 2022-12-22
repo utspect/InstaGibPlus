@@ -30,6 +30,7 @@ var config float EightballDownTime;
 var config float RocketDamage;
 var config float RocketHurtRadius;
 var config float RocketMomentum;
+var config float RocketSpreadSpacingDegrees;
 var config float GrenadeDamage;
 var config float GrenadeHurtRadius;
 var config float GrenadeMomentum;
@@ -144,6 +145,7 @@ defaultproperties
 	RocketDamage=75
 	RocketHurtRadius=220
 	RocketMomentum=1.0
+	RocketSpreadSpacingDegrees=3.6
 	GrenadeDamage=80
 	GrenadeHurtRadius=200
 	GrenadeMomentum=1.0
