@@ -22,29 +22,32 @@ simulated function PostBeginPlay()
 
 auto state Flying
 {
-	simulated function ProcessTouch (Actor Other, Vector HitLocation)
+	function ProcessTouch (Actor Other, Vector HitLocation)
 	{
-		local RipperPulse s;
-
 		if ( Other != Instigator ) 
 		{
-			if ( Role == ROLE_Authority )
-			{
-				STM.PlayerHit(Instigator, 12, Other.IsA('Pawn'));	// 12 = Ripper Secondary, Direct if Pawn
-				Other.TakeDamage(
-					STM.WeaponSettings.RipperSecondaryDamage,
-					instigator,
-					HitLocation,
-					STM.WeaponSettings.RipperSecondaryMomentum * MomentumTransfer * Normal(Velocity),
-					MyDamageType
-				);
-				STM.PlayerClear();
-			}
-			s = spawn(class'RipperPulse',,,HitLocation);	
- 			s.RemoteRole = ROLE_None;
+			STM.PlayerHit(Instigator, 12, Other.IsA('Pawn'));	// 12 = Ripper Secondary, Direct if Pawn
+			Other.TakeDamage(
+				STM.WeaponSettings.RipperSecondaryDamage,
+				instigator,
+				HitLocation,
+				STM.WeaponSettings.RipperSecondaryMomentum * MomentumTransfer * Normal(Velocity),
+				MyDamageType
+			);
+			STM.PlayerClear();
+			Spawn(class'RipperPulse',,,HitLocation);
 			MakeNoise(1.0);
  			Destroy();
 		}
+	}
+
+	function Explode(vector HitLocation, vector HitNormal)
+	{
+		Spawn(class'RipperPulse',,,HitLocation + HitNormal*16);
+
+		BlowUp(HitLocation);
+
+ 		Destroy();
 	}
 
 	function BlowUp(vector HitLocation)
@@ -89,4 +92,5 @@ auto state Flying
 
 
 defaultproperties {
+	bNetTemporary=False
 }
