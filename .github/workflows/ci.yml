@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Download 469c Patch
-        uses: robinraju/release-downloader@v1.2
+        uses: robinraju/release-downloader@v1.5
         with:
           repository: "OldUnreal/UnrealTournamentPatches"
           tag: "v469c"
@@ -45,7 +45,7 @@ jobs:
         run: echo ("${{ env.PKG_NAME }}") >> PackageName
 
       - name: Create Package Name Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: PackageName
           path: PackageName
@@ -101,7 +101,7 @@ jobs:
 
       - name: Save UCC.log
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ucc-output
           path: System/UCC.log
@@ -124,7 +124,7 @@ jobs:
           }
 
       - name: Save ${{ github.event.repository.name }} Package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: "${{ env.PKG_NAME }}"
           path: |
