@@ -23,10 +23,7 @@ jobs:
           fileName: "OldUnreal-UTPatch469c-Windows.zip"
           
       - name: Extract Patch
-        uses: DuckSoft/extract-7z-action@v1.0
-        with:
-          pathSource: "OldUnreal-UTPatch469c-Windows.zip"
-          pathTarget: .
+        run: 7z x "OldUnreal-UTPatch469c-Windows.zip"
 
       - name: Determine Package Name
         run: |
@@ -53,7 +50,7 @@ jobs:
           if-no-files-found: error
 
       - name: Checkout ${{ github.event.repository.name }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: ${{ env.PKG_NAME }}/
 
@@ -85,10 +82,7 @@ jobs:
           }
 
       - name: Extract Necessary Resources
-        uses: DuckSoft/extract-7z-action@v1.0
-        with:
-          pathSource: "${{ env.PKG_NAME }}/Build/BuildEnv.zip"
-          pathTarget: .
+        run: 7z x "${{ env.PKG_NAME }}/Build/BuildEnv.zip"
 
       - name: Create VersionInfo.uc
         shell: cmd
