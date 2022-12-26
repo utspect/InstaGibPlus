@@ -1,5 +1,7 @@
 class StringUtils extends Object;
 
+var name TempName;
+
 static final function string PackageOfClass(class C) {
 	local string Result;
 	local int DotPos;
@@ -135,4 +137,13 @@ static final function string MergeAffixes(string Prefix, string Suffix) {
 		return Prefix;
 
 	return Prefix$Suffix;
+}
+
+final function name StringToName(coerce string S) {
+	SetPropertyText("TempName", S);
+	return TempName;
+}
+
+static final function StringUtils Instance() {
+	return new (none, 'IGPlus_StringUtils') class'StringUtils';
 }

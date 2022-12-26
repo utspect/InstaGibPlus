@@ -920,7 +920,7 @@ event PostBeginPlay()
 	Super.PostBeginPlay();
 
 	Utils = new(none) class'Utilities';
-	StringUtils = new(none) class'StringUtils';
+	StringUtils = class'StringUtils'.static.Instance();
 	PlayerStatics = Spawn(class'bbPlayerStatics');
 
 	InitSettings();
