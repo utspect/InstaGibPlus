@@ -44,6 +44,7 @@ var config bool bAutoPause;		// Enable or disable autopause. (bTournament only)
 var config byte ForceModels;		// 0 = Disallow, 1 = Client Selectable, 2 = Forced
 var config byte ImprovedHUD;		// 0 = Disabled, 1 = Boots/Clock, 2 = Enhanced Team Info
 var config bool bDelayedPickupSpawn;	// Enable or disable delayed first pickup spawn.
+var config bool bUseFastWeaponSwitch;
 var config bool bTellSpectators;	// Enable or disable telling spectators of reason for kicks.
 var config string PlayerPacks[8];	// Config list of supported player packs
 var config int DefaultHitSound, DefaultTeamHitSound;
@@ -1449,6 +1450,7 @@ defaultproperties
 	ForceModels=1
 	ImprovedHUD=1
 	bDelayedPickupSpawn=False
+	bUseFastWeaponSwitch=False
 	PlayerPacks(0)=""
 	DefaultHitSound=2
 	DefaultTeamHitSound=3

@@ -339,6 +339,7 @@ var bool IGPlus_InitFlagSprites;
 var IGPlus_FlagSprite IGPlus_TeamFlagSprite[4];
 
 var bool IGPlus_EnableDualButtonSwitch;
+var bool IGPlus_UseFastWeaponSwitch;
 
 replication
 {
@@ -358,6 +359,7 @@ replication
 		IGPlus_AlwaysRenderFlagCarrier,
 		IGPlus_EnableWarpFix,
 		IGPlus_WarpFixDelay,
+		IGPlus_UseFastWeaponSwitch,
 		KillCamDelay,
 		KillCamDuration,
 		LastKiller,
@@ -1077,6 +1079,7 @@ event Possess()
 		IGPlus_WarpFixDelay = class'UTPure'.default.WarpFixDelay;
 		IGPlus_AlwaysRenderFlagCarrier = class'UTPure'.default.bAlwaysRenderFlagCarrier;
 		IGPlus_AlwaysRenderDroppedFlags = class'UTPure'.default.bAlwaysRenderDroppedFlags;
+		IGPlus_UseFastWeaponSwitch = class'UTPure'.default.bUseFastWeaponSwitch;
 
 		if(!zzUTPure.bExludeKickers)
 		{
@@ -2413,6 +2416,9 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 			}
 		}
 	}
+
+	if (IGPlus_UseFastWeaponSwitch && PendingWeapon != None)
+		ChangedWeapon();
 
 	CurrentTimeStamp = SM.TimeStamp;
 	ServerTimeStamp = Level.TimeSeconds;
@@ -8459,6 +8465,14 @@ exec function NextWeapon()
 		return;
 
 	Weapon.PutDown();
+}
+
+simulated function ChangedWeapon() {
+	if (Weapon != None && IGPlus_UseFastWeaponSwitch) {
+		Weapon.GotoState('');
+		ClientPutDown(none, PendingWeapon);
+	}
+	Super.ChangedWeapon();
 }
 
 exec function Say(string Msg) {
