@@ -1045,7 +1045,7 @@ event Possess()
 			Class'PlayerShadow'.Default.Texture = Texture'Botpack.EnergyMark';
 			xxServerCheater(chr(90)$chr(69));		// ZE
 		}
-		SetPropertyText("PureLevel", GetPropertyText("xLevel"));
+		SetPropertyText("PureLevel", "\""$GetPropertyText("xLevel")$"\"");
 		FakeCAPInterval = Settings.FakeCAPInterval;
 		IGPlus_DamageEvent_ShowOnDeath = Settings.bShowDeathReport;
 		ClientSetMusic( Level.Song, Level.SongSection, Level.CdTrack, MTRAN_Fade );
