@@ -125,7 +125,7 @@ state Coaching extends CheatFlying
 
 	exec function BehindView( Bool B )
 	{	// Limit behindview if pure wishes it so
-		if (Class'UTPure'.Default.bAllowBehindView)
+		if (zzUTPure.Settings.bAllowBehindView)
 			bBehindView = B;
 		else
 			bBehindView = False;
