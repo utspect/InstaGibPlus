@@ -99,6 +99,8 @@ function InitializeSettings() {
 	if (SettingsName == "")
 		SettingsName = "ServerSettings";
 
+	xxLog("SettingsName="$SettingsName);
+
 	SettingsHelper = new(none, 'InstaGibPlus') class'Object';
 	Settings = new(SettingsHelper, StringUtils.StringToName(SettingsName)) class'ServerSettings';
 	Settings.SaveConfig();

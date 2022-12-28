@@ -451,6 +451,38 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	TranslocatorHealth = S.TranslocatorHealth;
 }
 
+final static function CreateWeaponSettings(
+	LevelInfo L,
+	string DefaultName,
+	out WeaponSettings WS,
+	out WeaponSettingsRepl WSR
+) {
+	local Object Helper;
+	local string Options;
+	local int Pos;
+	local string SettingsName;
+	local StringUtils SU;
+
+	Options = L.GetLocalURL();
+	Pos = InStr(Options, "?");
+	if (Pos < 0)
+		Options = "";
+	else
+		Options = Mid(Options, Pos);
+
+	SU = class'StringUtils'.static.Instance();
+
+	SettingsName = L.Game.ParseOption(Options, "IGPlusWeaponSettings");
+	if (SettingsName == "")
+		SettingsName = DefaultName;
+
+	Helper = new(none, 'InstaGibPlus') class'Object';
+	WS = new(Helper, SU.StringToName(SettingsName)) class'WeaponSettings';
+	WS.SaveConfig();
+	WSR = L.Spawn(class'WeaponSettingsRepl');
+	WSR.InitFromWeaponSettings(WS);
+}
+
 defaultproperties
 {
 	RemoteRole=ROLE_DumbProxy
