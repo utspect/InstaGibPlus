@@ -9,13 +9,6 @@ class ST_ImpactHammer extends ImpactHammer;
 var ST_Mutator STM;
 var WeaponSettingsRepl WSettings;
 
-var byte ChargeSizeRepl;
-
-replication {
-	reliable if (bNetOwner && Role == ROLE_Authority)
-		ChargeSizeRepl;
-}
-
 simulated final function WeaponSettingsRepl FindWeaponSettings() {
 	local WeaponSettingsRepl S;
 
@@ -45,8 +38,6 @@ simulated function Tick(float deltaTime)
 {	// This fixes the really annoying issue regarding IH sound
 	if (Pawn(Owner) == None || Pawn(Owner).Weapon != Self)
 		AmbientSound = None;
-
-	ChargeSizeRepl = byte(Clamp(int(ChargeSize*170.0), 0, 255));
 }
 
 State ClientDown
@@ -84,11 +75,17 @@ simulated function ClientWeaponEvent(name EventType) {
 }
 
 state ClientFiring {
+	simulated function BeginState() {
+		ChargeSize = 0.0;
+	}
+
 	simulated function Tick(float Delta) {
 		global.Tick(Delta);
 
 		if (Owner == none || Owner.IsA('bbPlayer') == false)
 			return;
+
+		ChargeSize += 0.75*Delta;
 
 		if (Pawn(Owner).bFire == 0) {
 			ClientTraceFire(0);
@@ -117,19 +114,12 @@ simulated function ClientTraceFire(float Accuracy) {
 	Other = P.NN_TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, P);
 
 	if ((Other == Level) || (Other != none && Other.IsA('Mover'))) {
-		Momentum = WS.HammerSelfMomentum * -69000.0 * FMax(ChargeSizeRepl / 170.0, 1.0) * X;
+		P.ClientMessage("ChargeSize="$ChargeSize);
+		Momentum = WS.HammerSelfMomentum * -69000.0 * FClamp(ChargeSize, 1.0, 1.5) * X;
 		if (P.Physics == PHYS_Walking)
 			Momentum.Z = FMax(Momentum.Z, 0.4 * VSize(Momentum));
 		Momentum = Momentum * 0.6 / P.Mass;
 		P.AddVelocity(Momentum);
-	}
-}
-
-state Firing {
-	function Tick(float DeltaTime) {
-		super.Tick(DeltaTime);
-
-		ChargeSizeRepl = byte(Clamp(int(ChargeSize*170.0), 0, 255));
 	}
 }
 
