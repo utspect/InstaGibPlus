@@ -148,10 +148,16 @@ simulated function PlaySelect() {
 }
 
 simulated function TweenDown() {
+	local float TweenTime;
+
+	TweenTime = 0.05;
+	if (Owner != none && Owner.IsA('bbPlayer') && bbPlayer(Owner).IGPlus_UseFastWeaponSwitch)
+		TweenTime = 0.00;
+
 	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
 		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().SniperDownTime );
 	else
-		PlayAnim('Down', GetWeaponSettings().SniperDownAnimSpeed(), 0.05);
+		PlayAnim('Down', GetWeaponSettings().SniperDownAnimSpeed(), TweenTime);
 
 	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
 		ZoomState = ZS_None;

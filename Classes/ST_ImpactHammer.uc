@@ -306,10 +306,16 @@ simulated function PlaySelect() {
 }
 
 simulated function TweenDown() {
+	local float TweenTime;
+
+	TweenTime = 0.05;
+	if (Owner != none && Owner.IsA('bbPlayer') && bbPlayer(Owner).IGPlus_UseFastWeaponSwitch)
+		TweenTime = 0.00;
+
 	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
 		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().HammerDownTime );
 	else
-		PlayAnim('Down', GetWeaponSettings().HammerDownAnimSpeed(), 0.05);
+		PlayAnim('Down', GetWeaponSettings().HammerDownAnimSpeed(), TweenTime);
 }
 
 defaultproperties {

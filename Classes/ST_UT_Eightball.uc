@@ -231,10 +231,16 @@ simulated function PlaySelect() {
 }
 
 simulated function TweenDown() {
+	local float TweenTime;
+
+	TweenTime = 0.05;
+	if (Owner != none && Owner.IsA('bbPlayer') && bbPlayer(Owner).IGPlus_UseFastWeaponSwitch)
+		TweenTime = 0.00;
+
 	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
 		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().EightballDownTime );
 	else
-		PlayAnim('Down', GetWeaponSettings().EightballDownAnimSpeed(), 0.05);
+		PlayAnim('Down', GetWeaponSettings().EightballDownAnimSpeed(), TweenTime);
 }
 
 defaultproperties {
