@@ -1045,7 +1045,12 @@ event Possess()
 			Class'PlayerShadow'.Default.Texture = Texture'Botpack.EnergyMark';
 			xxServerCheater(chr(90)$chr(69));		// ZE
 		}
-		SetPropertyText("PureLevel", "\""$GetPropertyText("xLevel")$"\"");
+		// The following doesnt work
+		//SetPropertyText("PureLevel", "\""$GetPropertyText("xLevel")$"\"");
+		// it was intended to maybe support ][ in map names
+		// it does not. As a result, AutoDemo does not work on maps with ][ in
+		// their name.
+		SetPropertyText("PureLevel", GetPropertyText("xLevel"));
 		FakeCAPInterval = Settings.FakeCAPInterval;
 		IGPlus_DamageEvent_ShowOnDeath = Settings.bShowDeathReport;
 		ClientSetMusic( Level.Song, Level.SongSection, Level.CdTrack, MTRAN_Fade );
