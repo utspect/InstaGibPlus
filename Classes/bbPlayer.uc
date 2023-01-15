@@ -6428,13 +6428,12 @@ function xxPlayerTickEvents(float DeltaTime)
 	}
 
 	if (PureLevel != None)	// Why would this be None?!
-	{
 		zzbDemoRecording = PureLevel.zzDemoRecDriver != None;
-		if (!zzbDemoRecording && zzbGameStarted && (zzbForceDemo || Settings.bAutoDemo && (DeathMatchPlus(Level.Game) == none || DeathMatchPlus(Level.Game).CountDown < 1)))
-			xxClientDemoRec();
-		if (zzbDemoRecording && GameReplicationInfo.GameEndedComments != "" && (zzbForceDemo || Settings.bAutoDemo))
-			ConsoleCommand("StopDemo");
-	}
+
+	if (!bDemoStarted && zzbGameStarted && (zzbForceDemo || Settings.bAutoDemo && (DeathMatchPlus(Level.Game) == none || DeathMatchPlus(Level.Game).CountDown < 1)))
+		xxClientDemoRec();
+	if (bDemoStarted && GameReplicationInfo.GameEndedComments != "" && (zzbForceDemo || Settings.bAutoDemo))
+		ConsoleCommand("StopDemo");
 }
 
 static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
@@ -6735,7 +6734,8 @@ event PreRender( canvas zzCanvas )
 	local PlayerReplicationInfo zzPRI;
 	local WindowConsole C;
 
-	zzbDemoRecording = PureLevel != None && PureLevel.zzDemoRecDriver != None;
+	if (PureLevel != None)
+		zzbDemoRecording = PureLevel.zzDemoRecDriver != None;
 
 	Super.PreRender(zzCanvas);
 
