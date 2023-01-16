@@ -83,6 +83,15 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	}
 }
 
+function bool HandlePickupQuery( inventory Item )
+{
+	if (GetWeaponSettings().EnforcerAllowDouble) {
+		return super.HandlePickupQuery(Item);
+	} else {
+		return super(TournamentWeapon).HandlePickupQuery(Item);
+	}
+}
+
 function SetSwitchPriority(pawn Other)
 {	// Make sure "old" priorities are kept.
 	local int i;

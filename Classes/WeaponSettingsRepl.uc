@@ -82,6 +82,7 @@ var float EnforcerSelectTime;
 var float EnforcerDownTime;
 var float EnforcerDamage;
 var float EnforcerMomentum;
+var bool EnforcerAllowDouble;
 
 var float HammerSelectTime;
 var float HammerDownTime;
@@ -182,6 +183,7 @@ replication {
 		EnforcerDownTime,
 		EnforcerDamage,
 		EnforcerMomentum,
+		EnforcerAllowDouble,
 
 		HammerSelectTime,
 		HammerDownTime,
@@ -433,6 +435,7 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	EnforcerDownTime = S.EnforcerDownTime;
 	EnforcerDamage = S.EnforcerDamage;
 	EnforcerMomentum = S.EnforcerMomentum;
+	EnforcerAllowDouble = S.EnforcerAllowDouble;
 
 	HammerSelectTime = S.HammerSelectTime;
 	HammerDownTime = S.HammerDownTime;
@@ -572,6 +575,7 @@ defaultproperties
 	EnforcerDownTime=0.266667
 	EnforcerDamage=17
 	EnforcerMomentum=1.0
+	EnforcerAllowDouble=True
 
 	HammerSelectTime=0.566667
 	HammerDownTime=0.166667

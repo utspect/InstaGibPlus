@@ -96,6 +96,7 @@ var config float EnforcerSelectTime;
 var config float EnforcerDownTime;
 var config float EnforcerDamage;
 var config float EnforcerMomentum;
+var config bool EnforcerAllowDouble;
 
 var config float HammerSelectTime;
 var config float HammerDownTime;
@@ -211,6 +212,7 @@ defaultproperties
 	EnforcerDownTime=0.266667
 	EnforcerDamage=17
 	EnforcerMomentum=1.0
+	EnforcerAllowDouble=True
 
 	HammerSelectTime=0.566667
 	HammerDownTime=0.166667
