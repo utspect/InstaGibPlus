@@ -114,7 +114,7 @@ simulated function ClientTraceFire(float Accuracy) {
 	Other = P.NN_TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, P);
 
 	if ((Other == Level) || (Other != none && Other.IsA('Mover'))) {
-		P.ClientMessage("ChargeSize="$ChargeSize);
+		P.bForcePacketSplit = true;
 		Momentum = WS.HammerSelfMomentum * -69000.0 * FClamp(ChargeSize, 1.0, 1.5) * X;
 		if (P.Physics == PHYS_Walking)
 			Momentum.Z = FMax(Momentum.Z, 0.4 * VSize(Momentum));
