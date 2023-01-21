@@ -82,7 +82,17 @@ var float EnforcerSelectTime;
 var float EnforcerDownTime;
 var float EnforcerDamage;
 var float EnforcerMomentum;
-var bool EnforcerAllowDouble;
+var float EnforcerReloadTime;
+var float EnforcerReloadTimeAlt;
+var float EnforcerReloadTimeRepeat;
+
+var bool  EnforcerAllowDouble;
+var float EnforcerDamageDouble;
+var float EnforcerMomentumDouble;
+var float EnforcerShotOffsetDouble;
+var float EnforcerReloadTimeDouble;
+var float EnforcerReloadTimeAltDouble;
+var float EnforcerReloadTimeRepeatDouble;
 
 var float HammerSelectTime;
 var float HammerDownTime;
@@ -183,7 +193,17 @@ replication {
 		EnforcerDownTime,
 		EnforcerDamage,
 		EnforcerMomentum,
+		EnforcerReloadTime,
+		EnforcerReloadTimeAlt,
+		EnforcerReloadTimeRepeat,
+
 		EnforcerAllowDouble,
+		EnforcerDamageDouble,
+		EnforcerMomentumDouble,
+		EnforcerShotOffsetDouble,
+		EnforcerReloadTimeDouble,
+		EnforcerReloadTimeAltDouble,
+		EnforcerReloadTimeRepeatDouble,
 
 		HammerSelectTime,
 		HammerDownTime,
@@ -328,6 +348,42 @@ simulated final function float EnforcerDownAnimSpeed() {
 	return 100.0;
 }
 
+simulated final function float EnforcerReloadAnimSpeed() {
+	if (EnforcerReloadTime > 0.0)
+		return FMin(100.0, default.EnforcerReloadTime / EnforcerReloadTime);
+	return 100.0;
+}
+
+simulated final function float EnforcerReloadAltAnimSpeed() {
+	if (EnforcerReloadTimeAlt > 0.0)
+		return FMin(100.0, default.EnforcerReloadTimeAlt / EnforcerReloadTimeAlt);
+	return 100.0;
+}
+
+simulated final function float EnforcerReloadRepeatAnimSpeed() {
+	if (EnforcerReloadTimeRepeat > 0.0)
+		return FMin(100.0, default.EnforcerReloadTimeRepeat / EnforcerReloadTimeRepeat);
+	return 100.0;
+}
+
+simulated final function float EnforcerReloadDoubleAnimSpeed() {
+	if (EnforcerReloadTimeDouble > 0.0)
+		return FMin(100.0, default.EnforcerReloadTimeDouble / EnforcerReloadTimeDouble);
+	return 100.0;
+}
+
+simulated final function float EnforcerReloadAltDoubleAnimSpeed() {
+	if (EnforcerReloadTimeAltDouble > 0.0)
+		return FMin(100.0, default.EnforcerReloadTimeAltDouble / EnforcerReloadTimeAltDouble);
+	return 100.0;
+}
+
+simulated final function float EnforcerReloadRepeatDoubleAnimSpeed() {
+	if (EnforcerReloadTimeRepeatDouble > 0.0)
+		return FMin(100.0, default.EnforcerReloadTimeRepeatDouble / EnforcerReloadTimeRepeatDouble);
+	return 100.0;
+}
+
 simulated final function float HammerSelectAnimSpeed() {
 	if (HammerSelectTime > 0.0)
 		return FMin(100.0, default.HammerSelectTime / HammerSelectTime);
@@ -435,7 +491,17 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	EnforcerDownTime = S.EnforcerDownTime;
 	EnforcerDamage = S.EnforcerDamage;
 	EnforcerMomentum = S.EnforcerMomentum;
+	EnforcerReloadTime = S.EnforcerReloadTime;
+	EnforcerReloadTimeAlt = S.EnforcerReloadTimeAlt;
+	EnforcerReloadTimeRepeat = S.EnforcerReloadTimeRepeat;
+
 	EnforcerAllowDouble = S.EnforcerAllowDouble;
+	EnforcerDamageDouble = S.EnforcerDamageDouble;
+	EnforcerMomentumDouble = S.EnforcerMomentumDouble;
+	EnforcerShotOffsetDouble = S.EnforcerShotOffsetDouble;
+	EnforcerReloadTimeDouble = S.EnforcerReloadTimeDouble;
+	EnforcerReloadTimeAltDouble = S.EnforcerReloadTimeAltDouble;
+	EnforcerReloadTimeRepeatDouble = S.EnforcerReloadTimeRepeatDouble;
 
 	HammerSelectTime = S.HammerSelectTime;
 	HammerDownTime = S.HammerDownTime;
@@ -575,7 +641,17 @@ defaultproperties
 	EnforcerDownTime=0.266667
 	EnforcerDamage=17
 	EnforcerMomentum=1.0
+	EnforcerReloadTime=0.27
+	EnforcerReloadTimeAlt=0.26
+	EnforcerReloadTimeRepeat=0.266667
+
 	EnforcerAllowDouble=True
+	EnforcerDamageDouble=17
+	EnforcerMomentumDouble=1.0
+	EnforcerShotOffsetDouble=0.2
+	EnforcerReloadTimeDouble=0.27
+	EnforcerReloadTimeAltDouble=0.26
+	EnforcerReloadTimeRepeatDouble=0.266667
 
 	HammerSelectTime=0.566667
 	HammerDownTime=0.166667

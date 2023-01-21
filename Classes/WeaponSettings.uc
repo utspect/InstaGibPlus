@@ -96,7 +96,17 @@ var config float EnforcerSelectTime;
 var config float EnforcerDownTime;
 var config float EnforcerDamage;
 var config float EnforcerMomentum;
-var config bool EnforcerAllowDouble;
+var config float EnforcerReloadTime;
+var config float EnforcerReloadTimeAlt;
+var config float EnforcerReloadTimeRepeat;
+
+var config bool  EnforcerAllowDouble;
+var config float EnforcerDamageDouble;
+var config float EnforcerMomentumDouble;
+var config float EnforcerShotOffsetDouble;
+var config float EnforcerReloadTimeDouble;
+var config float EnforcerReloadTimeAltDouble;
+var config float EnforcerReloadTimeRepeatDouble;
 
 var config float HammerSelectTime;
 var config float HammerDownTime;
@@ -212,7 +222,17 @@ defaultproperties
 	EnforcerDownTime=0.266667
 	EnforcerDamage=17
 	EnforcerMomentum=1.0
+	EnforcerReloadTime=0.27
+	EnforcerReloadTimeAlt=0.26
+	EnforcerReloadTimeRepeat=0.266667
+
 	EnforcerAllowDouble=True
+	EnforcerDamageDouble=17
+	EnforcerMomentumDouble=1.0
+	EnforcerShotOffsetDouble=0.2
+	EnforcerReloadTimeDouble=0.27
+	EnforcerReloadTimeAltDouble=0.26
+	EnforcerReloadTimeRepeatDouble=0.266667
 
 	HammerSelectTime=0.566667
 	HammerDownTime=0.166667
