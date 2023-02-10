@@ -9,6 +9,7 @@ var vector SavedLocation;
 var vector SavedVelocity;
 var rotator SavedViewRotation;
 
+var bool SavedDodging;
 var EDodgeDir SavedDodgeDir;
 var float SavedDodgeClickTimer;
 
@@ -36,6 +37,7 @@ function CopyFrom(float Delta, bbPlayer P) {
 	SavedVelocity = P.Velocity;
 	SavedViewRotation = P.ViewRotation;
 
+	SavedDodging = P.bDodging;
 	SavedDodgeDir = P.DodgeDir;
 	SavedDodgeClickTimer = P.DodgeClickTimer;
 
