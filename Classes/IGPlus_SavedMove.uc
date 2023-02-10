@@ -14,6 +14,8 @@ var int AltFireIndex;
 var int AddVelocityId;
 var vector Momentum;
 
+var bool SavedDodging;
+
 function Clear2() {
     Clear();
     IGPlus_MergeCount = 0;

@@ -1882,6 +1882,7 @@ function IGPlus_ClientReplayMove(IGPlus_SavedMove M) {
 
 	SetRotation(M.Rotation);
 	ViewRotation = M.IGPlus_SavedViewRotation;
+	bDodging = M.SavedDodging;
 
 	if (M.Momentum != vect(0,0,0)) {
 		if (Physics == PHYS_Walking)
@@ -3773,6 +3774,7 @@ function xxReplicateMove(
 		// Set this move's data.
 		NewMove.TimeStamp = Level.TimeSeconds;
 
+		NewMove.SavedDodging = bDodging;
 		NewMove.DodgeMove = DodgeMove;
 		if (DodgeMove > DODGE_None && DodgeMove < DODGE_Active)
 			NewMove.DodgeIndex = 0;
