@@ -1,4 +1,4 @@
-class IGPlus_SavedMoveChain extends Actor;
+class IGPlus_SavedInputChain extends Actor;
 
 var IGPlus_SavedInput Newest;
 var IGPlus_SavedInput Oldest;

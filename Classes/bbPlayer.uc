@@ -345,7 +345,7 @@ var bool IGPlus_UseFastWeaponSwitch;
 
 
 var bool IGPlus_EnableInputReplication;
-var IGPlus_SavedMoveChain IGPlus_SavedInputChain;
+var IGPlus_SavedInputChain IGPlus_SavedInputChain;
 var IGPlus_DataBuffer IGPlus_InputReplicationBuffer;
 var float IGPlus_LastInputSendTime;
 var float MinDodgeClickTime;
@@ -939,7 +939,7 @@ event PostBeginPlay()
 	Utils = new(none) class'Utilities';
 	StringUtils = class'StringUtils'.static.Instance();
 	PlayerStatics = Spawn(class'bbPlayerStatics');
-	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedMoveChain');
+	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedInputChain');
 	IGPlus_InputReplicationBuffer = new class'IGPlus_DataBuffer';
 
 	InitSettings();
@@ -973,7 +973,7 @@ simulated event PostNetBeginPlay()
 	Utils = new(none) class'Utilities';
 	StringUtils = class'StringUtils'.static.Instance();
 	PlayerStatics = Spawn(class'bbPlayerStatics');
-	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedMoveChain');
+	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedInputChain');
 	IGPlus_InputReplicationBuffer = new class'IGPlus_DataBuffer';
 
 	InitSettings();
