@@ -42,37 +42,37 @@ var config int DefaultHitSound, DefaultTeamHitSound;
 var config bool bForceDefaultHitSounds;
 var config int TeleRadius;
 var config int ThrowVelocity;	// How far a player can throw weapons
-var config bool bForceDemo;		// Forces clients to do demos.
-var config bool bRestrictTrading;
+var config bool  bForceDemo;		// Forces clients to do demos.
+var config bool  bRestrictTrading;
 var config float MaxTradeTimeMargin; // Only relevant when bRestrictTrading is true
 var config float TradePingMargin;
 var config float KillCamDelay;
 var config float KillCamDuration;
-var config bool bJumpingPreservesMomentum;
-var config bool bOldLandingMomentum;
-var config bool bEnableSingleButtonDodge;
-var config bool bUseFlipAnimation;
-var config bool bEnableWallDodging;
-var config bool bDodgePreserveZMomentum;
-var config int MaxMultiDodges;
-var config int BrightskinMode; //0=None,1=Unlit
+var config bool  bJumpingPreservesMomentum;
+var config bool  bOldLandingMomentum;
+var config bool  bEnableSingleButtonDodge;
+var config bool  bUseFlipAnimation;
+var config bool  bEnableWallDodging;
+var config bool  bDodgePreserveZMomentum;
+var config int   MaxMultiDodges;
+var config int   BrightskinMode; //0=None,1=Unlit
 var config float PlayerScale;
-var config bool bAlwaysRenderFlagCarrier;
-var config bool bAlwaysRenderDroppedFlags;
-var config int MaxPosError;
-var config int MaxHitError;
+var config bool  bAlwaysRenderFlagCarrier;
+var config bool  bAlwaysRenderDroppedFlags;
+var config int   MaxPosError;
+var config int   MaxHitError;
 var config float MaxJitterTime;
 var config float WarpFixDelay;
 var config float MinNetUpdateRate;
 var config float MaxNetUpdateRate;
-var config bool bEnableServerExtrapolation;
-var config bool bEnableServerPacketReordering;
-var config bool bEnableLoosePositionCheck;
-var config bool bPlayersAlwaysRelevant;
-var config bool bEnablePingCompensatedSpawn;
-var config bool bEnableJitterBounding;
-var config bool bEnableWarpFix;
-var config bool ShowTouchedPackage;
+var config bool  bEnableServerExtrapolation;
+var config bool  bEnableServerPacketReordering;
+var config bool  bEnableLoosePositionCheck;
+var config bool  bPlayersAlwaysRelevant;
+var config bool  bEnablePingCompensatedSpawn;
+var config bool  bEnableJitterBounding;
+var config bool  bEnableWarpFix;
+var config bool  ShowTouchedPackage;
 
 //Add the maplist where kickers will work using normal network
 var config array<string> ExcludeMapsForKickers;
@@ -84,21 +84,44 @@ struct ForceSettingsEntry{
 };
 var config array<ForceSettingsEntry> ForcedSettings;
 
-// function int GetForcedSettingsLength() {
-// 	return ForcedSettings.Length;
-// }
+function DumpSetting(PlayerPawn P, string S) {
+	P.ClientMessage(S$"="$GetPropertyText(S));
+}
 
-// function string GetForcedSettingsKey(int Index) {
-// 	return ForcedSettings[Index].Key;
-// }
-
-// function string GetForcedSettingsValue(int Index) {
-// 	return ForcedSettings[Index].Value;
-// }
-
-// function int GetForcedSettingsMode(int Index) {
-// 	return ForcedSettings[Index].Mode;
-// }
+function DumpServerSettings(PlayerPawn P) {
+	P.ClientMessage("SettingsObject="$self);
+	DumpSetting(P, "bForceDemo");
+	DumpSetting(P, "bRestrictTrading");
+	DumpSetting(P, "MaxTradeTimeMargin");
+	DumpSetting(P, "TradePingMargin");
+	DumpSetting(P, "KillCamDelay");
+	DumpSetting(P, "KillCamDuration");
+	DumpSetting(P, "bJumpingPreservesMomentum");
+	DumpSetting(P, "bOldLandingMomentum");
+	DumpSetting(P, "bEnableSingleButtonDodge");
+	DumpSetting(P, "bUseFlipAnimation");
+	DumpSetting(P, "bEnableWallDodging");
+	DumpSetting(P, "bDodgePreserveZMomentum");
+	DumpSetting(P, "MaxMultiDodges");
+	DumpSetting(P, "BrightskinMode");
+	DumpSetting(P, "PlayerScale");
+	DumpSetting(P, "bAlwaysRenderFlagCarrier");
+	DumpSetting(P, "bAlwaysRenderDroppedFlags");
+	DumpSetting(P, "MaxPosError");
+	DumpSetting(P, "MaxHitError");
+	DumpSetting(P, "MaxJitterTime");
+	DumpSetting(P, "WarpFixDelay");
+	DumpSetting(P, "MinNetUpdateRate");
+	DumpSetting(P, "MaxNetUpdateRate");
+	DumpSetting(P, "bEnableServerExtrapolation");
+	DumpSetting(P, "bEnableServerPacketReordering");
+	DumpSetting(P, "bEnableLoosePositionCheck");
+	DumpSetting(P, "bPlayersAlwaysRelevant");
+	DumpSetting(P, "bEnablePingCompensatedSpawn");
+	DumpSetting(P, "bEnableJitterBounding");
+	DumpSetting(P, "bEnableWarpFix");
+	DumpSetting(P, "ShowTouchedPackage");
+}
 
 defaultproperties
 {

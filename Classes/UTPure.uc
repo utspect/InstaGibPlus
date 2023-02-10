@@ -835,29 +835,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		Sender.ClientMessage("This server is running "$class'VersionInfo'.default.PackageBaseName@class'VersionInfo'.default.PackageVersion);
 		if (Settings.bUTPureEnabled)
 		{
-			Sender.ClientMessage("UTPure settings:");
-			Sender.ClientMessage("- FOV Tracking:"@Settings.TrackFOV@"(0 = off, 1 = strict, 2 = loose)");
-			Sender.ClientMessage("- Forced Settings:"@Settings.ForceSettingsLevel@"(0 = off, 1 = simple, 2 = passive, 3 = active)");
-			Sender.ClientMessage("- Minimum Clientrate:"@Settings.MinClientRate);
-			Sender.ClientMessage("- Maximum Clientrate:"@Settings.MaxClientRate);
-			Sender.ClientMessage("- Advanced TeamSay:"@Settings.bAdvancedTeamSay);
-			Sender.ClientMessage("- Allow CenterView:"@Settings.bAllowCenterView);
-			if (Settings.bAllowCenterView)
-				Sender.ClientMessage("- CenterView Delay:"@Settings.CenterViewDelay);
-			Sender.ClientMessage("- Allow BehindView:"@Settings.bAllowBehindView);
-			Sender.ClientMessage("- Delayed First Pickup Spawn:"@Settings.bDelayedPickupSpawn);
-			Sender.ClientMessage("- Improved HUD:"@Settings.ImprovedHUD@"(0 = off, 1 = clock/boots, 2 = team)");
-			Sender.ClientMessage("- Forced Models:"@Settings.ForceModels@"(0 = off, 1 = allowed, 2 = forced)");
-			zzbbPP = bbPlayer(Sender);
-			if (zzbbPP != None)
-			{
-				Sender.ClientMessage("Your settings:");
-				if (Settings.ImprovedHUD > 0)
-					Sender.ClientMessage("- Improved HUD:"@zzbbPP.HUDInfo@"(0 = off, 1 = clock/boots, 2 = team)");
-				if (Settings.ForceModels > 0)
-					Sender.ClientMessage("- Forced Models:"@zzbbPP.zzbForceModels);
-				Sender.ClientMessage("- Using New Net Code:"@zzbbPP.bNewNet);
-			}
+			Settings.DumpServerSettings(Sender);
 		}
 		else
 			Sender.ClientMessage("UTPure is Disabled!");
