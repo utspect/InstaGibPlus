@@ -1,24 +1,24 @@
 class IGPlus_SavedMoveChain extends Actor;
 
-var IGPlus_SavedMove2 Newest;
-var IGPlus_SavedMove2 Oldest;
+var IGPlus_SavedInput Newest;
+var IGPlus_SavedInput Oldest;
 
-var IGPlus_SavedMove2 SpareNodes;
+var IGPlus_SavedInput SpareNodes;
 
-final function IGPlus_SavedMove2 AllocateNode() {
-	local IGPlus_SavedMove2 Node;
+final function IGPlus_SavedInput AllocateNode() {
+	local IGPlus_SavedInput Node;
 	if (SpareNodes != none) {
 		Node = SpareNodes;
 		SpareNodes = Node.Next;
 	} else {
-		Node = Spawn(class'IGPlus_SavedMove2');
+		Node = Spawn(class'IGPlus_SavedInput');
 	}
 
 	Node.Initialize();
 	return Node;
 }
 
-final function FreeNode(IGPlus_SavedMove2 Node) {
+final function FreeNode(IGPlus_SavedInput Node) {
 	if (Node.Prev != none)
 		Node.Prev.Next = Node.Next;
 	if (Node.Next != none)
@@ -36,7 +36,7 @@ final function FreeNode(IGPlus_SavedMove2 Node) {
 }
 
 final function Add(float Delta, bbPlayer P) {
-	local IGPlus_SavedMove2 Node;
+	local IGPlus_SavedInput Node;
 
 	Node = AllocateNode();
 	Node.CopyFrom(Delta, P);
@@ -44,7 +44,7 @@ final function Add(float Delta, bbPlayer P) {
 		FreeNode(Node);
 }
 
-final function bool AppendNode(IGPlus_SavedMove2 Node) {
+final function bool AppendNode(IGPlus_SavedInput Node) {
 	if (Newest == none) {
 		Oldest = Node;
 		Newest = Node;
@@ -66,7 +66,7 @@ final function RemoveOutdatedNodes(float CurrentTimeStamp) {
 }
 
 
-final function IGPlus_SavedMove2 SerializeNodes(int MaxNumNodes, IGPlus_DataBuffer B) {
+final function IGPlus_SavedInput SerializeNodes(int MaxNumNodes, IGPlus_DataBuffer B) {
 	if (Newest != none)
 		return Newest.SerializeNodes(MaxNumNodes, none, B, 0);
 	return none;

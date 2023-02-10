@@ -1,7 +1,7 @@
-class IGPlus_SavedMove2 extends Actor;
+class IGPlus_SavedInput extends Actor;
 
-var IGPlus_SavedMove2 Next;
-var IGPlus_SavedMove2 Prev;
+var IGPlus_SavedInput Next;
+var IGPlus_SavedInput Prev;
 
 var float TimeStamp;
 var float Delta;
@@ -84,7 +84,7 @@ function DeserializeFrom(IGPlus_DataBuffer B) {
 	SavedViewRotation.Roll = 0;
 }
 
-function bool IsSimilarTo(IGPlus_SavedMove2 Other) {
+function bool IsSimilarTo(IGPlus_SavedInput Other) {
 	return
 		bForw == Other.bForw &&
 		bBack == Other.bBack &&
@@ -99,8 +99,8 @@ function bool IsSimilarTo(IGPlus_SavedMove2 Other) {
 		SavedViewRotation.Yaw == Other.SavedViewRotation.Yaw;
 }
 
-function IGPlus_SavedMove2 SerializeNodes(int MaxNumNodes, IGPlus_SavedMove2 NextNode, IGPlus_DataBuffer B, int SpaceRequired) {
-	local IGPlus_SavedMove2 ReferenceNode;
+function IGPlus_SavedInput SerializeNodes(int MaxNumNodes, IGPlus_SavedInput NextNode, IGPlus_DataBuffer B, int SpaceRequired) {
+	local IGPlus_SavedInput ReferenceNode;
 
 	if (MaxNumNodes <= 0 || B.IsSpaceSufficient(SpaceRequired + default.SerializedBits) == false || Prev == none)
 		return self;

@@ -2044,7 +2044,7 @@ function ClientUpdatePosition()
 }
 
 function ClientUpdatePositionWithInput() {
-	local IGPlus_SavedMove2 In;
+	local IGPlus_SavedInput In;
 	local bool bRealJump;
 	local float AdjustDistance;
 	local vector PostAdjustLocation;
@@ -3147,8 +3147,8 @@ function xxServerMoveDead(
 
 function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	local int i;
-	local IGPlus_SavedMove2 Node;
-	local IGPlus_SavedMove2 Old;
+	local IGPlus_SavedInput Node;
+	local IGPlus_SavedInput Old;
 
 	IGPlus_InputReplicationBuffer.NumBitsConsumed = 0;
 	IGPlus_InputReplicationBuffer.NumBits = NumBits;
@@ -3172,7 +3172,7 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 			IGPlus_SavedInputChain.FreeNode(Old);
 	}
 
-	while(IGPlus_InputReplicationBuffer.IsDataSufficient(class'IGPlus_SavedMove2'.default.SerializedBits)) {
+	while(IGPlus_InputReplicationBuffer.IsDataSufficient(class'IGPlus_SavedInput'.default.SerializedBits)) {
 		Node = IGPlus_SavedInputChain.AllocateNode();
 		Node.DeserializeFrom(IGPlus_InputReplicationBuffer);
 		Node.TimeStamp = RefTimeStamp + Node.Delta;
@@ -3726,7 +3726,7 @@ function PlayerMove(float Delta) {
 	ClientMessage("Help Im Stuck In Global Function");
 }
 
-function PlayBackInput(IGPlus_SavedMove2 Old, IGPlus_SavedMove2 I) {
+function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 	local float OldBaseX, OldBaseY, OldBaseZ;
 	local float OldMouseX, OldMouseY;
 	local float OldForward, OldStrafe, OldUp, OldLookUp, OldTurn;
@@ -3941,7 +3941,7 @@ function IGPlus_MergeMove(IGPlus_SavedMove PendMove, float DeltaTime, vector New
 
 function IGPlus_ReplicateInput(float Delta) {
 	local float RealDelta;
-	local IGPlus_SavedMove2 ReferenceInput;
+	local IGPlus_SavedInput ReferenceInput;
 	local vector NewOffset, TargetLoc;
 	local ReplBuffer B;
 	local int i;
