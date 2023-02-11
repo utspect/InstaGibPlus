@@ -3964,10 +3964,10 @@ exec function ThrowWeapon()
 		return;
 
 	if( Weapon==None || (Weapon.Class==Level.Game.BaseMutator.MutatedDefaultWeapon())
-		|| !Weapon.bCanThrow || Weapon.IsInState('Idle') == false )
+		|| !Weapon.bCanThrow || (IGPlus_UseFastWeaponSwitch == false && Weapon.IsInState('Idle') == false) )
 		return;
 
-	Weapon.Velocity = Vector(ViewRotation) * vect(1,1,0) * zzThrowVelocity + vect(0,0,220);
+	Weapon.Velocity = Normal(Vector(ViewRotation) * vect(1,1,0)) * zzThrowVelocity + vect(0,0,220);
 	Weapon.bTossedOut = true;
 	TossWeapon();
 	if ( Weapon == None )
