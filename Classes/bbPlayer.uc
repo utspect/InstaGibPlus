@@ -345,6 +345,7 @@ var bool IGPlus_UseFastWeaponSwitch;
 
 
 var bool IGPlus_EnableInputReplication;
+var bool IGPlus_PressedJumpSave;
 var IGPlus_SavedInputChain IGPlus_SavedInputChain;
 var IGPlus_DataBuffer IGPlus_InputReplicationBuffer;
 var float IGPlus_LastInputSendTime;
@@ -1604,6 +1605,7 @@ event PlayerInput( float DeltaTime )
 	if (Settings.bDebugMovement && (bEdgeForward || bEdgeBack || bEdgeLeft || bEdgeRight))
 		ClientDebugMessage("BaseY:"@aBaseY@"Strafe:"@aStrafe@bWasForward@bWasBack@bWasLeft@bWasRight);
 
+	IGPlus_PressedJumpSave = bPressedJump;
 	bPressedDodge = (bDodge != bOldDodge) && (bDodge > 0);
 	bOldDodge = bDodge;
 

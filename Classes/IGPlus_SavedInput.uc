@@ -47,9 +47,9 @@ function CopyFrom(float Delta, bbPlayer P) {
 	bRigh = P.bWasRight;
 	bWalk = P.bRun != 0;
 	bDuck = P.bDuck != 0;
-	bJump = P.aUp > 1.0;
-	bFire = P.bFire != 0;
-	bAFir = P.bAltFire != 0;
+	bJump = (P.aUp > 1.0) || P.IGPlus_PressedJumpSave;
+	bFire = (P.bFire != 0) || P.bJustFired;
+	bAFir = (P.bAltFire != 0) || P.bJustAltFired;
 }
 
 function SerializeTo(IGPlus_DataBuffer B) {
