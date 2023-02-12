@@ -1822,7 +1822,8 @@ simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vecto
 
 	// Higor: keep track of Position prior to adjustment
 	// and stop current smoothed adjustment (if in progress).
-	IGPlus_PreAdjustLocation = Location;
+	if (bUpdatePosition == false)
+		IGPlus_PreAdjustLocation = Location;
 	if ( IGPlus_AdjustLocationAlpha > 0 )
 	{
 		IGPlus_AdjustLocationAlpha = 0;
