@@ -3796,6 +3796,8 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 		} else {
 			bAltFire = 0;
 		}
+
+		HandleWalking();
 	} else if (RemoteRole == ROLE_Authority) {
 		bDodging = Old.SavedDodging;
 		DodgeDir = Old.SavedDodgeDir;
@@ -3809,6 +3811,9 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 	PlayerMove(I.Delta);
 	AutonomousPhysics(I.Delta);
 	CorrectTeleporterVelocity();
+
+	I.SavedLocation = Location;
+	I.SavedVelocity = Velocity;
 
 	aBaseX = OldBaseX;
 	aBaseY = OldBaseY;
@@ -3960,6 +3965,8 @@ function IGPlus_ReplicateInput(float Delta) {
 	}
 
 	AutonomousPhysics(Delta);
+	CorrectTeleporterVelocity();
+
 	IGPlus_SavedInputChain.Add(Delta, self);
 
 	RealDelta = (Level.TimeSeconds - IGPlus_LastInputSendTime) / Level.TimeDilation;
