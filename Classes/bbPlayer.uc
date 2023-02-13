@@ -350,6 +350,8 @@ var IGPlus_SavedInputChain IGPlus_SavedInputChain;
 var IGPlus_DataBuffer IGPlus_InputReplicationBuffer;
 var float IGPlus_LastInputSendTime;
 var float MinDodgeClickTime;
+var IGPlus_InputLogFile IGPlus_InputLogFile;
+var bool bTraceInput;
 
 struct ReplBuffer {
 	var int Data[24];
@@ -651,6 +653,9 @@ simulated event Destroyed() {
 	if (Role == ROLE_SimulatedProxy && IGPlus_LocationOffsetFix_CollisionDummy != none) {
 		IGPlus_LocationOffsetFix_DestroyCollisionDummy();
 	}
+
+	if (bTraceInput && IGPlus_InputLogFile != none)
+		IGPlus_InputLogFile.StopLog();
 	super.Destroyed();
 }
 
@@ -1146,6 +1151,14 @@ event Possess()
 	if (Role == ROLE_AutonomousProxy || (Role == ROLE_Authority && RemoteRole != ROLE_AutonomousProxy)) {
 		IGPlus_EnableDualButtonSwitch = IGPlus_DetermineDualButtonSwitchSetting();
 	}
+
+	IGPlus_InputLogFile = Spawn(class'IGPlus_InputLogFile');
+	if (Level.NetMode == NM_Client)
+		IGPlus_InputLogFile.LogId = "ClientInput";
+	else
+		IGPlus_InputLogFile.LogId = "ServerInput"$"_"$PlayerReplicationInfo.PlayerId;
+	if (bTraceInput)
+		IGPlus_InputLogFile.StartLog();
 
 	Super.Possess();
 }
@@ -1854,6 +1867,9 @@ simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vecto
 			ClientDebugMessage("Ignore CAP"@TimeStamp@IGPlus_SavedInputChain.Oldest.TimeStamp);
 			return;
 		}
+
+		if (bTraceInput && IGPlus_InputLogFile != none)
+			IGPlus_InputLogFile.LogCAP(TimeStamp, NewLoc, NewVel, NewBase);
 	} else {
 		if ( CurrentTimeStamp > TimeStamp )
 			return;
@@ -2068,6 +2084,8 @@ function ClientUpdatePositionWithInput() {
 				if (In.Next.TimeStamp - In.TimeStamp > 1.2*In.Next.Delta)
 					ClientDebugMessage("CUP LostTime"@In.TimeStamp@In.Next.TimeStamp@(In.Next.TimeStamp - In.TimeStamp)@In.Next.Delta);
 				PlayBackInput(In, In.Next);
+				if (bTraceInput && IGPlus_InputLogFile != none)
+					IGPlus_InputLogFile.LogInputReplay(In.Next);
 				In = In.Next;
 			}
 		}
@@ -3194,6 +3212,8 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 		if (Old.Next.TimeStamp - Old.TimeStamp < 0.8*Old.Next.Delta)
 			ClientDebugMessage("SAI Double"@Old.TimeStamp@Old.Next.TimeStamp@(Old.Next.TimeStamp - Old.TimeStamp)@Old.Next.Delta);
 		PlayBackInput(Old, Old.Next);
+		if (bTraceInput && IGPlus_InputLogFile != none)
+			IGPlus_InputLogFile.LogInput(Old.Next);
 		Old = Old.Next;
 	}
 
@@ -3974,6 +3994,8 @@ function IGPlus_ReplicateInput(float Delta) {
 	CorrectTeleporterVelocity();
 
 	IGPlus_SavedInputChain.Add(Delta, self);
+	if (bTraceInput && IGPlus_InputLogFile != none)
+		IGPlus_InputLogFile.LogInput(IGPlus_SavedInputChain.Newest);
 
 	RealDelta = (Level.TimeSeconds - IGPlus_LastInputSendTime) / Level.TimeDilation;
 	if (RealDelta < TimeBetweenNetUpdates - ClientUpdateTime)
