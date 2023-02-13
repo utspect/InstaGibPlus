@@ -5788,8 +5788,8 @@ ignores SeePlayer, HearNoise, Bump;
 		DodgeDir = DODGE_Active;
 		bDodging = true;
 		SetPhysics(PHYS_Falling);
-		if (Settings.bDebugMovement && Level.NetMode == NM_Client)
-			ClientDebugMessage("Dodged"@DodgeMove);
+		if (Settings.bDebugMovement && Level.NetMode == NM_Client && bUpdating == false)
+			ClientDebugMessage("Dodged"@DodgeMove@bUpdating@(Rotation.Yaw&0xFFFF)@"|"@int(Location.X)@int(Location.Y)@int(Location.Z)@"|"@int(Velocity.X)@int(Velocity.Y)@int(Velocity.Z)@"|"@int(OldVel.X)@int(OldVel.Y)@int(OldVel.Z));
 	}
 
 	function PlayerMove( float DeltaTime )
