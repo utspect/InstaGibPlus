@@ -2065,6 +2065,8 @@ function ClientUpdatePositionWithInput() {
 			debugClientLocError = VSize(In.SavedLocation - Location);
 			clientForcedPosition = In.SavedVelocity - Velocity;
 			while(In.Next != none) {
+				if (In.Next.TimeStamp - In.TimeStamp > 1.2*In.Next.Delta)
+					ClientDebugMessage("CUP LostTime"@In.TimeStamp@In.Next.TimeStamp@(In.Next.TimeStamp - In.TimeStamp)@In.Next.Delta);
 				PlayBackInput(In, In.Next);
 				In = In.Next;
 			}
