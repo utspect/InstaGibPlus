@@ -3188,7 +3188,9 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	// play back input
 	while(Old.Next != none) {
 		if (Old.Next.TimeStamp - Old.TimeStamp > 1.2*Old.Next.Delta)
-			ClientDebugMessage("LostTime"@Old.TimeStamp@Old.Next.TimeStamp@Old.Next.Delta);
+			ClientDebugMessage("SAI LostTime"@Old.TimeStamp@Old.Next.TimeStamp@(Old.Next.TimeStamp - Old.TimeStamp)@Old.Next.Delta);
+		if (Old.Next.TimeStamp - Old.TimeStamp < 0.8*Old.Next.Delta)
+			ClientDebugMessage("SAI Double"@Old.TimeStamp@Old.Next.TimeStamp@(Old.Next.TimeStamp - Old.TimeStamp)@Old.Next.Delta);
 		PlayBackInput(Old, Old.Next);
 		Old = Old.Next;
 	}
