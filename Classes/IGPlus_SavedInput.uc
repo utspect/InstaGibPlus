@@ -20,6 +20,7 @@ var bool bRigh;
 var bool bWalk;
 var bool bDuck;
 var bool bJump;
+var bool bDodg;
 var bool bFire;
 var bool bAFir;
 
@@ -48,6 +49,7 @@ function CopyFrom(float Delta, bbPlayer P) {
 	bWalk = P.bRun != 0;
 	bDuck = P.bDuck != 0;
 	bJump = (P.aUp > 1.0) || P.IGPlus_PressedJumpSave;
+	bDodg = P.bPressedDodge;
 	bFire = (P.bFire != 0) || P.bJustFired;
 	bAFir = (P.bAltFire != 0) || P.bJustAltFired;
 }
@@ -61,6 +63,7 @@ function SerializeTo(IGPlus_DataBuffer B) {
 	B.AddBit(bWalk);
 	B.AddBit(bDuck);
 	B.AddBit(bJump);
+	B.AddBit(bDodg);
 	B.AddBit(bFire);
 	B.AddBit(bAFir);
 	B.AddBits(16, SavedViewRotation.Pitch);
@@ -77,6 +80,7 @@ function DeserializeFrom(IGPlus_DataBuffer B) {
 	B.ConsumeBit(Temp); bWalk = Temp != 0;
 	B.ConsumeBit(Temp); bDuck = Temp != 0;
 	B.ConsumeBit(Temp); bJump = Temp != 0;
+	B.ConsumeBit(Temp); bDodg = Temp != 0;
 	B.ConsumeBit(Temp); bFire = Temp != 0;
 	B.ConsumeBit(Temp); bAFir = Temp != 0;
 	B.ConsumeBits(16, SavedViewRotation.Pitch);
@@ -93,6 +97,7 @@ function bool IsSimilarTo(IGPlus_SavedInput Other) {
 		bWalk == Other.bWalk &&
 		bDuck == Other.bDuck &&
 		bJump == Other.bJump &&
+		bDodg == Other.bDodg &&
 		bFire == Other.bFire &&
 		bAFir == Other.bAFir &&
 		SavedViewRotation.Pitch == Other.SavedViewRotation.Pitch &&
