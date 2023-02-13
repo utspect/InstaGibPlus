@@ -5759,12 +5759,14 @@ ignores SeePlayer, HearNoise, Bump;
 		local float VelocityZ;
 		local float DodgeXY;
 		local float DodgeZ;
+		local vector OldVel;
 
 		if ( bIsCrouching || (Physics != PHYS_Walking && Physics != PHYS_Falling) )
 			return;
 		if (Physics == PHYS_Falling && bCanWallDodge == false)
 			return;
 
+		OldVel = Velocity;
 		GetAxes(Rotation.Yaw*rot(0,1,0),X,Y,Z);
 
 		if (Physics == PHYS_Falling) {
