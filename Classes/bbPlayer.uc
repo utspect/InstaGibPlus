@@ -2076,7 +2076,6 @@ function ClientUpdatePositionWithInput() {
 		// - Discard it
 		// - Negate and process over a certain amount of time.
 		// - Keep adjustment as is (instant relocation)
-		// Deaod: On second thought, lets never discard adjustments.
 		// Deaod: Use exponential decay on offset instead
 		IGPlus_AdjustLocationOffset = (Location - IGPlus_PreAdjustLocation);
 		AdjustDistance = VSize(IGPlus_AdjustLocationOffset);
@@ -2084,10 +2083,13 @@ function ClientUpdatePositionWithInput() {
 			FastTrace(Location,IGPlus_PreAdjustLocation) &&
 			IGPlus_AdjustLocationOverride == false
 		) {
-			// Undo adjustment and re-enact smoothly
-			PostAdjustLocation = Location;
-			MoveSmooth(-IGPlus_AdjustLocationOffset);
-			IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location);
+			if (AdjustDistance > 2) {
+				ClientDebugMessage("CUP"@"|"@int(IGPlus_AdjustLocationOffset.X*100.0)@int(IGPlus_AdjustLocationOffset.Y*100.0)@int(IGPlus_AdjustLocationOffset.Z*100.0)@"|"@int(Velocity.X)@int(Velocity.Y)@int(Velocity.Z));
+				// Undo adjustment and re-enact smoothly
+				PostAdjustLocation = Location;
+				MoveSmooth(-IGPlus_AdjustLocationOffset);
+				IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location);
+			}
 		}
 	}
 
