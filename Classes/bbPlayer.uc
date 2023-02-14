@@ -1862,6 +1862,9 @@ simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vecto
 	local Decoration Carried;
 	local vector OldLoc;
 
+	if (bDeleteMe)
+		return;
+
 	if (IGPlus_EnableInputReplication) {
 		if (IGPlus_SavedInputChain.Oldest.TimeStamp - 0.5*IGPlus_SavedInputChain.Oldest.Delta > TimeStamp) {
 			ClientDebugMessage("Ignore CAP"@TimeStamp@IGPlus_SavedInputChain.Oldest.TimeStamp);
