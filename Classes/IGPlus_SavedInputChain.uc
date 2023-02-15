@@ -2,6 +2,7 @@ class IGPlus_SavedInputChain extends Actor;
 
 var IGPlus_SavedInput Newest;
 var IGPlus_SavedInput Oldest;
+var float DeltaError;
 
 var IGPlus_SavedInput SpareNodes;
 
@@ -69,7 +70,7 @@ final function RemoveOutdatedNodes(float CurrentTimeStamp) {
 
 final function IGPlus_SavedInput SerializeNodes(int MaxNumNodes, IGPlus_DataBuffer B) {
 	if (Newest != none)
-		return Newest.SerializeNodes(MaxNumNodes, none, B, 0);
+		return Newest.SerializeNodes(MaxNumNodes, none, B, 0, DeltaError);
 	return none;
 }
 

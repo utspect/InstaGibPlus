@@ -54,8 +54,14 @@ function CopyFrom(float Delta, bbPlayer P) {
 	bAFir = (P.bAltFire != 0) || P.bJustAltFired;
 }
 
-function SerializeTo(IGPlus_DataBuffer B) {
-	B.AddFloat(Delta);
+function SerializeTo(IGPlus_DataBuffer B, out float DeltaError) {
+	local int Temp;
+	// store delta with 20 bits precision between 0.0 and 0.4
+	// 2621437.5 = ((1 << 20) - 1) / 0.4
+	// int(x + 0.5) is appropriate rounding here because were only dealing with positive numbers
+	Temp = int(FClamp(Delta+DeltaError, 0.0, 0.4) * 2621437.5 + 0.5); 
+	DeltaError += (Delta - Temp * 0.00000038147009);
+	B.AddBits(20, Temp);
 	B.AddBit(bForw);
 	B.AddBit(bBack);
 	B.AddBit(bLeft);
@@ -66,13 +72,14 @@ function SerializeTo(IGPlus_DataBuffer B) {
 	B.AddBit(bDodg);
 	B.AddBit(bFire);
 	B.AddBit(bAFir);
-	B.AddBits(16, SavedViewRotation.Pitch);
+	B.AddBits(15, Clamp(SavedViewRotation.Pitch << 17 >> 17, -16384, 16383));
 	B.AddBits(16, SavedViewRotation.Yaw);
 }
 
 function DeserializeFrom(IGPlus_DataBuffer B) {
 	local int Temp;
-	B.ConsumeFloat(Delta);
+	// 0.00000038147009 = 0.4 / ((1 << 20) - 1)
+	B.ConsumeBits(20, Temp); Delta = Temp * 0.00000038147009;
 	B.ConsumeBit(Temp); bForw = Temp != 0;
 	B.ConsumeBit(Temp); bBack = Temp != 0;
 	B.ConsumeBit(Temp); bLeft = Temp != 0;
@@ -83,7 +90,7 @@ function DeserializeFrom(IGPlus_DataBuffer B) {
 	B.ConsumeBit(Temp); bDodg = Temp != 0;
 	B.ConsumeBit(Temp); bFire = Temp != 0;
 	B.ConsumeBit(Temp); bAFir = Temp != 0;
-	B.ConsumeBits(16, SavedViewRotation.Pitch);
+	B.ConsumeBits(15, SavedViewRotation.Pitch); SavedViewRotation.Pitch = SavedViewRotation.Pitch << 17 >> 17;
 	B.ConsumeBits(16, SavedViewRotation.Yaw);
 	SavedViewRotation.Roll = 0;
 }
@@ -104,16 +111,16 @@ function bool IsSimilarTo(IGPlus_SavedInput Other) {
 		SavedViewRotation.Yaw == Other.SavedViewRotation.Yaw;
 }
 
-function IGPlus_SavedInput SerializeNodes(int MaxNumNodes, IGPlus_SavedInput NextNode, IGPlus_DataBuffer B, int SpaceRequired) {
+function IGPlus_SavedInput SerializeNodes(int MaxNumNodes, IGPlus_SavedInput NextNode, IGPlus_DataBuffer B, int SpaceRequired, out float DeltaError) {
 	local IGPlus_SavedInput ReferenceNode;
 
 	if (MaxNumNodes <= 0 || B.IsSpaceSufficient(SpaceRequired + default.SerializedBits) == false || Prev == none)
 		return self;
 
-	ReferenceNode = Prev.SerializeNodes(MaxNumNodes - 1, self, B, SpaceRequired + default.SerializedBits);
+	ReferenceNode = Prev.SerializeNodes(MaxNumNodes - 1, self, B, SpaceRequired + default.SerializedBits, DeltaError);
 
 	//if (NextNode == none || IsSimilarTo(NextNode) == false) // uncomment to compress Input stream
-		SerializeTo(B);
+		SerializeTo(B, DeltaError);
 
 	return ReferenceNode;
 }
@@ -123,5 +130,5 @@ defaultproperties {
 	bHidden=True
 	DrawType=DT_None
 	RemoteRole=ROLE_None
-	SerializedBits=73
+	SerializedBits=61
 }

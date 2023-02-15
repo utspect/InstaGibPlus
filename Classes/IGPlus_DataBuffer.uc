@@ -1,7 +1,7 @@
 class IGPlus_DataBuffer extends Object;
 
 var int NumBits;
-var int BitsData[24];
+var int BitsData[20];
 
 var int NumBitsConsumed;
 
