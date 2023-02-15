@@ -354,7 +354,7 @@ var IGPlus_InputLogFile IGPlus_InputLogFile;
 var bool bTraceInput;
 
 struct ReplBuffer {
-	var int Data[24];
+	var int Data[20];
 };
 
 replication
