@@ -1939,6 +1939,8 @@ function ClientUpdatePosition()
 	local int realbRun, realbDuck;
 	local bool bRealJump;
 	local rotator RealViewRotation, RealRotation;
+	local EDodgeDir RealDodgeDir;
+	local float RealDodgeClickTimer;
 
 	local float AdjustDistance;
 	local vector PostAdjustLocation;
@@ -1949,6 +1951,8 @@ function ClientUpdatePosition()
 	bRealJump = bPressedJump;
 	RealRotation = Rotation;
 	RealViewRotation = ViewRotation;
+	RealDodgeDir = DodgeDir;
+	RealDodgeClickTimer = DodgeClickTimer;
 	bUpdating = true;
 
 	IGPlus_FreeAcknowledgedMoves(CurrentTimeStamp);
@@ -1994,6 +1998,8 @@ function ClientUpdatePosition()
 	bPressedJump = bRealJump;
 	SetRotation( RealRotation);
 	ViewRotation = RealViewRotation;
+	DodgeDir = RealDodgeDir;
+	DodgeClickTimer = RealDodgeClickTimer;
 	zzbFakeUpdate = true;
 
 	UpdatePing();
@@ -5375,7 +5381,7 @@ ignores SeePlayer, HearNoise, Bump;
 
 		if (bDodging || DodgeDir == DODGE_Done) {
 			DodgeDir = DODGE_Done;
-			DodgeClickTimer = FMin(DodgeClickTimer, 0.0);
+			DodgeClickTimer = 0.0;
 			bDodging = false;
 		} else {
 			DodgeDir = DODGE_None;
