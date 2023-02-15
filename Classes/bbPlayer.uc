@@ -2106,13 +2106,13 @@ function ClientUpdatePositionWithInput() {
 			FastTrace(Location,IGPlus_PreAdjustLocation) &&
 			IGPlus_AdjustLocationOverride == false
 		) {
+			// Undo adjustment and re-enact smoothly
+			PostAdjustLocation = Location;
+			MoveSmooth(-IGPlus_AdjustLocationOffset);
 			if (AdjustDistance > 2) {
-				ClientDebugMessage("CUP"@"|"@int(IGPlus_AdjustLocationOffset.X*100.0)@int(IGPlus_AdjustLocationOffset.Y*100.0)@int(IGPlus_AdjustLocationOffset.Z*100.0)@"|"@int(Velocity.X)@int(Velocity.Y)@int(Velocity.Z));
-				// Undo adjustment and re-enact smoothly
-				PostAdjustLocation = Location;
-				MoveSmooth(-IGPlus_AdjustLocationOffset);
 				IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location);
 			}
+			//ClientDebugMessage("CUP"@"|"@int(IGPlus_AdjustLocationOffset.X*100.0)@int(IGPlus_AdjustLocationOffset.Y*100.0)@int(IGPlus_AdjustLocationOffset.Z*100.0)@"|"@int(Velocity.X)@int(Velocity.Y)@int(Velocity.Z));
 		}
 	}
 
