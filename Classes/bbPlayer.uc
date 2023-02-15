@@ -3177,6 +3177,16 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	local IGPlus_SavedInput Node;
 	local IGPlus_SavedInput Old;
 
+	if (Role < ROLE_Authority) {
+		zzbLogoDone = True;
+		zzTrackFOV = 0;
+		zzbDemoPlayback = True;
+		return;
+	}
+
+	zzKickReady = Max(zzKickReady - 1,0);
+	bJustRespawned = false;
+
 	IGPlus_InputReplicationBuffer.NumBitsConsumed = 0;
 	IGPlus_InputReplicationBuffer.NumBits = NumBits;
 	for (i = 0; i < arraycount(B.Data); i++)
@@ -3187,6 +3197,19 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	if (bDeleteMe) {
 		ClientDebugMessage("Reject Irrelevant Move");
 		return;
+	}
+
+	if ((Level.Pauser == "") && NumBits > 0) {
+		UndoExtrapolation();
+
+		if (zzUTPure.Settings.bEnablePingCompensatedSpawn) {
+			if (bHidden && (IsInState('PlayerWalking') || IsInState('PlayerSwimming'))) {
+				bClientDead = false;
+				bHidden = false;
+				SetCollision(true, true, true);
+				IGPlus_SendRespawnNoficiation();
+			}
+		}
 	}
 
 	Old = IGPlus_SavedInputChain.Newest;
@@ -6483,6 +6506,7 @@ state Dying
 			PendingMove.Destroy();
 			PendingMove = None;
 		}
+		IGPlus_SavedInputChain.RemoveOutdatedNodes(Level.TimeSeconds);
 		// END PlayerPawn.Dying.BeginState
 
 		TimeDead = 0.0;
@@ -7728,9 +7752,12 @@ event PostRender( canvas zzCanvas )
 			HitMarkerTestTeam = 0;
 	}
 
-	if (Level.Pauser != "" && PendingMove != none) {
-		PendingMove.Destroy();
-		PendingMove = none;
+	if (Level.Pauser != "") {
+		if (PendingMove != none) {
+			PendingMove.Destroy();
+			PendingMove = none;
+		}
+		IGPlus_SavedInputChain.RemoveOutdatedNodes(Level.TimeSeconds);
 	}
 
 	IGPlus_LocationOffsetFix_TickBefore();
