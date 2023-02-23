@@ -281,6 +281,7 @@ struct IGPlus_ForcedSettings_Entry {
 var IGPlus_ForcedSettings_Entry IGPlus_ForcedSettings[128];
 var int IGPlus_ForcedSettings_Counter;
 var int IGPlus_ForcedSettings_Index;
+var bool IGPlus_ForcedSettings_Initialized;
 var bool IGPlus_ForcedSettings_Applied;
 
 var IGPlus_DamageEvent IGPlus_DamageEvent_First;
@@ -469,6 +470,7 @@ replication
 		Hold,
 		IGPlus_ForcedSettingsRetry,
 		IGPlus_ForcedSettingsOK,
+		IGPlus_ForcedSettings_InitOK,
 		PrintWeaponState,
 		ShowStats,
 		xxExplodeOther,
@@ -1115,6 +1117,7 @@ event Possess()
 		}
 
 		IGPlus_ForcedSettingsInit();
+		ClientMessage("Sending ForcedSettingsInit");
 	}
 
 	if (Role == ROLE_AutonomousProxy || (Role == ROLE_Authority && RemoteRole != ROLE_AutonomousProxy)) {
@@ -1147,6 +1150,11 @@ function bool IGPlus_DetermineDualButtonSwitchSetting() {
 function IGPlus_ForcedSettingsInit() {
 	IGPlus_ForcedSettings_Counter = 0;
 	ClientMessage("Forced Settings initialized", 'IGPlus');
+	IGPlus_ForcedSettings_InitOK();
+}
+
+function IGPlus_ForcedSettings_InitOK() {
+	IGPlus_ForcedSettings_Initialized = true;
 }
 
 function IGPlus_ForcedSettingRegister(string Key, string Value, int Mode) {
@@ -5065,17 +5073,19 @@ event ServerTick(float DeltaTime) {
 		DelayedNavPoint = DelayedNavPoint.NextNavigationPoint;
 	}
 
-	if (IGPlus_ForcedSettings_Index < Min(zzUTPure.Settings.ForcedSettings.Length, arraycount(IGPlus_ForcedSettings))) {
-		if (zzUTPure.GetForcedSettingKey(IGPlus_ForcedSettings_Index) != "") {
-			IGPlus_ForcedSettings_Counter++;
-			IGPlus_ForcedSettingRegister(
-				zzUTPure.GetForcedSettingKey(IGPlus_ForcedSettings_Index),
-				zzUTPure.GetForcedSettingValue(IGPlus_ForcedSettings_Index),
-				zzUTPure.GetForcedSettingMode(IGPlus_ForcedSettings_Index));
+	if (IGPlus_ForcedSettings_Initialized) {
+		if (IGPlus_ForcedSettings_Index < Min(zzUTPure.Settings.ForcedSettings.Length, arraycount(IGPlus_ForcedSettings))) {
+			if (zzUTPure.GetForcedSettingKey(IGPlus_ForcedSettings_Index) != "") {
+				IGPlus_ForcedSettings_Counter++;
+				IGPlus_ForcedSettingRegister(
+					zzUTPure.GetForcedSettingKey(IGPlus_ForcedSettings_Index),
+					zzUTPure.GetForcedSettingValue(IGPlus_ForcedSettings_Index),
+					zzUTPure.GetForcedSettingMode(IGPlus_ForcedSettings_Index));
+			}
+			IGPlus_ForcedSettings_Index++;
+			if (IGPlus_ForcedSettings_Index == Min(zzUTPure.Settings.ForcedSettings.Length, arraycount(IGPlus_ForcedSettings)))
+				IGPlus_ForcedSettingsApply(IGPlus_ForcedSettings_Counter);
 		}
-		IGPlus_ForcedSettings_Index++;
-		if (IGPlus_ForcedSettings_Index == Min(zzUTPure.Settings.ForcedSettings.Length, arraycount(IGPlus_ForcedSettings)))
-			IGPlus_ForcedSettingsApply(IGPlus_ForcedSettings_Counter);
 	}
 
 	if (bIsCrouching) {
