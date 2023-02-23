@@ -7256,7 +7256,7 @@ event PostRender( canvas zzCanvas )
 	xxRenderLogo(zzCanvas);
 	xxCleanAvars();
 
-	if (Player.CurrentNetspeed != zzNetspeed) {
+	if (IGPlus_ForcedSettings_Applied && Player.CurrentNetspeed != zzNetspeed) {
 		Netspeed = int(ConsoleCommand("get ini:Engine.Engine.NetworkDevice MaxClientRate"));
 		if (Netspeed < Settings.DesiredNetspeed) {
 			ConsoleCommand("set ini:Engine.Engine.NetworkDevice MaxClientRate"@Settings.DesiredNetspeed);
