@@ -2405,7 +2405,7 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 			else
 				MaxTimeMargin = 0.5;
 			DeltaTime = 0;
-			Log("["$Level.TimeSeconds$"]"@PlayerReplicationInfo.PlayerName@"MaxTimeMargin exceeded ("$TimeMargin$")", 'IGPlus');
+			ClientDebugMessage("["$Level.TimeSeconds$"]"@PlayerReplicationInfo.PlayerName@"MaxTimeMargin exceeded ("$TimeMargin$")", 'IGPlus');
 		}
 	}
 
@@ -3036,7 +3036,7 @@ function xxServerMoveDead(
 			else
 				MaxTimeMargin = 0.5;
 			DeltaTime = 0;
-			Log("["$Level.TimeSeconds$"]"@PlayerReplicationInfo.PlayerName@"MaxTimeMargin exceeded ("$TimeMargin$")", 'IGPlus');
+			ClientDebugMessage("["$Level.TimeSeconds$"]"@PlayerReplicationInfo.PlayerName@"MaxTimeMargin exceeded ("$TimeMargin$")", 'IGPlus');
 		}
 	}
 
