@@ -3848,8 +3848,6 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 		} else {
 			bAltFire = 0;
 		}
-
-		HandleWalking();
 	} else if (RemoteRole == ROLE_Authority) {
 		bDodging = Old.SavedDodging;
 		DodgeDir = Old.SavedDodgeDir;
@@ -3860,6 +3858,7 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 
 	// 
 
+	HandleWalking();
 	PlayerMove(I.Delta);
 	AutonomousPhysics(I.Delta);
 	CorrectTeleporterVelocity();
