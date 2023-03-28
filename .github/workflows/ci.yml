@@ -81,8 +81,10 @@ jobs:
               [string]$SubDir,
               [string]$FilePattern
             )
-            Get-ChildItem ("${{ env.PKG_NAME }}"+$SubDir+$FilePattern) | ForEach-Object {
-              Replace-PackageName-File $_ $SubDir
+            if (Test-Path -Path ("${{ env.PKG_NAME }}"+$SubDir+$FilePattern)) {
+              Get-ChildItem ("${{ env.PKG_NAME }}"+$SubDir+$FilePattern) | ForEach-Object {
+                Replace-PackageName-File $_ $SubDir
+              }
             }
           }
 
