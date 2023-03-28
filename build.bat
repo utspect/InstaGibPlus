@@ -135,7 +135,7 @@ if %VERBOSE% GEQ 1 (
     echo VERBOSE=%VERBOSE%
 )
 
-call %BUILD_DIR%Build\CreateVersionInfo.bat %PACKAGE_NAME% dev %PACKAGE_NAME%
+call "%BUILD_DIR%Build\CreateVersionInfo.bat" %PACKAGE_NAME% dev %PACKAGE_NAME%
 
 pushd "%BUILD_DIR%..\System"
 
@@ -145,7 +145,7 @@ call :PrepareDependencies %DEPENDENCIES%
 
 :: make sure to always rebuild the package
 :: New package GUID, No doubts about staleness
-if exist "%PACKAGE_NAME%.u" del %PACKAGE_NAME%.u
+if exist "%PACKAGE_NAME%.u" del "%PACKAGE_NAME%.u"
 
 set MAKE_PARAMS=-ini=%MAKEINI%
 
@@ -160,18 +160,21 @@ if ERRORLEVEL 1 goto compile_failed
 
 :: copy to release location
 if not exist "%BUILD_DIR%System" (mkdir "%BUILD_DIR%System")
-copy %PACKAGE_NAME%.u %BUILD_DIR%System >NUL
+copy "%PACKAGE_NAME%.u" "%BUILD_DIR%System" >NUL
 
 if %BUILD_NOUZ% == 0 (
     :: generate compressed file for redirects
-    call :Invoke ucc compress %PACKAGE_NAME%.u
-    copy %PACKAGE_NAME%.u.uz "%BUILD_DIR%System" >NUL
+    call :Invoke ucc compress "%PACKAGE_NAME%.u"
+    copy "%PACKAGE_NAME%.u.uz" "%BUILD_DIR%System" >NUL
 )
 
 if %BUILD_NOINT% == 0 (
     :: dump localization strings
-    call :Invoke ucc dumpint %PACKAGE_NAME%.u
-    copy %PACKAGE_NAME%.int "%BUILD_DIR%System" >NUL
+    if exist "%PACKAGE_NAME%.int" del "%PACKAGE_NAME%.int" >NUL
+    if exist "..\SystemLocalized\int\%PACKAGE_NAME%.int" del "..\SystemLocalized\int\%PACKAGE_NAME%.int" >NUL
+    call :Invoke ucc dumpint "%PACKAGE_NAME%.u"
+    if exist "%PACKAGE_NAME%.int" copy "%PACKAGE_NAME%.int" "%BUILD_DIR%System" >NUL
+    if exist "..\SystemLocalized\int\%PACKAGE_NAME%.int" copy "..\SystemLocalized\int\%PACKAGE_NAME%.int" "%BUILD_DIR%System" >NUL
 )
 
 :: The reason we dont call PostBuildHook is because if youre using NoBind, this
@@ -226,7 +229,7 @@ exit /B %ERRORLEVEL%
 ::    Usually the last Package is the one that you are trying to compile
 ::    If Package A depends on Package B, then B must appear before A in this list.
 :GenerateMakeIni
-    if not exist %1 mkdir "%~dp1"
+    if not exist "%~dp1" mkdir "%~dp1"
     call :GenerateMakeIniPreamble %1
 
     :GenerateMakeIni_Loop
@@ -285,11 +288,11 @@ exit /B %ERRORLEVEL%
 :PrepareDependencies
     if [%1] EQU [] exit /B %ERRORLEVEL%
     if exist "%BUILD_DIR%Build/Dependencies/%1/" (
-    	if %VERBOSE% GEQ 1 echo Copying Dependency %1
+        if %VERBOSE% GEQ 1 echo Copying Dependency %1
         if %VERBOSE% GEQ 1 (
-        	robocopy "%BUILD_DIR%Build/Dependencies/%1/" .. *.* /S /NJH /NJS /NS /NC /NP
+            robocopy "%BUILD_DIR%Build/Dependencies/%1/" .. *.* /S /NJH /NJS /NS /NC /NP
         ) else (
-        	robocopy "%BUILD_DIR%Build/Dependencies/%1/" .. *.* /S >NUL
+            robocopy "%BUILD_DIR%Build/Dependencies/%1/" .. *.* /S >NUL
         )
     ) else (
         echo "Could not locate dependency '%1' in '%BUILD_DIR%Build/Dependencies/'"

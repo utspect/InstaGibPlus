@@ -27,15 +27,18 @@ jobs:
 
       - name: Determine Package Name
         run: |
+          $ref = "${{ github.ref }}"
+          $repoName = "${{ github.event.repository.name }}"
+          $sha = "${{ github.sha }}"
           if ("${{ github.ref_type }}" -eq "tag") {
-            echo ("PKG_NAME=${{ github.event.repository.name }}_"+"${{ github.ref }}".SubString(10)) >> $env:GITHUB_ENV
-            echo ("PKG_VER="+"${{ github.ref }}".SubString(10)) >> $env:GITHUB_ENV
-          } elseif ("${{ github.ref }}".StartsWith("refs/pull/")) {
-            echo ("PKG_NAME=${{ github.event.repository.name }}_pr_"+"${{ github.ref }}".SubString(10, $length - 16)) >> $env:GITHUB_ENV
-            echo ("PKG_VER=pr_"+"${{ github.ref }}".SubString(10, $length - 16)) >> $env:GITHUB_ENV
+            echo ("PKG_NAME="+$repoName+"_"+$ref.SubString(10)) >> $env:GITHUB_ENV
+            echo ("PKG_VER="+$ref.SubString(10)) >> $env:GITHUB_ENV
+          } elseif ($ref.StartsWith("refs/pull/")) {
+            echo ("PKG_NAME="+$repoName+"_pr_"+$ref.SubString(10, $ref.Length - 16)) >> $env:GITHUB_ENV
+            echo ("PKG_VER=pr_"+$ref.SubString(10, $ref.Length - 16)) >> $env:GITHUB_ENV
           } else {
-            echo ("PKG_NAME=${{ github.event.repository.name }}_"+"${{ github.ref }}".SubString(11)+"-"+"${{ github.sha }}".SubString(0,8)) >> $env:GITHUB_ENV
-            echo ("PKG_VER="+"${{ github.ref }}".SubString(11)+"-"+"${{ github.sha }}".SubString(0,8)) >> $env:GITHUB_ENV
+            echo ("PKG_NAME="+$repoName+"_"+$ref.SubString(11)+"-"+$sha.SubString(0,8)) >> $env:GITHUB_ENV
+            echo ("PKG_VER="+$ref.SubString(11)+"-"+$sha.SubString(0,8)) >> $env:GITHUB_ENV
           }
 
       - name: Save Package Name In File
@@ -56,30 +59,37 @@ jobs:
 
       - name: Rename Localization Files
         run: |
-          function Replace-PackageName {
+          function Replace-PackageName-File {
             param(
-              $File
+              $File,
+              $SubDir
             )
 
             $OldName = $File.Name
             $NewName = ($File.Name -replace "${{ github.event.repository.name }}\.","${{ env.PKG_NAME }}.")
-            $NewItem = ("${{ env.PKG_NAME }}/System/" + $NewName)
-            Write-Output ($OldName + " -> " + $NewName)
+            $NewItem = ("${{ env.PKG_NAME }}"+$SubDir+$NewName)
+            Write-Output ($SubDir + $OldName + " -> " + $SubDir + $NewName)
             if (Test-Path -Path $NewItem) { Remove-Item $NewItem }
             (Get-Content -Path $File.FullName) | ForEach-Object {
               ($_ -replace "${{ github.event.repository.name }}\.","${{ env.PKG_NAME }}.") >> $NewItem
             }
             Remove-Item $File
           }
-          Get-ChildItem "${{ env.PKG_NAME }}/System/${{ github.event.repository.name }}.*" | ForEach-Object {
-            Replace-PackageName($_)
+
+          function Replace-PackageName {
+            param(
+              [string]$SubDir,
+              [string]$FilePattern
+            )
+            Get-ChildItem ("${{ env.PKG_NAME }}"+$SubDir+$FilePattern) | ForEach-Object {
+              Replace-PackageName-File $_ $SubDir
+            }
           }
-          Get-ChildItem "${{ env.PKG_NAME }}/System/ACEFileList_${{ github.event.repository.name }}.*" | ForEach-Object {
-            Replace-PackageName($_)
-          }
-          Get-ChildItem "${{ env.PKG_NAME }}/System/ACETweakList_${{ github.event.repository.name }}.*" | ForEach-Object {
-            Replace-PackageName($_)
-          }
+
+          Replace-PackageName "/System/"  "${{ github.event.repository.name }}.*"
+          Replace-PackageName "/System/"  "ACEFileList-${{ github.event.repository.name }}.*"
+          Replace-PackageName "/System/"  "ACETweakList-${{ github.event.repository.name }}.*"
+          Replace-PackageName "/Classes/" "${{ github.event.repository.name }}.upkg"
 
       - name: Extract Necessary Resources
         run: 7z x "${{ env.PKG_NAME }}/Build/BuildEnv.zip"
@@ -133,7 +143,7 @@ jobs:
 
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: PackageName
 
@@ -143,7 +153,7 @@ jobs:
           Remove-Item -Path "PackageName"
 
       - name: Download Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ env.PKG_NAME }}
 
