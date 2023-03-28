@@ -3858,6 +3858,7 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 
 	// 
 
+	IGPlus_TPFix_LastTouched = none;
 	HandleWalking();
 	PlayerMove(I.Delta);
 	AutonomousPhysics(I.Delta);
@@ -4015,6 +4016,7 @@ function IGPlus_ReplicateInput(float Delta) {
 		IGPlus_AdjustLocationOffset = vect(0,0,0);
 	}
 
+	IGPlus_TPFix_LastTouched = none;
 	AutonomousPhysics(Delta);
 	CorrectTeleporterVelocity();
 
