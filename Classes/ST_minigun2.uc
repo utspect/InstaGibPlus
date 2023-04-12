@@ -357,6 +357,18 @@ simulated function TweenDown() {
 		PlayAnim('Down', GetWeaponSettings().MinigunDownAnimSpeed(), TweenTime);
 }
 
+simulated function PlayUnwind()
+{
+	local float TweenTime;
+
+	TweenTime = 0.05;
+	if ( Owner != None )
+	{
+		PlayOwnedSound(Misc1Sound, SLOT_Misc, 3.0*Pawn(Owner).SoundDampening);
+		PlayAnim('UnWind', GetWeaponSettings().MinigunUnwindAnimSpeed(), TweenTime);
+	}
+}
+
 defaultproperties {
 	FireInterval=0.130
 	NextFireInterval=0.08

@@ -43,6 +43,7 @@ var float RipperSecondaryMomentum;
 var float MinigunSelectTime;
 var float MinigunDownTime;
 var float MinigunSpinUpTime;
+var float MinigunUnwindTime;
 var float MinigunBulletInterval;
 var float MinigunAlternateBulletInterval;
 var float MinigunMinDamage;
@@ -154,6 +155,7 @@ replication {
 		MinigunSelectTime,
 		MinigunDownTime,
 		MinigunSpinUpTime,
+		MinigunUnwindTime,
 		MinigunBulletInterval,
 		MinigunAlternateBulletInterval,
 		MinigunMinDamage,
@@ -306,6 +308,12 @@ simulated final function float MinigunDownAnimSpeed() {
 	return 100.0;
 }
 
+simulated final function float MinigunUnwindAnimSpeed() {
+	if (MinigunUnwindTime > 0.0)
+		return FMin(100.0, 1.5 * default.MinigunUnwindTime / MinigunUnwindTime);
+	return 100.0;
+}
+
 simulated final function float PulseSelectAnimSpeed() {
 	if (PulseSelectTime > 0.0)
 		return FMin(100.0, default.PulseSelectTime / PulseSelectTime);
@@ -452,6 +460,7 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	MinigunSelectTime = S.MinigunSelectTime;
 	MinigunDownTime = S.MinigunDownTime;
 	MinigunSpinUpTime = S.MinigunSpinUpTime;
+	MinigunUnwindTime = S.MinigunUnwindTime;
 	MinigunBulletInterval = S.MinigunBulletInterval;
 	MinigunAlternateBulletInterval = S.MinigunAlternateBulletInterval;
 	MinigunMinDamage = S.MinigunMinDamage;
@@ -602,6 +611,7 @@ defaultproperties
 	MinigunSelectTime=0.555556
 	MinigunDownTime=0.333333
 	MinigunSpinUpTime=0.130
+	MinigunUnwindTime=0.866666
 	MinigunBulletInterval=0.080
 	MinigunAlternateBulletInterval=0.050
 	MinigunMinDamage=5
