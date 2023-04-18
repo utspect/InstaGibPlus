@@ -57,6 +57,7 @@ var config float RipperSecondaryMomentum;
 var config float MinigunSelectTime;
 var config float MinigunDownTime;
 var config float MinigunSpinUpTime;
+var config float MinigunUnwindTime;
 var config float MinigunBulletInterval;
 var config float MinigunAlternateBulletInterval;
 var config float MinigunMinDamage;
@@ -183,6 +184,7 @@ defaultproperties
 	MinigunSelectTime=0.555556
 	MinigunDownTime=0.333333
 	MinigunSpinUpTime=0.130
+	MinigunUnwindTime=0.866666
 	MinigunBulletInterval=0.080
 	MinigunAlternateBulletInterval=0.050
 	MinigunMinDamage=5
