@@ -6017,7 +6017,7 @@ state Dying
 
 		global.ServerTick(DeltaTime);
 
-		if (RealTimeDead > 2*zzUTPure.Settings.MaxTradeTimeMargin && Weapon != none)
+		if (RealTimeDead > 2*zzUTPure.Settings.MaxTradeTimeMargin)
 			Level.Game.DiscardInventory(self);
 	}
 
