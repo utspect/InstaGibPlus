@@ -6195,7 +6195,6 @@ state Dying
 
 	function EndState()
 	{
-		Level.Game.DiscardInventory(self);
 		RotationRate = default.RotationRate;
 		SetPhysics(PHYS_None);
 		Super.EndState();
