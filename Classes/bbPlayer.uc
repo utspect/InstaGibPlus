@@ -9204,6 +9204,12 @@ exec function DrawServerLocation() {
 	IGPlus_LocationOffsetFix_DrawServerLocation = !IGPlus_LocationOffsetFix_DrawServerLocation;
 }
 
+simulated function SetMesh() {
+	if (bDeleteMe)
+		return;
+	super.SetMesh();
+}
+
 defaultproperties
 {
 	bNewNet=True
