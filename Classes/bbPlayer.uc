@@ -5976,6 +5976,7 @@ state Dying
 			Level.Game.bDeathMatch = false;
 		}
 
+		Level.Game.DiscardInventory(self); // last possible place to rid ourselves of old inventory
 		Result = Level.Game.RestartPlayer(self);
 
 		if (zzUTPure.Settings.bEnablePingCompensatedSpawn)
