@@ -28,7 +28,6 @@ var Pawn Asses[64];			// Team*16, Who assisted in a cap
 var int AssCount[4];			// How many assisted.
 var Pawn NextCTFVictim;			// The Guy that just got killed who had flag
 
-var Object WeaponSettingsHelper;
 var WeaponSettings WeaponSettings;
 var WeaponSettingsRepl WSettingsRepl;
 
@@ -775,9 +774,14 @@ function Tick(float deltaTime)
 	}
 }
 
+function InitializeSettings() {
+	class'WeaponSettingsRepl'.static.CreateWeaponSettings(Level, "WeaponSettingsOldNet", WeaponSettings, WSettingsRepl);
+}
+
 function PreBeginPlay()
 {
 	local string SelfName;
+
 	DMP = DeathMatchPlus(Level.Game);
 	DMP.BotConfigType = Class'ST_ChallengeBotInfo';		// Make sure game uses our übersuperior bots.
 	if (DMP.BotConfig != None)
@@ -794,11 +798,7 @@ function PreBeginPlay()
 
 	Class'bbCHSpectator'.Default.cStat = Class'ST_PureStatsSpec';
 
-	WeaponSettingsHelper = new(none, 'InstaGibPlus') class'Object';
-	WeaponSettings = new(WeaponSettingsHelper, 'WeaponSettingsOldNet') class'WeaponSettings';
-	WeaponSettings.SaveConfig();
-	WSettingsRepl = Spawn(class'WeaponSettingsRepl');
-	WSettingsRepl.InitFromWeaponSettings(WeaponSettings);
+	InitializeSettings();
 
 	Super.PreBeginPlay();
 }

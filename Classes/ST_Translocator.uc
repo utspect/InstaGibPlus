@@ -96,12 +96,18 @@ simulated function PlaySelect() {
 }
 
 simulated function TweenDown() {
+	local float TweenTime;
+
+	TweenTime = 0.05;
+	if (Owner != none && Owner.IsA('bbPlayer') && bbPlayer(Owner).IGPlus_UseFastWeaponSwitch)
+		TweenTime = 0.00;
+
 	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
-		TweenAnim( AnimSequence, AnimFrame * 0.36 );
+		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().TranslocatorDownTime );
 	else if ( bTTargetOut )
-		PlayAnim('Down2', GetWeaponSettings().TranslocatorDownAnimSpeed(), 0.05);
+		PlayAnim('Down2', GetWeaponSettings().TranslocatorDownAnimSpeed(), TweenTime);
 	else
-		PlayAnim('Down', GetWeaponSettings().TranslocatorDownAnimSpeed(), 0.05);
+		PlayAnim('Down', GetWeaponSettings().TranslocatorDownAnimSpeed(), TweenTime);
 }
 
 defaultproperties {

@@ -9,7 +9,7 @@ class ST_UTChunk extends UTChunk;
 var ST_UTChunkInfo Chunkie;
 var int ChunkIndex;
 
-simulated function ProcessTouch (Actor Other, vector HitLocation)
+function ProcessTouch (Actor Other, vector HitLocation)
 {
 	if ( (Chunk(Other) == None) && ((Physics == PHYS_Falling) || (Other != Instigator)) )
 	{
@@ -36,4 +36,5 @@ simulated function ProcessTouch (Actor Other, vector HitLocation)
 
 
 defaultproperties {
+	bNetTemporary=False
 }

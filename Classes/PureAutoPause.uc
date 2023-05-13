@@ -147,12 +147,12 @@ state PlayingGame
 		if (TeamCanPause(1) && TeamMissing(1))
 			PauseGame();
 	}
+}
 
-	function PauseGame()
-	{
-		GotoState('AutoPausedGame');
-		Pause();
-	}
+function PauseGame()
+{
+	GotoState('AutoPausedGame');
+	Pause();
 }
 
 // This state is used when something else than AutoPause paused the game, to avoid AutoPause messing things up.

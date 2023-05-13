@@ -1,0 +1,172 @@
+name: CI
+
+on:
+  push:
+
+  pull_request:
+
+  release:
+    types: [published]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Download 469c Patch
+        uses: robinraju/release-downloader@v1.7
+        with:
+          repository: "OldUnreal/UnrealTournamentPatches"
+          tag: "v469c"
+          fileName: "OldUnreal-UTPatch469c-Windows.zip"
+          
+      - name: Extract Patch
+        run: 7z x "OldUnreal-UTPatch469c-Windows.zip"
+
+      - name: Determine Package Name
+        run: |
+          $ref = "${{ github.ref }}"
+          $repoName = "${{ github.event.repository.name }}"
+          $sha = "${{ github.sha }}"
+          if ("${{ github.ref_type }}" -eq "tag") {
+            echo ("PKG_NAME="+$repoName+"_"+$ref.SubString(10)) >> $env:GITHUB_ENV
+            echo ("PKG_VER="+$ref.SubString(10)) >> $env:GITHUB_ENV
+          } elseif ($ref.StartsWith("refs/pull/")) {
+            echo ("PKG_NAME="+$repoName+"_pr_"+$ref.SubString(10, $ref.Length - 16)) >> $env:GITHUB_ENV
+            echo ("PKG_VER=pr_"+$ref.SubString(10, $ref.Length - 16)) >> $env:GITHUB_ENV
+          } else {
+            echo ("PKG_NAME="+$repoName+"_"+$ref.SubString(11)+"-"+$sha.SubString(0,8)) >> $env:GITHUB_ENV
+            echo ("PKG_VER="+$ref.SubString(11)+"-"+$sha.SubString(0,8)) >> $env:GITHUB_ENV
+          }
+
+      - name: Save Package Name In File
+        run: echo ("${{ env.PKG_NAME }}") >> PackageName
+
+      - name: Create Package Name Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: PackageName
+          path: PackageName
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Checkout ${{ github.event.repository.name }}
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.PKG_NAME }}/
+
+      - name: Rename Localization Files
+        run: |
+          function Replace-PackageName-File {
+            param(
+              $File,
+              $SubDir
+            )
+
+            $OldName = $File.Name
+            $NewName = ($File.Name -replace "${{ github.event.repository.name }}\.","${{ env.PKG_NAME }}.")
+            $NewItem = ("${{ env.PKG_NAME }}"+$SubDir+$NewName)
+            Write-Output ($SubDir + $OldName + " -> " + $SubDir + $NewName)
+            if (Test-Path -Path $NewItem) { Remove-Item $NewItem }
+            (Get-Content -Path $File.FullName) | ForEach-Object {
+              ($_ -replace "${{ github.event.repository.name }}\.","${{ env.PKG_NAME }}.") >> $NewItem
+            }
+            Remove-Item $File
+          }
+
+          function Replace-PackageName {
+            param(
+              [string]$SubDir,
+              [string]$FilePattern
+            )
+            if (Test-Path -Path ("${{ env.PKG_NAME }}"+$SubDir+$FilePattern)) {
+              Get-ChildItem ("${{ env.PKG_NAME }}"+$SubDir+$FilePattern) | ForEach-Object {
+                Replace-PackageName-File $_ $SubDir
+              }
+            }
+          }
+
+          Replace-PackageName "/System/"  "${{ github.event.repository.name }}.*"
+          Replace-PackageName "/System/"  "ACEFileList-${{ github.event.repository.name }}.*"
+          Replace-PackageName "/System/"  "ACETweakList-${{ github.event.repository.name }}.*"
+          Replace-PackageName "/Classes/" "${{ github.event.repository.name }}.upkg"
+
+      - name: Extract Necessary Resources
+        run: 7z x "${{ env.PKG_NAME }}/Build/BuildEnv.zip"
+
+      - name: Create VersionInfo.uc
+        shell: cmd
+        run: |
+          set BUILD_DIR=${{ env.PKG_NAME }}/
+          ${{ env.PKG_NAME }}/Build/CreateVersionInfo.bat ${{ github.event.repository.name }} ${{ env.PKG_VER }} ${{ env.PKG_NAME }}
+
+      - name: Build ${{ github.event.repository.name }}
+        run: "${{ env.PKG_NAME }}/Build.bat silent noint nouz verbose"
+
+      - name: Save UCC.log
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ucc-output
+          path: System/UCC.log
+
+      - name: Collect Release Files
+        run: |
+          if (Test-Path -Path "${{ env.PKG_NAME }}/System" -PathType Container)    { Copy-Item -Path "${{ env.PKG_NAME }}/System" -Destination "Release/System" -Recurse -Force -Verbose }
+          if (Test-Path -Path "${{ env.PKG_NAME }}/Docs" -PathType Container)      { Copy-Item -Path "${{ env.PKG_NAME }}/Docs" -Destination "Release/Docs" -Recurse -Force -Verbose }
+          if (Test-Path -Path "${{ env.PKG_NAME }}/LICENSE")                       { Copy-Item -Path "${{ env.PKG_NAME }}/LICENSE" -Destination "Release" -Verbose }
+          if (Test-Path -Path "${{ env.PKG_NAME }}/README.md")                     { Copy-Item -Path "${{ env.PKG_NAME }}/README.md" -Destination "Release" -Verbose }
+          if (Test-Path -Path "${{ env.PKG_NAME }}/Build/Dependencies" -PathType Container) {
+            Get-ChildItem "${{ env.PKG_NAME }}/Build/Dependencies" | ForEach-Object {
+              $Dep = $_
+              if (Test-Path $Dep -PathType Container) {
+                Get-ChildItem $Dep | ForEach-Object {
+                  Copy-Item $_ -Destination "Release" -Recurse -Force -Verbose
+                }
+              }
+            }
+          }
+
+      - name: Save ${{ github.event.repository.name }} Package
+        uses: actions/upload-artifact@v3
+        with:
+          name: "${{ env.PKG_NAME }}"
+          path: |
+            Release/**/*
+            Release/*
+            !Release/**/*.uz
+
+  release:
+    runs-on: windows-latest
+    needs: build
+    if: ${{ github.event_name == 'release' }}
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: PackageName
+
+      - name: Restore Package Name
+        run: |
+          echo ("PKG_NAME=" + (Get-Content -Path "PackageName")) >> $env:GITHUB_ENV
+          Remove-Item -Path "PackageName"
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.PKG_NAME }}
+
+      - name: Create Release Asset
+        run: >
+          7z a -tzip -- "${{ env.PKG_NAME }}.zip" *
+
+      - name: Attach Asset To Release
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ env.PKG_NAME }}.zip
+          overwrite: true
+

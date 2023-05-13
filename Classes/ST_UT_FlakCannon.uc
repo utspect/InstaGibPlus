@@ -155,12 +155,18 @@ function SetSwitchPriority(pawn Other)
 }
 
 simulated function TweenDown() {
+	local float TweenTime;
+
+	TweenTime = 0.05;
+	if (Owner != none && Owner.IsA('bbPlayer') && bbPlayer(Owner).IGPlus_UseFastWeaponSwitch)
+		TweenTime = 0.00;
+
 	if ( IsAnimating() && (AnimSequence != '') && (GetAnimGroup(AnimSequence) == 'Select') )
-		TweenAnim( AnimSequence, AnimFrame * 0.4 );
+		TweenAnim( AnimSequence, AnimFrame * GetWeaponSettings().FlakDownTime );
 	else if ( AmmoType.AmmoAmount < 1 )
-		TweenAnim('Select', GetWeaponSettings().FlakDownTime + 0.05);
+		TweenAnim('Select', GetWeaponSettings().FlakDownTime + TweenTime);
 	else
-		PlayAnim('Down',GetWeaponSettings().FlakDownAnimSpeed(), 0.05);
+		PlayAnim('Down',GetWeaponSettings().FlakDownAnimSpeed(), TweenTime);
 }
 
 simulated function PlaySelect() {

@@ -1,14 +1,16 @@
 class NewNetIG extends Arena;
 
-var Object WeaponSettingsHelper;
 var WeaponSettings WeaponSettings;
+var WeaponSettingsRepl WSettingsRepl;
+
+function InitializeSettings() {
+	class'WeaponSettingsRepl'.static.CreateWeaponSettings(Level, "WeaponSettingsNewNet", WeaponSettings, WSettingsRepl);
+}
 
 function PreBeginPlay() {
 	super.PreBeginPlay();
 
-	WeaponSettingsHelper = new(none, 'InstaGibPlus') class'Object';
-	WeaponSettings = new(WeaponSettingsHelper, 'WeaponSettingsNewNet') class'WeaponSettings';
-	WeaponSettings.SaveConfig();
+	InitializeSettings();
 }
 
 function bool CheckReplacement(Actor Other, out byte bSuperRelevant)

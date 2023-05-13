@@ -16,6 +16,7 @@ var float EightballDownTime;
 var float RocketDamage;
 var float RocketHurtRadius;
 var float RocketMomentum;
+var float RocketSpreadSpacingDegrees;
 var float GrenadeDamage;
 var float GrenadeHurtRadius;
 var float GrenadeMomentum;
@@ -42,6 +43,7 @@ var float RipperSecondaryMomentum;
 var float MinigunSelectTime;
 var float MinigunDownTime;
 var float MinigunSpinUpTime;
+var float MinigunUnwindTime;
 var float MinigunBulletInterval;
 var float MinigunAlternateBulletInterval;
 var float MinigunMinDamage;
@@ -81,6 +83,17 @@ var float EnforcerSelectTime;
 var float EnforcerDownTime;
 var float EnforcerDamage;
 var float EnforcerMomentum;
+var float EnforcerReloadTime;
+var float EnforcerReloadTimeAlt;
+var float EnforcerReloadTimeRepeat;
+
+var bool  EnforcerAllowDouble;
+var float EnforcerDamageDouble;
+var float EnforcerMomentumDouble;
+var float EnforcerShotOffsetDouble;
+var float EnforcerReloadTimeDouble;
+var float EnforcerReloadTimeAltDouble;
+var float EnforcerReloadTimeRepeatDouble;
 
 var float HammerSelectTime;
 var float HammerDownTime;
@@ -142,6 +155,7 @@ replication {
 		MinigunSelectTime,
 		MinigunDownTime,
 		MinigunSpinUpTime,
+		MinigunUnwindTime,
 		MinigunBulletInterval,
 		MinigunAlternateBulletInterval,
 		MinigunMinDamage,
@@ -181,6 +195,17 @@ replication {
 		EnforcerDownTime,
 		EnforcerDamage,
 		EnforcerMomentum,
+		EnforcerReloadTime,
+		EnforcerReloadTimeAlt,
+		EnforcerReloadTimeRepeat,
+
+		EnforcerAllowDouble,
+		EnforcerDamageDouble,
+		EnforcerMomentumDouble,
+		EnforcerShotOffsetDouble,
+		EnforcerReloadTimeDouble,
+		EnforcerReloadTimeAltDouble,
+		EnforcerReloadTimeRepeatDouble,
 
 		HammerSelectTime,
 		HammerDownTime,
@@ -283,6 +308,12 @@ simulated final function float MinigunDownAnimSpeed() {
 	return 100.0;
 }
 
+simulated final function float MinigunUnwindAnimSpeed() {
+	if (MinigunUnwindTime > 0.0)
+		return FMin(100.0, 1.5 * default.MinigunUnwindTime / MinigunUnwindTime);
+	return 100.0;
+}
+
 simulated final function float PulseSelectAnimSpeed() {
 	if (PulseSelectTime > 0.0)
 		return FMin(100.0, default.PulseSelectTime / PulseSelectTime);
@@ -322,6 +353,42 @@ simulated final function float EnforcerSelectAnimSpeed() {
 simulated final function float EnforcerDownAnimSpeed() {
 	if (EnforcerDownTime > 0.0)
 		return FMin(100.0, default.EnforcerDownTime / EnforcerDownTime);
+	return 100.0;
+}
+
+simulated final function float EnforcerReloadAnimSpeed() {
+	if (EnforcerReloadTime > 0.0)
+		return FMin(100.0, default.EnforcerReloadTime / EnforcerReloadTime);
+	return 100.0;
+}
+
+simulated final function float EnforcerReloadAltAnimSpeed() {
+	if (EnforcerReloadTimeAlt > 0.0)
+		return FMin(100.0, default.EnforcerReloadTimeAlt / EnforcerReloadTimeAlt);
+	return 100.0;
+}
+
+simulated final function float EnforcerReloadRepeatAnimSpeed() {
+	if (EnforcerReloadTimeRepeat > 0.0)
+		return FMin(100.0, default.EnforcerReloadTimeRepeat / EnforcerReloadTimeRepeat);
+	return 100.0;
+}
+
+simulated final function float EnforcerReloadDoubleAnimSpeed() {
+	if (EnforcerReloadTimeDouble > 0.0)
+		return FMin(100.0, default.EnforcerReloadTimeDouble / EnforcerReloadTimeDouble);
+	return 100.0;
+}
+
+simulated final function float EnforcerReloadAltDoubleAnimSpeed() {
+	if (EnforcerReloadTimeAltDouble > 0.0)
+		return FMin(100.0, default.EnforcerReloadTimeAltDouble / EnforcerReloadTimeAltDouble);
+	return 100.0;
+}
+
+simulated final function float EnforcerReloadRepeatDoubleAnimSpeed() {
+	if (EnforcerReloadTimeRepeatDouble > 0.0)
+		return FMin(100.0, default.EnforcerReloadTimeRepeatDouble / EnforcerReloadTimeRepeatDouble);
 	return 100.0;
 }
 
@@ -366,6 +433,7 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	RocketDamage = S.RocketDamage;
 	RocketHurtRadius = S.RocketHurtRadius;
 	RocketMomentum = S.RocketMomentum;
+	RocketSpreadSpacingDegrees = S.RocketSpreadSpacingDegrees;
 	GrenadeDamage = S.GrenadeDamage;
 	GrenadeHurtRadius = S.GrenadeHurtRadius;
 	GrenadeMomentum = S.GrenadeMomentum;
@@ -392,6 +460,7 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	MinigunSelectTime = S.MinigunSelectTime;
 	MinigunDownTime = S.MinigunDownTime;
 	MinigunSpinUpTime = S.MinigunSpinUpTime;
+	MinigunUnwindTime = S.MinigunUnwindTime;
 	MinigunBulletInterval = S.MinigunBulletInterval;
 	MinigunAlternateBulletInterval = S.MinigunAlternateBulletInterval;
 	MinigunMinDamage = S.MinigunMinDamage;
@@ -431,6 +500,17 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	EnforcerDownTime = S.EnforcerDownTime;
 	EnforcerDamage = S.EnforcerDamage;
 	EnforcerMomentum = S.EnforcerMomentum;
+	EnforcerReloadTime = S.EnforcerReloadTime;
+	EnforcerReloadTimeAlt = S.EnforcerReloadTimeAlt;
+	EnforcerReloadTimeRepeat = S.EnforcerReloadTimeRepeat;
+
+	EnforcerAllowDouble = S.EnforcerAllowDouble;
+	EnforcerDamageDouble = S.EnforcerDamageDouble;
+	EnforcerMomentumDouble = S.EnforcerMomentumDouble;
+	EnforcerShotOffsetDouble = S.EnforcerShotOffsetDouble;
+	EnforcerReloadTimeDouble = S.EnforcerReloadTimeDouble;
+	EnforcerReloadTimeAltDouble = S.EnforcerReloadTimeAltDouble;
+	EnforcerReloadTimeRepeatDouble = S.EnforcerReloadTimeRepeatDouble;
 
 	HammerSelectTime = S.HammerSelectTime;
 	HammerDownTime = S.HammerDownTime;
@@ -447,6 +527,38 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	TranslocatorOutSelectTime = S.TranslocatorOutSelectTime;
 	TranslocatorDownTime = S.TranslocatorDownTime;
 	TranslocatorHealth = S.TranslocatorHealth;
+}
+
+final static function CreateWeaponSettings(
+	LevelInfo L,
+	string DefaultName,
+	out WeaponSettings WS,
+	out WeaponSettingsRepl WSR
+) {
+	local Object Helper;
+	local string Options;
+	local int Pos;
+	local string SettingsName;
+	local StringUtils SU;
+
+	Options = L.GetLocalURL();
+	Pos = InStr(Options, "?");
+	if (Pos < 0)
+		Options = "";
+	else
+		Options = Mid(Options, Pos);
+
+	SU = class'StringUtils'.static.Instance();
+
+	SettingsName = L.Game.ParseOption(Options, "IGPlusWeaponSettings");
+	if (SettingsName == "")
+		SettingsName = DefaultName;
+
+	Helper = new(none, 'InstaGibPlus') class'Object';
+	WS = new(Helper, SU.StringToName(SettingsName)) class'WeaponSettings';
+	WS.SaveConfig();
+	WSR = L.Spawn(class'WeaponSettingsRepl');
+	WSR.InitFromWeaponSettings(WS);
 }
 
 defaultproperties
@@ -472,6 +584,7 @@ defaultproperties
 	RocketDamage=75
 	RocketHurtRadius=220
 	RocketMomentum=1.0
+	RocketSpreadSpacingDegrees=3.6
 	GrenadeDamage=80
 	GrenadeHurtRadius=200
 	GrenadeMomentum=1.0
@@ -498,6 +611,7 @@ defaultproperties
 	MinigunSelectTime=0.555556
 	MinigunDownTime=0.333333
 	MinigunSpinUpTime=0.130
+	MinigunUnwindTime=0.866666
 	MinigunBulletInterval=0.080
 	MinigunAlternateBulletInterval=0.050
 	MinigunMinDamage=5
@@ -537,6 +651,17 @@ defaultproperties
 	EnforcerDownTime=0.266667
 	EnforcerDamage=17
 	EnforcerMomentum=1.0
+	EnforcerReloadTime=0.27
+	EnforcerReloadTimeAlt=0.26
+	EnforcerReloadTimeRepeat=0.266667
+
+	EnforcerAllowDouble=True
+	EnforcerDamageDouble=17
+	EnforcerMomentumDouble=1.0
+	EnforcerShotOffsetDouble=0.2
+	EnforcerReloadTimeDouble=0.27
+	EnforcerReloadTimeAltDouble=0.26
+	EnforcerReloadTimeRepeatDouble=0.266667
 
 	HammerSelectTime=0.566667
 	HammerDownTime=0.166667

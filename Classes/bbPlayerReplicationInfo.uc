@@ -1,5 +1,7 @@
 class bbPlayerReplicationInfo extends PlayerReplicationInfo;
 
+var UTPure zzUTPure;
+
 var string SkinName;
 var string FaceName;
 var string OriginalName;
@@ -17,11 +19,14 @@ replication {
 
 function PostBeginPlay()
 {
+    foreach AllActors(class'UTPure', zzUTPure)
+        break;
+
     StartTime = Level.TimeSeconds;
     Timer();
     SetTimer(1.0, true);
     bIsFemale = Pawn(Owner).bIsFemale;
-    MaxMultiDodges = class'UTPure'.default.MaxMultiDodges;
+    MaxMultiDodges = zzUTPure.Settings.MaxMultiDodges;
 }
 
 function Timer()

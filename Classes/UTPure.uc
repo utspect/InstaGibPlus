@@ -11,71 +11,10 @@ class UTPure extends Mutator config(InstaGibPlus);
 
 var ModifyLoginHandler NextMLH;			// Link list of handlers
 
-var config float HeadshotDamage;
-var config float SniperSpeed;
-var config float SniperDamagePri;
-
-var config bool SetPendingWeapon;
-var config bool NNAnnouncer;
-
-// Enable or disable.
-var config bool bUTPureEnabled;	// Possible to enable/disable UTPure without changing ini's
-// Advertising
-var config byte Advertise;		// Adds [CSHP] to the Server Name
-var config byte AdvertiseMsg;		// Decides if [CSHP] or [PURE] will be added to server name
-// CenterView
-var config bool bAllowCenterView;	// Allow use of CenterView
-var config float CenterViewDelay;	// How long before allowing use of CenterView again
-// BehindView
-var config bool bAllowBehindView;	// Allow use of BehindView
-// Others
-var config byte TrackFOV;		// Track the FOV cheats [0 = no, 1 = strict, 2 = loose]
-var config bool bAllowMultiWeapon;	// if true allows the multiweapon bug to be used on server.
-var config bool bFastTeams;		// Allow quick teams changes
-var config bool bUseClickboard;	// Use clickboard in Tournament Mode or not
-var config int MinClientRate;		// Minimum allowed client rate.
-var config int MaxClientRate;     // Maximum allowed client rate.
-var config bool bAdvancedTeamSay;	// Enable or disable Advanced TeamSay.
-var config byte ForceSettingsLevel;	// 0 = off, 1 = PostNetBeginPlay, 2 = SpawnNotify, 3 = Intervalled
-var config bool bWarmup;		// Enable or disable warmup. (bTournament only)
-var config int WarmupTimeLimit; // Warmup lasts at most this long
-var config bool bCoaches;		// Enable or disable coaching. (bTournament only)
-var config bool bAutoPause;		// Enable or disable autopause. (bTournament only)
-var config byte ForceModels;		// 0 = Disallow, 1 = Client Selectable, 2 = Forced
-var config byte ImprovedHUD;		// 0 = Disabled, 1 = Boots/Clock, 2 = Enhanced Team Info
-var config bool bDelayedPickupSpawn;	// Enable or disable delayed first pickup spawn.
-var config bool bTellSpectators;	// Enable or disable telling spectators of reason for kicks.
-var config string PlayerPacks[8];	// Config list of supported player packs
-var config int DefaultHitSound, DefaultTeamHitSound;
-var config bool bForceDefaultHitSounds;
-var config int TeleRadius;
-var config int ThrowVelocity;	// How far a player can throw weapons
-var config bool bForceDemo;		// Forces clients to do demos.
-var config bool bRestrictTrading;
-var config float MaxTradeTimeMargin; // Only relevant when bRestrictTrading is true
-var config float TradePingMargin;
-var config float KillCamDelay;
-var config float KillCamDuration;
-var config bool bJumpingPreservesMomentum;
-var config bool bOldLandingMomentum;
-var config bool bEnableSingleButtonDodge;
-var config bool bUseFlipAnimation;
-var config bool bEnableWallDodging;
-var config bool bDodgePreserveZMomentum;
-var config int MaxMultiDodges;
-var config int BrightskinMode; //0=None,1=Unlit
-var config float PlayerScale;
-var config bool bAlwaysRenderFlagCarrier;
-var config bool bAlwaysRenderDroppedFlags;
-
 // Nice variables.
 var float zzTeamChangeTime;			// This would be to Prevent Team Change Spamming
 var bool zzbWarmupPlayers;			// Do we have any players warming up?
 var DeathMatchPlus zzDMP;			// A place to store the Game Object.
-var string VersionStr;				// Holds the version code from VUC++
-var string LongVersion;				// Holds the version code from VUC++
-var string ThisVer;					// Holds the version letters
-var string NiceVer;					// Holds the version letters (no underscore)
 var string BADminText;				// Text to give players that want admin commands without being admin.
 var bool bDidEndWarn;				// True if screenshot warning has been sent to players.
 var bool bDidShot;
@@ -84,20 +23,6 @@ var float EndWarnDelay;
 // Pause control (for Event PlayerCalcView)
 var bool	zzbPaused;			// Game has been paused at one time.
 var float	zzPauseCountdown;		// Give 120 seconds of "ignore FT"
-var config int MaxPosError;
-var config int MaxHitError;
-var config float MaxJitterTime;
-var config float WarpFixDelay;
-var config float MinNetUpdateRate;
-var config float MaxNetUpdateRate;
-var config bool bEnableServerExtrapolation;
-var config bool bEnableServerPacketReordering;
-var config bool bEnableLoosePositionCheck;
-var config bool bPlayersAlwaysRelevant;
-var config bool bEnablePingCompensatedSpawn;
-var config bool bEnableJitterBounding;
-var config bool bEnableWarpFix;
-var config bool ShowTouchedPackage;
 var name zzDefaultWeapons[8];
 var string zzDefaultPackages[8];
 
@@ -105,43 +30,29 @@ var string zzDefaultPackages[8];
 var PureAutoPause zzAutoPauser;
 
 //Add the maplist where kickers will work using normal network
-var config string ExcludeMapsForKickers[128];
 var bool bExludeKickers;
 
 var bbPlayerReplicationInfo SkinIndexToPRIMap[64];
 
-struct ForceSettingsEntry{
-	var string Key;
-	var string Value;
-	var int Mode;
-};
-var config ForceSettingsEntry ForcedSettings[128];
+var StringUtils StringUtils;
+
+var Object SettingsHelper;
+var ServerSettings Settings;
 
 replication
 {
 	unreliable if (Role == ROLE_Authority)
 		bExludeKickers,
-		MaxPosError,
-		NNAnnouncer,
 		zzAutoPauser;
 }
 
-//XC_Engine interface
-native(1718) final function bool AddToPackageMap( optional string PkgName);
-
 function PreBeginPlay()
 {
-	local int XC_Version;
-
-	XC_Version = int(ConsoleCommand("get ini:engine.engine.gameengine XC_Version"));
-	if ( XC_Version >= 11 )
-	{
-		AddToPackageMap();
-	}
-
 	zzDMP = DeathMatchPlus(Level.Game);
 	if (zzDMP == None)
 		return;
+
+	StringUtils = class'StringUtils'.static.Instance();
 
 	// toggle first blood so it doesn't get triggered during warmup
 	zzDMP.bFirstBlood = True;
@@ -160,14 +71,39 @@ function PreBeginPlay()
 
 function PrintVersionInfo() {
 	local string LongStr;
-	LongStr = VersionStr@LongVersion$NiceVer;
+	LongStr = class'VersionInfo'.default.PackageBaseName@class'VersionInfo'.default.PackageVersion;
 
 	if (Len(LongStr) > 20) {
-		xxLog("#"$class'StringUtils'.static.CenteredString(VersionStr, 29, " ")$"#");
-		LongStr = LongVersion$NiceVer;
+		xxLog("#"$StringUtils.CenteredString(class'VersionInfo'.default.PackageBaseName, 29, " ")$"#");
+		LongStr = class'VersionInfo'.default.PackageVersion;
 	}
 
-	xxLog("#"$class'StringUtils'.static.CenteredString(LongStr, 29, " ")$"#");
+	xxLog("#"$StringUtils.CenteredString(LongStr, 29, " ")$"#");
+}
+
+function string GetAllOptions() {
+	local string O;
+	local int Pos;
+
+	O = Level.GetLocalURL();
+	Pos = InStr(O, "?");
+	if (Pos < 0)
+		return "";
+	return Mid(O, Pos);
+}
+
+function InitializeSettings() {
+	local string SettingsName;
+
+	SettingsName = Level.Game.ParseOption(GetAllOptions(), "IGPlusSettings");
+	if (SettingsName == "")
+		SettingsName = "ServerSettings";
+
+	xxLog("SettingsName="$SettingsName);
+
+	SettingsHelper = new(none, 'InstaGibPlus') class'Object';
+	Settings = new(SettingsHelper, StringUtils.StringToName(SettingsName)) class'ServerSettings';
+	Settings.SaveConfig();
 }
 
 function PostBeginPlay()
@@ -182,6 +118,8 @@ function PostBeginPlay()
 
 	Super.PostBeginPlay();
 
+	InitializeSettings();
+
 	xxLog("");
 	xxLog("###############################");
 	PrintVersionInfo();
@@ -191,7 +129,7 @@ function PostBeginPlay()
 		xxLog("#    Game is not based on     #");
 		xxLog("#      DeathMatchPlus!        #");
 		xxLog("###############################");
-		bUTPureEnabled = False;
+		Settings.bUTPureEnabled = False;
 		Disable('Tick');
 		return;
 	}
@@ -201,23 +139,23 @@ function PostBeginPlay()
 	}
 	xxLog("#");
 
-	if (AdvertiseMsg == 0)
+	if (Settings.AdvertiseMsg == 0)
 		sTag = "[CSHP]";
-	else if (AdvertiseMsg == 1)
+	else if (Settings.AdvertiseMsg == 1)
 		sTag = "[IG+]";
 	else
 		sTag = "[PWND]";
 
 	// Setup name advertising
-	if ( (Advertise>0)  && (Level != None && Level.NetMode != NM_Standalone) && (zzDMP.GameReplicationInfo != None && instr(zzDMP.GameReplicationInfo.ServerName,sTag)==-1) )
+	if ( (Settings.Advertise>0)  && (Level != None && Level.NetMode != NM_Standalone) && (zzDMP.GameReplicationInfo != None && instr(zzDMP.GameReplicationInfo.ServerName,sTag)==-1) )
 	{
-		if (Advertise==1)
+		if (Settings.Advertise==1)
 			zzDMP.GameReplicationInfo.ServerName = sTag@zzDMP.GameReplicationInfo.ServerName;
-		else if (Advertise==2)
+		else if (Settings.Advertise==2)
 			zzDMP.GameReplicationInfo.ServerName = zzDMP.GameReplicationInfo.ServerName@sTag;
 	}
 
-	for (i = 0; PlayerPacks[i] != ""; i++);
+	for (i = 0; Settings.PlayerPacks[i] != ""; i++);
 	ppCnt = i;
 
 	XC_Version = int(ConsoleCommand("get ini:engine.engine.gameengine XC_Version"));
@@ -231,12 +169,12 @@ function PostBeginPlay()
 		ServPacks = Caps(ConsoleCommand("get engine.gameengine serverpackages"));
 	}
 	// Create the ModifyLoginHandler chain list
-	for (i = 0; PlayerPacks[i] != ""; i++)
+	for (i = 0; Settings.PlayerPacks[i] != ""; i++)
 	{
 
 		// Verify that the PlayerPack Package is in ServerPackages
-		curMLHPack = PlayerPacks[i]$"H"$ThisVer;
-		fullpack = curMLHPack$"."$PlayerPacks[i]$"LoginHandler";
+		curMLHPack = Settings.PlayerPacks[i]$"H"$class'VersionInfo'.default.PackageVersion;
+		fullpack = curMLHPack$"."$Settings.PlayerPacks[i]$"LoginHandler";
 		if (Instr(CAPS(ServPacks), Caps(Chr(34)$curMLHPack$Chr(34))) != -1)
 		{
 			MLHClass = class<ModifyLoginHandler>(DynamicLoadObject(fullpack, class'Class'));
@@ -272,22 +210,22 @@ function PostBeginPlay()
 		MLH.Accepted();
 
 	//Log("bAutoPause:"@bAutoPause@"bTeamGame:"@zzDMP.bTeamGame@"bTournament:"@zzDMP.bTournament);
-	if (bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
+	if (Settings.bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
 		zzAutoPauser = Spawn(Class'PureAutoPause');
 
-	if (bUseClickboard)
+	if (Settings.bUseClickboard)
 		SetupClickBoard();
 
-	if (ImprovedHUD == 2 && zzDMP.bTeamGame)
+	if (Settings.ImprovedHUD == 2 && zzDMP.bTeamGame)
 		xxReplaceTeamInfo();						// Do really nasty replacement of TeamInfo with Pures own.
 
-	if (bDelayedPickupSpawn)
+	if (Settings.bDelayedPickupSpawn)
 		Spawn(Class'PureDPS');
 
 	Spawn(class'NN_SpawnNotify');
 	Spawn(class'IGPlus_UnlagPause');
 
-	if (NNAnnouncer)
+	if (Settings.NNAnnouncer)
 		Spawn(class'NNAnnouncerSA');
 
 // Necessary functions to let the "bExludeKickers" list work
@@ -372,8 +310,8 @@ function bool IsMapExcluded (string MapName)
 {
     local int index;
 
-	while (index < arrayCount(ExcludeMapsForKickers)) {
-        if ((Left(ExcludeMapsForKickers[index], Len(MapName)) ~= MapName))
+	while (index < Settings.ExcludeMapsForKickers.Length) {
+        if ((Left(Settings.ExcludeMapsForKickers[index], Len(MapName)) ~= MapName))
             return true;
         ++index;
 	}
@@ -461,7 +399,7 @@ event Tick(float zzDelta)
 	}
 
 	// Cause clients to force an actor check.
-	if (ForceSettingsLevel > 2 && rand(5000) == 0)
+	if (Settings.ForceSettingsLevel > 2 && rand(5000) == 0)
 		zzb = True;
 
 	if (Level.Game.bGameEnded && !bDidShot) {
@@ -711,7 +649,7 @@ function ModifyLogin(out class<playerpawn> SpawnClass, out string Portal, out st
 	// Quick Fix: Turn Commanders into our Spectator class.
 	if (SpawnClass == class'Commander' || SpawnClass == class'Spectator' || SpawnClass == class'CHSpectator')
 	{
-		if (zzDMP.bTeamGame && zzDMP.bTournament && bCoaches)	// Only allow coaches in bTournament Team games.
+		if (zzDMP.bTeamGame && zzDMP.bTournament && Settings.bCoaches)	// Only allow coaches in bTournament Team games.
 			SpawnClass = class'bbCHCoach';
 		else
 			SpawnClass = class'bbCHSpectator';
@@ -722,7 +660,7 @@ function ModifyLogin(out class<playerpawn> SpawnClass, out string Portal, out st
 	if ( NextMutator != None )
 		NextMutator.ModifyLogin(SpawnClass, Portal, Options);
 
-	if (!bUTPureEnabled)
+	if (!Settings.bUTPureEnabled)
 		return;
 
 	// Let VAPure handle login first !
@@ -749,7 +687,7 @@ function ModifyPlayer(Pawn Other)
 {
 	local bbPlayer zzP;
 
-	if (Other.IsA('TournamentPlayer') && bUTPureEnabled)
+	if (Other.IsA('TournamentPlayer') && Settings.bUTPureEnabled)
 	{
 		zzP = bbPlayer(Other);
 		if (zzP == None && Spectator(Other) == None)
@@ -760,17 +698,17 @@ function ModifyPlayer(Pawn Other)
 		}
 		else if (zzP != None)
 		{
-			zzP.zzTrackFOV = TrackFOV;
-			zzP.zzCVDelay = CenterViewDelay;
-			zzP.zzCVDeny = !bAllowCenterView;
-       		zzP.zzbNoMultiWeapon = !bAllowMultiWeapon;
-			zzP.zzForceSettingsLevel = ForceSettingsLevel;
+			zzP.zzTrackFOV = Settings.TrackFOV;
+			zzP.zzCVDelay = Settings.CenterViewDelay;
+			zzP.zzCVDeny = !Settings.bAllowCenterView;
+       		zzP.zzbNoMultiWeapon = !Settings.bAllowMultiWeapon;
+			zzP.zzForceSettingsLevel = Settings.ForceSettingsLevel;
 			if (zzDMP.CountDown < 1) {
 				// only set on first spawn after warmup
-				zzP.zzbForceDemo = bForceDemo;
+				zzP.zzbForceDemo = Settings.bForceDemo;
 				zzP.zzbGameStarted = True;
 			}
-			if (default.bEnablePingCompensatedSpawn) {
+			if (Settings.bEnablePingCompensatedSpawn) {
 				zzP.bHidden = true;
 				zzP.SetCollision(false, false, false);
 				// we are not undoing the effects because we cant "unplay" a sound
@@ -780,8 +718,8 @@ function ModifyPlayer(Pawn Other)
 	}
 
 	AssignFixedSkinIndex(Other);
-	Other.SetCollisionSize(Other.default.CollisionRadius * PlayerScale, Other.default.CollisionHeight * PlayerScale);
-	Other.DrawScale = Other.default.DrawScale * PlayerScale;
+	Other.SetCollisionSize(Other.default.CollisionRadius * Settings.PlayerScale, Other.default.CollisionHeight * Settings.PlayerScale);
+	Other.DrawScale = Other.default.DrawScale * Settings.PlayerScale;
 
 	Super.ModifyPlayer(Other);
 }
@@ -791,7 +729,7 @@ function ModifyLogout(Pawn Exiting) {
 	local TeamGamePlus TGP;
 
 	bbPRI = bbPlayerReplicationInfo(Exiting.PlayerReplicationInfo);
-	if (bbPRI != none) {
+	if (bbPRI != none && bbPRI.SkinIndex >= 0) {
 		TGP = TeamGamePlus(Level.Game);
 		if (TGP != none) {
 			SkinIndexToPRIMap[(bbPRI.Team << 4) + bbPRI.SkinIndex] = none;
@@ -814,7 +752,7 @@ function bool AlwaysKeep(Actor Other)
 	if ( bbPlayer(Other) != None )
 	{
 		bbPlayer(Other).zzUTPure = Self;
-		bbPlayer(Other).zzThrowVelocity = ThrowVelocity;
+		bbPlayer(Other).zzThrowVelocity = Settings.ThrowVelocity;
 	}
 	return Super.AlwaysKeep(Other);
 }
@@ -894,43 +832,21 @@ function Mutate(string MutateString, PlayerPawn Sender)
 
 	if (MutateString ~= "CheatInfo")
 	{
-		Sender.ClientMessage("This server is running "$VersionStr@NiceVer);
-		if (bUTPureEnabled)
+		Sender.ClientMessage("This server is running "$class'VersionInfo'.default.PackageBaseName@class'VersionInfo'.default.PackageVersion);
+		if (Settings.bUTPureEnabled)
 		{
-			Sender.ClientMessage("UTPure settings:");
-			Sender.ClientMessage("- FOV Tracking:"@TrackFOV@"(0 = off, 1 = strict, 2 = loose)");
-			Sender.ClientMessage("- Forced Settings:"@ForceSettingsLevel@"(0 = off, 1 = simple, 2 = passive, 3 = active)");
-			Sender.ClientMessage("- Minimum Clientrate:"@MinClientRate);
-			Sender.ClientMessage("- Maximum Clientrate:"@MaxClientRate);
-			Sender.ClientMessage("- Advanced TeamSay:"@bAdvancedTeamSay);
-			Sender.ClientMessage("- Allow CenterView:"@bAllowCenterView);
-			if (bAllowCenterView)
-				Sender.ClientMessage("- CenterView Delay:"@CenterViewDelay);
-			Sender.ClientMessage("- Allow BehindView:"@bAllowBehindView);
-			Sender.ClientMessage("- Delayed First Pickup Spawn:"@bDelayedPickupSpawn);
-			Sender.ClientMessage("- Improved HUD:"@ImprovedHUD@"(0 = off, 1 = clock/boots, 2 = team)");
-			Sender.ClientMessage("- Forced Models:"@ForceModels@"(0 = off, 1 = allowed, 2 = forced)");
-			zzbbPP = bbPlayer(Sender);
-			if (zzbbPP != None)
-			{
-				Sender.ClientMessage("Your settings:");
-				if (ImprovedHUD > 0)
-					Sender.ClientMessage("- Improved HUD:"@zzbbPP.HUDInfo@"(0 = off, 1 = clock/boots, 2 = team)");
-				if (ForceModels > 0)
-					Sender.ClientMessage("- Forced Models:"@zzbbPP.zzbForceModels);
-				Sender.ClientMessage("- Using New Net Code:"@zzbbPP.bNewNet);
-			}
+			Settings.DumpServerSettings(Sender);
 		}
 		else
 			Sender.ClientMessage("UTPure is Disabled!");
-		Sender.ClientMessage("Fast Teams:"@bFastTeams);
+		Sender.ClientMessage("Fast Teams:"@Settings.bFastTeams);
 	}
 	else if (MutateString ~= "PlayerHelp")
 	{
 		Sender.ClientMessage("InstaGib Plus Client Commands: (Type directly into console)");
 		Sender.ClientMessage("- PureLogo (Shows Logo and Version Information in lower left corner)");
 		Sender.ClientMessage("- ForceModels x (0 = Off, 1 = On. Default = 0) - The models will be forced to the model you select.");
-		if (ImprovedHUD == 2)
+		if (Settings.ImprovedHUD == 2)
 			Sender.ClientMessage("- TeamInfo x (0 = Off, 1 = On, Default = 1)");
 		Sender.ClientMessage("- MyIGSettings (Displays your current IG+ settings)");
 		Sender.ClientMessage("- ShowNetSpeeds (Shows the netspeeds other players currently have)");
@@ -973,7 +889,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 	{
 		if (Sender.bAdmin)
 		{
-			Default.bUTPureEnabled = True;
+			Settings.bUTPureEnabled = True;
 			StaticSaveConfig();
 			Sender.ClientMessage("UTPure will be ENABLED after next map change!");
 		}
@@ -984,7 +900,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 	{
 		if (Sender.bAdmin)
 		{
-			Default.bUTPureEnabled = False;
+			Settings.bUTPureEnabled = False;
 			StaticSaveConfig();
 			Sender.ClientMessage("UTPure will be DISABLED after next map change!");
 		}
@@ -1065,7 +981,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 			Sender.ClientMessage(BADminText);
 	}
 	else if (MutateString ~= "geterrordata") {
-		Sender.ClientMessage("MaxPosError:"@MaxPosError);
+		Sender.ClientMessage("MaxPosError:"@Settings.MaxPosError);
 	}
 	else if (Left(MutateString,7) ~= "KICKID ")
 	{
@@ -1195,7 +1111,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		}
 	}
 
-	if (bFastTeams)
+	if (Settings.bFastTeams)
 	{
 		if (MutateString ~= "FixTeams")
 			MakeTeamsEven(Sender);
@@ -1430,80 +1346,20 @@ event Destroyed()	// Make sure config is stored. (Don't think this is ever calle
 	Super.Destroyed();
 }
 
-static function string GetForcedSettingKey(int Index) {
-	return default.ForcedSettings[Index].Key;
+function string GetForcedSettingKey(int Index) {
+	return Settings.ForcedSettings[Index].Key;
 }
 
-static function string GetForcedSettingValue(int Index) {
-	return default.ForcedSettings[Index].Value;
+function string GetForcedSettingValue(int Index) {
+	return Settings.ForcedSettings[Index].Value;
 }
 
-static function int GetForcedSettingMode(int Index) {
-	return default.ForcedSettings[Index].Mode;
+function int GetForcedSettingMode(int Index) {
+	return Settings.ForcedSettings[Index].Mode;
 }
 
 defaultproperties
 {
-	SniperDamagePri=60
-	HeadshotDamage=100
-	SniperSpeed=1.0
-	bUTPureEnabled=True
-	Advertise=1
-	AdvertiseMsg=1
-	CenterViewDelay=1.000000
-	bAllowBehindView=False
-	TrackFOV=0
-	bAutoPause=True
-	bFastTeams=True
-	bUseClickboard=True
-	MinClientRate=10000
-	MaxClientRate=25000
-	bAdvancedTeamSay=True
-	ForceSettingsLevel=2
-	bWarmup=True
-	ForceModels=1
-	ImprovedHUD=1
-	bDelayedPickupSpawn=False
-	PlayerPacks(0)=""
-	DefaultHitSound=2
-	DefaultTeamHitSound=3
-	TeleRadius=210
-	ThrowVelocity=750
-	VersionStr="IG+"
-	LongVersion=""
-	ThisVer="9"
-	NiceVer="9"
 	BADminText="Not allowed - Log in as admin!"
 	bAlwaysTick=True
-	NNAnnouncer=True
-	MaxPosError=1000
-	MaxHitError=10000
-	MaxJitterTime=0.1
-	WarpFixDelay=0.25
-	MinNetUpdateRate=60.0
-	MaxNetUpdateRate=200.0
-	ShowTouchedPackage=False
-	bRestrictTrading=True
-	MaxTradeTimeMargin=0.1
-	TradePingMargin=0.5
-	KillCamDelay=0.0
-	KillCamDuration=2.0
-	bJumpingPreservesMomentum=False
-	bOldLandingMomentum=True
-	bEnableSingleButtonDodge=True
-	bUseFlipAnimation=True
-	bEnableWallDodging=False
-	bDodgePreserveZMomentum=False
-	MaxMultiDodges=1
-	BrightskinMode=1
-	PlayerScale=1.0
-	bAlwaysRenderFlagCarrier=False
-	bAlwaysRenderDroppedFlags=False
-	bEnableServerExtrapolation=True
-	bEnableServerPacketReordering=False
-	bEnableLoosePositionCheck=True
-	bPlayersAlwaysRelevant=True
-	bEnablePingCompensatedSpawn=True
-	bEnableJitterBounding=True
-	bEnableWarpFix=True
 }

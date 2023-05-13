@@ -72,23 +72,6 @@ class NN_FraggerRifle extends NN_SniperRifle;
 var color TeamColor[6];
 var Texture ShellCaseTex[4];
 
-function PostBeginPlay() {
-	super(SniperRifle).PostBeginPlay();
-
-	WeaponSettingsHelper = new(none, 'InstaGibPlus') class'Object';
-	WeaponSettings = new(WeaponSettingsHelper, 'WeaponSettingsFraggerArena') class'WeaponSettings';
-
-	if (WeaponSettings != none) {
-		BodyDamage = WeaponSettings.SniperDamage;
-		HeadDamage = WeaponSettings.SniperHeadshotDamage;
-		ReloadTime = WeaponSettings.SniperReloadTime;
-	} else {
-		BodyDamage = 45;
-		HeadDamage = 100;
-		ReloadTime = 0.6666666;
-	}
-}
-
 simulated function PostRender( canvas Canvas )
 {
 	local bbPlayer P;
@@ -354,9 +337,9 @@ simulated function PlayFiring()
 	if ( (Owner.Physics != PHYS_Falling && Owner.Physics != PHYS_Swimming && Pawn(Owner).bDuck != 0) ||
 		Owner.Velocity == vect(0,0,0)
 	) {
-		PlayAnim(FireAnims[Rand(5)], 3.57 * 0.6666666 / ReloadTime, 0.05);
+		PlayAnim(FireAnims[Rand(5)], 3.57 * 0.6666666 / GetWeaponSettings().SniperReloadTime, 0.05);
 	} else {
-		PlayAnim(FireAnims[Rand(5)], 0.6666666 / ReloadTime, 0.05);
+		PlayAnim(FireAnims[Rand(5)], 0.6666666 / GetWeaponSettings().SniperReloadTime, 0.05);
 	}
 
 	if ( (PlayerPawn(Owner) != None) && (PlayerPawn(Owner).DesiredFOV == PlayerPawn(Owner).DefaultFOV) )

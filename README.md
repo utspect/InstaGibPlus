@@ -1451,10 +1451,10 @@ Each entry can be used to force a setting on clients:
 # Building
 
 1. Go to the installation directory of UT99 in a command shell
-2. Use `git clone https://github.com/utspect/InstaGibPlus InstaGibPlus9` to clone the repo
-3. Navigate to the newly created directory `InstaGibPlus9`
-4. Execute `build.bat`
-5. The result of the build process will be available in the `System` folder that is next to `build.bat`
+2. Use `git clone https://github.com/utspect/InstaGibPlus` to clone the repo
+3. Navigate to the newly created directory `InstaGibPlus`
+4. Execute `Build.bat`
+5. The result of the build process will be available in the `System` folder that is next to `Build.bat`
 
 # Credits
 

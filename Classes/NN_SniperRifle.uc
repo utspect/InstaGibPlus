@@ -13,9 +13,6 @@ var float yMod;
 var float BodyHeight;
 var int zzWin;
 
-var float ReloadTime;
-var float BodyDamage;
-var float HeadDamage;
 enum EZoomState {
 	ZS_None,
 	ZS_Zooming,
@@ -24,32 +21,28 @@ enum EZoomState {
 };
 var EZoomState ZoomState;
 
-var Object WeaponSettingsHelper;
-var WeaponSettings WeaponSettings;
+var WeaponSettingsRepl WSettings;
 
-replication
-{
-	unreliable if (Role == ROLE_Authority)
-		BodyDamage,
-		HeadDamage,
-		ReloadTime;
+
+simulated final function WeaponSettingsRepl FindWeaponSettings() {
+	local WeaponSettingsRepl S;
+
+	foreach AllActors(class'WeaponSettingsRepl', S)
+		return S;
+
+	return none;
+}
+
+simulated final function WeaponSettingsRepl GetWeaponSettings() {
+	if (WSettings != none)
+		return WSettings;
+
+	WSettings = FindWeaponSettings();
+	return WSettings;
 }
 
 function PostBeginPlay() {
 	super(SniperRifle).PostBeginPlay();
-
-	WeaponSettingsHelper = new(none, 'InstaGibPlus') class'Object';
-	WeaponSettings = new(WeaponSettingsHelper, 'WeaponSettingsNewNet') class'WeaponSettings';
-
-	if (WeaponSettings != none) {
-		BodyDamage = WeaponSettings.SniperDamage;
-		HeadDamage = WeaponSettings.SniperHeadshotDamage;
-		ReloadTime = WeaponSettings.SniperReloadTime;
-	} else {
-		BodyDamage = 45;
-		HeadDamage = 100;
-		ReloadTime = 0.6666666;
-	}
 }
 
 simulated function RenderOverlays(Canvas Canvas)
@@ -297,7 +290,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		{
 			HitLocation += (X * Other.CollisionRadius * 0.5);
 			if (HitLocation.Z - Other.Location.Z > GetMinHeadshotZ(Pawn(Other))) {
-				class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, HeadDamage, AltDamageType);
+				class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, GetWeaponSettings().SniperHeadshotDamage, AltDamageType);
 				return true;
 			}
 		}
@@ -305,7 +298,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}
-	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, BodyDamage, MyDamageType);
+	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, GetWeaponSettings().SniperDamage, MyDamageType);
 	return false;
 }
 
@@ -369,21 +362,21 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			&& (instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice))))
 		{
 			Other.TakeDamage(
-				HeadDamage,
+				GetWeaponSettings().SniperHeadshotDamage,
 				PawnOwner,
 				HitLocation,
-				WeaponSettings.SniperHeadshotMomentum * 35000 * X,
+				GetWeaponSettings().SniperHeadshotMomentum * 35000 * X,
 				AltDamageType);
 		}
 		else
 		{
 			if (Other.bIsPawn)
-				Momentum = WeaponSettings.SniperMomentum * 30000 * X;
+				Momentum = GetWeaponSettings().SniperMomentum * 30000 * X;
 			else
 				Momentum = 30000 * X;
 
 			Other.TakeDamage(
-				BodyDamage,
+				GetWeaponSettings().SniperDamage,
 				PawnOwner,
 				HitLocation,
 				Momentum,
@@ -497,7 +490,7 @@ simulated function AnimEnd ()
 simulated function PlayFiring()
 {
 	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*3.0);
-	PlayAnim(FireAnims[Rand(5)], 0.66666666 / ReloadTime, 0.05);
+	PlayAnim(FireAnims[Rand(5)], 0.66666666 / GetWeaponSettings().SniperReloadTime, 0.05);
 
 	if ( (PlayerPawn(Owner) != None)
 		&& (PlayerPawn(Owner).DesiredFOV == PlayerPawn(Owner).DefaultFOV) )

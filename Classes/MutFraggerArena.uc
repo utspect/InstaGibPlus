@@ -17,19 +17,17 @@ class MutFraggerArena extends Arena;
 //Begin No Telefragging addition
 var config bool NoTeleFrag;
 
-var Object WeaponSettingsHelper;
 var WeaponSettings WeaponSettings;
 var WeaponSettingsRepl WSettingsRepl;
 
-event PreBeginPlay()
-{
-	super.PreBeginPlay();
+function InitializeSettings() {
+     class'WeaponSettingsRepl'.static.CreateWeaponSettings(Level, "WeaponSettingsFraggerArena", WeaponSettings, WSettingsRepl);
+}
 
-	WeaponSettingsHelper = new(none, 'InstaGibPlus') class'Object';
-	WeaponSettings = new(WeaponSettingsHelper, 'WeaponSettingsFraggerArena') class'WeaponSettings';
-	WeaponSettings.SaveConfig();
-	WSettingsRepl = Spawn(class'WeaponSettingsRepl');
-	WSettingsRepl.InitFromWeaponSettings(WeaponSettings);
+function PreBeginPlay() {
+     super.PreBeginPlay();
+
+     InitializeSettings();
 }
 
 function ModifyPlayer(Pawn Other)
