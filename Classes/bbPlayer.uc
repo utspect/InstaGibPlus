@@ -5083,8 +5083,9 @@ event ServerTick(float DeltaTime) {
 					zzUTPure.GetForcedSettingMode(IGPlus_ForcedSettings_Index));
 			}
 			IGPlus_ForcedSettings_Index++;
-			if (IGPlus_ForcedSettings_Index == Min(zzUTPure.Settings.ForcedSettings.Length, arraycount(IGPlus_ForcedSettings)))
-				IGPlus_ForcedSettingsApply(IGPlus_ForcedSettings_Counter);
+		} else if (IGPlus_ForcedSettings_Index == Min(zzUTPure.Settings.ForcedSettings.Length, arraycount(IGPlus_ForcedSettings))) {
+			IGPlus_ForcedSettingsApply(IGPlus_ForcedSettings_Counter);
+			IGPlus_ForcedSettings_Index++;
 		}
 	}
 
