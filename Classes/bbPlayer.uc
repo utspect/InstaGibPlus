@@ -5974,7 +5974,8 @@ state Dying
 
 		if (zzUTPure.Settings.bEnablePingCompensatedSpawn) {
 			bDeathMatchSave = Level.Game.bDeathMatch;
-			Level.Game.bDeathMatch = false;
+			Level.Game.bDeathMatch = false; // this avoids the sound respawns generate, we will play our own later
+			// see DeathMatchPlus.PlayTeleportEffect()
 		}
 
 		Level.Game.DiscardInventory(self); // last possible place to rid ourselves of old inventory
