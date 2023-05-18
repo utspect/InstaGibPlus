@@ -7239,11 +7239,37 @@ function IGPlus_LocationOffsetFix_TickBefore() {
 	}
 }
 
+function IGPlus_FixNetspeed() {
+	local int NetspeedTarget;
+	local int Netspeed;
+
+	if (IGPlus_ForcedSettings_Applied && Player.CurrentNetspeed != zzNetspeed) {
+		Netspeed = int(ConsoleCommand("get ini:Engine.Engine.NetworkDevice MaxClientRate"));
+		if (Netspeed < Settings.DesiredNetspeed) {
+			ConsoleCommand("set ini:Engine.Engine.NetworkDevice MaxClientRate"@Settings.DesiredNetspeed);
+			Netspeed = Settings.DesiredNetspeed;
+		}
+		if (zzMinimumNetspeed > 0 && Netspeed < zzMinimumNetspeed) {
+			xxServerCheater("NS");
+			return;
+		}
+		if (zzMaximumNetspeed > 0 && Netspeed < zzMaximumNetspeed)
+			zzMaximumNetspeed = Netspeed;
+
+		NetspeedTarget = Settings.DesiredNetspeed;
+		if (zzMinimumNetspeed != 0 && NetspeedTarget < zzMinimumNetspeed)
+			NetspeedTarget = zzMinimumNetspeed;
+		if (zzMaximumNetspeed != 0 && NetspeedTarget > zzMaximumNetspeed)
+			NetspeedTarget = zzMaximumNetspeed;
+
+		ConsoleCommand("Netspeed"@NetspeedTarget);
+		zzNetspeed = Player.CurrentNetspeed;
+	}
+}
+
 event PostRender( canvas zzCanvas )
 {
 	local int CH;
-	local int NetspeedTarget;
-	local int Netspeed;
 
 	if (Settings.bUseCrosshairFactory) {
 		CH = MyHud.Crosshair;
@@ -7268,31 +7294,7 @@ event PostRender( canvas zzCanvas )
 	xxRenderLogo(zzCanvas);
 	xxCleanAvars();
 
-	if (IGPlus_ForcedSettings_Applied && Player.CurrentNetspeed != zzNetspeed) {
-		Netspeed = int(ConsoleCommand("get ini:Engine.Engine.NetworkDevice MaxClientRate"));
-		if (Netspeed < Settings.DesiredNetspeed) {
-			ConsoleCommand("set ini:Engine.Engine.NetworkDevice MaxClientRate"@Settings.DesiredNetspeed);
-			Netspeed = Settings.DesiredNetspeed;
-		}
-		if (zzMinimumNetspeed > 0 && Netspeed < zzMinimumNetspeed) {
-			xxServerCheater("NS");
-			goto netspeed_end;
-		}
-		if (zzMaximumNetspeed > 0 && Netspeed < zzMaximumNetspeed)
-			zzMaximumNetspeed = Netspeed;
-
-		NetspeedTarget = Settings.DesiredNetspeed;
-		if (zzMinimumNetspeed != 0 && NetspeedTarget < zzMinimumNetspeed)
-			NetspeedTarget = zzMinimumNetspeed;
-		if (zzMaximumNetspeed != 0 && NetspeedTarget > zzMaximumNetspeed)
-			NetspeedTarget = zzMaximumNetspeed;
-
-		ConsoleCommand("Netspeed"@NetspeedTarget);
-		zzNetspeed = Player.CurrentNetspeed;
-
-	netspeed_end:
-		//
-	}
+	IGPlus_FixNetspeed();
 
 	if (zzDelayedStartTime != 0.0)
 	{
