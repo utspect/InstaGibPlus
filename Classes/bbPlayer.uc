@@ -3282,11 +3282,6 @@ simulated function xxDisableCarcasses()
 
 exec function Fire( optional float F )
 {
-	if (TournamentWeapon(Weapon) != none && TournamentWeapon(Weapon).FireAdjust != 1.0) {
-		xxServerCheater("FA");
-		TournamentWeapon(Weapon).FireAdjust = 1.0;
-	}
-
 	xxEnableCarcasses();
 	if (Weapon != none) {
 		if (Level.NetMode == NM_Client)
@@ -5083,8 +5078,9 @@ event ServerTick(float DeltaTime) {
 					zzUTPure.GetForcedSettingMode(IGPlus_ForcedSettings_Index));
 			}
 			IGPlus_ForcedSettings_Index++;
-			if (IGPlus_ForcedSettings_Index == Min(zzUTPure.Settings.ForcedSettings.Length, arraycount(IGPlus_ForcedSettings)))
-				IGPlus_ForcedSettingsApply(IGPlus_ForcedSettings_Counter);
+		} else if (IGPlus_ForcedSettings_Index == Min(zzUTPure.Settings.ForcedSettings.Length, arraycount(IGPlus_ForcedSettings))) {
+			IGPlus_ForcedSettingsApply(IGPlus_ForcedSettings_Counter);
+			IGPlus_ForcedSettings_Index++;
 		}
 	}
 
@@ -5973,7 +5969,8 @@ state Dying
 
 		if (zzUTPure.Settings.bEnablePingCompensatedSpawn) {
 			bDeathMatchSave = Level.Game.bDeathMatch;
-			Level.Game.bDeathMatch = false;
+			Level.Game.bDeathMatch = false; // this avoids the sound respawns generate, we will play our own later
+			// see DeathMatchPlus.PlayTeleportEffect()
 		}
 
 		Level.Game.DiscardInventory(self); // last possible place to rid ourselves of old inventory
@@ -7238,11 +7235,37 @@ function IGPlus_LocationOffsetFix_TickBefore() {
 	}
 }
 
+function IGPlus_FixNetspeed() {
+	local int NetspeedTarget;
+	local int Netspeed;
+
+	if (IGPlus_ForcedSettings_Applied && Player.CurrentNetspeed != zzNetspeed) {
+		Netspeed = int(ConsoleCommand("get ini:Engine.Engine.NetworkDevice MaxClientRate"));
+		if (Netspeed < Settings.DesiredNetspeed) {
+			ConsoleCommand("set ini:Engine.Engine.NetworkDevice MaxClientRate"@Settings.DesiredNetspeed);
+			Netspeed = Settings.DesiredNetspeed;
+		}
+		if (zzMinimumNetspeed > 0 && Netspeed < zzMinimumNetspeed) {
+			xxServerCheater("NS");
+			return;
+		}
+		if (zzMaximumNetspeed > 0 && Netspeed < zzMaximumNetspeed)
+			zzMaximumNetspeed = Netspeed;
+
+		NetspeedTarget = Settings.DesiredNetspeed;
+		if (zzMinimumNetspeed != 0 && NetspeedTarget < zzMinimumNetspeed)
+			NetspeedTarget = zzMinimumNetspeed;
+		if (zzMaximumNetspeed != 0 && NetspeedTarget > zzMaximumNetspeed)
+			NetspeedTarget = zzMaximumNetspeed;
+
+		ConsoleCommand("Netspeed"@NetspeedTarget);
+		zzNetspeed = Player.CurrentNetspeed;
+	}
+}
+
 event PostRender( canvas zzCanvas )
 {
 	local int CH;
-	local int NetspeedTarget;
-	local int Netspeed;
 
 	if (Settings.bUseCrosshairFactory) {
 		CH = MyHud.Crosshair;
@@ -7267,31 +7290,7 @@ event PostRender( canvas zzCanvas )
 	xxRenderLogo(zzCanvas);
 	xxCleanAvars();
 
-	if (IGPlus_ForcedSettings_Applied && Player.CurrentNetspeed != zzNetspeed) {
-		Netspeed = int(ConsoleCommand("get ini:Engine.Engine.NetworkDevice MaxClientRate"));
-		if (Netspeed < Settings.DesiredNetspeed) {
-			ConsoleCommand("set ini:Engine.Engine.NetworkDevice MaxClientRate"@Settings.DesiredNetspeed);
-			Netspeed = Settings.DesiredNetspeed;
-		}
-		if (zzMinimumNetspeed > 0 && Netspeed < zzMinimumNetspeed) {
-			xxServerCheater("NS");
-			goto netspeed_end;
-		}
-		if (zzMaximumNetspeed > 0 && Netspeed < zzMaximumNetspeed)
-			zzMaximumNetspeed = Netspeed;
-
-		NetspeedTarget = Settings.DesiredNetspeed;
-		if (zzMinimumNetspeed != 0 && NetspeedTarget < zzMinimumNetspeed)
-			NetspeedTarget = zzMinimumNetspeed;
-		if (zzMaximumNetspeed != 0 && NetspeedTarget > zzMaximumNetspeed)
-			NetspeedTarget = zzMaximumNetspeed;
-
-		ConsoleCommand("Netspeed"@NetspeedTarget);
-		zzNetspeed = Player.CurrentNetspeed;
-
-	netspeed_end:
-		//
-	}
+	IGPlus_FixNetspeed();
 
 	if (zzDelayedStartTime != 0.0)
 	{
@@ -7570,8 +7569,6 @@ function xxServerCheater(string zzCode)
 			zzS = "Mutator Kick!";
 		else if (zzCode == "TD")
 			zzS = "Bad TimeDilation!";
-		else if (zzCode == "FA")
-			zzS = "Bad FireAdjust!";
 		else
 			zzS = "UNKNOWN!";
 		zzCode = zzCode@"-"@zzS;
