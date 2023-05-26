@@ -316,6 +316,7 @@ var IGPlus_WarpFixClient IGPlus_WarpFixClientData;
 
 var bool IGPlus_LocationOffsetFix_Moved;
 var bool IGPlus_LocationOffsetFix_Restored;
+var bool IGPlus_LocationOffsetFix_PredCompatMode;
 var vector IGPlus_LocationOffsetFix_OldLocation;
 var vector IGPlus_LocationOffsetFix_ExtrapolationOffset;
 var vector IGPlus_LocationOffsetFix_PredictionOffset;
@@ -6990,14 +6991,22 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 		VelXpol.Z = (-CosAlpha / SinAlpha) * VSize(VelXpol);
 	}
 
-	// 
-	IGPlus_LocationOffsetFix_PredictionOffset *=
-		Exp(-FMax(VSize(IGPlus_LocationOffsetFix_PredictionOffset)*5, 27) * DeltaTime);
-
 	// dont let misprediction grow too large
 	// also, dont smoothly relocate teleporting players
-	if (VSize(IGPlus_LocationOffsetFix_PredictionOffset) > 100)
+	if (VSize(IGPlus_LocationOffsetFix_PredictionOffset) > 100 || VSize(Velocity) < 0.0001)
 		IGPlus_LocationOffsetFix_PredictionOffset = vect(0,0,0);
+
+	// 
+	if (IGPlus_LocationOffsetFix_PredCompatMode) {
+		if (bReplicatedLocation) {
+			if (VSize(IGPlus_LocationOffsetFix_PredictionOffset) > 40)
+				IGPlus_LocationOffsetFix_PredictionOffset *= 0.65;
+			else
+				IGPlus_LocationOffsetFix_PredictionOffset *= 0.85;
+		}
+	} else {
+		IGPlus_LocationOffsetFix_PredictionOffset *= Exp(-25 * DeltaTime);
+	}
 
 	bCollideWorld = false;
 	SetLocation(IGPlus_LocationOffsetFix_OldLocation+IGPlus_LocationOffsetFix_PredictionOffset);
@@ -9237,4 +9246,6 @@ defaultproperties
 	LocalExtrapolationOtherPingFactor=0.0
 
 	IGPlus_EnableDualButtonSwitch=True
+
+	IGPlus_LocationOffsetFix_PredCompatMode=True
 }
