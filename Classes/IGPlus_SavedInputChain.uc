@@ -69,6 +69,7 @@ final function RemoveOutdatedNodes(float CurrentTimeStamp) {
 
 
 final function IGPlus_SavedInput SerializeNodes(int MaxNumNodes, IGPlus_DataBuffer B) {
+	DeltaError = 0.0;
 	if (Newest != none)
 		return Newest.SerializeNodes(MaxNumNodes, none, B, 0, DeltaError);
 	return none;
