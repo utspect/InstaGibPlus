@@ -1281,7 +1281,7 @@ Disable to restore default netcode behavior.
 ## bEnableServerExtrapolation
 
 **Type: bool**  
-**Default: True**  
+**Default: False**  
 
 If enabled the server will extrapolate client movement when the client's movement updates are too far behind the server's timepoint.
 
@@ -1299,7 +1299,7 @@ Disable to restore default netcode behavior.
 ## bEnableLoosePositionCheck
 
 **Type: bool**  
-**Default: True**  
+**Default: False**  
 
 If enabled the server will loosen the check of players position, by factoring in current movement The server will even use the players reported position instead of the calculated one, if the loose check is successful.
 
@@ -1327,7 +1327,7 @@ Disable to restore default netcode behavior.
 ## bEnableJitterBounding
 
 **Type: bool**  
-**Default: True**  
+**Default: False**  
 
 If enabled, updates by clients over more than [MaxJitterTime](#maxjittertime) will be cut down to MaxJitterTime in order to reduce visible warping for other players.
 

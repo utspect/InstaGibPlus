@@ -177,11 +177,11 @@ defaultproperties
 	bEnableInputReplication=False
 	bAlwaysRenderFlagCarrier=False
 	bAlwaysRenderDroppedFlags=False
-	bEnableServerExtrapolation=True
+	bEnableServerExtrapolation=False
 	bEnableServerPacketReordering=False
-	bEnableLoosePositionCheck=True
+	bEnableLoosePositionCheck=False
 	bPlayersAlwaysRelevant=True
 	bEnablePingCompensatedSpawn=True
-	bEnableJitterBounding=True
+	bEnableJitterBounding=False
 	bEnableWarpFix=True
 }
