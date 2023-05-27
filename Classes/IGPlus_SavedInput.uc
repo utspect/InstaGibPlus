@@ -52,6 +52,9 @@ function CopyFrom(float Delta, bbPlayer P) {
 	bDodg = P.bPressedDodge;
 	bFire = (P.bFire != 0) || P.bJustFired;
 	bAFir = (P.bAltFire != 0) || P.bJustAltFired;
+
+	P.bJustFired = false;
+	P.bJustAltFired = false;
 }
 
 function SerializeTo(IGPlus_DataBuffer B, out float DeltaError) {
