@@ -7399,11 +7399,19 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	}
 
 	VelXpol = Velocity;
+	if (Base != none)
+		VelXpol += Base.Velocity;
 	if (IGPlus_LocationOffsetFix_OnGround && bCanFly == false && Region.Zone.bWaterZone == false) {
-		VelXpol.Z = 0.0;
+		// Without the following if-else-statement VelXpol will contain a small
+		// downward Z velocity (gravity?) after players stand still. This will
+		// cause significant mispredictions as players just slide down slopes.
+		if (Base != none)
+			VelXpol.Z = Base.Velocity.Z;
+		else
+			VelXpol.Z = 0;
 
 		// Deal with predicting movement up/down ramps
-		CosAlpha = Normal(VelXpol) dot IGPlus_LocationOffsetFix_GroundNormal;
+		CosAlpha = Normal(VelXpol*vect(1,1,0)) dot IGPlus_LocationOffsetFix_GroundNormal;
 		SinAlpha = Sqrt(1.0 - CosAlpha*CosAlpha); // sin(a)² + cos(a)² = 1 // sin(a) = sqrt(1 - cos(a)²)
 		
 		// Given the following:
@@ -7420,7 +7428,7 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 		// and velocity.
 		// Alpha* = Alpha - 90° = Alpha + 270°
 		// tan(Alpha*) = -cos(Alpha)/sin(Alpha)
-		VelXpol.Z = (-CosAlpha / SinAlpha) * VSize(VelXpol);
+		VelXpol.Z += (-CosAlpha / SinAlpha) * VSize(VelXpol*vect(1,1,0));
 	}
 
 	// dont let misprediction grow too large
