@@ -3178,6 +3178,8 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	local int i;
 	local IGPlus_SavedInput Node;
 	local IGPlus_SavedInput Old;
+	local float DeltaTime;
+	local float ServerDeltaTime;
 
 	if (Role < ROLE_Authority) {
 		zzbLogoDone = True;
@@ -3248,8 +3250,12 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	// clean up
 	IGPlus_SavedInputChain.RemoveOutdatedNodes(Old.TimeStamp);
 
-	ServerTimeStamp = Level.TimeSeconds;
+	ServerDeltaTime  = Level.TimeSeconds - ServerTimeStamp;
+	ServerTimeStamp  = Level.TimeSeconds;
+	DeltaTime        = Old.TimeStamp - CurrentTimeStamp;
 	CurrentTimeStamp = Old.TimeStamp;
+
+	ExtrapolationDelta += (ServerDeltaTime - DeltaTime);
 
 	// for now always request CAP
 	IGPlus_WantCAP = true;
