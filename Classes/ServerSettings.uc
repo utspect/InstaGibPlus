@@ -65,6 +65,7 @@ var config float MaxJitterTime;
 var config float WarpFixDelay;
 var config float MinNetUpdateRate;
 var config float MaxNetUpdateRate;
+var config bool  bEnableInputReplication;
 var config bool  bEnableServerExtrapolation;
 var config bool  bEnableServerPacketReordering;
 var config bool  bEnableLoosePositionCheck;
@@ -113,6 +114,7 @@ function DumpServerSettings(PlayerPawn P) {
 	DumpSetting(P, "WarpFixDelay");
 	DumpSetting(P, "MinNetUpdateRate");
 	DumpSetting(P, "MaxNetUpdateRate");
+	DumpSetting(P, "bEnableInputReplication");
 	DumpSetting(P, "bEnableServerExtrapolation");
 	DumpSetting(P, "bEnableServerPacketReordering");
 	DumpSetting(P, "bEnableLoosePositionCheck");
@@ -172,6 +174,7 @@ defaultproperties
 	MaxMultiDodges=1
 	BrightskinMode=1
 	PlayerScale=1.0
+	bEnableInputReplication=False
 	bAlwaysRenderFlagCarrier=False
 	bAlwaysRenderDroppedFlags=False
 	bEnableServerExtrapolation=True

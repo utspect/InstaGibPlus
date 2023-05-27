@@ -373,6 +373,7 @@ replication
 		HUDInfo,
 		IGPlus_AlwaysRenderDroppedFlags,
 		IGPlus_AlwaysRenderFlagCarrier,
+		IGPlus_EnableInputReplication,
 		IGPlus_EnableWarpFix,
 		IGPlus_WarpFixDelay,
 		IGPlus_UseFastWeaponSwitch,
@@ -1115,6 +1116,7 @@ event Possess()
 		IGPlus_AlwaysRenderFlagCarrier = zzUTPure.Settings.bAlwaysRenderFlagCarrier;
 		IGPlus_AlwaysRenderDroppedFlags = zzUTPure.Settings.bAlwaysRenderDroppedFlags;
 		IGPlus_UseFastWeaponSwitch = zzUTPure.Settings.bUseFastWeaponSwitch;
+		IGPlus_EnableInputReplication = zzUTPure.Settings.bEnableInputReplication;
 
 		if(!zzUTPure.bExludeKickers)
 		{
