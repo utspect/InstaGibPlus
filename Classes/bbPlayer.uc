@@ -3235,6 +3235,18 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 			IGPlus_SavedInputChain.FreeNode(Node);
 	}
 
+	ServerDeltaTime  = Level.TimeSeconds - ServerTimeStamp;
+	ServerTimeStamp  = Level.TimeSeconds;
+	DeltaTime        = IGPlus_SavedInputChain.Newest.TimeStamp - CurrentTimeStamp;
+	CurrentTimeStamp = IGPlus_SavedInputChain.Newest.TimeStamp;
+
+	ExtrapolationDelta += (ServerDeltaTime - DeltaTime);
+
+	if (zzUTPure.Settings.bEnableJitterBounding) {
+		IGPlus_SavedInputChain.RemoveOutdatedNodes(CurrentTimeStamp + ExtrapolationDelta - zzUTPure.Settings.MaxJitterTime);
+		Old = IGPlus_SavedInputChain.Oldest;
+	}
+
 	// play back input
 	while(Old.Next != none) {
 		if (Old.Next.TimeStamp - Old.TimeStamp > 1.2*Old.Next.Delta)
@@ -3249,13 +3261,6 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 
 	// clean up
 	IGPlus_SavedInputChain.RemoveOutdatedNodes(Old.TimeStamp);
-
-	ServerDeltaTime  = Level.TimeSeconds - ServerTimeStamp;
-	ServerTimeStamp  = Level.TimeSeconds;
-	DeltaTime        = Old.TimeStamp - CurrentTimeStamp;
-	CurrentTimeStamp = Old.TimeStamp;
-
-	ExtrapolationDelta += (ServerDeltaTime - DeltaTime);
 
 	// for now always request CAP
 	IGPlus_WantCAP = true;
@@ -4014,19 +4019,25 @@ function IGPlus_ReplicateInput(float Delta) {
 	local ReplBuffer B;
 	local int i;
 
-	// Higor: process smooth adjustment.
-	if (VSize(IGPlus_AdjustLocationOffset) > 0) {
-		TargetLoc = Location + IGPlus_AdjustLocationOffset;
-		NewOffset = IGPlus_AdjustLocationOffset * Exp(-20*Delta);
-		MoveSmooth(IGPlus_AdjustLocationOffset - NewOffset);
-		IGPlus_AdjustLocationOffset = TargetLoc - Location;
+	if (IGPlus_SavedInputChain.Newest != none && Level.TimeSeconds - IGPlus_SavedInputChain.Newest.TimeStamp > Delta * 1.01) {
+		// The last frame took longer than 400ms, lets ignore it and also throw away pending input.
+		// Throwing away the input guarantees that any input replicated to a server is contiguous in time.
+		IGPlus_SavedInputChain.RemoveAllNodes();
 	} else {
-		IGPlus_AdjustLocationOffset = vect(0,0,0);
-	}
+		// Higor: process smooth adjustment.
+		if (VSize(IGPlus_AdjustLocationOffset) > 0) {
+			TargetLoc = Location + IGPlus_AdjustLocationOffset;
+			NewOffset = IGPlus_AdjustLocationOffset * Exp(-20*Delta);
+			MoveSmooth(IGPlus_AdjustLocationOffset - NewOffset);
+			IGPlus_AdjustLocationOffset = TargetLoc - Location;
+		} else {
+			IGPlus_AdjustLocationOffset = vect(0,0,0);
+		}
 
-	IGPlus_TPFix_LastTouched = none;
-	AutonomousPhysics(Delta);
-	CorrectTeleporterVelocity();
+		IGPlus_TPFix_LastTouched = none;
+		AutonomousPhysics(Delta);
+		CorrectTeleporterVelocity();
+	}
 
 	IGPlus_SavedInputChain.Add(Delta, self);
 	if (bTraceInput && IGPlus_InputLogFile != none)
