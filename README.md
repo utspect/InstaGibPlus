@@ -906,17 +906,18 @@ Server settings can be found inside InstaGibPlus.ini.
 53. [MaxJitterTime](#maxjittertime)
 54. [MinNetUpdateRate](#minnetupdaterate)
 55. [MaxNetUpdateRate](#maxnetupdaterate)
-56. [bEnableServerExtrapolation](#benableserverextrapolation)
-57. [bEnableServerPacketReordering](#benableserverpacketreordering)
-58. [bEnableLoosePositionCheck](#benableloosepositioncheck)
-59. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
-60. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
-61. [bEnableJitterBounding](#benablejitterbounding)
-62. [bEnableWarpFix](#benablewarpfix)
-63. [WarpFixDelay](#warpfixdelay)
-64. [ShowTouchedPackage](#showtouchedpackage)
-65. [ExcludeMapsForKickers](#excludemapsforkickers)
-66. [ForcedSettings](#forcedsettings)
+56. [bEnableInputReplication](#benableinputreplication)
+57. [bEnableServerExtrapolation](#benableserverextrapolation)
+58. [bEnableServerPacketReordering](#benableserverpacketreordering)
+59. [bEnableLoosePositionCheck](#benableloosepositioncheck)
+60. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
+61. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
+62. [bEnableJitterBounding](#benablejitterbounding)
+63. [bEnableWarpFix](#benablewarpfix)
+64. [WarpFixDelay](#warpfixdelay)
+65. [ShowTouchedPackage](#showtouchedpackage)
+66. [ExcludeMapsForKickers](#excludemapsforkickers)
+67. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1257,6 +1258,25 @@ Maximum time after death (on server) that players can still fire their weapons. 
 **Default: 0.5**  
 
 Trade uncertainty relative to shooters ping. Reasonable values range from 0 to 1. Higher values lead to more trades.
+
+## bEnableInputReplication
+
+**Type: bool**
+**Default: False**
+
+If enabled, players will replicate their movement at a higher fidelity, in exchange for more upstream traffic.  
+Players will replicate (up to) the 10 most recent simulation steps to the server at their selected NetUpdateRate.
+
+Should the server not receive updates covering some timespan, the server will extrapolate the last received input over the missing time. This makes [bEnableJitterBounding](#benablejitterbounding) irrelevant in combination with input replication.
+
+Similarly, [bEnableServerPacketReordering](#benableserverpacketreordering) has no effect if input replication is enabled.
+
+Restrictions:
+- Players should not run very high FPS (>500).
+- Speed parameters of movement axis inputs are ignored.
+- Pitch is only replicated within [-90°..+90°). Values outside this range may not be replicated correctly.
+
+Disable to restore default netcode behavior.
 
 ## bEnableServerExtrapolation
 
