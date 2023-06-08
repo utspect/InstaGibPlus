@@ -13,6 +13,7 @@ var bool SavedDodging;
 var EDodgeDir SavedDodgeDir;
 var float SavedDodgeClickTimer;
 
+var bool bLive;
 var bool bForw;
 var bool bBack;
 var bool bLeft;
@@ -42,16 +43,30 @@ function CopyFrom(float Delta, bbPlayer P) {
 	SavedDodgeDir = P.DodgeDir;
 	SavedDodgeClickTimer = P.DodgeClickTimer;
 
-	bForw = P.bWasForward;
-	bBack = P.bWasBack;
-	bLeft = P.bWasLeft;
-	bRigh = P.bWasRight;
-	bWalk = P.bRun != 0;
-	bDuck = P.bDuck != 0;
-	bJump = (P.aUp > 1.0) || P.IGPlus_PressedJumpSave;
-	bDodg = P.bPressedDodge;
-	bFire = (P.bFire != 0) || P.bJustFired;
-	bAFir = (P.bAltFire != 0) || P.bJustAltFired;
+	bLive = P.IsInState('Dying') == false;
+	if (P.IsInState('Dying') || P.IsInState('GameEnded') || P.IsInState('PlayerWaking')) {
+		bForw = false;
+		bBack = false;
+		bLeft = false;
+		bRigh = false;
+		bWalk = false;
+		bDuck = false;
+		bJump = false;
+		bDodg = false;
+		bFire = false;
+		bAFir = false;
+	} else {
+		bForw = P.bWasForward;
+		bBack = P.bWasBack;
+		bLeft = P.bWasLeft;
+		bRigh = P.bWasRight;
+		bWalk = P.bRun != 0;
+		bDuck = P.bDuck != 0;
+		bJump = (P.aUp > 1.0) || P.IGPlus_PressedJumpSave;
+		bDodg = P.bPressedDodge;
+		bFire = (P.bFire != 0) || P.bJustFired;
+		bAFir = (P.bAltFire != 0) || P.bJustAltFired;
+	}
 
 	P.bJustFired = false;
 	P.bJustAltFired = false;
@@ -65,6 +80,7 @@ function SerializeTo(IGPlus_DataBuffer B, out float DeltaError) {
 	Temp = int(FClamp(Delta+DeltaError, 0.0, 0.4) * 2621437.5 + 0.5); 
 	DeltaError += (Delta - Temp * 0.00000038147009);
 	B.AddBits(20, Temp);
+	B.AddBit(bLive);
 	B.AddBit(bForw);
 	B.AddBit(bBack);
 	B.AddBit(bLeft);
@@ -75,7 +91,9 @@ function SerializeTo(IGPlus_DataBuffer B, out float DeltaError) {
 	B.AddBit(bDodg);
 	B.AddBit(bFire);
 	B.AddBit(bAFir);
-	B.AddBits(15, Clamp(SavedViewRotation.Pitch << 17 >> 17, -16384, 16383));
+	Temp = SavedViewRotation.Pitch << 16 >> 16;
+	Temp = Clamp(Temp, -16384, 16383);
+	B.AddBits(15, Temp);
 	B.AddBits(16, SavedViewRotation.Yaw);
 }
 
@@ -83,6 +101,7 @@ function DeserializeFrom(IGPlus_DataBuffer B) {
 	local int Temp;
 	// 0.00000038147009 = 0.4 / ((1 << 20) - 1)
 	B.ConsumeBits(20, Temp); Delta = Temp * 0.00000038147009;
+	B.ConsumeBit(Temp); bLive = Temp != 0;
 	B.ConsumeBit(Temp); bForw = Temp != 0;
 	B.ConsumeBit(Temp); bBack = Temp != 0;
 	B.ConsumeBit(Temp); bLeft = Temp != 0;
@@ -100,6 +119,7 @@ function DeserializeFrom(IGPlus_DataBuffer B) {
 
 function bool IsSimilarTo(IGPlus_SavedInput Other) {
 	return
+		bLive == Other.bLive &&
 		bForw == Other.bForw &&
 		bBack == Other.bBack &&
 		bLeft == Other.bLeft &&
@@ -133,5 +153,5 @@ defaultproperties {
 	bHidden=True
 	DrawType=DT_None
 	RemoteRole=ROLE_None
-	SerializedBits=61
+	SerializedBits=62
 }

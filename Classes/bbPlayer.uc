@@ -3203,18 +3203,8 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 		return;
 	}
 
-	if ((Level.Pauser == "") && NumBits > 0) {
+	if (Level.Pauser == "")
 		UndoExtrapolation();
-
-		if (zzUTPure.Settings.bEnablePingCompensatedSpawn) {
-			if (bHidden && (IsInState('PlayerWalking') || IsInState('PlayerSwimming'))) {
-				bClientDead = false;
-				bHidden = false;
-				SetCollision(true, true, true);
-				IGPlus_SendRespawnNoficiation();
-			}
-		}
-	}
 
 	Old = IGPlus_SavedInputChain.Newest;
 	if (Old == none) {
@@ -3235,12 +3225,18 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 			IGPlus_SavedInputChain.FreeNode(Node);
 	}
 
-	ServerDeltaTime  = Level.TimeSeconds - ServerTimeStamp;
-	ServerTimeStamp  = Level.TimeSeconds;
 	DeltaTime        = IGPlus_SavedInputChain.Newest.TimeStamp - CurrentTimeStamp;
 	CurrentTimeStamp = IGPlus_SavedInputChain.Newest.TimeStamp;
 
-	ExtrapolationDelta += (ServerDeltaTime - DeltaTime);
+	if (ServerTimeStamp != 0.0) {
+		ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
+		ServerTimeStamp = Level.TimeSeconds;
+
+		ExtrapolationDelta += (ServerDeltaTime - DeltaTime);
+	} else {
+		ServerTimeStamp = Level.TimeSeconds;
+		ExtrapolationDelta = 0.0;
+	}
 
 	if (zzUTPure.Settings.bEnableJitterBounding) {
 		IGPlus_SavedInputChain.RemoveOutdatedNodes(CurrentTimeStamp + ExtrapolationDelta - zzUTPure.Settings.MaxJitterTime);
@@ -3823,6 +3819,20 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 	aLookUp = 0;
 	aTurn = 0;
 
+	// the following prevents clients from erroneously indicating that they are
+	// dead locally and still sending input activity.
+	I.bLive = I.bLive ||
+		I.bForw ||
+		I.bBack ||
+		I.bLeft ||
+		I.bRigh ||
+		I.bWalk ||
+		I.bDuck ||
+		I.bJump ||
+		I.bDodg ||
+		I.bFire ||
+		I.bAFir;
+
 	bWasForward    = I.bForw;
 	bWasBack       = I.bBack;
 	bWasLeft       = I.bLeft;
@@ -3843,6 +3853,15 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 	if (I.bDuck) bDuck = 1; else bDuck = 0;
 	bPressedJump = I.bJump && (I.bJump != Old.bJump);
 	bPressedDodge = I.bDodg && (I.bDodg != Old.bDodg);
+
+	if (Level.NetMode != NM_Client && zzUTPure.Settings.bEnablePingCompensatedSpawn) {
+		if (bHidden && I.bLive && (IsInState('PlayerWalking') || IsInState('PlayerSwimming'))) {
+			bClientDead = false;
+			bHidden = false;
+			SetCollision(true, true, true);
+			IGPlus_SendRespawnNoficiation();
+		}
+	}
 
 	if (RemoteRole == ROLE_AutonomousProxy) {
 		// handle firing and alt-firing on server
@@ -4019,25 +4038,19 @@ function IGPlus_ReplicateInput(float Delta) {
 	local ReplBuffer B;
 	local int i;
 
-	if (IGPlus_SavedInputChain.Newest != none && Level.TimeSeconds - IGPlus_SavedInputChain.Newest.TimeStamp > Delta * 1.01) {
-		// The last frame took longer than 400ms, lets ignore it and also throw away pending input.
-		// Throwing away the input guarantees that any input replicated to a server is contiguous in time.
-		IGPlus_SavedInputChain.RemoveAllNodes();
+	// Higor: process smooth adjustment.
+	if (VSize(IGPlus_AdjustLocationOffset) > 0) {
+		TargetLoc = Location + IGPlus_AdjustLocationOffset;
+		NewOffset = IGPlus_AdjustLocationOffset * Exp(-20*Delta);
+		MoveSmooth(IGPlus_AdjustLocationOffset - NewOffset);
+		IGPlus_AdjustLocationOffset = TargetLoc - Location;
 	} else {
-		// Higor: process smooth adjustment.
-		if (VSize(IGPlus_AdjustLocationOffset) > 0) {
-			TargetLoc = Location + IGPlus_AdjustLocationOffset;
-			NewOffset = IGPlus_AdjustLocationOffset * Exp(-20*Delta);
-			MoveSmooth(IGPlus_AdjustLocationOffset - NewOffset);
-			IGPlus_AdjustLocationOffset = TargetLoc - Location;
-		} else {
-			IGPlus_AdjustLocationOffset = vect(0,0,0);
-		}
-
-		IGPlus_TPFix_LastTouched = none;
-		AutonomousPhysics(Delta);
-		CorrectTeleporterVelocity();
+		IGPlus_AdjustLocationOffset = vect(0,0,0);
 	}
+
+	IGPlus_TPFix_LastTouched = none;
+	AutonomousPhysics(Delta);
+	CorrectTeleporterVelocity();
 
 	IGPlus_SavedInputChain.Add(Delta, self);
 	if (bTraceInput && IGPlus_InputLogFile != none)
@@ -4053,9 +4066,11 @@ function IGPlus_ReplicateInput(float Delta) {
 	IGPlus_InputReplicationBuffer.Reset();
 	ReferenceInput = IGPlus_SavedInputChain.SerializeNodes(10, IGPlus_InputReplicationBuffer);
 
-	for (i = 0; i < arraycount(B.Data); i++)
-		B.Data[i] = IGPlus_InputReplicationBuffer.BitsData[i];
-	ServerApplyInput(ReferenceInput.TimeStamp, IGPlus_InputReplicationBuffer.NumBits, B);
+	if (IGPlus_InputReplicationBuffer.NumBits > 0) {
+		for (i = 0; i < arraycount(B.Data); i++)
+			B.Data[i] = IGPlus_InputReplicationBuffer.BitsData[i];
+		ServerApplyInput(ReferenceInput.TimeStamp, IGPlus_InputReplicationBuffer.NumBits, B);
+	}
 
 	if ( (Weapon != None) && !Weapon.IsAnimating() )
 	{
@@ -6429,7 +6444,9 @@ state Dying
 
 		if ( GameRestartPlayer() )
 		{
-			ServerTimeStamp = 0;
+			if (IGPlus_EnableInputReplication == false) {
+				ServerTimeStamp = 0;
+			}
 			TimeMargin = 0;
 			Enemy = None;
 			Level.Game.StartPlayer(self);
@@ -6482,6 +6499,9 @@ state Dying
 				ViewRotation = Normalize(ViewRotation + DeltaRotation * (1 - Exp(-3.0 * DeltaTime)));
 			}
 		}
+
+		if (Role < ROLE_Authority && IGPlus_EnableInputReplication)
+			IGPlus_ReplicateInput(DeltaTime);
 	}
 
 	simulated function BeginState() {
@@ -6526,7 +6546,6 @@ state Dying
 			PendingMove.Destroy();
 			PendingMove = None;
 		}
-		IGPlus_SavedInputChain.RemoveOutdatedNodes(Level.TimeSeconds);
 		// END PlayerPawn.Dying.BeginState
 
 		TimeDead = 0.0;
@@ -6572,11 +6591,15 @@ state Dying
 		ViewShake(DeltaTime);
 		ViewFlash(DeltaTime);
 
-		ClientUpdateTime += DeltaTime;
-		if (ClientUpdateTime > TimeBetweenNetUpdates) {
-			ClientUpdateTime = 0;
-			IGPlus_AdjustLocationAlpha = 0; // avoid adjustments persisting until respawn
-			xxServerMoveDead(Level.TimeSeconds, DeltaTime, ((ViewRotation.Pitch << 16) | (ViewRotation.Yaw & 0xFFFF)));
+		if (Role < ROLE_Authority && IGPlus_EnableInputReplication == false) {
+			ClientUpdateTime += DeltaTime;
+			if (ClientUpdateTime > TimeBetweenNetUpdates) {
+				ClientUpdateTime = 0;
+				IGPlus_AdjustLocationAlpha = 0; // avoid adjustments persisting until respawn
+				xxServerMoveDead(Level.TimeSeconds, DeltaTime, ((ViewRotation.Pitch << 16) | (ViewRotation.Yaw & 0xFFFF)));
+			}
+		} else {
+			ProcessMove(DeltaTime, vect(0,0,0), DODGE_None, rot(0,0,0));
 		}
 	}
 
