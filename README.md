@@ -1267,9 +1267,7 @@ Trade uncertainty relative to shooters ping. Reasonable values range from 0 to 1
 If enabled, players will replicate their movement at a higher fidelity, in exchange for more upstream traffic.  
 Players will replicate (up to) the 10 most recent simulation steps to the server at their selected NetUpdateRate.
 
-Should the server not receive updates covering some timespan, the server will extrapolate the last received input over the missing time. This makes [bEnableJitterBounding](#benablejitterbounding) irrelevant in combination with input replication.
-
-Similarly, [bEnableServerPacketReordering](#benableserverpacketreordering) has no effect if input replication is enabled.
+[bEnableServerPacketReordering](#benableserverpacketreordering) has no effect if input replication is enabled.
 
 Restrictions:
 - Players should not run very high FPS (>500).
