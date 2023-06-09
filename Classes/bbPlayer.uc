@@ -9608,14 +9608,18 @@ exec function ZoomToggle(float SensitivityX, optional float SensitivityY) {
 }
 
 exec function IGPlus_FOV(float NewFov) {
+	local ENetRole Saved;
+	local float FovLimit;
 	if( (NewFov >= 80.0) || Level.bAllowFOV || bAdmin || (Level.Netmode==NM_Standalone) )
 	{
-		// stijn: fix for game types not enforcing FOV limits
-		MinFOV = FClamp(MinFOV, 1.0  , 80.0  );
-		MaxFOV = FClamp(MaxFOV, 130.0, 360.0 );
-		// end fix
+		Saved = Role;
+		Role = ROLE_Authority;
+		FovLimit = float(GetPropertyText("MaxFOV"));
+		FovLimit = FClamp(FovLimit, 130.0, 360.0);
+		SetPropertyText("MaxFOV", string(FovLimit));
+		Role = Saved;
 		
-		DefaultFOV = FClamp(NewFov, MinFOV, MaxFOV);
+		DefaultFOV = FClamp(NewFov, 80.0, FovLimit);
 		DesiredFOV = DefaultFOV;
 	}
 }
