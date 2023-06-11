@@ -3260,6 +3260,8 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 
 	// for now always request CAP
 	IGPlus_WantCAP = true;
+
+	IGPlus_WarpFixUpdate = true;
 }
 
 function float CalculateLocError(float DeltaTime, EPhysics Phys, vector ClientVel) {
