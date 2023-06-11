@@ -9703,6 +9703,17 @@ simulated function SetMesh() {
 	super.SetMesh();
 }
 
+exec function TraceInput() {
+	if (bTraceInput) {
+		ClientMessage("Stop tracing input");
+		IGPlus_InputLogFile.StopLog();
+	} else {
+		ClientMessage("Start tracing input");
+		IGPlus_InputLogFile.StartLog();
+	}
+	bTraceInput = !bTraceInput;
+}
+
 defaultproperties
 {
 	bNewNet=True
