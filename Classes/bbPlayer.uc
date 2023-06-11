@@ -2115,6 +2115,8 @@ function ClientUpdatePositionWithInput() {
 				IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location);
 			}
 			//ClientDebugMessage("CUP"@"|"@int(IGPlus_AdjustLocationOffset.X*100.0)@int(IGPlus_AdjustLocationOffset.Y*100.0)@int(IGPlus_AdjustLocationOffset.Z*100.0)@"|"@int(Velocity.X)@int(Velocity.Y)@int(Velocity.Z));
+		} else {
+			IGPlus_AdjustLocationOffset = vect(0,0,0);
 		}
 	}
 
