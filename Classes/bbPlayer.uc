@@ -6027,8 +6027,9 @@ ignores SeePlayer, HearNoise, Bump;
 
 			Speed2D = Sqrt(Velocity.X * Velocity.X + Velocity.Y * Velocity.Y);
 			//add bobbing when walking
-			if ( !bShowMenu )
+			if ( !bShowMenu && bUpdating == false ) {
 				CheckBob(DeltaTime, Speed2D, Y);
+			}
 		}
 		else if ( !bShowMenu )
 		{
