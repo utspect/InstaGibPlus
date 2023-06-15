@@ -3245,6 +3245,9 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 		Old = IGPlus_SavedInputChain.Oldest;
 	}
 
+	if (IGPlus_UseFastWeaponSwitch && PendingWeapon != None)
+		ChangedWeapon();
+
 	// play back input
 	while(Old.Next != none) {
 		if (Old.Next.TimeStamp - Old.TimeStamp > 1.2*Old.Next.Delta)
