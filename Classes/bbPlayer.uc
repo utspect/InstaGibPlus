@@ -3873,16 +3873,24 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 	if (RemoteRole == ROLE_AutonomousProxy) {
 		// handle firing and alt-firing on server
 		if (I.bFire) {
-			if (bFire == 0)
-				Fire(0);
+			if (bFire == 0) {
+				if (Weapon != none)
+					Weapon.ForceFire();
+				else
+					Fire(0);
+			}
 			bFire = 1;
 		} else {
 			bFire = 0;
 		}
 
 		if (I.bAFir) {
-			if (bAltFire == 0)
-				AltFire(0);
+			if (bAltFire == 0) {
+				if (Weapon != none)
+					Weapon.ForceAltFire();
+				else
+					AltFire(0);
+			}
 			bAltFire = 1;
 		} else {
 			bAltFire = 0;
