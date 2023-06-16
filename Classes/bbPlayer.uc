@@ -353,6 +353,8 @@ var float MinDodgeClickTime;
 var IGPlus_InputLogFile IGPlus_InputLogFile;
 var bool bTraceInput;
 
+var IGPlus_NetStats NetStatsElem;
+
 struct ReplBuffer {
 	var int Data[20];
 };
@@ -1161,6 +1163,9 @@ event Possess()
 		IGPlus_InputLogFile.LogId = "ServerInput"$"_"$PlayerReplicationInfo.PlayerId;
 	if (bTraceInput)
 		IGPlus_InputLogFile.StartLog();
+
+	if (Level.NetMode != NM_DedicatedServer)
+		NetStatsElem = Spawn(class'IGPlus_NetStats');
 
 	Super.Possess();
 }
@@ -7826,6 +7831,8 @@ event PostRender( canvas zzCanvas )
 		}
 		IGPlus_SavedInputChain.RemoveOutdatedNodes(Level.TimeSeconds);
 	}
+
+	NetStatsElem.PostRender(zzCanvas);
 
 	IGPlus_LocationOffsetFix_TickBefore();
 
