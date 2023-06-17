@@ -48,10 +48,10 @@ function RenderTexture(ScriptedTexture T) {
 	LocErr = Min(1 + int(LocationError / LocErrScale), 50);
 
 	MoveTimeOffset = YL - 60;
-	MoveTime = Min(1 + int(UnconfirmedTime / UnconfirmedTimeScale), 60);
+	MoveTime = Min(1 + int(UnconfirmedTime / UnconfirmedTimeScale), 68);
 	if (MoveTime < 15) {
 		MoveTimeColor = Blue;
-	} else if (MoveTime < 40) {
+	} else if (MoveTime < 30) {
 		MoveTimeColor = Yellow;
 	} else {
 		MoveTimeColor = Red;
@@ -72,21 +72,23 @@ function RenderTexture(ScriptedTexture T) {
 	T.DrawTile(X, MoveTimeOffset - MoveTime, 1, MoveTime, MoveTimeColor, 0, 1, 1, Texture'NetStatsBase', false);
 }
 
-function PostRender(Canvas C) {
+function PostRender(Canvas C, ClientSettings Settings) {
 	local int Temp;
 
-	class'CanvasUtils'.static.SaveCanvas(C);
-	
-	C.Style = ERenderStyle.STY_Masked;
-	C.DrawColor.R = 255;
-	C.DrawColor.G = 255;
-	C.DrawColor.B = 255;
-	C.DrawColor.A = 255;
+	if (Settings.bEnableNetStats) {
+		class'CanvasUtils'.static.SaveCanvas(C);
+		
+		C.Style = ERenderStyle.STY_Masked;
+		C.DrawColor.R = 255;
+		C.DrawColor.G = 255;
+		C.DrawColor.B = 255;
+		C.DrawColor.A = 255;
 
-	C.SetPos((C.SizeX - Tex[IndexNew].USize) * 0.5, 0);
-	C.DrawTile(Tex[IndexNew], Tex[IndexNew].USize-1, Tex[IndexNew].VSize-1, 0, 0, Tex[IndexNew].USize-1, Tex[IndexNew].VSize-1);
+		C.SetPos((C.SizeX - Tex[IndexNew].USize) * 0.5, 0);
+		C.DrawTile(Tex[IndexNew], Tex[IndexNew].USize-1, Tex[IndexNew].VSize-1, 0, 0, Tex[IndexNew].USize-1, Tex[IndexNew].VSize-1);
 
-	class'CanvasUtils'.static.RestoreCanvas(C);
+		class'CanvasUtils'.static.RestoreCanvas(C);
+	}
 
 	Temp = IndexOld;
 	IndexOld = IndexNew;

@@ -91,18 +91,19 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 63. [KillFeedSpeed](#killfeedspeed)
 64. [KillFeedScale](#killfeedscale)
 65. [FraggerScopeChoice](#fraggerscopechoice)
-66. [bEnableHitMarker](#benablehitmarker)
-67. [bEnableTeamHitMarker](#benableteamhitmarker)
-68. [HitMarkerColorMode](#hitmarkercolormode)
-69. [HitMarkerColor](#hitmarkercolor)
-70. [HitMarkerTeamColor](#hitmarkerteamcolor)
-71. [HitMarkerSize](#hitmarkersize)
-72. [HitMarkerOffset](#hitmarkeroffset)
-73. [HitMarkerDuration](#hitmarkerduration)
-74. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-75. [HitMarkerSource](#hitmarkersource)
-76. [bUseCrosshairFactory](#busecrosshairfactory)
-77. [CrosshairLayers](#crosshairlayers)
+66. [bEnableNetStats](#benablenetstats)
+67. [bEnableHitMarker](#benablehitmarker)
+68. [bEnableTeamHitMarker](#benableteamhitmarker)
+69. [HitMarkerColorMode](#hitmarkercolormode)
+70. [HitMarkerColor](#hitmarkercolor)
+71. [HitMarkerTeamColor](#hitmarkerteamcolor)
+72. [HitMarkerSize](#hitmarkersize)
+73. [HitMarkerOffset](#hitmarkeroffset)
+74. [HitMarkerDuration](#hitmarkerduration)
+75. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+76. [HitMarkerSource](#hitmarkersource)
+77. [bUseCrosshairFactory](#busecrosshairfactory)
+78. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -543,6 +544,12 @@ Which scope the FraggerRifle uses when zoming.
 * `FSC_None` ➜ Keeps the default crosshair
 * `FSC_Static` ➜ Few moving parts when zooming in
 * `FSC_Moveable` ➜ More moving parts when zooming in
+
+## bEnableNetStats
+**Type: bool**  
+**Default: False** 
+
+If `True`, shows a graph for simulated game-time still unconfirmed by server (top), as well as a graph for the distance players are away from where the server has them (bottom).
 
 ## bEnableHitMarker
 **Type: bool**  

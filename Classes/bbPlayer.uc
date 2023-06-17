@@ -7841,7 +7841,7 @@ event PostRender( canvas zzCanvas )
 		IGPlus_SavedInputChain.RemoveOutdatedNodes(Level.TimeSeconds);
 	}
 
-	NetStatsElem.PostRender(zzCanvas);
+	NetStatsElem.PostRender(zzCanvas, Settings);
 
 	IGPlus_LocationOffsetFix_TickBefore();
 
