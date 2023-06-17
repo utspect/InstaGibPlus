@@ -67,11 +67,11 @@ jobs:
 
             $OldName = $File.Name
             $NewName = ($File.Name -replace "${{ github.event.repository.name }}\.","${{ env.PKG_NAME }}.")
+            $NewItem = ("${{ env.PKG_NAME }}"+$SubDir+$NewName)
             if ($OldName -eq $NewName) {
               Rename-Item -Path $File.FullName -NewName ($File.FullName+".bak")
               $File = (Get-Item ($File.FullName+".bak"))
             } else {
-              $NewItem = ("${{ env.PKG_NAME }}"+$SubDir+$NewName)
               Write-Output ($SubDir + $OldName + " -> " + $SubDir + $NewName)
               if (Test-Path -Path $NewItem) { Remove-Item $NewItem }
             }
