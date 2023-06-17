@@ -353,6 +353,8 @@ var float MinDodgeClickTime;
 var IGPlus_InputLogFile IGPlus_InputLogFile;
 var bool bTraceInput;
 
+var IGPlus_NetStats NetStatsElem;
+
 struct ReplBuffer {
 	var int Data[20];
 };
@@ -1161,6 +1163,9 @@ event Possess()
 		IGPlus_InputLogFile.LogId = "ServerInput"$"_"$PlayerReplicationInfo.PlayerId;
 	if (bTraceInput)
 		IGPlus_InputLogFile.StartLog();
+
+	if (Level.NetMode != NM_DedicatedServer)
+		NetStatsElem = Spawn(class'IGPlus_NetStats');
 
 	Super.Possess();
 }
@@ -2050,6 +2055,8 @@ function ClientUpdatePosition()
 			MoveSmooth(-IGPlus_AdjustLocationOffset);
 			IGPlus_AdjustLocationAlpha = FMax(0.1, PlayerReplicationInfo.Ping*0.001);
 			IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location) / IGPlus_AdjustLocationAlpha;
+		} else {
+			NetStatsElem.bInstantRelocation = true;
 		}
 	}
 
@@ -2116,6 +2123,7 @@ function ClientUpdatePositionWithInput() {
 			}
 			//ClientDebugMessage("CUP"@"|"@int(IGPlus_AdjustLocationOffset.X*100.0)@int(IGPlus_AdjustLocationOffset.Y*100.0)@int(IGPlus_AdjustLocationOffset.Z*100.0)@"|"@int(Velocity.X)@int(Velocity.Y)@int(Velocity.Z));
 		} else {
+			NetStatsElem.bInstantRelocation = true;
 			IGPlus_AdjustLocationOffset = vect(0,0,0);
 		}
 	}
@@ -4071,6 +4079,9 @@ function IGPlus_ReplicateInput(float Delta) {
 	if (bTraceInput && IGPlus_InputLogFile != none)
 		IGPlus_InputLogFile.LogInput(IGPlus_SavedInputChain.Newest);
 
+	NetStatsElem.LocationError = VSize(IGPlus_AdjustLocationOffset);
+	NetStatsElem.UnconfirmedTime = (Level.TimeSeconds - IGPlus_SavedInputChain.Oldest.TimeStamp) / Level.TimeDilation;
+
 	RealDelta = (Level.TimeSeconds - IGPlus_LastInputSendTime) / Level.TimeDilation;
 	if (RealDelta < TimeBetweenNetUpdates - ClientUpdateTime)
 		return;
@@ -4250,6 +4261,9 @@ function xxReplicateMove(
 	// send if dodge, jump, or fire unless really too soon, or if newmove.delta big enough
 	// on client side, save extra buffered time in LastUpdateTime
 	RealDelta = PendingMove.Delta / Level.TimeDilation;
+
+	NetStatsElem.LocationError = VSize(IGPlus_AdjustLocationOffset * AdjustAlpha);
+	NetStatsElem.UnconfirmedTime = (Level.TimeSeconds - SavedMoves.TimeStamp) / Level.TimeDilation;
 
 	if (RealDelta < TimeBetweenNetUpdates - ClientUpdateTime && CanMergeMove(NewMove, OldAccel))
 		return;
@@ -7826,6 +7840,8 @@ event PostRender( canvas zzCanvas )
 		}
 		IGPlus_SavedInputChain.RemoveOutdatedNodes(Level.TimeSeconds);
 	}
+
+	NetStatsElem.PostRender(zzCanvas, Settings);
 
 	IGPlus_LocationOffsetFix_TickBefore();
 

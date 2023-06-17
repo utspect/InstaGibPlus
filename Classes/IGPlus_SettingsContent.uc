@@ -85,6 +85,10 @@ var localized string MoreInformationText;
 	var localized string LocationOffsetFixText;
 	var localized string LocationOffsetFixHelp;
 
+	var UWindowCheckbox Chk_EnableNetStats;
+	var localized string EnableNetStatsText;
+	var localized string EnableNetStatsHelp;
+
 // Auto Demo
 	var UWindowLabelControl Lbl_AutoDemo;
 	var localized string AutoDemoLblText;
@@ -791,6 +795,7 @@ function Created() {
 	Chk_LogClientMessages = CreateCheckbox(LogClientMessagesText, LogClientMessagesHelp);
 	Chk_DebugMovement = CreateCheckbox(DebugMovementText, DebugMovementHelp);
 	Chk_LocationOffsetFix = CreateCheckbox(LocationOffsetFixText, LocationOffsetFixHelp);
+	Chk_EnableNetStats = CreateCheckbox(EnableNetStatsText, EnableNetStatsHelp);
 
 	Lbl_AutoDemo = CreateSeparator(AutoDemoLblText);
 	Chk_AutoDemo = CreateCheckbox(AutoDemoText, AutoDemoHelp);
@@ -950,6 +955,7 @@ function Load() {
 	Chk_LogClientMessages.bChecked = Settings.bLogClientMessages;
 	Chk_DebugMovement.bChecked = Settings.bDebugMovement;
 	Chk_LocationOffsetFix.bChecked = Settings.bEnableLocationOffsetFix;
+	Chk_EnableNetStats.bChecked = Settings.bEnableNetStats;
 
 	Chk_AutoDemo.bChecked = Settings.bAutoDemo;
 	Edit_DemoMask.SetValue(Settings.DemoMask);
@@ -1049,6 +1055,7 @@ function Save() {
 	Settings.bLogClientMessages = Chk_LogClientMessages.bChecked;
 	Settings.bDebugMovement = Chk_DebugMovement.bChecked;
 	Settings.bEnableLocationOffsetFix = Chk_LocationOffsetFix.bChecked;
+	Settings.bEnableNetStats = Chk_EnableNetStats.bChecked;
 
 	Settings.bAutoDemo = Chk_AutoDemo.bChecked;
 	Settings.DemoMask = Edit_DemoMask.GetValue();
@@ -1201,6 +1208,9 @@ defaultproperties
 
 		LocationOffsetFixText="Location Offset Fix"
 		LocationOffsetFixHelp="If checked, tries to work around a UT bug that prevents synchronized player locations "
+
+		EnableNetStatsText="Enable NetStats"
+		EnableNetStatsHelp="If checked, shows a graph at the top with information about network communication"
 
 	AutoDemoLblText="Auto Demo"
 

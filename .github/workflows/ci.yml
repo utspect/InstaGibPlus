@@ -57,7 +57,7 @@ jobs:
         with:
           path: ${{ env.PKG_NAME }}/
 
-      - name: Rename Localization Files
+      - name: Rename + Update Files
         run: |
           function Replace-PackageName-File {
             param(
@@ -68,8 +68,13 @@ jobs:
             $OldName = $File.Name
             $NewName = ($File.Name -replace "${{ github.event.repository.name }}\.","${{ env.PKG_NAME }}.")
             $NewItem = ("${{ env.PKG_NAME }}"+$SubDir+$NewName)
-            Write-Output ($SubDir + $OldName + " -> " + $SubDir + $NewName)
-            if (Test-Path -Path $NewItem) { Remove-Item $NewItem }
+            if ($OldName -eq $NewName) {
+              Rename-Item -Path $File.FullName -NewName ($File.FullName+".bak")
+              $File = (Get-Item ($File.FullName+".bak"))
+            } else {
+              Write-Output ($SubDir + $OldName + " -> " + $SubDir + $NewName)
+              if (Test-Path -Path $NewItem) { Remove-Item $NewItem }
+            }
             (Get-Content -Path $File.FullName) | ForEach-Object {
               ($_ -replace "${{ github.event.repository.name }}\.","${{ env.PKG_NAME }}.") >> $NewItem
             }
@@ -92,6 +97,7 @@ jobs:
           Replace-PackageName "/System/"  "ACEFileList-${{ github.event.repository.name }}.*"
           Replace-PackageName "/System/"  "ACETweakList-${{ github.event.repository.name }}.*"
           Replace-PackageName "/Classes/" "${{ github.event.repository.name }}.upkg"
+          Replace-PackageName "/Classes/" "*.uc"
 
       - name: Extract Necessary Resources
         run: 7z x "${{ env.PKG_NAME }}/Build/BuildEnv.zip"
