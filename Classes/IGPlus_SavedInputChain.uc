@@ -50,7 +50,7 @@ final function bool AppendNode(IGPlus_SavedInput Node) {
 		Oldest = Node;
 		Newest = Node;
 	} else {
-		if (Newest.TimeStamp >= Node.TimeStamp - 0.5*Node.Delta)
+		if (Newest.TimeStamp > Node.TimeStamp - 0.5*Node.Delta)
 			return false;
 
 		Node.Prev = Newest;
