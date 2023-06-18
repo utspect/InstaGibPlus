@@ -24,7 +24,7 @@ function StartLog() {
     OpenLog();
 
     // header
-    FileLog("Type|TimeStamp|Delta|Forw|Back|Left|Right|Walk|Duck|Jump|Fire|AltFire|Dodge|ViewRot|Location|Velocity");
+    FileLog("Type|TimeStamp|Delta|Forw|Back|Left|Right|Walk|Duck|Jump|Dodge|Fire|AltFire|ViewRot|Location|Velocity");
 
     bStarted = true;
 }
@@ -41,7 +41,7 @@ function LogInput(IGPlus_SavedInput I) {
 	if (bStarted == false)
 		StartLog();
 
-	FileLog("Input |"$I.TimeStamp$"|"$I.Delta$"|"$I.bForw$"|"$I.bBack$"|"$I.bLeft$"|"$I.bRigh$"|"$I.bWalk$"|"$I.bDuck$"|"$I.bJump$"|"$I.bDodg$"|"$I.bFire$"|"$I.bAFir$"|"$(I.SavedViewRotation.Pitch&0xFFFF)$","$(I.SavedViewRotation.Yaw&0xFFFF)$"|"$I.SavedLocation$"|"$I.SavedVelocity);
+	FileLog("Input|"$I.TimeStamp$"|"$I.Delta$"|"$I.bForw$"|"$I.bBack$"|"$I.bLeft$"|"$I.bRigh$"|"$I.bWalk$"|"$I.bDuck$"|"$I.bJump$"|"$I.bDodg$"|"$I.bFire$"|"$I.bAFir$"|"$(I.SavedViewRotation.Pitch&0xFFFF)$","$(I.SavedViewRotation.Yaw&0xFFFF)$"|"$I.SavedLocation$"|"$I.SavedVelocity);
 }
 
 function LogCAP(float TimeStamp, vector Loc, vector Vel, Actor NewBase) {
@@ -51,7 +51,7 @@ function LogCAP(float TimeStamp, vector Loc, vector Vel, Actor NewBase) {
 	if (Mover(NewBase) != none)
 		Loc += NewBase.Location;
 
-	FileLog("CAP   |"$TimeStamp$"|||||||||||||"$Loc$"|"$Vel);
+	FileLog("CAP|"$TimeStamp$"|||||||||||||"$Loc$"|"$Vel);
 }
 
 function LogInputReplay(IGPlus_SavedInput I) {
