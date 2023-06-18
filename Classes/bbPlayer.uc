@@ -3229,8 +3229,8 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	while(IGPlus_InputReplicationBuffer.IsDataSufficient(class'IGPlus_SavedInput'.default.SerializedBits)) {
 		Node = IGPlus_SavedInputChain.AllocateNode();
 		Node.DeserializeFrom(IGPlus_InputReplicationBuffer);
-		Node.TimeStamp = (RefTimeStamp - 1.0) + (1.0 + Node.Delta);
-		RefTimeStamp = Node.TimeStamp;
+		DeltaTime += Node.Delta;
+		Node.TimeStamp = RefTimeStamp + DeltaTime;
 		if (IGPlus_SavedInputChain.AppendNode(Node) == false)
 			IGPlus_SavedInputChain.FreeNode(Node);
 	}
