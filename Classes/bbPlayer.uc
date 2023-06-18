@@ -2093,8 +2093,6 @@ function ClientUpdatePositionWithInput() {
 			debugClientLocError = VSize(In.SavedLocation - Location);
 			clientForcedPosition = In.SavedVelocity - Velocity;
 			while(In.Next != none) {
-				if (In.Next.TimeStamp - In.TimeStamp > 1.2*In.Next.Delta)
-					ClientDebugMessage("CUP LostTime"@In.TimeStamp@In.Next.TimeStamp@(In.Next.TimeStamp - In.TimeStamp)@In.Next.Delta);
 				PlayBackInput(In, In.Next);
 				if (bTraceInput && IGPlus_InputLogFile != none)
 					IGPlus_InputLogFile.LogInputReplay(In.Next);
@@ -2121,7 +2119,6 @@ function ClientUpdatePositionWithInput() {
 			if (AdjustDistance > 2) {
 				IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location);
 			}
-			//ClientDebugMessage("CUP"@"|"@int(IGPlus_AdjustLocationOffset.X*100.0)@int(IGPlus_AdjustLocationOffset.Y*100.0)@int(IGPlus_AdjustLocationOffset.Z*100.0)@"|"@int(Velocity.X)@int(Velocity.Y)@int(Velocity.Z));
 		} else {
 			NetStatsElem.bInstantRelocation = true;
 			IGPlus_AdjustLocationOffset = vect(0,0,0);
@@ -3190,6 +3187,7 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	local IGPlus_SavedInput Old;
 	local float DeltaTime;
 	local float ServerDeltaTime;
+	local float LostTime;
 
 	if (Role < ROLE_Authority) {
 		zzbLogoDone = True;
@@ -3249,8 +3247,13 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	}
 
 	if (zzUTPure.Settings.bEnableJitterBounding) {
+		LostTime = -Old.TimeStamp;
 		IGPlus_SavedInputChain.RemoveOutdatedNodes(CurrentTimeStamp + ExtrapolationDelta - zzUTPure.Settings.MaxJitterTime);
 		Old = IGPlus_SavedInputChain.Oldest;
+		LostTime += Old.TimeStamp;
+
+		if (LostTime > 0.001)
+			ClientDebugMessage("SAI LostTime"@Old.TimeStamp@CurrentTimeStamp@ExtrapolationDelta);
 	}
 
 	if (IGPlus_UseFastWeaponSwitch && PendingWeapon != None)
@@ -3258,10 +3261,6 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 
 	// play back input
 	while(Old.Next != none) {
-		if (Old.Next.TimeStamp - Old.TimeStamp > 1.2*Old.Next.Delta)
-			ClientDebugMessage("SAI LostTime"@Old.TimeStamp@Old.Next.TimeStamp@(Old.Next.TimeStamp - Old.TimeStamp)@Old.Next.Delta);
-		if (Old.Next.TimeStamp - Old.TimeStamp < 0.8*Old.Next.Delta)
-			ClientDebugMessage("SAI Double"@Old.TimeStamp@Old.Next.TimeStamp@(Old.Next.TimeStamp - Old.TimeStamp)@Old.Next.Delta);
 		PlayBackInput(Old, Old.Next);
 		if (bTraceInput && IGPlus_InputLogFile != none)
 			IGPlus_InputLogFile.LogInput(Old.Next);
