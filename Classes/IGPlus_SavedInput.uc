@@ -51,10 +51,6 @@ function CopyFrom(float Delta, bbPlayer P) {
 		bRigh = false;
 		bWalk = false;
 		bDuck = false;
-		bJump = false;
-		bDodg = false;
-		bFire = false;
-		bAFir = false;
 	} else {
 		bForw = P.bWasForward;
 		bBack = P.bWasBack;
@@ -62,11 +58,11 @@ function CopyFrom(float Delta, bbPlayer P) {
 		bRigh = P.bWasRight;
 		bWalk = P.bRun != 0;
 		bDuck = P.bDuck != 0;
-		bJump = (P.aUp > 1.0) || P.IGPlus_PressedJumpSave;
-		bDodg = P.bPressedDodge;
-		bFire = (P.bFire != 0) || P.bJustFired;
-		bAFir = (P.bAltFire != 0) || P.bJustAltFired;
 	}
+	bJump = (P.aUp > 1.0) || P.IGPlus_PressedJumpSave;
+	bDodg = P.bPressedDodge;
+	bFire = (P.bFire != 0) || P.bJustFired;
+	bAFir = (P.bAltFire != 0) || P.bJustAltFired;
 
 	P.bJustFired = false;
 	P.bJustAltFired = false;
