@@ -2,7 +2,8 @@ class IGPlus_NetStats extends Actor;
 
 #EXEC LOAD FILE="Textures/IGPlusNetStats.utx" PACKAGE=InstaGibPlus.NetStats
 
-var ScriptedTexture Tex[2];
+var ScriptedTexture OldTex;
+var ScriptedTexture NewTex;
 
 var float LocationError;
 var float UnconfirmedTime;
@@ -11,18 +12,15 @@ var bool bInstantRelocation;
 var float LocErrScale;
 var float UnconfirmedTimeScale;
 
-var int IndexNew;
-var int IndexOld;
-
 var int Yellow;
 var int Blue;
 var int Red;
 
 function PostBeginPlay() {
-	Tex[0].bMasked = true;
-	Tex[1].bMasked = true;
-	Tex[0].NotifyActor = self;
-	Tex[1].NotifyActor = self;
+	OldTex.bMasked = true;
+	NewTex.bMasked = true;
+	OldTex.NotifyActor = self;
+	NewTex.NotifyActor = self;
 }
 
 function RenderTexture(ScriptedTexture T) {
@@ -37,10 +35,10 @@ function RenderTexture(ScriptedTexture T) {
 	local int MoveTime;
 	local int MoveTimeColor;
 
-	if (T != Tex[IndexNew])
+	if (T != NewTex)
 		return;
 
-	OldT = Tex[IndexOld];
+	OldT = OldTex;
 	X = T.USize-2;
 	YL = T.VSize-1;
 
@@ -73,7 +71,7 @@ function RenderTexture(ScriptedTexture T) {
 }
 
 function PostRender(Canvas C, ClientSettings Settings) {
-	local int Temp;
+	local ScriptedTexture Temp;
 
 	if (Settings.bEnableNetStats) {
 		class'CanvasUtils'.static.SaveCanvas(C);
@@ -84,27 +82,26 @@ function PostRender(Canvas C, ClientSettings Settings) {
 		C.DrawColor.B = 255;
 		C.DrawColor.A = 255;
 
-		C.SetPos((C.SizeX - Tex[IndexNew].USize) * 0.5, 0);
-		C.DrawTile(Tex[IndexNew], Tex[IndexNew].USize-1, Tex[IndexNew].VSize-1, 0, 0, Tex[IndexNew].USize-1, Tex[IndexNew].VSize-1);
+		C.SetPos((C.SizeX - NewTex.USize) * 0.5, 0);
+		C.DrawTile(NewTex, NewTex.USize-1, NewTex.VSize-1, 0, 0, NewTex.USize-1, NewTex.VSize-1);
 
 		class'CanvasUtils'.static.RestoreCanvas(C);
 	}
 
-	Temp = IndexOld;
-	IndexOld = IndexNew;
-	IndexNew = Temp;
+	Temp = OldTex;
+	OldTex = NewTex;
+	NewTex = Temp;
 
 	bInstantRelocation = false;
 }
 
 defaultproperties {
+	OldTex=ScriptedTexture'NetStats0';
+	NewTex=ScriptedTexture'NetStats1';
+	
 	LocErrScale=1.0
 	UnconfirmedTimeScale=0.005
 
-	Tex(0)=ScriptedTexture'NetStats0';
-	Tex(1)=ScriptedTexture'NetStats1';
-	IndexNew=0
-	IndexOld=1
 	Yellow=3
 	Blue=1
 	Red=2
