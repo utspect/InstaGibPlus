@@ -314,6 +314,8 @@ var float IGPlus_WarpFixDelay;
 var IGPlus_WarpFix IGPlus_WarpFixData;
 var IGPlus_WarpFixClient IGPlus_WarpFixClientData;
 
+const IGPlus_LocationOffsetFix_DummyVel = vect(4.56,4.56,0.0);
+
 var bool IGPlus_LocationOffsetFix_Moved;
 var bool IGPlus_LocationOffsetFix_Restored;
 var bool IGPlus_LocationOffsetFix_PredCompatMode;
@@ -7422,6 +7424,13 @@ simulated function vector IGPlus_CurrentLocation() {
 		return Location;
 }
 
+simulated function bool IGPlus_LocationOffsetFix_WasVelocityReplicated() {
+	if (Abs(Velocity.X - int(Velocity.X)) > 0.0001 || Abs(Velocity.Y - int(Velocity.Y)) > 0.0001)
+		return false;
+
+	return true;
+}
+
 simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	local float ExtrapolationTime;
 	local bool bReplicatedLocation;
@@ -7438,15 +7447,12 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 		IGPlus_LocationOffsetFix_CollisionDummy.SetCollision(false, false, false);
 	}
 
-	// detect whether server replicated new velocity
-	if (Velocity.X == 0.0123 && Velocity.Y == 0.0123) {
-		bReplicatedVelocity = false;
+	bReplicatedVelocity = IGPlus_LocationOffsetFix_WasVelocityReplicated();
+	if (bReplicatedVelocity == false) {
 		Velocity = IGPlus_LocationOffsetFix_Velocity;
 
 		if (IGPlus_LocationOffsetFix_OnGround == false)
 			Velocity += 0.5 * Region.Zone.ZoneGravity * DeltaTime;
-	} else {
-		bReplicatedVelocity = true;
 	}
 
 	// detect whether server replicated new location
@@ -7704,8 +7710,8 @@ simulated function IGPlus_LocationOffsetFix_Before() {
 	IGPlus_LocationOffsetFix_Velocity = Velocity;
 	IGPlus_LocationOffsetFix_OnGround = IGPlus_LocationOffsetFix_IsOnGround(IGPlus_LocationOffsetFix_GroundNormal);
 
-	SetLocation(vect(65535, 65535, 65535));
-	Velocity = vect(0.0123,0.0123,0);
+	SetLocation(vect(65535, 65535, 65535) + vect(512.0,512.0,512.0)*PlayerReplicationInfo.PlayerID);
+	Velocity = IGPlus_LocationOffsetFix_DummyVel;
 	IGPlus_LocationOffsetFix_SafeLocation = Location;
 
 	if (bHidden == false &&
