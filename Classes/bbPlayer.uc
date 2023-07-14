@@ -3883,7 +3883,7 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 		// handle firing and alt-firing on server
 		if (I.bFire) {
 			if (bFire == 0) {
-				if (I.bLive && Weapon != none)
+				if (I.bLive && I.bFFir && Weapon != none)
 					Weapon.ForceFire();
 				else
 					Fire(0);
@@ -3895,7 +3895,7 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 
 		if (I.bAFir) {
 			if (bAltFire == 0) {
-				if (I.bLive && Weapon != none)
+				if (I.bLive && I.bFAFr && Weapon != none)
 					Weapon.ForceAltFire();
 				else
 					AltFire(0);
