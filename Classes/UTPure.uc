@@ -708,7 +708,7 @@ function ModifyPlayer(Pawn Other)
 				zzP.zzbForceDemo = Settings.bForceDemo;
 				zzP.zzbGameStarted = True;
 			}
-			if (Settings.bEnablePingCompensatedSpawn) {
+			if (zzP.RemoteRole == ROLE_AutonomousProxy && Settings.bEnablePingCompensatedSpawn) {
 				zzP.bHidden = true;
 				zzP.SetCollision(false, false, false);
 				// we are not undoing the effects because we cant "unplay" a sound

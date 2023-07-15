@@ -2549,7 +2549,7 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	if ((Level.Pauser == "") && (DeltaTime > 0)) {
 		UndoExtrapolation();
 
-		if (zzUTPure.Settings.bEnablePingCompensatedSpawn) {
+		if (RemoteRole == ROLE_AutonomousProxy && zzUTPure.Settings.bEnablePingCompensatedSpawn) {
 			if (bHidden && (IsInState('PlayerWalking') || IsInState('PlayerSwimming'))) {
 				bClientDead = false;
 				bHidden = false;
@@ -3870,16 +3870,16 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 	bPressedJump = I.bJump && (I.bJump != Old.bJump);
 	bPressedDodge = I.bDodg && (I.bDodg != Old.bDodg);
 
-	if (Level.NetMode != NM_Client && zzUTPure.Settings.bEnablePingCompensatedSpawn) {
-		if (bHidden && I.bLive && (IsInState('PlayerWalking') || IsInState('PlayerSwimming'))) {
-			bClientDead = false;
-			bHidden = false;
-			SetCollision(true, true, true);
-			IGPlus_SendRespawnNoficiation();
-		}
-	}
-
 	if (RemoteRole == ROLE_AutonomousProxy) {
+		if (zzUTPure.Settings.bEnablePingCompensatedSpawn) {
+			if (bHidden && I.bLive && (IsInState('PlayerWalking') || IsInState('PlayerSwimming'))) {
+				bClientDead = false;
+				bHidden = false;
+				SetCollision(true, true, true);
+				IGPlus_SendRespawnNoficiation();
+			}
+		}
+
 		// handle firing and alt-firing on server
 		if (I.bFire) {
 			if (bFire == 0) {
@@ -6453,7 +6453,7 @@ state Dying
 		local bool bDeathMatchSave;
 		local bool Result;
 
-		if (zzUTPure.Settings.bEnablePingCompensatedSpawn) {
+		if (RemoteRole == ROLE_AutonomousProxy && zzUTPure.Settings.bEnablePingCompensatedSpawn) {
 			bDeathMatchSave = Level.Game.bDeathMatch;
 			Level.Game.bDeathMatch = false; // this avoids the sound respawns generate, we will play our own later
 			// see DeathMatchPlus.PlayTeleportEffect()
@@ -6462,7 +6462,7 @@ state Dying
 		Level.Game.DiscardInventory(self); // last possible place to rid ourselves of old inventory
 		Result = Level.Game.RestartPlayer(self);
 
-		if (zzUTPure.Settings.bEnablePingCompensatedSpawn)
+		if (RemoteRole == ROLE_AutonomousProxy && zzUTPure.Settings.bEnablePingCompensatedSpawn)
 			Level.Game.bDeathMatch = bDeathMatchSave;
 
 		return Result;
