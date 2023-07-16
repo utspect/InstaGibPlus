@@ -3,7 +3,7 @@ class StringUtils extends Object;
 var name TempName;
 
 static final function string PackageOfClass(class C) {
-	return string(C.Outer.Name)
+	return string(C.Outer.Name);
 }
 
 static final function string PackageOfObject(Object O) {
