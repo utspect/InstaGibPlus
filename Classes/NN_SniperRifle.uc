@@ -441,23 +441,21 @@ function TraceFire( float Accuracy )
 
 	Owner.MakeNoise(bbP.SoundDampening);
 	GetAxes(bbP.zzNN_ViewRot,X,Y,Z);
-	StartTrace = Owner.Location + bbP.Eyeheight * vect(0,0,1);
+	StartTrace = Owner.Location + bbP.EyeHeight * vect(0,0,1);
 	AdjustedAim = bbP.AdjustAim(1000000, StartTrace, 2*AimError, False, False);
 	X = vector(AdjustedAim);
 	EndTrace = StartTrace + 100000 * X + Accuracy * (FRand() - 0.5)* Y * 1000 + Accuracy * (FRand() - 0.5) * Z * 1000;
 
-	if (bbP.zzNN_HitActor != None && VSize(bbP.zzNN_HitDiff) > bbP.zzNN_HitActor.CollisionRadius + bbP.zzNN_HitActor.CollisionHeight)
-		bbP.zzNN_HitDiff = vect(0,0,0);
-
-	if (bbP.zzNN_HitActor != None && (bbP.zzNN_HitActor.IsA('Pawn') || bbP.zzNN_HitActor.IsA('Projectile')) && FastTrace(bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff, StartTrace))
+	NN_HitLoc = bbP.zzNN_HitLoc;
+	if (bbP.zzNN_HitActor != None && (bbP.zzNN_HitActor.IsA('Pawn') || bbP.zzNN_HitActor.IsA('Projectile')) )
 	{
 		NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
 	}
-	else
-	{
-		bbP.zzNN_HitActor = bbP.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
-		NN_HitLoc = bbP.zzNN_HitLoc;
-	}
+	
+	// determine HitNormal
+	bbP.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
+
+	// apply damage
 	ProcessTraceHit(bbP.zzNN_HitActor, NN_HitLoc, HitNormal, X,Y,Z);
 	bbP.zzNN_HitActor = None;
 }
