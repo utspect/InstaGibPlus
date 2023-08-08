@@ -85,9 +85,29 @@ var localized string MoreInformationText;
 	var localized string LocationOffsetFixText;
 	var localized string LocationOffsetFixHelp;
 
+// NetStats
+	var UWindowLabelControl Lbl_NetStats;
+	var localized string NetStatsText;
+
 	var UWindowCheckbox Chk_EnableNetStats;
 	var localized string EnableNetStatsText;
 	var localized string EnableNetStatsHelp;
+
+	var UWindowCheckbox Chk_NetStatUnconfirmedTime;
+	var localized string NetStatUnconfirmedTimeText;
+	var localized string NetStatUnconfirmedTimeHelp;
+
+	var UWindowCheckbox Chk_NetStatsLocationError;
+	var localized string NetStatsLocationErrorText;
+	var localized string NetStatsLocationErrorHelp;
+
+	var IGPlus_EditControl Edit_NetStatsWidth;
+	var localized string NetStatsWidthText;
+	var localized string NetStatsWidthHelp;
+
+	var IGPlus_ScreenLocationControl SLoc_NetStatsLocation;
+	var localized string NetStatsLocationText;
+	var localized string NetStatsLocationHelp;
 
 // Auto Demo
 	var UWindowLabelControl Lbl_AutoDemo;
@@ -634,7 +654,6 @@ function IGPlus_Button CreateButton(
 	InsertControl(Btn);
 
 	return Btn;
-
 }
 
 function SetUpForcedModelComboBox(IGPlus_ComboBox Cmb) {
@@ -795,7 +814,13 @@ function Created() {
 	Chk_LogClientMessages = CreateCheckbox(LogClientMessagesText, LogClientMessagesHelp);
 	Chk_DebugMovement = CreateCheckbox(DebugMovementText, DebugMovementHelp);
 	Chk_LocationOffsetFix = CreateCheckbox(LocationOffsetFixText, LocationOffsetFixHelp);
+
+	Lbl_NetStats = CreateSeparator(NetStatsText);
 	Chk_EnableNetStats = CreateCheckbox(EnableNetStatsText, EnableNetStatsHelp);
+	Chk_NetStatUnconfirmedTime = CreateCheckbox(NetStatUnconfirmedTimeText, NetStatUnconfirmedTimeHelp);
+	Chk_NetStatsLocationError = CreateCheckbox(NetStatsLocationErrorText, NetStatsLocationErrorHelp);
+	Edit_NetStatsWidth = CreateEdit(ECT_Integer, NetStatsWidthText, NetStatsWidthHelp, 4, 32);
+	SLoc_NetStatsLocation = CreateScreenLocation(100, NetStatsLocationText, NetStatsLocationHelp);
 
 	Lbl_AutoDemo = CreateSeparator(AutoDemoLblText);
 	Chk_AutoDemo = CreateCheckbox(AutoDemoText, AutoDemoHelp);
@@ -955,7 +980,12 @@ function Load() {
 	Chk_LogClientMessages.bChecked = Settings.bLogClientMessages;
 	Chk_DebugMovement.bChecked = Settings.bDebugMovement;
 	Chk_LocationOffsetFix.bChecked = Settings.bEnableLocationOffsetFix;
+
 	Chk_EnableNetStats.bChecked = Settings.bEnableNetStats;
+	Chk_NetStatUnconfirmedTime.bChecked = Settings.bNetStatsUnconfirmedTime;
+	Chk_NetStatsLocationError.bChecked = Settings.bNetStatsLocationError;
+	Edit_NetStatsWidth.SetValue(string(Settings.NetStatsWidth));
+	SLoc_NetStatsLocation.SetLocation(Settings.NetStatsLocationX, Settings.NetStatsLocationY);
 
 	Chk_AutoDemo.bChecked = Settings.bAutoDemo;
 	Edit_DemoMask.SetValue(Settings.DemoMask);
@@ -1055,7 +1085,12 @@ function Save() {
 	Settings.bLogClientMessages = Chk_LogClientMessages.bChecked;
 	Settings.bDebugMovement = Chk_DebugMovement.bChecked;
 	Settings.bEnableLocationOffsetFix = Chk_LocationOffsetFix.bChecked;
+
 	Settings.bEnableNetStats = Chk_EnableNetStats.bChecked;
+	Settings.bNetStatsUnconfirmedTime = Chk_NetStatUnconfirmedTime.bChecked;
+	Settings.bNetStatsLocationError = Chk_NetStatsLocationError.bChecked;
+	Settings.NetStatsWidth = int(Edit_NetStatsWidth.GetValue());
+	SLoc_NetStatsLocation.GetLocation(Settings.NetStatsLocationX, Settings.NetStatsLocationY);
 
 	Settings.bAutoDemo = Chk_AutoDemo.bChecked;
 	Settings.DemoMask = Edit_DemoMask.GetValue();
@@ -1209,8 +1244,22 @@ defaultproperties
 		LocationOffsetFixText="Location Offset Fix"
 		LocationOffsetFixHelp="If checked, tries to work around a UT bug that prevents synchronized player locations "
 
+	NetStatsText="NetStats"
+
 		EnableNetStatsText="Enable NetStats"
 		EnableNetStatsHelp="If checked, shows a graph at the top with information about network communication"
+
+		NetStatUnconfirmedTimeText="Show Unconfirmed Time"
+		NetStatUnconfirmedTimeHelp="If checked, the netstats graph contains time the client simulated, but which the server hasnt acknowledged yet"
+
+		NetStatsLocationErrorText="Show Location Error"
+		NetStatsLocationErrorHelp="If checked, the netstats graph contains the difference between your predicted location and the actual location on the server"
+
+		NetStatsWidthText="Demo Char"
+		NetStatsWidthHelp="Replacement character for those that cannot be used in file-names"
+
+		NetStatsLocationText="Location"
+		NetStatsLocationHelp="Where on screen to show the net stats graph"
 
 	AutoDemoLblText="Auto Demo"
 

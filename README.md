@@ -92,18 +92,23 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 64. [KillFeedScale](#killfeedscale)
 65. [FraggerScopeChoice](#fraggerscopechoice)
 66. [bEnableNetStats](#benablenetstats)
-67. [bEnableHitMarker](#benablehitmarker)
-68. [bEnableTeamHitMarker](#benableteamhitmarker)
-69. [HitMarkerColorMode](#hitmarkercolormode)
-70. [HitMarkerColor](#hitmarkercolor)
-71. [HitMarkerTeamColor](#hitmarkerteamcolor)
-72. [HitMarkerSize](#hitmarkersize)
-73. [HitMarkerOffset](#hitmarkeroffset)
-74. [HitMarkerDuration](#hitmarkerduration)
-75. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-76. [HitMarkerSource](#hitmarkersource)
-77. [bUseCrosshairFactory](#busecrosshairfactory)
-78. [CrosshairLayers](#crosshairlayers)
+67. [bNetStatsUnconfirmedTime](#bnetstatsunconfirmedtime)
+68. [bNetStatsLocationError](#bnetstatslocationerror)
+69. [NetStatsLocationX](#netstatslocationx)
+70. [NetStatsLocationY](#netstatslocationy)
+71. [NetStatsWidth](#netstatswidth)
+72. [bEnableHitMarker](#benablehitmarker)
+73. [bEnableTeamHitMarker](#benableteamhitmarker)
+74. [HitMarkerColorMode](#hitmarkercolormode)
+75. [HitMarkerColor](#hitmarkercolor)
+76. [HitMarkerTeamColor](#hitmarkerteamcolor)
+77. [HitMarkerSize](#hitmarkersize)
+78. [HitMarkerOffset](#hitmarkeroffset)
+79. [HitMarkerDuration](#hitmarkerduration)
+70. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+81. [HitMarkerSource](#hitmarkersource)
+82. [bUseCrosshairFactory](#busecrosshairfactory)
+83. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -549,7 +554,37 @@ Which scope the FraggerRifle uses when zoming.
 **Type: bool**  
 **Default: False** 
 
-If `True`, shows a graph for simulated game-time still unconfirmed by server (top), as well as a graph for the distance players are away from where the server has them (bottom).
+If `True`, shows a graph containing statistics related to the netcode. for simulated game-time still unconfirmed by server (top), as well as a graph for the distance players are away from where the server has them (bottom).
+
+## bNetStatsUnconfirmedTime
+**Type: bool**
+**Default: True**
+
+If `True`, shows the netstats graph of the amount of simulated game-time still unconfirmed by the server. This graph will always be at the top.
+
+## bNetStatsLocationError
+**Type: bool**
+**Default: True**
+
+If `True`, the netstats graph will show the distance players are away from where the server has them.
+
+## NetStatsLocationX
+**Type: float**  
+**Default: 0.5**  
+
+Horizontal position of the netstats graph. Left edge of screen is 0. Right edge of screen is 1.
+
+## NetStatsLocationY
+**Type: float**  
+**Default: 0.0**  
+
+Vertical position of the netstats graph. Top of screen is 0. Bottom of screen is 1.
+
+## NetStatsWidth
+**Type: int**
+**Default: 511**
+
+Controls how wide the netstats graph is in pixel. Maximum value is 511. Each pixel represents a single frame rendered.
 
 ## bEnableHitMarker
 **Type: bool**  
@@ -576,11 +611,15 @@ If `True`, plays an animation on the hud whenever you damage a teammate.
 
 The color of the HitMarker when damaging enemies. Fades over [HitMarkerDuration](#hitmarkerduration) to completely transparent.
 
+Note that transparency is based on color brightness, and black is completely transparent.
+
 ## HitMarkerTeamColor
 **Type: color**  
 **Default: (R=0,G=0,B=255,A=255)** 
 
 The color of the HitMarker when damaging teammates. Fades over [HitMarkerDuration](#hitmarkerduration) to completely transparent.
+
+Note that transparency is based on color brightness, and black is completely transparent.
 
 ## HitMarkerSize
 **Type: float**  
