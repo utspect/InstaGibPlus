@@ -28,6 +28,7 @@ var Pawn Asses[64];			// Team*16, Who assisted in a cap
 var int AssCount[4];			// How many assisted.
 var Pawn NextCTFVictim;			// The Guy that just got killed who had flag
 
+var ST_HitTestHelper CollChecker;
 var ST_HitTestHelper HitTestHelper;
 
 var WeaponSettings WeaponSettings;
@@ -800,6 +801,9 @@ function PreBeginPlay()
 
 	Class'bbCHSpectator'.Default.cStat = Class'ST_PureStatsSpec';
 	HitTestHelper = Spawn(class'ST_HitTestHelper');
+	CollChecker = Spawn(class'ST_HitTestHelper');
+	CollChecker.bCollideWorld = false;
+	CollChecker.SetCollision(true, false, false);
 
 	InitializeSettings();
 
@@ -918,15 +922,52 @@ final function EnhancedHurtRadius(
 ) {
 	local actor Victim;
 	local float damageScale, dist;
+	local vector Delta, DeltaXY;
+	local vector Closest;
 	local vector dir;
 
 	if (Source.bHurtEntry)
 		return;
 
 	Source.bHurtEntry = true;
-	foreach Source.RadiusActors(class'Actor', Victim, DamageRadius + Source.CollisionRadius) {
+
+	if (CollChecker == none || CollChecker.bDeleteMe) {
+		CollChecker = Spawn(class'ST_HitTestHelper',self, , Source.Location);
+		CollChecker.bCollideWorld = false;
+		CollChecker.SetCollision(true, false, false);
+	}
+
+	CollChecker.SetCollisionSize(Source.CollisionRadius + DamageRadius, Source.CollisionRadius + DamageRadius);
+	CollChecker.SetLocation(HitLocation);
+
+	foreach CollChecker.TouchingActors(class'Actor', Victim) {
 		if (Victim == self)
 			continue;
+
+		Delta = Victim.Location - HitLocation;
+		DeltaXY = Delta * vect(1.0, 1.0, 0.0);
+		dist = VSize(Delta);
+		dir = Normal(Delta);
+
+		if (Abs(Delta.Z) <= Victim.CollisionHeight) {
+			Closest = Victim.Location + dir * Victim.CollisionRadius;
+		} else if (VSize(DeltaXY) <= Victim.CollisionRadius) {
+			Closest = Victim.Location + dir * Victim.CollisionHeight;
+		} else {
+			// Closest point must be on the cylinder rims, find out where
+			Closest = Victim.Location + dir * (Source.CollisionRadius / VSize(dir * vect(1.0, 1.0, 0.0)));
+			if (Delta.Z > 0.0)
+				Closest.Z = Victim.Location.Z - Victim.CollisionHeight;
+			else
+				Closest.Z = Victim.Location.Z + Victim.CollisionHeight;
+		}
+
+		Delta = Closest - HitLocation;
+		if (VSize(Delta) > CollChecker.CollisionRadius)
+			continue;
+
+		dist = VSize(Delta);
+		dir = Normal(Delta);
 
 		if (FastTrace(Victim.Location, Source.Location) == false) {
 			if (Victim.IsA('Pawn') == false)
@@ -943,22 +984,19 @@ final function EnhancedHurtRadius(
 				continue;
 		}
 
-		dir = Victim.Location - HitLocation;
-		dist = FMax(1.0,VSize(dir));
-		dir = dir/dist;
-
 		if (bIsRazor2Alt)
 			dir.Z = FMin(0.45, dir.Z);
 
-		damageScale = 1 - FMax(0,(dist - Victim.CollisionRadius)/DamageRadius);
+		damageScale = 1 - FMax(0,(dist - Source.CollisionRadius)/DamageRadius);
 		Victim.TakeDamage(
 			damageScale * DamageAmount,
 			Source.Instigator,
-			Victim.Location - 0.5 * (Victim.CollisionHeight + Victim.CollisionRadius) * dir,
+			Closest,
 			(damageScale * Momentum * dir),
 			DamageName
 		);
 	}
+
 	Source.bHurtEntry = false;
 }
 
