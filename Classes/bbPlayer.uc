@@ -5642,7 +5642,7 @@ state PlayerSwimming
 
 		if ( bUpAndOut && !Region.Zone.bWaterZone && CheckWaterJump(Temp) ) //check for waterjump
 		{
-			velocity.Z = 220 + 2 * CollisionRadius; //set here so physics uses this for remainder of tick
+			velocity.Z = 330 + 2 * CollisionRadius; //set here so physics uses this for remainder of tick
 			PlayDuck();
 			GotoState('PlayerWalking');
 		}
