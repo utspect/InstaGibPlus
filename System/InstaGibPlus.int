@@ -14,7 +14,6 @@ Object=(Name=InstaGibPlus.DisableWeapons,Class=Class,MetaClass=Engine.Mutator,De
 Object=(Name=InstaGibPlus.NN_FraggerRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.NN_SniperRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.NN_ShockRifle,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus.ST_sgShockRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.NN_ASMD,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.NN_SuperShockRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.ST_ImpactHammer,Class=Class,MetaClass=Engine.Weapon)
