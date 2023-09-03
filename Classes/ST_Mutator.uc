@@ -931,8 +931,13 @@ final function EnhancedHurtRadius(
 		if (FastTrace(Victim.Location, Source.Location) == false) {
 			if (Victim.IsA('Pawn') == false)
 				continue;
+
 			// give Pawns a second chance to be hit
-			HitTestHelper.SetLocation(Source.Location);
+			if (HitTestHelper == none || HitTestHelper.bDeleteMe)
+				HitTestHelper = Spawn(class'ST_HitTestHelper', self, , Source.Location);
+			else
+				HitTestHelper.SetLocation(Source.Location);
+
 			HitTestHelper.FlyTowards(Victim.Location, DamageRadius);
 			if (FastTrace(Victim.Location, HitTestHelper.Location) == false)
 				continue;
