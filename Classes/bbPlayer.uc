@@ -1359,6 +1359,10 @@ function IGPlus_NotifyPlayerRestart(vector Loc, rotator Dir, bbPlayer Other) {
 	PTE.Initialize(Other, true);
 	PTE.PlaySound(sound'Resp2A',, 10.0);
 	PTE.RemoteRole = ROLE_None;
+
+	// dont show light if you cant see the effect
+	if (FastTrace(PTE.Location) == false)
+		PTE.LightType = LT_None;
 }
 
 function IGPlus_SendRespawnNoficiation() {
