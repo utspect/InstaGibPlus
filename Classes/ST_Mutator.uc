@@ -28,6 +28,8 @@ var Pawn Asses[64];			// Team*16, Who assisted in a cap
 var int AssCount[4];			// How many assisted.
 var Pawn NextCTFVictim;			// The Guy that just got killed who had flag
 
+var ST_HitTestHelper HitTestHelper;
+
 var WeaponSettings WeaponSettings;
 var WeaponSettingsRepl WSettingsRepl;
 
@@ -797,6 +799,7 @@ function PreBeginPlay()
  	Level.Game.RegisterMessageMutator(Self);
 
 	Class'bbCHSpectator'.Default.cStat = Class'ST_PureStatsSpec';
+	HitTestHelper = Spawn(class'ST_HitTestHelper');
 
 	InitializeSettings();
 
@@ -902,6 +905,56 @@ function bool ReplaceWith(actor Other, string aClassName)
 		return true;
 	}
 	return false;
+}
+
+final function EnhancedHurtRadius(
+	Actor  Source,
+	float  DamageAmount,
+	float  DamageRadius,
+	name   DamageName,
+	float  Momentum,
+	vector HitLocation,
+	optional bool bIsRazor2Alt
+) {
+	local actor Victim;
+	local float damageScale, dist;
+	local vector dir;
+
+	if (Source.bHurtEntry)
+		return;
+
+	Source.bHurtEntry = true;
+	foreach Source.RadiusActors(class'Actor', Victim, DamageRadius + Source.CollisionRadius) {
+		if (Victim == self)
+			continue;
+
+		if (FastTrace(Victim.Location, Source.Location) == false) {
+			if (Victim.IsA('Pawn') == false)
+				continue;
+			// give Pawns a second chance to be hit
+			HitTestHelper.SetLocation(Source.Location);
+			HitTestHelper.FlyTowards(Victim.Location, DamageRadius);
+			if (FastTrace(Victim.Location, HitTestHelper.Location) == false)
+				continue;
+		}
+
+		dir = Victim.Location - HitLocation;
+		dist = FMax(1.0,VSize(dir));
+		dir = dir/dist;
+
+		if (bIsRazor2Alt)
+			dir.Z = FMin(0.45, dir.Z);
+
+		damageScale = 1 - FMax(0,(dist - Victim.CollisionRadius)/DamageRadius);
+		Victim.TakeDamage(
+			damageScale * DamageAmount,
+			Source.Instigator,
+			Victim.Location - 0.5 * (Victim.CollisionHeight + Victim.CollisionRadius) * dir,
+			(damageScale * Momentum * dir),
+			DamageName
+		);
+	}
+	Source.bHurtEntry = false;
 }
 
 defaultproperties {

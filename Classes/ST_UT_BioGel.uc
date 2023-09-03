@@ -33,12 +33,22 @@ function Timer()
 		Base.TakeDamage( Damage, instigator, Location, MomentumTransfer * Normal(Velocity), MyDamageType);
 
 	STM.PlayerHit(Instigator, 4, bDirect);		// 4 = Bio.
-	HurtRadius(
-		Damage * DrawScale,
-		FMin(STM.WeaponSettings.BioHurtRadiusMax, DrawScale * STM.WeaponSettings.BioHurtRadiusBase),
-		MyDamageType,
-		MomentumTransfer * DrawScale,
-		Location);
+	if (STM.WeaponSettings.bEnableEnhancedSplashBio) {
+		STM.EnhancedHurtRadius(
+			self,
+			Damage * DrawScale,
+			FMin(STM.WeaponSettings.BioHurtRadiusMax, DrawScale * STM.WeaponSettings.BioHurtRadiusBase),
+			MyDamageType,
+			MomentumTransfer * DrawScale,
+			Location);
+	} else {
+		HurtRadius(
+			Damage * DrawScale,
+			FMin(STM.WeaponSettings.BioHurtRadiusMax, DrawScale * STM.WeaponSettings.BioHurtRadiusBase),
+			MyDamageType,
+			MomentumTransfer * DrawScale,
+			Location);
+	}
 	STM.PlayerClear();
 	Destroy();	
 }

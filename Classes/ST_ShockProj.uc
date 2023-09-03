@@ -28,12 +28,22 @@ function SuperExplosion()	// aka, combo.
 	STM.PlayerUnfire(Instigator, 6);			// 6 = Shock Ball -> remove this
 	STM.PlayerFire(Instigator, 7);				// 7 = Shock Combo -> Instigator gets +1 Combo
 	STM.PlayerHit(Instigator, 7, Instigator.Location == StartLocation);	// 7 = Shock Combo, bSpecial if Standstill.
-	HurtRadius(
-		STM.WeaponSettings.ShockComboDamage,
-		STM.WeaponSettings.ShockComboHurtRadius,
-		MyDamageType,
-		STM.WeaponSettings.ShockComboMomentum*MomentumTransfer*2,
-		Location);
+	if (STM.WeaponSettings.bEnableEnhancedSplashCombo) {
+		STM.EnhancedHurtRadius(
+			self,
+			STM.WeaponSettings.ShockComboDamage,
+			STM.WeaponSettings.ShockComboHurtRadius,
+			MyDamageType,
+			STM.WeaponSettings.ShockComboMomentum * MomentumTransfer * 2,
+			Location);
+	} else {
+		HurtRadius(
+			STM.WeaponSettings.ShockComboDamage,
+			STM.WeaponSettings.ShockComboHurtRadius,
+			MyDamageType,
+			STM.WeaponSettings.ShockComboMomentum * MomentumTransfer * 2,
+			Location);
+	}
 	STM.PlayerClear();
 	
 	Spawn(Class'ut_ComboRing',,'',Location, Instigator.ViewRotation);
@@ -46,12 +56,22 @@ function Explode(vector HitLocation,vector HitNormal)
 {
 	PlaySound(ImpactSound, SLOT_Misc, 0.5,,, 0.5+FRand());
 	STM.PlayerHit(Instigator, 6, False);	// 6 = Shock Ball
-	HurtRadius(
-		STM.WeaponSettings.ShockProjectileDamage,
-		STM.WeaponSettings.ShockProjectileHurtRadius,
-		MyDamageType,
-		STM.WeaponSettings.ShockProjectileMomentum*MomentumTransfer,
-		Location);
+	if (STM.WeaponSettings.bEnableEnhancedSplash) {
+		STM.EnhancedHurtRadius(
+			self,
+			STM.WeaponSettings.ShockProjectileDamage,
+			STM.WeaponSettings.ShockProjectileHurtRadius,
+			MyDamageType,
+			STM.WeaponSettings.ShockProjectileMomentum * MomentumTransfer,
+			Location);
+	} else {
+		HurtRadius(
+			STM.WeaponSettings.ShockProjectileDamage,
+			STM.WeaponSettings.ShockProjectileHurtRadius,
+			MyDamageType,
+			STM.WeaponSettings.ShockProjectileMomentum * MomentumTransfer,
+			Location);
+	}
 	STM.PlayerClear();
 	if (STM.WeaponSettings.ShockProjectileDamage > 60)
 		Spawn(class'ut_RingExplosion3',,, HitLocation+HitNormal*8,rotator(HitNormal));

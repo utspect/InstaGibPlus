@@ -4264,7 +4264,7 @@ function xxReplicateMove(
 	RealDelta = PendingMove.Delta / Level.TimeDilation;
 
 	NetStatsElem.LocationError = VSize(IGPlus_AdjustLocationOffset * AdjustAlpha);
-	NetStatsElem.UnconfirmedTime = (Level.TimeSeconds - SavedMoves.TimeStamp) / Level.TimeDilation;
+	NetStatsElem.UnconfirmedTime = (Level.TimeSeconds - CurrentTimeStamp) / Level.TimeDilation;
 
 	if (RealDelta < TimeBetweenNetUpdates - ClientUpdateTime && CanMergeMove(NewMove, OldAccel))
 		return;

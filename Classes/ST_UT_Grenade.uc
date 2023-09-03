@@ -29,12 +29,22 @@ function Explosion(vector HitLocation)
 function BlowUp(vector HitLocation)
 {
 	STM.PlayerHit(Instigator, 17, !bCanHitOwner);	// bCanHitOwner is set to True after the Grenade has bounced once. Neat hax
-	HurtRadius(
-		STM.WeaponSettings.GrenadeDamage,
-		STM.WeaponSettings.GrenadeHurtRadius,
-		MyDamageType,
-		STM.WeaponSettings.GrenadeMomentum * MomentumTransfer,
-		HitLocation);
+	if (STM.WeaponSettings.bEnableEnhancedSplash) {
+		STM.EnhancedHurtRadius(
+			self,
+			STM.WeaponSettings.GrenadeDamage,
+			STM.WeaponSettings.GrenadeHurtRadius,
+			MyDamageType,
+			STM.WeaponSettings.GrenadeMomentum * MomentumTransfer,
+			HitLocation);
+	} else {
+		HurtRadius(
+			STM.WeaponSettings.GrenadeDamage,
+			STM.WeaponSettings.GrenadeHurtRadius,
+			MyDamageType,
+			STM.WeaponSettings.GrenadeMomentum * MomentumTransfer,
+			HitLocation);
+	}
 	STM.PlayerClear();
 	MakeNoise(1.0);
 }

@@ -20,12 +20,22 @@ function NewExplode(vector HitLocation, vector HitNormal, bool bDirect)
 	local ST_UTChunkInfo CI;
 
 	STM.PlayerHit(Instigator, 15, bDirect);		// 15 = Flak Slug
-	HurtRadius(
-		STM.WeaponSettings.FlakSlugDamage,
-		STM.WeaponSettings.FlakSlugHurtRadius,
-		'FlakDeath',
-		STM.WeaponSettings.FlakSlugMomentum * MomentumTransfer,
-		HitLocation);
+	if (STM.WeaponSettings.bEnableEnhancedSplash) {
+		STM.EnhancedHurtRadius(
+			self,
+			STM.WeaponSettings.FlakSlugDamage,
+			STM.WeaponSettings.FlakSlugHurtRadius,
+			'FlakDeath',
+			STM.WeaponSettings.FlakSlugMomentum * MomentumTransfer,
+			HitLocation);
+	} else {
+		HurtRadius(
+			STM.WeaponSettings.FlakSlugDamage,
+			STM.WeaponSettings.FlakSlugHurtRadius,
+			'FlakDeath',
+			STM.WeaponSettings.FlakSlugMomentum * MomentumTransfer,
+			HitLocation);
+	}
 	STM.PlayerClear();				// Damage is given now.
 	start = Location + 10 * HitNormal;
  	Spawn( class'ut_FlameExplosion',,,Start);

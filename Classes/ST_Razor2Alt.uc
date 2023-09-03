@@ -55,37 +55,45 @@ auto state Flying
 		local actor Victims;
 		local float damageScale, dist;
 		local vector dir;
-		local float HurtRadius;
 
-		if( bHurtEntry )
-			return;
+		if (STM.WeaponSettings.bEnableEnhancedSplash) {
+			STM.PlayerHit(Instigator, 12, False);		// 12 = Ripper Secondary
+			STM.EnhancedHurtRadius(
+				self,
+				STM.WeaponSettings.RipperSecondaryDamage,
+				STM.WeaponSettings.RipperSecondaryHurtRadius,
+				MyDamageType,
+				STM.WeaponSettings.RipperSecondaryMomentum * MomentumTransfer,
+				HitLocation,
+				True); // special case for Razor2Alt
+			STM.PlayerClear();
+		} else {
+			if( bHurtEntry )
+				return;
 
-		HurtRadius = STM.WeaponSettings.RipperSecondaryHurtRadius;
-		bHurtEntry = true;
-		foreach VisibleCollidingActors( class 'Actor', Victims, HurtRadius, HitLocation )
-		{
-			// Comment:
-			// Ripper secondary makes no sense. All other Splash weapons use HurtRadius. Why this difference?
-			// The clue is the dir.Z = FMin(0.45, dir.Z), which ensures a nasty boost in speed in the Z direction!
-			if( Victims != self )
+			bHurtEntry = true;
+			foreach VisibleCollidingActors( class 'Actor', Victims, STM.WeaponSettings.RipperSecondaryHurtRadius, HitLocation )
 			{
-				dir = Victims.Location - HitLocation;
-				dist = FMax(1,VSize(dir));
-				dir = dir/dist;
-				dir.Z = FMin(0.45, dir.Z); 
-				damageScale = 1 - FMax(0,(dist - Victims.CollisionRadius)/HurtRadius);
-				STM.PlayerHit(Instigator, 12, False);		// 12 = Ripper Secondary
-				Victims.TakeDamage (
-					damageScale * STM.WeaponSettings.RipperSecondaryDamage,
-					Instigator, 
-					Victims.Location - 0.5 * (Victims.CollisionHeight + Victims.CollisionRadius) * dir,
-					STM.WeaponSettings.RipperSecondaryMomentum * damageScale * MomentumTransfer * dir,
-					MyDamageType
-				);
-				STM.PlayerClear();
-			} 
+				if( Victims != self )
+				{
+					dir = Victims.Location - HitLocation;
+					dist = FMax(1,VSize(dir));
+					dir = dir/dist;
+					dir.Z = FMin(0.45, dir.Z); 
+					damageScale = 1 - FMax(0,(dist - Victims.CollisionRadius)/STM.WeaponSettings.RipperSecondaryHurtRadius);
+					STM.PlayerHit(Instigator, 12, False);		// 12 = Ripper Secondary
+					Victims.TakeDamage (
+						damageScale * STM.WeaponSettings.RipperSecondaryDamage,
+						Instigator, 
+						Victims.Location - 0.5 * (Victims.CollisionHeight + Victims.CollisionRadius) * dir,
+						STM.WeaponSettings.RipperSecondaryMomentum * damageScale * MomentumTransfer * dir,
+						MyDamageType
+					);
+					STM.PlayerClear();
+				} 
+			}
+			bHurtEntry = false;
 		}
-		bHurtEntry = false;
 		MakeNoise(1.0);
 	}
 }
