@@ -950,9 +950,9 @@ final function EnhancedHurtRadius(
 		dir = Normal(Delta);
 
 		if (Abs(Delta.Z) <= Victim.CollisionHeight) {
-			Closest = Victim.Location + dir * Victim.CollisionRadius;
+			Closest = HitLocation + Normal(DeltaXY) * (VSize(DeltaXY) - Victim.CollisionRadius);
 		} else if (VSize(DeltaXY) <= Victim.CollisionRadius) {
-			Closest = Victim.Location + dir * Victim.CollisionHeight;
+			Closest = HitLocation + (Delta.Z - Victim.CollisionHeight) * vect(0.0, 0.0, 1.0);
 		} else {
 			// Closest point must be on the cylinder rims, find out where
 			Closest = Victim.Location + dir * (Source.CollisionRadius / VSize(dir * vect(1.0, 1.0, 0.0)));
