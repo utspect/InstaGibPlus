@@ -922,8 +922,7 @@ final function EnhancedHurtRadius(
 ) {
 	local actor Victim;
 	local float damageScale, dist;
-	local vector Delta, DeltaXY;
-	local vector Closest;
+	local vector Delta;
 	local vector dir;
 
 	if (Source.bHurtEntry)
@@ -937,37 +936,12 @@ final function EnhancedHurtRadius(
 		CollChecker.SetCollision(true, false, false);
 	}
 
-	CollChecker.SetCollisionSize(Source.CollisionRadius + DamageRadius, Source.CollisionRadius + DamageRadius);
+	CollChecker.SetCollisionSize(DamageRadius, DamageRadius);
 	CollChecker.SetLocation(HitLocation);
 
 	foreach CollChecker.TouchingActors(class'Actor', Victim) {
 		if (Victim == self)
 			continue;
-
-		Delta = Victim.Location - HitLocation;
-		DeltaXY = Delta * vect(1.0, 1.0, 0.0);
-		dist = VSize(Delta);
-		dir = Normal(Delta);
-
-		if (Abs(Delta.Z) <= Victim.CollisionHeight) {
-			Closest = HitLocation + Normal(DeltaXY) * (VSize(DeltaXY) - Victim.CollisionRadius);
-		} else if (VSize(DeltaXY) <= Victim.CollisionRadius) {
-			Closest = HitLocation + (Delta.Z - Victim.CollisionHeight) * vect(0.0, 0.0, 1.0);
-		} else {
-			// Closest point must be on the cylinder rims, find out where
-			Closest = Victim.Location + dir * (Source.CollisionRadius / VSize(dir * vect(1.0, 1.0, 0.0)));
-			if (Delta.Z > 0.0)
-				Closest.Z = Victim.Location.Z - Victim.CollisionHeight;
-			else
-				Closest.Z = Victim.Location.Z + Victim.CollisionHeight;
-		}
-
-		Delta = Closest - HitLocation;
-		if (VSize(Delta) > CollChecker.CollisionRadius)
-			continue;
-
-		dist = VSize(Delta);
-		dir = Normal(Delta);
 
 		if (FastTrace(Victim.Location, Source.Location) == false) {
 			if (Victim.IsA('Pawn') == false)
@@ -984,14 +958,20 @@ final function EnhancedHurtRadius(
 				continue;
 		}
 
+		Delta = Victim.Location - HitLocation;
+		dist = VSize(Delta);
+		dir = Normal(Delta);
+
 		if (bIsRazor2Alt)
 			dir.Z = FMin(0.45, dir.Z);
 
-		damageScale = 1 - FMax(0,(dist - Source.CollisionRadius)/DamageRadius);
+		damageScale = FMin(1.0 - (dist - Victim.CollisionRadius)/DamageRadius, 1.0); // apply upper bound to damage
+		if (damageScale <= 0.0)
+			continue;
 		Victim.TakeDamage(
 			damageScale * DamageAmount,
 			Source.Instigator,
-			Closest,
+			Victim.Location - 0.5 * (Victim.CollisionRadius + Victim.CollisionHeight) * dir,
 			(damageScale * Momentum * dir),
 			DamageName
 		);
