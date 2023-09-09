@@ -14,9 +14,11 @@ var config bool bReplaceRocketLauncher;
 var config bool bReplaceSniperRifle;
 var config bool bReplaceWarheadLauncher;
 
-var config bool bEnableEnhancedSplash;
-var config bool bEnableEnhancedSplashBio;
-var config bool bEnableEnhancedSplashCombo;
+var config bool  bEnableEnhancedSplash;
+var config bool  bEnableEnhancedSplashBio;
+var config bool  bEnableEnhancedSplashCombo;
+var config float SplashMaxDiffraction;
+var config float SplashMinDiffractionDistance;
 
 var config float WarheadSelectTime;
 var config float WarheadDownTime;
@@ -148,6 +150,8 @@ defaultproperties
 	bEnableEnhancedSplash=True
 	bEnableEnhancedSplashBio=False
 	bEnableEnhancedSplashCombo=False
+	SplashMaxDiffraction=0.5
+	SplashMinDiffractionDistance=50.0
 
 	WarheadSelectTime=0.5
 	WarheadDownTime=0.233333
