@@ -940,9 +940,9 @@ final function EnhancedHurtRadius(
 	if (CollChecker == none || CollChecker.bDeleteMe) {
 		CollChecker = Spawn(class'ST_HitTestHelper',self, , Source.Location);
 		CollChecker.bCollideWorld = false;
-		CollChecker.SetCollision(true, false, false);
 	}
 
+	CollChecker.SetCollision(true, false, false);
 	CollChecker.SetCollisionSize(DamageRadius, DamageRadius);
 	CollChecker.SetLocation(HitLocation);
 
@@ -1021,6 +1021,8 @@ final function EnhancedHurtRadius(
 			DamageName
 		);
 	}
+
+	CollChecker.SetCollision(false, false, false);
 
 	Source.bHurtEntry = false;
 }
