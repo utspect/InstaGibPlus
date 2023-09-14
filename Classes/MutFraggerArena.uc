@@ -25,9 +25,14 @@ function InitializeSettings() {
 }
 
 function PreBeginPlay() {
-     super.PreBeginPlay();
+    super.PreBeginPlay();
 
-     InitializeSettings();
+    InitializeSettings();
+    if (WeaponSettings.DefaultWeaponClass != "") {
+    	DefaultWeapon = class<Weapon>(DynamicLoadObject(WeaponSettings.DefaultWeaponClass, class'Class', true));
+    	if (DefaultWeapon == none)
+    		DefaultWeapon = default.DefaultWeapon;
+    }
 }
 
 function ModifyPlayer(Pawn Other)

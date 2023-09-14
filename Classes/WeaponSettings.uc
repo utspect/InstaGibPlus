@@ -131,6 +131,8 @@ var config float TranslocatorOutSelectTime;
 var config float TranslocatorDownTime;
 var config float TranslocatorHealth;
 
+var config string DefaultWeaponClass;
+
 defaultproperties
 {
 	bReplaceImpactHammer=True
@@ -263,4 +265,6 @@ defaultproperties
 	TranslocatorOutSelectTime=0.27
 	TranslocatorDownTime=0.212121
 	TranslocatorHealth=65.0
+
+	DefaultWeaponClass=""
 }
