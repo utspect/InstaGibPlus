@@ -73,6 +73,7 @@ var config bool  bPlayersAlwaysRelevant;
 var config bool  bEnablePingCompensatedSpawn;
 var config bool  bEnableJitterBounding;
 var config bool  bEnableWarpFix;
+var config bool  bEnableCarcassCollision;
 var config bool  ShowTouchedPackage;
 
 //Add the maplist where kickers will work using normal network
@@ -184,4 +185,5 @@ defaultproperties
 	bEnablePingCompensatedSpawn=True
 	bEnableJitterBounding=False
 	bEnableWarpFix=True
+	bEnableCarcassCollision=True
 }

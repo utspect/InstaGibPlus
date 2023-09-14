@@ -102,6 +102,8 @@ function PlayDecap()
 			carc.RemoteRole = ROLE_SimulatedProxy;
 			carc.Velocity = Velocity + VSize(Velocity) * VRand();
 			carc.Velocity.Z = FMax(carc.Velocity.Z, Velocity.Z);
+			if (zzUTPure.Settings.bEnableCarcassCollision == false)
+				carc.SetCollision(false, false, false);
 		}
 	}
 }

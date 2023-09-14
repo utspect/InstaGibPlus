@@ -961,9 +961,10 @@ Server settings can be found inside InstaGibPlus.ini.
 62. [bEnableJitterBounding](#benablejitterbounding)
 63. [bEnableWarpFix](#benablewarpfix)
 64. [WarpFixDelay](#warpfixdelay)
-65. [ShowTouchedPackage](#showtouchedpackage)
-66. [ExcludeMapsForKickers](#excludemapsforkickers)
-67. [ForcedSettings](#forcedsettings)
+65. [bEnableCarcassCollision](#benablecarcasscollision)
+66. [ShowTouchedPackage](#showtouchedpackage)
+67. [ExcludeMapsForKickers](#excludemapsforkickers)
+68. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1511,6 +1512,13 @@ Each entry can be used to force a setting on clients:
   * `0` ➜ Initial only
   * `1` ➜ Always, but reset after leaving server
   * `2` ➜ Always, but don't reset (should not be used)
+
+## bEnableCarcassCollision
+
+**Type: bool**  
+**Default: True**  
+
+If True, carcasses left by dead players have collision. If false, carcasses will no longer explode into chunks upon death and will not have collision.
 
 # Building
 
