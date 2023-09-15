@@ -14,6 +14,11 @@ auto state Pickup {
 		if (Master != none && Master.Owner != none && Master.Owner.IsA('bbPlayer'))
 			bbPlayer(Master.Owner).ClientDebugMessage("TTarget took"@Damage@"damage (Total"@int(Disruption)$")");
 	}
+
+	singular function Touch(Actor Other) {
+		if (Other.IsA('ST_HitTestHelper') == false)
+			super.Touch(Other);
+	}
 }
 
 defaultproperties {
