@@ -1009,6 +1009,7 @@ final function EnhancedHurtRadius(
 		damageScale = FMin(1.0 - dist/DamageRadius, 1.0); // apply upper bound to damage
 		damageScale *= (1.0 - DamageDiffraction);
 		MomentumScale = FClamp(1.0 - (VSize(MomentumDelta) - Victim.CollisionRadius)/DamageRadius, 0.0, 1.0);
+		MomentumScale *= (1.0 - DamageDiffraction);
 
 		if (damageScale <= 0.0)
 			continue;
