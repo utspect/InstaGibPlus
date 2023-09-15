@@ -1518,7 +1518,7 @@ Each entry can be used to force a setting on clients:
 **Type: bool**  
 **Default: True**  
 
-If True, carcasses left by dead players have collision. If false, carcasses will no longer explode into chunks upon death and will not have collision.
+If True, carcasses left by dead players have collision. If false, carcasses will not have collision.
 
 # Building
 
