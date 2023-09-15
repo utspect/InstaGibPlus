@@ -1281,12 +1281,16 @@ function xxDied(pawn zzP)
 		Level.Game.DiscardInventory(zzP);
 
 		Velocity.Z *= 1.3;
+		zzP.PlayDying('Suicided', zzP.Location);
 		if ( zzP.Gibbed('Suicided') )
 		{
 			zzP.SpawnGibbedCarcass();
 			zzP.HidePlayer();
 		}
-		zzP.PlayDying('Suicided', zzP.Location);
+		else
+		{
+			zzP.SetCollision(false, false, false);
+		}
 
 		if ( zzP.RemoteRole == ROLE_AutonomousProxy )
 			zzP.ClientDying('Suicided', zzP.Location);

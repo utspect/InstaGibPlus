@@ -5475,7 +5475,8 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 	if (Weapon.IsA('TournamentWeapon'))
 		TournamentWeapon(Weapon).bCanClientFire = false;
 	Velocity.Z *= 1.3;
-	if (Gibbed(damageType)) {
+	PlayDying(DamageType, HitLocation);
+	if (Gibbed(DamageType)) {
 		SpawnGibbedCarcass();
 		if ( bIsPlayer )
 			HidePlayer();
@@ -5484,7 +5485,6 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 	} else if (zzUTPure.Settings.bEnableCarcassCollision == false) {
 		SetCollision(false, false, false);
 	}
-	PlayDying(DamageType, HitLocation);
 	if ( Level.Game.bGameEnded )
 		return;
 
@@ -6576,8 +6576,10 @@ state Dying
 		if ( (Role == ROLE_Authority) && !bHidden ) {
 			bHidden = true;
 			C = SpawnCarcass();
-			if (C != none)
+			if (C != none) {
 				C.LifeSpan = 30.0;
+				C.SetCollision(false, false, false);
+			}
 			if ( bIsPlayer )
 				HidePlayer();
 			else
