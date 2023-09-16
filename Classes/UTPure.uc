@@ -224,7 +224,7 @@ function PostBeginPlay()
 
 	Spawn(class'NN_SpawnNotify');
 	Spawn(class'IGPlus_UnlagPause');
-	Spawn(class'IGPlus_CarcassSpawnNotify').Settings = Settings;
+	Spawn(class'IGPlus_CarcassSpawnNotify').bEnableCarcassCollision = Settings.bEnableCarcassCollision;
 
 	if (Settings.NNAnnouncer)
 		Spawn(class'NNAnnouncerSA');

@@ -1,9 +1,14 @@
 class IGPlus_CarcassSpawnNotify extends SpawnNotify;
 
-var ServerSettings Settings;
+var bool bEnableCarcassCollision;
+
+replication {
+	reliable if (Role == ROLE_Authority)
+		bEnableCarcassCollision;
+}
 
 simulated event Actor SpawnNotification(Actor A) {
-	if (Settings.bEnableCarcassCollision == false) {
+	if (bEnableCarcassCollision == false) {
 		A.SetCollision(false, false, false);
 		A.bProjTarget = false;
 	}
@@ -11,6 +16,7 @@ simulated event Actor SpawnNotification(Actor A) {
 }
 
 defaultproperties {
+	bEnableCarcassCollision=True
 	RemoteRole=ROLE_SimulatedProxy
 	ActorClass=class'Carcass'
 }
