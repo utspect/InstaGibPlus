@@ -167,7 +167,7 @@ Any value below zero disables forcing models. For example, if you set [DesiredSk
 
 ## bSkinEnemyUseIndexMap
 **Type: bool**  
-**Default: False**
+**Default: False**  
 
 * `False` ➜ Assign each enemy `DesiredSkin` or `DesiredSkinFemale`
 * `True` ➜ Assigns each enemy a different skin, according to that players index into [SkinEnemyIndexMap](#skinenemyindexmap)
@@ -181,7 +181,7 @@ Any value below zero disables forcing models. For example, if you set [DesiredSk
 
 ## bUnlitSkins
 **Type: bool**  
-**Default: True**
+**Default: True**  
 
 If `True`, player skins will not be affected by surrounding lighting, usually making them brighter.
 
@@ -255,11 +255,13 @@ Specifies sounds that can be played.
 
 If `True`, automatically create a screenshot at the end of a match.
 If `False`, no screenshot is automatically created.
+
 ## bAutoDemo
 **Type: bool**  
 **Default: False**  
 
 If `True`, automatically start recording a demo when the game starts.
+
 ## DemoMask
 **Type: string**  
 **Default: %l\_\[%y\_%m\_%d\_%t\]\_\[%c\]\_%e**  
@@ -325,18 +327,21 @@ If `True`, hides your own SuperShockRifle beams, no matter the value of [cShockB
 **Type: float**  
 **Default: 0.45**  
 
-Visuals for the beam are scaled with this factor
+Visuals for the beam are scaled with this factor.
+
 ## BeamFadeCurve
 **Type: float**  
 **Default: 4.0**  
 
-Exponent of the polynomial curve the beam's visuals decay with
+Exponent of the polynomial curve the beam's visuals decay with.
+
 ## BeamDuration
 **Type: float**  
 **Default: 0.75**  
 **Unit: s**  
 
 The time the beam's visuals decay over.
+
 ## BeamOriginMode
 **Type: int**  
 **Default: 0**  
@@ -401,6 +406,7 @@ Higher values result in less frequent acknowledgements which can result in degra
 The default mouse input smoothing algorithm always smears input over at least two frames, half the input being applied on one frame, the other half on the next frame. If set to `True`, the game will always apply all input on the current frame. If set to `False`, the default algorithm will be used.
 
 This is a backport from UT99 client version 469, where the equivalent setting is called bNoMouseSmoothing.
+
 ## bLogClientMessages
 **Type: bool**  
 **Default: True**  
@@ -411,11 +417,13 @@ Causes all ClientMessages to be logged, if set to `True`
 **Default: False**  
 
 Causes IG+ to write movement debugging events to console/demo, depending on whether debug data is enabled at the moment (see [EnableDebugData](#enabledebugdata))
+
 ## bEnableKillCam
 **Type: bool**  
 **Default: False**  
 
 KillCam follows the player that killed you for two seconds.
+
 ## MinDodgeClickTime
 **Type: float**  
 **Default: 0.0**  
@@ -432,6 +440,7 @@ A players view is defined by yaw and pitch, which are quantized to 65536 degrees
 
 If `True`, two successive inputs of 1.5° change in yaw result in a 2° turn (int(1.5) + int(1.5) = 1 + 1 = 2).
 If `False`, two successive inputs of 1.5° change in yaw result in a 3° turn.
+
 ## SmoothVRController
 **Type: PIDControllerSettings**  
 **Default: (p=0.09,i=0.05,d=0.00)**  
@@ -496,13 +505,13 @@ If `True`, you ready up when spawning for the first time during warmup. If `Fals
 
 ## bShowDeathReport
 **Type: bool**  
-**Default: False** 
+**Default: False**  
 
 If `True`, show a report of damage taken that lead to death. The report starts from the last time you gained health or armor.
 
 ## bSmoothFOVChanges
 **Type: bool**  
-**Default: False** 
+**Default: False**  
 
 If `True`, smooth changes to your FOV, which can happen when spawning, teleporting or zooming.  
 If `False`, your FOV immediately changes to the desired FOV without a smooth transition.
@@ -552,19 +561,19 @@ Which scope the FraggerRifle uses when zoming.
 
 ## bEnableNetStats
 **Type: bool**  
-**Default: False** 
+**Default: False**  
 
 If `True`, shows a graph containing statistics related to the netcode. for simulated game-time still unconfirmed by server (top), as well as a graph for the distance players are away from where the server has them (bottom).
 
 ## bNetStatsUnconfirmedTime
-**Type: bool**
-**Default: True**
+**Type: bool**  
+**Default: True**  
 
 If `True`, shows the netstats graph of the amount of simulated game-time still unconfirmed by the server. This graph will always be at the top.
 
 ## bNetStatsLocationError
-**Type: bool**
-**Default: True**
+**Type: bool**  
+**Default: True**  
 
 If `True`, the netstats graph will show the distance players are away from where the server has them.
 
@@ -581,20 +590,20 @@ Horizontal position of the netstats graph. Left edge of screen is 0. Right edge 
 Vertical position of the netstats graph. Top of screen is 0. Bottom of screen is 1.
 
 ## NetStatsWidth
-**Type: int**
-**Default: 511**
+**Type: int**  
+**Default: 511**  
 
 Controls how wide the netstats graph is in pixel. Maximum value is 511. Each pixel represents a single frame rendered.
 
 ## bEnableHitMarker
 **Type: bool**  
-**Default: False** 
+**Default: False**  
 
 If `True`, plays an animation on the hud whenever you damage an enemy.
 
 ## bEnableTeamHitMarker
 **Type: bool**  
-**Default: False** 
+**Default: False**  
 
 If `True`, plays an animation on the hud whenever you damage a teammate.
 
@@ -615,7 +624,7 @@ Note that transparency is based on color brightness, and black is completely tra
 
 ## HitMarkerTeamColor
 **Type: color**  
-**Default: (R=0,G=0,B=255,A=255)** 
+**Default: (R=0,G=0,B=255,A=255)**  
 
 The color of the HitMarker when damaging teammates. Fades over [HitMarkerDuration](#hitmarkerduration) to completely transparent.
 
@@ -624,21 +633,21 @@ Note that transparency is based on color brightness, and black is completely tra
 ## HitMarkerSize
 **Type: float**  
 **Default: 128.0**  
-**Unit: pixel** 
+**Unit: pixel**  
 
 The length of the arrows that the HitMarker places on screen.
 
 ## HitMarkerOffset
 **Type: float**  
 **Default: 32.0**  
-**Unit: pixel** 
+**Unit: pixel**  
 
 How far away from the center of the screen the arrows are placed.
 
 ## HitMarkerDuration
 **Type: float**  
 **Default: 0.3**  
-**Unit: seconds** 
+**Unit: seconds**  
 
 How long the HitMarker stays on screen. Negative values effectively disable HitMarker.
 
@@ -650,7 +659,7 @@ How quickly the HitMarker becomes transparent. Higher values mean sharper drop-o
 
 ## HitMarkerSource
 **Type: EHitMarkerSource**  
-**Default: HMSRC_Server** 
+**Default: HMSRC_Server**  
 
 * `HMSRC_Server` ➜ HitMarkers are triggered server-side, accurate but delayed by ping
 * `HMSRC_Client` ➜ HitMarkers are triggered client-side, inaccurate but instant
@@ -1493,8 +1502,8 @@ If True, players are able to see their own flags through walls if those flags ar
 
 ## ForcedSettings
 
-**Type: ForcedSettingsEntry\[128\]**
-**Default: (Key="",Value="",Mode=0)**
+**Type: ForcedSettingsEntry\[128\]**  
+**Default: (Key="",Value="",Mode=0)**  
 
 Type `ForcedSettingsEntry` is defined like this:  
 ```unrealscript
