@@ -7127,10 +7127,7 @@ function int GetForcedSkinForPlayer(PlayerReplicationInfo PRI) {
 		if (Settings.bSkinEnemyUseIndexMap) {
 			bbPRI = bbPlayerReplicationInfo(PRI);
 			if (bbPRI != none && bbPRI.SkinIndex >= 0) {
-				if (GameReplicationInfo.bTeamGame)
-					return Settings.SkinEnemyIndexMap[(bbPRI.Team << 4) + bbPRI.SkinIndex];
-				else
-					return Settings.SkinEnemyIndexMap[bbPRI.SkinIndex];
+				return Settings.SkinEnemyIndexMap[bbPRI.SkinIndex];
 			}
 		}
 		if (PRI.bIsFemale) {
