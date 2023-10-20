@@ -442,7 +442,6 @@ replication
 		xxClientSwJumpPad,
 		xxSetDefaultWeapon,
 		xxSetPendingWeapon,
-		xxSetSniperSpeed,
 		xxSetTeleRadius,
 		xxSetTimes;
 
@@ -1099,7 +1098,6 @@ event Possess()
 
 		BrightskinMode = zzUTPure.Settings.BrightskinMode;
 
-		xxSetSniperSpeed(zzUTPure.Settings.SniperSpeed);
 		xxSetDefaultWeapon(Level.Game.BaseMutator.MutatedDefaultWeapon().name);
 
 		GameReplicationInfo.RemainingTime = DeathMatchPlus(Level.Game).RemainingTime;
@@ -3790,11 +3788,6 @@ simulated function xxSetTeleRadius(int newRadius)
 simulated function xxSetDefaultWeapon(name W)
 {
 	zzDefaultWeapon = W;
-}
-
-simulated function xxSetSniperSpeed(float SniperSpeed)
-{
-	zzUTPure.Settings.SniperSpeed = SniperSpeed;
 }
 
 simulated function xxSetTimes(int RemainingTime, int ElapsedTime)
