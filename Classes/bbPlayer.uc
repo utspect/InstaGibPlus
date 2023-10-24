@@ -49,6 +49,7 @@ var bool	zzbGotDemoPlaybackSpec;
 var CHSpectator zzDemoPlaybackSpec;
 var bbClientDemoSN zzDemoPlaybackSN;
 var bool bDemoStarted;
+var float IGPlus_GameEndedTime;
 
 // Stuff
 var float	zzDesiredFOV;		// Needed ?
@@ -6943,8 +6944,12 @@ function xxPlayerTickEvents(float DeltaTime)
 
 	if (!bDemoStarted && zzbGameStarted && (zzbForceDemo || Settings.bAutoDemo && (DeathMatchPlus(Level.Game) == none || DeathMatchPlus(Level.Game).CountDown < 1)))
 		xxClientDemoRec();
-	if (bDemoStarted && GameReplicationInfo.GameEndedComments != "" && (zzbForceDemo || Settings.bAutoDemo))
-		ConsoleCommand("StopDemo");
+	if (bDemoStarted && (zzbForceDemo || Settings.bAutoDemo) && GameReplicationInfo.GameEndedComments != "") {
+		if (IGPlus_GameEndedTime == 0)
+			IGPlus_GameEndedTime = Level.TimeSeconds;
+		else if (Level.TimeSeconds >= IGPlus_GameEndedTime + 2.0)
+			ConsoleCommand("StopDemo");
+	}
 }
 
 static function SetForcedSkin(Actor SkinActor, int selectedSkin, bool bTeamGame, int TeamNum) {
