@@ -6114,6 +6114,7 @@ ignores SeePlayer, HearNoise, Bump;
 			GetAnimGroup(AnimSequence) != 'Dodge' &&
 			GetAnimGroup(AnimSequence) != 'Jumping')
 		{
+			bDodging = false;
 			DodgeDir = DODGE_None;
 			DodgeClickTimer = DodgeClickTime;
 		}	
