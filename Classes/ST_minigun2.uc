@@ -341,7 +341,9 @@ simulated function PlaySelect() {
 	bCanClientFire = false;
 	if ( !IsAnimating() || (AnimSequence != 'Select') )
 		PlayAnim('Select',GetWeaponSettings().MinigunSelectAnimSpeed(),0.0);
-	Owner.PlaySound(SelectSound, SLOT_Misc, Pawn(Owner).SoundDampening);	
+	Owner.PlaySound(SelectSound, SLOT_Misc, Pawn(Owner).SoundDampening);
+
+	AmbientSound = none;
 }
 
 simulated function TweenDown() {
