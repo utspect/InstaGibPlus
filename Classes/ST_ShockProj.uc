@@ -11,6 +11,8 @@ var ST_Mutator STM;
 // For Standstill combo Special
 var vector StartLocation;
 
+var PlayerPawn InstigatingPlayer;
+
 simulated function PostBeginPlay()
 {
 	if (ROLE == ROLE_Authority)
@@ -21,6 +23,28 @@ simulated function PostBeginPlay()
 	}
 
 	Super.PostBeginPlay();
+}
+
+simulated function PostNetBeginPlay()
+{
+	local PlayerPawn In;
+	super.PostNetBeginPlay();
+
+	In = PlayerPawn(Instigator);
+	if (In == none || In.Player == none || In.Player.IsA('Viewport') == false)
+		return;
+
+	InstigatingPlayer = In;
+}
+
+simulated event Tick(float Delta) {
+	super.Tick(Delta);
+
+	if (InstigatingPlayer == none)
+		return;
+
+	if (OldLocation == Location)
+		MoveSmooth(Velocity * (0.001 * InstigatingPlayer.PlayerReplicationInfo.Ping));
 }
 
 function SuperExplosion()	// aka, combo.
