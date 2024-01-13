@@ -9,7 +9,8 @@ class ST_SniperRifle extends SniperRifle;
 var ST_Mutator STM;
 
 enum EZoomState {
-	ZS_None,
+	ZS_Locked,
+	ZS_Idle,
 	ZS_Zooming,
 	ZS_Zoomed,
 	ZS_Reset
@@ -145,6 +146,10 @@ simulated function PlaySelect() {
 	if ( !IsAnimating() || (AnimSequence != 'Select') )
 		PlayAnim('Select',GetWeaponSettings().SniperSelectAnimSpeed(),0.0);
 	Owner.PlaySound(SelectSound, SLOT_Misc, Pawn(Owner).SoundDampening);	
+
+	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
+		ZoomState = ZS_Idle;
+	}
 }
 
 simulated function TweenDown() {
@@ -160,7 +165,7 @@ simulated function TweenDown() {
 		PlayAnim('Down', GetWeaponSettings().SniperDownAnimSpeed(), TweenTime);
 
 	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
-		ZoomState = ZS_None;
+		ZoomState = ZS_Locked;
 		PlayerPawn(Owner).EndZoom();
 	}
 }
@@ -178,37 +183,41 @@ simulated function bool ClientAltFire(float Value) {
 }
 
 simulated function Tick(float DeltaTime) {
+	local PlayerPawn P;
 	if (Owner != none &&
 		Owner.IsA('PlayerPawn') &&
 		bCanClientFire
 	) {
+		P = PlayerPawn(Owner);
 		switch (ZoomState) {
-		case ZS_None:
+		case ZS_Locked:
+			break;
+		case ZS_Idle:
 			if (Pawn(Owner).bAltFire != 0) {
-				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
-					PlayerPawn(Owner).StartZoom();
+				if (P.Player.IsA('ViewPort'))
+					P.StartZoom();
 				SetTimer(0.2, true);
 				ZoomState = ZS_Zooming;
 			}
 			break;
 		case ZS_Zooming:
 			if (Pawn(Owner).bAltFire == 0) {
-				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
-					PlayerPawn(Owner).StopZoom();
+				if (P.Player.IsA('ViewPort'))
+					P.StopZoom();
 				ZoomState = ZS_Zoomed;
 			}
 			break;
 		case ZS_Zoomed:
 			if (Pawn(Owner).bAltFire != 0) {
-				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
-					PlayerPawn(Owner).EndZoom();
+				if (P.Player.IsA('ViewPort'))
+					P.EndZoom();
 				SetTimer(0.0, false);
 				ZoomState = ZS_Reset;
 			}
 			break;
 		case ZS_Reset:
 			if (Pawn(Owner).bAltFire == 0) {
-				ZoomState = ZS_None;
+				ZoomState = ZS_Idle;
 			}
 			break;
 		}
