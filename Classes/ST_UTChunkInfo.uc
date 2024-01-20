@@ -18,6 +18,7 @@ function AddChunk(ST_UTChunk Chunk)
 		return;				// If it for some reason failed to spawn.
 	Chunk.Chunkie = Self;
 	Chunk.ChunkIndex = ChunkCount++;
+	Chunk.LifeSpan = STM.WeaponSettings.FlakChunkLifespan;
 	STM.PlayerFire(Pawn(Owner), 14);	// Register that this player has made a new flak chunk.
 }
 

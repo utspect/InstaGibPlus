@@ -28,7 +28,7 @@ function ProcessTouch (Actor Other, vector HitLocation)
 			{
 				Chunkie.HitSomething(Self, Other);
 				Other.TakeDamage(
-					Chunkie.STM.WeaponSettings.FlakChunkDamage,
+					CalcDamage(),
 					instigator,
 					HitLocation,
 					Chunkie.STM.WeaponSettings.FlakChunkMomentum * (MomentumTransfer * Velocity/speed),
@@ -40,6 +40,26 @@ function ProcessTouch (Actor Other, vector HitLocation)
 		}
 		Destroy();
 	}
+}
+
+function float CalcDamage() {
+	local float Base, Reduced;
+	local float T1, T2;
+	local float Time;
+
+	Base = Chunkie.STM.WeaponSettings.FlakChunkDamage;
+	Reduced = Base * Chunkie.STM.WeaponSettings.FlakChunkDropOffDamageRatio;
+	T1 = Chunkie.STM.WeaponSettings.FlakChunkDropOffStart;
+	T2 = Chunkie.STM.WeaponSettings.FlakChunkDropOffEnd;
+	Time = Chunkie.STM.WeaponSettings.FlakChunkLifespan - Lifespan;
+
+	if (Time <= T1)
+		return Base;
+
+	if (Time >= T2)
+		return Reduced;
+
+	return Lerp((Time - T1) / (T2 - T1), Base, Reduced);
 }
 
 
