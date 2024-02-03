@@ -182,6 +182,22 @@ simulated function bool ClientAltFire(float Value) {
 	return true;
 }
 
+simulated function ForceClientFire() {
+	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
+		ZoomState = ZS_Idle;
+	}
+
+	super.ForceClientFire();
+}
+
+simulated function ForceClientAltFire() {
+	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
+		ZoomState = ZS_Idle;
+	}
+
+	super.ForceClientAltFire();
+}
+
 simulated function Tick(float DeltaTime) {
 	local PlayerPawn P;
 	if (Owner != none &&
@@ -221,6 +237,30 @@ simulated function Tick(float DeltaTime) {
 			}
 			break;
 		}
+	}
+}
+
+state ClientActive {
+	simulated function ForceClientFire()
+	{
+		Global.ForceClientFire();
+	}
+
+	simulated function ForceClientAltFire()
+	{
+		Global.ForceClientAltFire();
+	}
+}
+
+state ClientDown {
+	simulated function ForceClientFire()
+	{
+		Global.ForceClientFire();
+	}
+
+	simulated function ForceClientAltFire()
+	{
+		Global.ForceClientAltFire();
 	}
 }
 
