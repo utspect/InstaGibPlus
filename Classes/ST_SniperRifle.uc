@@ -9,8 +9,7 @@ class ST_SniperRifle extends SniperRifle;
 var ST_Mutator STM;
 
 enum EZoomState {
-	ZS_Locked,
-	ZS_Idle,
+	ZS_None,
 	ZS_Zooming,
 	ZS_Zoomed,
 	ZS_Reset
@@ -146,10 +145,6 @@ simulated function PlaySelect() {
 	if ( !IsAnimating() || (AnimSequence != 'Select') )
 		PlayAnim('Select',GetWeaponSettings().SniperSelectAnimSpeed(),0.0);
 	Owner.PlaySound(SelectSound, SLOT_Misc, Pawn(Owner).SoundDampening);	
-
-	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
-		ZoomState = ZS_Idle;
-	}
 }
 
 simulated function TweenDown() {
@@ -165,7 +160,7 @@ simulated function TweenDown() {
 		PlayAnim('Down', GetWeaponSettings().SniperDownAnimSpeed(), TweenTime);
 
 	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
-		ZoomState = ZS_Locked;
+		ZoomState = ZS_None;
 		PlayerPawn(Owner).EndZoom();
 	}
 }
@@ -182,85 +177,41 @@ simulated function bool ClientAltFire(float Value) {
 	return true;
 }
 
-simulated function ForceClientFire() {
-	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
-		ZoomState = ZS_Idle;
-	}
-
-	super.ForceClientFire();
-}
-
-simulated function ForceClientAltFire() {
-	if (Owner.IsA('PlayerPawn') && PlayerPawn(Owner).Player.IsA('ViewPort')) {
-		ZoomState = ZS_Idle;
-	}
-
-	super.ForceClientAltFire();
-}
-
 simulated function Tick(float DeltaTime) {
-	local PlayerPawn P;
 	if (Owner != none &&
 		Owner.IsA('PlayerPawn') &&
 		bCanClientFire
 	) {
-		P = PlayerPawn(Owner);
 		switch (ZoomState) {
-		case ZS_Locked:
-			break;
-		case ZS_Idle:
+		case ZS_None:
 			if (Pawn(Owner).bAltFire != 0) {
-				if (P.Player.IsA('ViewPort'))
-					P.StartZoom();
+				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
+					PlayerPawn(Owner).StartZoom();
 				SetTimer(0.2, true);
 				ZoomState = ZS_Zooming;
 			}
 			break;
 		case ZS_Zooming:
 			if (Pawn(Owner).bAltFire == 0) {
-				if (P.Player.IsA('ViewPort'))
-					P.StopZoom();
+				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
+					PlayerPawn(Owner).StopZoom();
 				ZoomState = ZS_Zoomed;
 			}
 			break;
 		case ZS_Zoomed:
 			if (Pawn(Owner).bAltFire != 0) {
-				if (P.Player.IsA('ViewPort'))
-					P.EndZoom();
+				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
+					PlayerPawn(Owner).EndZoom();
 				SetTimer(0.0, false);
 				ZoomState = ZS_Reset;
 			}
 			break;
 		case ZS_Reset:
 			if (Pawn(Owner).bAltFire == 0) {
-				ZoomState = ZS_Idle;
+				ZoomState = ZS_None;
 			}
 			break;
 		}
-	}
-}
-
-state ClientActive {
-	simulated function ForceClientFire()
-	{
-		Global.ForceClientFire();
-	}
-
-	simulated function ForceClientAltFire()
-	{
-		Global.ForceClientAltFire();
-	}
-}
-
-state ClientDown {
-	simulated function ForceClientFire()
-	{
-		Global.ForceClientFire();
-	}
-
-	simulated function ForceClientAltFire()
-	{
-		Global.ForceClientAltFire();
 	}
 }
 
