@@ -178,36 +178,39 @@ simulated function bool ClientAltFire(float Value) {
 }
 
 simulated function Tick(float DeltaTime) {
-	if (Owner != none &&
-		Owner.IsA('PlayerPawn') &&
+	local PlayerPawn P;
+
+	P = PlayerPawn(Owner);
+	if (P != none &&
+		P.Weapon == self &&
 		bCanClientFire
 	) {
 		switch (ZoomState) {
 		case ZS_None:
-			if (Pawn(Owner).bAltFire != 0) {
-				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
-					PlayerPawn(Owner).StartZoom();
+			if (P.bAltFire != 0) {
+				if (P.Player.IsA('ViewPort'))
+					P.StartZoom();
 				SetTimer(0.2, true);
 				ZoomState = ZS_Zooming;
 			}
 			break;
 		case ZS_Zooming:
-			if (Pawn(Owner).bAltFire == 0) {
-				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
-					PlayerPawn(Owner).StopZoom();
+			if (P.bAltFire == 0) {
+				if (P.Player.IsA('ViewPort'))
+					P.StopZoom();
 				ZoomState = ZS_Zoomed;
 			}
 			break;
 		case ZS_Zoomed:
-			if (Pawn(Owner).bAltFire != 0) {
-				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
-					PlayerPawn(Owner).EndZoom();
+			if (P.bAltFire != 0) {
+				if (P.Player.IsA('ViewPort'))
+					P.EndZoom();
 				SetTimer(0.0, false);
 				ZoomState = ZS_Reset;
 			}
 			break;
 		case ZS_Reset:
-			if (Pawn(Owner).bAltFire == 0) {
+			if (P.bAltFire == 0) {
 				ZoomState = ZS_None;
 			}
 			break;
