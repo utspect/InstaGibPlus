@@ -140,21 +140,6 @@ function bool IsSimilarTo(IGPlus_SavedInput Other) {
 		SavedViewRotation.Yaw == Other.SavedViewRotation.Yaw;
 }
 
-function IGPlus_SavedInput SerializeNodes(int MaxNumNodes, IGPlus_SavedInput NextNode, IGPlus_DataBuffer B, int SpaceRequired, out float DeltaError) {
-	local IGPlus_SavedInput ReferenceNode;
-
-	if (MaxNumNodes <= 0 || B.IsSpaceSufficient(SpaceRequired + default.SerializedBits) == false || Prev == none)
-		return self;
-
-	ReferenceNode = Prev.SerializeNodes(MaxNumNodes - 1, self, B, SpaceRequired + default.SerializedBits, DeltaError);
-
-	//if (NextNode == none || IsSimilarTo(NextNode) == false) // uncomment to compress Input stream
-		SerializeTo(B, DeltaError);
-
-	return ReferenceNode;
-}
-
-
 defaultproperties {
 	bHidden=True
 	DrawType=DT_None
