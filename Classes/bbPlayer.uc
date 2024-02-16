@@ -3199,6 +3199,11 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 		return;
 	}
 
+	if (bDeleteMe) {
+		ClientDebugMessage("Reject Irrelevant Move");
+		return;
+	}
+
 	zzKickReady = Max(zzKickReady - 1,0);
 
 	IGPlus_InputReplicationBuffer.NumBitsConsumed = 0;
@@ -3207,11 +3212,6 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 		IGPlus_InputReplicationBuffer.BitsData[i] = B.Data[i];
 
 	debugServerMoveCallsReceived += 1;
-
-	if (bDeleteMe) {
-		ClientDebugMessage("Reject Irrelevant Move");
-		return;
-	}
 
 	if (Level.Pauser == "")
 		UndoExtrapolation();
