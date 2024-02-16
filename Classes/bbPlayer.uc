@@ -3272,8 +3272,9 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	// clean up
 	IGPlus_SavedInputChain.RemoveOutdatedNodes(Old.TimeStamp);
 
-	// for now always request CAP
-	IGPlus_WantCAP = true;
+	// always request CAP while alive
+	// when dead you dont want players to still be receiving CAPs, that screws up respawning
+	IGPlus_WantCAP = IsInState('Dying') == false;
 
 	IGPlus_WarpFixUpdate = true;
 }
