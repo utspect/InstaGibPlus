@@ -32,6 +32,9 @@ var config bool bWarmup;		// Enable or disable warmup. (bTournament only)
 var config int WarmupTimeLimit; // Warmup lasts at most this long
 var config bool bCoaches;		// Enable or disable coaching. (bTournament only)
 var config bool bAutoPause;		// Enable or disable autopause. (bTournament only)
+var config int PauseTotalTime;	// Total amount of Seconds a team may pause a game.
+var config int PauseTime;		// Amount of seconds a team may pause pr pause/timeout.
+var config int Timeouts;		// Max amount of times a team may take timeouts. (for Coaches)
 var config byte ForceModels;		// 0 = Disallow, 1 = Client Selectable, 2 = Forced
 var config byte ImprovedHUD;		// 0 = Disabled, 1 = Boots/Clock, 2 = Enhanced Team Info
 var config bool bDelayedPickupSpawn;	// Enable or disable delayed first pickup spawn.
@@ -92,6 +95,9 @@ function DumpSetting(PlayerPawn P, string S) {
 
 function DumpServerSettings(PlayerPawn P) {
 	P.ClientMessage("SettingsObject="$self);
+	DumpSetting(P, "bAutoPause");
+	DumpSetting(P, "PauseTotalTime");
+	DumpSetting(P, "PauseTime");
 	DumpSetting(P, "bForceDemo");
 	DumpSetting(P, "bRestrictTrading");
 	DumpSetting(P, "MaxTradeTimeMargin");
@@ -138,6 +144,8 @@ defaultproperties
 	bAllowBehindView=False
 	TrackFOV=0
 	bAutoPause=True
+	PauseTotalTime=300
+    PauseTime=60
 	bFastTeams=True
 	bUseClickboard=True
 	MinClientRate=10000

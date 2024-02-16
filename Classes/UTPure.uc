@@ -210,8 +210,11 @@ function PostBeginPlay()
 		MLH.Accepted();
 
 	//Log("bAutoPause:"@bAutoPause@"bTeamGame:"@zzDMP.bTeamGame@"bTournament:"@zzDMP.bTournament);
-	if (Settings.bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
+	if (Settings.bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament) {
 		zzAutoPauser = Spawn(Class'PureAutoPause');
+		zzAutoPauser.Settings = Settings;
+		zzAutoPauser.Initialize();
+	}
 
 	if (Settings.bUseClickboard)
 		SetupClickBoard();
