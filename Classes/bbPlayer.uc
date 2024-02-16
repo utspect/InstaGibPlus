@@ -81,7 +81,6 @@ var int zzPositionIndex;
 var float zzNextPositionTime;
 var bool zzbNN_Tracing;
 var Weapon zzPendingWeapon;
-var bool bJustRespawned;
 var float LastCAPTime; // ServerTime when last CAP was sent
 var float NextRealCAPTime;
 var decoration carriedFlag;
@@ -2461,7 +2460,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	}
 
 	zzKickReady = Max(zzKickReady - 1,0);
-	bJustRespawned = false;
 
 	if (CurrentTimeStamp >= SM.TimeStamp) {
 		ClientDebugMessage("Reject Outdated Move:"@CurrentTimeStamp@SM.TimeStamp);
@@ -3202,7 +3200,6 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	}
 
 	zzKickReady = Max(zzKickReady - 1,0);
-	bJustRespawned = false;
 
 	IGPlus_InputReplicationBuffer.NumBitsConsumed = 0;
 	IGPlus_InputReplicationBuffer.NumBits = NumBits;
@@ -6690,7 +6687,6 @@ state Dying
 		SetPhysics(PHYS_None);
 		Super.EndState();
 		LastKillTime = 0;
-		bJustRespawned = true;
 		LastKiller = none;
 		ClientUpdateTime = 0;
 		bDodging = false;
@@ -6708,7 +6704,6 @@ state CountdownDying extends Dying
 		bBehindView = false;
 		if (Player != none)
 			ServerReStartPlayer();
-		bJustRespawned = true;
 		bShowScores = false;
 		ClientUpdateTime = 0;
 	}
