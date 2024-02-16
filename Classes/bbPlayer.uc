@@ -2341,7 +2341,9 @@ function ClearLastServerMoveParams() {
 function IGPlus_ProcessRemoteMovement() {
 	IGPlus_ApplyAllServerMoves();
 
-	if (zzUTPure.Settings.bEnableLoosePositionCheck || IGPlus_EnableInputReplication)
+	if (IGPlus_EnableInputReplication)
+		IGPlus_AcknowledgeInput();
+	else if (zzUTPure.Settings.bEnableLoosePositionCheck)
 		IGPlus_LooseCheckClientError();
 	else
 		IGPlus_CheckClientError();
@@ -3272,11 +3274,16 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	// clean up
 	IGPlus_SavedInputChain.RemoveOutdatedNodes(Old.TimeStamp);
 
-	// always request CAP while alive
-	// when dead you dont want players to still be receiving CAPs, that screws up respawning
-	IGPlus_WantCAP = IsInState('Dying') == false;
-
 	IGPlus_WarpFixUpdate = true;
+}
+
+function IGPlus_AcknowledgeInput() {
+	if (IsInState('Dying') == false && IGPlus_SavedInputChain.Newest.bLive) {
+		// always request CAP while alive
+		// when dead you dont want players to still be receiving CAPs,
+		// that screws up respawning
+		IGPlus_SendCAP();
+	}
 }
 
 function float CalculateLocError(float DeltaTime, EPhysics Phys, vector ClientVel) {
