@@ -6525,7 +6525,10 @@ state Dying
 
 		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
-		Super.PlayerTick(DeltaTime);
+		if (bUpdatePosition && IGPlus_EnableInputReplication == false)
+			ClientUpdatePosition();
+
+		PlayerMove(DeltaTime);
 
 		if ((Settings.bEnableKillCam && LastKiller != none) &&
 			(TimeDead >= FMax(KillCamDelay, Settings.KillCamMinDelay) && TimeDead < KillCamDelay + KillCamDuration) &&
