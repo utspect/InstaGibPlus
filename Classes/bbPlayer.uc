@@ -3843,20 +3843,6 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 	aLookUp = 0;
 	aTurn = 0;
 
-	// the following prevents clients from erroneously indicating that they are
-	// dead locally and still sending input activity.
-	I.bLive = I.bLive ||
-		I.bForw ||
-		I.bBack ||
-		I.bLeft ||
-		I.bRigh ||
-		I.bWalk ||
-		I.bDuck ||
-		I.bJump ||
-		I.bDodg ||
-		I.bFire ||
-		I.bAFir;
-
 	bWasForward    = I.bForw;
 	bWasBack       = I.bBack;
 	bWasLeft       = I.bLeft;
@@ -3866,15 +3852,17 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 	bEdgeLeft      = Old.bLeft != bWasLeft;
 	bEdgeRight     = Old.bRigh != bWasRight;
 
-	if (I.bForw) aForward += 6000.0;
-	if (I.bBack) aForward -= 6000.0;
-	if (I.bLeft) aStrafe  += 6000.0;
-	if (I.bRigh) aStrafe  -= 6000.0;
-	if (I.bDuck) aUp      -= 6000.0;
-	if (I.bJump) aUp      += 6000.0;
+	if (I.bLive) {
+		if (I.bForw) aForward += 6000.0;
+		if (I.bBack) aForward -= 6000.0;
+		if (I.bLeft) aStrafe  += 6000.0;
+		if (I.bRigh) aStrafe  -= 6000.0;
+		if (I.bDuck) aUp      -= 6000.0;
+		if (I.bJump) aUp      += 6000.0;
 
-	if (I.bWalk) bRun = 1; else bRun = 0;
-	if (I.bDuck) bDuck = 1; else bDuck = 0;
+		if (I.bWalk) bRun = 1; else bRun = 0;
+		if (I.bDuck) bDuck = 1; else bDuck = 0;
+	}
 	bPressedJump = I.bJump && (I.bJump != Old.bJump);
 	bPressedDodge = I.bDodg && (I.bDodg != Old.bDodg);
 
@@ -3913,6 +3901,8 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 			bAltFire = 0;
 		}
 	} else if (RemoteRole == ROLE_Authority) {
+		// this assumes that you always replay up until the present, otherwise
+		// youd have to save and restore these values
 		bDodging = Old.SavedDodging;
 		DodgeDir = Old.SavedDodgeDir;
 		DodgeClickTimer = Old.SavedDodgeClickTimer;

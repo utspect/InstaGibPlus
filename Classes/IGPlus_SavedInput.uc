@@ -54,21 +54,12 @@ function CopyFrom(float Delta, bbPlayer P) {
 	SavedLastTimeRight = P.LastTimeRight;
 
 	bLive = P.IsInState('Dying') == false;
-	if (P.IsInState('Dying') || P.IsInState('GameEnded') || P.IsInState('PlayerWaking')) {
-		bForw = false;
-		bBack = false;
-		bLeft = false;
-		bRigh = false;
-		bWalk = false;
-		bDuck = false;
-	} else {
-		bForw = P.bWasForward;
-		bBack = P.bWasBack;
-		bLeft = P.bWasLeft;
-		bRigh = P.bWasRight;
-		bWalk = P.bRun != 0;
-		bDuck = P.bDuck != 0;
-	}
+	bForw = P.bWasForward;
+	bBack = P.bWasBack;
+	bLeft = P.bWasLeft;
+	bRigh = P.bWasRight;
+	bWalk = P.bRun != 0;
+	bDuck = P.bDuck != 0;
 	bJump = (P.aUp > 1.0) || P.IGPlus_PressedJumpSave;
 	bDodg = P.bPressedDodge;
 	bFire = (P.bFire != 0) || P.bJustFired;
