@@ -6600,6 +6600,9 @@ state Dying
 	{
 		local vector X,Y,Z;
 
+		Velocity = vect(0,0,0);
+		Acceleration = vect(0,0,0);
+
 		if ( TimeDead >= 1.0 )
 		{
 			if ( bPressedJump )
