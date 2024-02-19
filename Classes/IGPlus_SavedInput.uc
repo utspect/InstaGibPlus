@@ -12,6 +12,10 @@ var rotator SavedViewRotation;
 var bool SavedDodging;
 var EDodgeDir SavedDodgeDir;
 var float SavedDodgeClickTimer;
+var float SavedLastTimeForward;
+var float SavedLastTimeBack;
+var float SavedLastTimeLeft;
+var float SavedLastTimeRight;
 
 var bool bLive;
 var bool bForw;
@@ -44,6 +48,10 @@ function CopyFrom(float Delta, bbPlayer P) {
 	SavedDodging = P.bDodging;
 	SavedDodgeDir = P.DodgeDir;
 	SavedDodgeClickTimer = P.DodgeClickTimer;
+	SavedLastTimeForward = P.LastTimeForward;
+	SavedLastTimeBack = P.LastTimeBack;
+	SavedLastTimeLeft = P.LastTimeLeft;
+	SavedLastTimeRight = P.LastTimeRight;
 
 	bLive = P.IsInState('Dying') == false;
 	if (P.IsInState('Dying') || P.IsInState('GameEnded') || P.IsInState('PlayerWaking')) {

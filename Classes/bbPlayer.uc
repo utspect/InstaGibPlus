@@ -3916,6 +3916,10 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 		bDodging = Old.SavedDodging;
 		DodgeDir = Old.SavedDodgeDir;
 		DodgeClickTimer = Old.SavedDodgeClickTimer;
+		LastTimeForward = Old.SavedLastTimeForward;
+		LastTimeBack = Old.SavedLastTimeBack;
+		LastTimeLeft = Old.SavedLastTimeLeft;
+		LastTimeRight = Old.SavedLastTimeRight;
 	}
 
 	ViewRotation = I.SavedViewRotation;
