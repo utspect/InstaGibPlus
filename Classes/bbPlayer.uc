@@ -3282,12 +3282,7 @@ function IGPlus_AcknowledgeInput() {
 	if (IGPlus_WantCAP == false)
 		return;
 
-	if (IsInState('Dying') == false && IGPlus_SavedInputChain.Newest.bLive) {
-		// always request CAP while alive
-		// when dead you dont want players to still be receiving CAPs,
-		// that screws up respawning
-		IGPlus_SendCAP();
-	}
+	IGPlus_SendCAP();
 	IGPlus_WantCAP = false;
 }
 
