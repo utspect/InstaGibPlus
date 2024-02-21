@@ -2115,7 +2115,8 @@ function ClientUpdatePositionWithInput() {
 		AdjustDistance = VSize(IGPlus_AdjustLocationOffset);
 		if ((AdjustDistance < 50) &&
 			FastTrace(Location,IGPlus_PreAdjustLocation) &&
-			IGPlus_AdjustLocationOverride == false
+			IGPlus_AdjustLocationOverride == false &&
+			IsInState('Dying') == false
 		) {
 			// Undo adjustment and re-enact smoothly
 			PostAdjustLocation = Location;
