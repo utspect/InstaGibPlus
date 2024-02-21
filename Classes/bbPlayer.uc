@@ -2125,8 +2125,10 @@ function ClientUpdatePositionWithInput() {
 				IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location);
 			}
 		} else {
-			NetStatsElem.bInstantRelocation = true;
-			IGPlus_AdjustLocationOffset = vect(0,0,0);
+			if (AdjustDistance >= 1.0) {
+				NetStatsElem.bInstantRelocation = true;
+				IGPlus_AdjustLocationOffset = vect(0,0,0);
+			}
 		}
 	}
 
