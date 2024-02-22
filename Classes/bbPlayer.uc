@@ -2127,8 +2127,8 @@ function ClientUpdatePositionWithInput() {
 		} else {
 			if (AdjustDistance >= 1.0) {
 				NetStatsElem.bInstantRelocation = true;
-				IGPlus_AdjustLocationOffset = vect(0,0,0);
 			}
+			IGPlus_AdjustLocationOffset = vect(0,0,0);
 		}
 	}
 
