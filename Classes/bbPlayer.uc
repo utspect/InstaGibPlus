@@ -3860,9 +3860,10 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 
 		if (I.bWalk) bRun = 1; else bRun = 0;
 		if (I.bDuck) bDuck = 1; else bDuck = 0;
+		
+		bPressedJump = I.bJump && (I.bJump != Old.bJump);
+		bPressedDodge = I.bDodg && (I.bDodg != Old.bDodg);
 	}
-	bPressedJump = I.bJump && (I.bJump != Old.bJump);
-	bPressedDodge = I.bDodg && (I.bDodg != Old.bDodg);
 
 	if (RemoteRole == ROLE_AutonomousProxy) {
 		if (zzUTPure.Settings.bEnablePingCompensatedSpawn) {
