@@ -17,6 +17,7 @@ var config bool bReplaceWarheadLauncher;
 var config bool  bEnableEnhancedSplash;
 var config bool  bEnableEnhancedSplashBio;
 var config bool  bEnableEnhancedSplashCombo;
+var config bool  bEnhancedSplashIgnoreStationaryPawns;
 var config float SplashMaxDiffraction;
 var config float SplashMinDiffractionDistance;
 
