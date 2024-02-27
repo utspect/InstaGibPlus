@@ -3537,6 +3537,9 @@ function xxNN_Fire( float TimeStamp, int ProjIndex, vector ClientLoc, vector Cli
 	if (TimeStamp <= LastFireTimeStamp)
 		return;
 	LastFireTimeStamp = TimeStamp;
+	
+	if (TimeStamp + 0.1 < CurrentTimeStamp)
+		return
 
 	xxEnableCarcasses();
 	zzNN_ProjIndex = ProjIndex;
@@ -3625,6 +3628,9 @@ function xxNN_AltFire( float TimeStamp, int ProjIndex, vector ClientLoc, vector 
 	if (TimeStamp <= LastAltFireTimeStamp)
 		return;
 	LastAltFireTimeStamp = TimeStamp;
+
+	if (TimeStamp + 0.1 < CurrentTimeStamp)
+		return
 
 	xxEnableCarcasses();
 	zzNN_ProjIndex = ProjIndex;
