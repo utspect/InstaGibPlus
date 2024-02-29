@@ -3266,7 +3266,11 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	if (IGPlus_UseFastWeaponSwitch && PendingWeapon != None)
 		ChangedWeapon();
 
-	// play back input
+	// simulate lost time to match extrapolation done by all clients
+	LostTime = RefTimeStamp - Old.TimeStamp; // typically <= 0
+	if (LostTime > 0.001)
+		SimMoveAutonomous(LostTime);
+
 	while(Old.Next != none) {
 		PlayBackInput(Old, Old.Next);
 		if (bTraceInput && IGPlus_InputLogFile != none)
