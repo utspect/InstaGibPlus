@@ -946,6 +946,23 @@ final function EnhancedHurtRadius(
 	CollChecker.SetCollisionSize(DamageRadius, DamageRadius);
 	CollChecker.SetLocation(HitLocation);
 
+	foreach Source.VisibleCollidingActors(class'Actor', Victim, DamageRadius, HitLocation, , true) {
+		if (Victim.IsA('Brush') == false)
+			continue;
+
+		dir = Victim.Location - HitLocation;
+		dist = FMax(1,VSize(dir));
+		dir = dir / dist; 
+		damageScale = 1 - FMax(0, (dist - Victim.CollisionRadius) / DamageRadius);
+		Victim.TakeDamage(
+			damageScale * DamageAmount,
+			Instigator, 
+			Victim.Location - 0.5 * (Victim.CollisionHeight + Victim.CollisionRadius) * dir,
+			(damageScale * Momentum * dir),
+			DamageName
+		);
+	}
+
 	foreach CollChecker.TouchingActors(class'Actor', Victim) {
 		if (Victim == self)
 			continue;
