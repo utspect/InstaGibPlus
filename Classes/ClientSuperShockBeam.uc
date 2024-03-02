@@ -7,6 +7,7 @@ var float Curve;
 var float Duration;
 var vector MoveAmount;
 var int NumPuffs;
+var bool bBeamEnableLight;
 
 //
 var float TimeLeft;
@@ -29,17 +30,18 @@ simulated function Tick(float DeltaTime) {
     }
 }
 
-simulated function SetProperties(int pTeam, float pSize, float pCurve, float pDuration, vector pMoveAmount, int pNumPuffs) {
+simulated function SetProperties(int pTeam, float pSize, float pCurve, float pDuration, vector pMoveAmount, int pNumPuffs, bool pbBeamEnableLight) {
     Team = pTeam;
     Size = pSize;
     Duration = pDuration;
     Curve = pCurve;
     MoveAmount = pMoveAmount;
     NumPuffs = pNumPuffs;
+    bBeamEnableLight = pbBeamEnableLight;
 
     if (Team >= 0) {
         Mesh = LodMesh'Botpack.Shockbm';
-        if (Level.bHighDetailMode)
+        if (bBeamEnableLight && Level.bHighDetailMode)
             LightType = LT_Steady;
         else
             LightType = LT_None;
@@ -89,7 +91,7 @@ simulated function Timer() {
         r = AllocBeam(PlayerPawn(Owner));
         r.SetLocation(Location + MoveAmount);
         r.SetRotation(Rotation);
-        r.SetProperties(Team,Size,Curve,Duration,MoveAmount, NumPuffs - 1);
+        r.SetProperties(Team,Size,Curve,Duration,MoveAmount, NumPuffs - 1, bBeamEnableLight);
     }
 }
 
@@ -124,6 +126,7 @@ static final function ClientSuperShockBeam AllocBeam(PlayerPawn P) {
 
 static final function FreeBeam(ClientSuperShockBeam Beam) {
     Beam.bHidden = true;
+    Beam.LightType = LT_None;
     Beam.Disable('Tick');
 
     Beam.Next = default.Free;

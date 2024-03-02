@@ -190,6 +190,10 @@ var localized string MoreInformationText;
 	var localized string HideOwnBeamText;
 	var localized string HideOwnBeamHelp;
 
+	var UWindowCheckbox Chk_BeamEnableLight;
+	var localized string BeamEnableLightText;
+	var localized string BeamEnableLightHelp;
+
 	var IGPlus_EditControl Edit_BeamScale;
 	var localized string BeamScaleText;
 	var localized string BeamScaleHelp;
@@ -846,6 +850,7 @@ function Created() {
 	Cmb_cShockBeam.AddItem(cShockBeamHidden);
 	Cmb_cShockBeam.AddItem(cShockBeamInstant);
 	Chk_HideOwnBeam = CreateCheckbox(HideOwnBeamText, HideOwnBeamHelp);
+	Chk_BeamEnableLight = CreateCheckbox(BeamEnableLightText, BeamEnableLightHelp);
 	Edit_BeamScale = CreateEdit(ECT_Real, BeamScaleText, BeamScaleHelp, , 64);
 	Edit_BeamFadeCurve = CreateEdit(ECT_Integer, BeamFadeCurveText, BeamFadeCurveHelp, , 64);
 	Edit_BeamDuration = CreateEdit(ECT_Real, BeamDurationText, BeamDurationHelp, , 64);
@@ -1000,6 +1005,7 @@ function Load() {
 
 	Cmb_cShockBeam.SetSelectedIndex(Clamp(Settings.cShockBeam - 1, 0, 3));
 	Chk_HideOwnBeam.bChecked = Settings.bHideOwnBeam;
+	Chk_BeamEnableLight.bChecked = Settings.bBeamEnableLight;
 	Edit_BeamScale.SetValue(string(Settings.BeamScale));
 	Edit_BeamFadeCurve.SetValue(string(int(Settings.BeamFadeCurve)));
 	Edit_BeamDuration.SetValue(string(Settings.BeamDuration));
@@ -1105,6 +1111,7 @@ function Save() {
 
 	Settings.cShockBeam = Cmb_cShockBeam.GetSelectedIndex() + 1;
 	Settings.bHideOwnBeam = Chk_HideOwnBeam.bChecked;
+	Settings.bBeamEnableLight = Chk_BeamEnableLight.bChecked;
 	Settings.BeamScale = float(Edit_BeamScale.GetValue());
 	Settings.BeamFadeCurve = int(Edit_BeamFadeCurve.GetValue());
 	Settings.BeamDuration = float(Edit_BeamDuration.GetValue());
@@ -1324,6 +1331,9 @@ defaultproperties
 
 		HideOwnBeamText="Always Hide Own Beams"
 		HideOwnBeamHelp="If checked, your own beams will always be hidden"
+
+		BeamEnableLightText="Enable Beam Lighting"
+		BeamEnableLightHelp="If checked, beams will emit light"
 
 		BeamScaleText="Beam Scale"
 		BeamScaleHelp="Diameter of the beam of the IG+ SSR"
