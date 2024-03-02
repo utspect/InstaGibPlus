@@ -151,7 +151,7 @@ jobs:
 
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: PackageName
 
@@ -161,7 +161,7 @@ jobs:
           Remove-Item -Path "PackageName"
 
       - name: Download Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.PKG_NAME }}
 
