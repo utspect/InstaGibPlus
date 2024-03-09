@@ -34,6 +34,7 @@ var bool bExludeKickers;
 
 var bbPlayerReplicationInfo SkinIndexToPRIMap[64];
 
+var IGPlus_GameEventChain GameEventChain;
 var StringUtils StringUtils;
 
 var Object SettingsHelper;
@@ -52,6 +53,8 @@ function PreBeginPlay()
 	if (zzDMP == None)
 		return;
 
+	GameEventChain = new(none) class'IGPlus_GameEventChain';
+	GameEventChain.Play(Level.TimeSeconds);
 	StringUtils = class'StringUtils'.static.Instance();
 
 	// toggle first blood so it doesn't get triggered during warmup
@@ -374,12 +377,18 @@ event Tick(float zzDelta)
 
 	if (Level.Pauser != "")		// This code is to avoid players being kicked when paused.
 	{
+		if (GameEventChain.IsPlaying())
+			GameEventChain.Pause(Level.TimeSeconds);
+
 		zzbPaused = True;
 		zzPauseCountdown = 45.0; // Give it 45 seconds to wear off
 		zzDMP.SentText = Max(zzDMP.SentText - 100, 0);	// Fix to avoid the "Pause text freeze bug"
 	}
 	else
 	{
+		if (GameEventChain.IsPaused())
+			GameEventChain.Play(Level.TimeSeconds);
+
 		if (zzPauseCountdown > 0.0)
 			zzPauseCountdown -= zzDelta;
 		else
@@ -1360,6 +1369,10 @@ function string GetForcedSettingValue(int Index) {
 
 function int GetForcedSettingMode(int Index) {
 	return Settings.ForcedSettings[Index].Mode;
+}
+
+function float RealPlayTime(float TimeStamp, float DeltaTime) {
+	return GameEventChain.RealPlayTime(TimeStamp, DeltaTime);
 }
 
 defaultproperties

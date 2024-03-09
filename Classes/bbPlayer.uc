@@ -3268,6 +3268,7 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 
 	// simulate lost time to match extrapolation done by all clients
 	LostTime = RefTimeStamp - Old.TimeStamp; // typically <= 0
+	LostTime = zzUTPure.RealPlayTime(ServerTimeStamp, LostTime); // this removed time spent paused
 	if (LostTime > 0.001)
 		SimMoveAutonomous(LostTime);
 
