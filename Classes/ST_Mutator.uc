@@ -1053,6 +1053,55 @@ final function EnhancedHurtRadius(
 	Source.bHurtEntry = false;
 }
 
+function bool CheckHeadshot(Pawn P, vector HitLocation, vector Direction) {
+	local float OffsetZ;
+	local bbPlayer bbP;
+
+	local ST_HitTestHelper HitActor;
+	local vector HitLoc, HitNorm;
+	local bool Result;
+
+	if (P == none)
+		return false;
+
+	if (WeaponSettings.bEnhancedHeadshotDetection == false)
+		return (HitLocation.Z - P.Location.Z > 0.62 * P.CollisionHeight);
+
+	if (CollChecker == none || CollChecker.bDeleteMe) {
+		CollChecker = Spawn(class'ST_HitTestHelper',self, , P.Location);
+		CollChecker.bCollideWorld = false;
+	}
+
+	bbP = bbPlayer(P);
+	if (bbP != none) {
+		OffsetZ = Lerp(bbP.DuckFraction, WeaponSettings.HeadOffsetZ, WeaponSettings.HeadDuckOffsetZ);
+	} else {
+		OffsetZ = Lerp(P.EyeHeight / P.default.BaseEyeHeight, WeaponSettings.HeadDuckOffsetZ, WeaponSettings.HeadOffsetZ);
+	}
+
+	CollChecker.SetCollision(true, false, false);
+	CollChecker.SetCollisionSize(WeaponSettings.HeadRadius, WeaponSettings.HeadHalfHeight);
+	CollChecker.SetLocation(P.Location + vect(0,0,1)*WeaponSettings.HeadOffsetZ);
+
+	Result = false;
+
+	foreach TraceActors(
+		class'ST_HitTestHelper',
+		HitActor, HitLoc, HitNorm,
+		HitLocation + Direction * (P.CollisionRadius + P.CollisionHeight),
+		HitLocation - Direction * (P.CollisionRadius + P.CollisionHeight)
+	) {
+		if (HitActor == CollChecker) {
+			Result = true;
+			break;
+		}
+	}
+
+	CollChecker.SetCollision(false, false, false);
+
+	return Result;
+}
+
 defaultproperties {
 	DefaultWeapon=Class'ST_ImpactHammer'
 	ST_Log=PureStats

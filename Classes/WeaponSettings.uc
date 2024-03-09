@@ -21,6 +21,12 @@ var config bool  bEnhancedSplashIgnoreStationaryPawns;
 var config float SplashMaxDiffraction;
 var config float SplashMinDiffractionDistance;
 
+var config bool  bEnhancedHeadshotDetection;
+var config float HeadHalfHeight;
+var config float HeadRadius;
+var config float HeadOffsetZ;
+var config float HeadDuckOffsetZ;
+
 var config float WarheadSelectTime;
 var config float WarheadDownTime;
 
@@ -159,6 +165,12 @@ defaultproperties
 	bEnableEnhancedSplashCombo=False
 	SplashMaxDiffraction=0.5
 	SplashMinDiffractionDistance=50.0
+
+	bEnhancedHeadshotDetection=False
+	HeadHalfHeight=7.5
+	HeadRadius=10.0
+	HeadOffsetZ=31.5
+	HeadDuckOffsetZ=4.2
 
 	WarheadSelectTime=0.5
 	WarheadDownTime=0.233333

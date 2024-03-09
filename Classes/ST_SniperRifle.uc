@@ -64,7 +64,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	{
 		if ( Other.bIsPawn )
 			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
-		if ( Other.bIsPawn && (HitLocation.Z - Other.Location.Z > 0.62 * Other.CollisionHeight)
+		if ( Other.bIsPawn && STM.CheckHeadshot(Pawn(Other), HitLocation, X)
 			&& (instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice)) )
 		{
 			STM.PlayerHit(PawnOwner, 18, True);		// 18 = Sniper, Headshot
