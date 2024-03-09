@@ -28,7 +28,7 @@ auto state Flying
 		{
 			if ( Role == ROLE_Authority )
 			{
-				if ( Other.bIsPawn && STM.CheckHeadshot(Other, HitLocation, Normal(Velocity)) 
+				if ( Other.bIsPawn && STM.CheckHeadshot(Pawn(Other), HitLocation, Normal(Velocity)) 
 					&& (!Instigator.IsA('Bot') || !Bot(Instigator).bNovice) )
 				{
 					STM.PlayerHit(Instigator, 11, True);		// 11 = Ripper Primary Headshot
