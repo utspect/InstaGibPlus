@@ -66,6 +66,7 @@ var config int   MaxPosError;
 var config int   MaxHitError;
 var config float MaxJitterTime;
 var config float WarpFixDelay;
+var config float FireTimeout;
 var config float MinNetUpdateRate;
 var config float MaxNetUpdateRate;
 var config bool  bEnableInputReplication;
@@ -119,6 +120,7 @@ function DumpServerSettings(PlayerPawn P) {
 	DumpSetting(P, "MaxHitError");
 	DumpSetting(P, "MaxJitterTime");
 	DumpSetting(P, "WarpFixDelay");
+	DumpSetting(P, "FireTimeout");
 	DumpSetting(P, "MinNetUpdateRate");
 	DumpSetting(P, "MaxNetUpdateRate");
 	DumpSetting(P, "bEnableInputReplication");
@@ -166,6 +168,7 @@ defaultproperties
 	MaxHitError=10000
 	MaxJitterTime=0.1
 	WarpFixDelay=0.25
+	FireTimeout=0.1
 	MinNetUpdateRate=60.0
 	MaxNetUpdateRate=200.0
 	ShowTouchedPackage=False

@@ -3543,7 +3543,7 @@ function xxNN_Fire( float TimeStamp, int ProjIndex, vector ClientLoc, vector Cli
 		return;
 	LastFireTimeStamp = TimeStamp;
 	
-	if (TimeStamp + 0.1 < CurrentTimeStamp)
+	if (TimeStamp + zzUTPure.Settings.FireTimeout < CurrentTimeStamp)
 		return;
 
 	xxEnableCarcasses();
@@ -3634,7 +3634,7 @@ function xxNN_AltFire( float TimeStamp, int ProjIndex, vector ClientLoc, vector 
 		return;
 	LastAltFireTimeStamp = TimeStamp;
 
-	if (TimeStamp + 0.1 < CurrentTimeStamp)
+	if (TimeStamp + zzUTPure.Settings.FireTimeout < CurrentTimeStamp)
 		return;
 
 	xxEnableCarcasses();

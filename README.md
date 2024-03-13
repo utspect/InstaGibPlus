@@ -972,6 +972,7 @@ Server settings can be found inside InstaGibPlus.ini.
 1. [bEnableJitterBounding](#benablejitterbounding)
 1. [bEnableWarpFix](#benablewarpfix)
 1. [WarpFixDelay](#warpfixdelay)
+1. [FireTimeout](#firetimeout)
 1. [bEnableCarcassCollision](#benablecarcasscollision)
 1. [ShowTouchedPackage](#showtouchedpackage)
 1. [ExcludeMapsForKickers](#excludemapsforkickers)
@@ -1544,6 +1545,14 @@ Each entry can be used to force a setting on clients:
 **Default: True**  
 
 If True, carcasses left by dead players have collision. If false, carcasses will not have collision.
+
+## FireTimeout
+
+**Type: float**
+**Default: 0.1**
+**Unit: seconds**
+
+Shots more than this long in the past are rejected.
 
 # Building
 
