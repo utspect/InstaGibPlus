@@ -1908,7 +1908,7 @@ simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vecto
 	if ( Mover(NewBase) != None )
 		NewLoc += NewBase.Location;
 
-	if ( !IsInState(newState) )
+	if (GetStateName() != NewState)
 		GotoState(newState);
 
 	Carried = CarriedDecoration;
