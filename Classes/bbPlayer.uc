@@ -3543,8 +3543,10 @@ function xxNN_Fire( float TimeStamp, int ProjIndex, vector ClientLoc, vector Cli
 		return;
 	LastFireTimeStamp = TimeStamp;
 	
-	if (TimeStamp + zzUTPure.Settings.FireTimeout < CurrentTimeStamp)
+	if (TimeStamp + zzUTPure.Settings.FireTimeout < CurrentTimeStamp) {
+		Log("Rejected Shot"@self@TimeStamp@CurrentTimeStamp, 'IGPlus');
 		return;
+	}
 
 	xxEnableCarcasses();
 	zzNN_ProjIndex = ProjIndex;
@@ -3634,8 +3636,10 @@ function xxNN_AltFire( float TimeStamp, int ProjIndex, vector ClientLoc, vector 
 		return;
 	LastAltFireTimeStamp = TimeStamp;
 
-	if (TimeStamp + zzUTPure.Settings.FireTimeout < CurrentTimeStamp)
+	if (TimeStamp + zzUTPure.Settings.FireTimeout < CurrentTimeStamp) {
+		Log("Rejected Shot"@self@TimeStamp@CurrentTimeStamp, 'IGPlus');
 		return;
+	}
 
 	xxEnableCarcasses();
 	zzNN_ProjIndex = ProjIndex;
