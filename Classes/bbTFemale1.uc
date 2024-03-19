@@ -4,7 +4,7 @@
 class bbTFemale1 extends bbTournamentFemale;
 
 #exec MESH IMPORT MESH=FCommando ANIVFILE="Models/FCommando_a.3d" DATAFILE="Models/FCommando_d.3d" UNMIRROR=1 LODSTYLE=12
-#exec MESH ORIGIN MESH=FCommando X=30 Y=-115 Z=50 YAW=64 ROLL=-64
+#exec MESH ORIGIN MESH=FCommando X=23 Y=-115 Z=62 YAW=64 ROLL=-64
 
 #exec MESH SEQUENCE MESH=FCommando SEQ=All       STARTFRAME=0   NUMFRAMES=681 
 #exec MESH SEQUENCE MESH=FCommando SEQ=GutHit    STARTFRAME=0   NUMFRAMES=1          Group=TakeHit

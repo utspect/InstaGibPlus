@@ -4,7 +4,7 @@
 class bbTFemale2 extends bbTournamentFemale;
 
 #exec MESH IMPORT MESH=SGirl ANIVFILE="Models/SGirl_a.3d" DATAFILE="Models/SGirl_d.3d" UNMIRROR=1 LODSTYLE=12
-#exec MESH ORIGIN MESH=SGirl X=30 Y=-115 Z=50 YAW=64 ROLL=-64
+#exec MESH ORIGIN MESH=SGirl X=23 Y=-115 Z=62 YAW=64 ROLL=-64
 
 #exec MESH SEQUENCE MESH=SGirl SEQ=All       STARTFRAME=0   NUMFRAMES=681 
 #exec MESH SEQUENCE MESH=SGirl SEQ=GutHit    STARTFRAME=0   NUMFRAMES=1             Group=TakeHit
