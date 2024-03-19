@@ -8230,7 +8230,7 @@ local string pkg, SkinItem, MeshName;
 			MeshName = SkinActor.GetItemName(string(SkinActor.Default.Mesh));
 		SkinItem = SkinActor.GetItemName(SkinName);
 		pkg = Left(SkinName, Len(SkinName) - Len(SkinItem) - 1);
-		bProscribed = !xxValidSP(SkinName, MeshName, SkinActor);
+		bProscribed = !CheckValidSkinPackage(SkinName, MeshName);
 		if ( bProscribed )
 			log("Attempted to use illegal skin from package "$pkg$" for "$MeshName);
 	}
@@ -8261,33 +8261,6 @@ static function string xxGetClass(string zzClassname)
 	zzcls = Caps(zzClassname);
 	zzP = instr(zzcls,".");
 	return left(zzcls,zzP);
-}
-
-static function bool xxValidSP(string zzSkinName, string zzMeshName, optional Actor SkinActor)
-{
-	local int XC_Version;
-	local string zzPackName;
-
-	zzPackName = xxGetClass(zzSkinName);
-
-	//Attempt to use XC_Engine natives
-	if ( bbPlayer(SkinActor) != none && SkinActor.Role == ROLE_Authority )
-	{
-		XC_Version = int(SkinActor.ConsoleCommand("get ini:Unreali.SkaarjPlayer XC_Version"));
-		if ( XC_Version >= 13 )
-		{
-			return false;
-		}
-	}
-	//Extra pass before potentially crash code
-	if ( zzPackName ~= "BOTPACK" || zzPackName ~= "UNREALI" || zzPackName ~= "UNREALSHARE")
-		return false;
-	if (Default.zzMyPacks == "")
-		Default.zzMyPacks = Caps(SkinActor.ConsoleCommand("get ini:engine.engine.gameengine serverpackages")); //Can still crash a server
-
-	if ( Instr(Default.zzMyPacks, Chr(34)$zzPackName$Chr(34)) == -1 )
-		return false;
-	return (Left(zzPackName, Len(zzMeshName)) ~= zzMeshName && !(Right(zzSkinName,2) ~= "t_"));
 }
 
 simulated function xxClientDoEndShot()
