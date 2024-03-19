@@ -8230,7 +8230,7 @@ local string pkg, SkinItem, MeshName;
 			MeshName = SkinActor.GetItemName(string(SkinActor.Default.Mesh));
 		SkinItem = SkinActor.GetItemName(SkinName);
 		pkg = Left(SkinName, Len(SkinName) - Len(SkinItem) - 1);
-		bProscribed = !CheckValidSkinPackage(SkinName, MeshName);
+		bProscribed = !CheckValidSkinPackage(pkg, MeshName);
 		if ( bProscribed )
 			log("Attempted to use illegal skin from package "$pkg$" for "$MeshName);
 	}
