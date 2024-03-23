@@ -95,6 +95,7 @@ var config float ShockBeamMomentum;
 var config float ShockProjectileDamage;
 var config float ShockProjectileHurtRadius;
 var config float ShockProjectileMomentum;
+var config bool  ShockProjectileBlockBullets;
 var config float ShockComboDamage;
 var config float ShockComboMomentum;
 var config float ShockComboHurtRadius;
@@ -238,6 +239,7 @@ defaultproperties
 	ShockProjectileDamage=55
 	ShockProjectileHurtRadius=70
 	ShockProjectileMomentum=1.0
+	ShockProjectileBlockBullets=True
 	ShockComboDamage=165
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0

@@ -40,6 +40,9 @@ var StringUtils StringUtils;
 var Object SettingsHelper;
 var ServerSettings Settings;
 
+var ST_Mutator StatTrack;
+var bool bStatTrackSearched;
+
 replication
 {
 	unreliable if (Role == ROLE_Authority)
@@ -82,6 +85,18 @@ function PrintVersionInfo() {
 	}
 
 	xxLog("#"$StringUtils.CenteredString(LongStr, 29, " ")$"#");
+}
+
+function ST_Mutator GetStatTrack() {
+	if (bStatTrackSearched)
+		return StatTrack;
+
+	foreach AllActors(class'ST_Mutator', StatTrack)
+		break;
+
+	bStatTrackSearched = true;
+	
+	return StatTrack;
 }
 
 function string GetAllOptions() {

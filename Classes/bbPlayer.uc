@@ -3484,6 +3484,34 @@ simulated function actor NN_TraceShot(out vector HitLocation, out vector HitNorm
 	return Other;
 }
 
+function Actor TraceShot(out vector HitLocation, out vector HitNormal, vector EndTrace, vector StartTrace)
+{
+	local Actor A, Other;
+	local ST_Mutator STM;
+	local bool bSProjBlocks;
+	local bool bWeaponShock;
+
+	STM = zzUTPure.GetStatTrack();
+	bSProjBlocks = true;
+	if (STM != none)
+		bSProjBlocks = STM.WeaponSettings.ShockProjectileBlockBullets;
+	bWeaponShock = (Weapon != none && Weapon.IsA('ShockRifle'));
+	
+	foreach TraceActors( class'Actor', A, HitLocation, HitNormal, EndTrace, StartTrace) {
+		if (Pawn(A) != none) {
+			if ((A != self) && Pawn(A).AdjustHitLocation(HitLocation, EndTrace - StartTrace))
+				Other = A;
+		} else if ((A == Level) || (Mover(A) != None) || A.bProjTarget || (A.bBlockPlayers && A.bBlockActors)) {
+			if (bSProjBlocks || A.IsA('ShockProj') == false || bWeaponShock)
+				Other = A;
+		}
+
+		if (Other != none)
+			break;
+	}
+	return Other;
+}
+
 simulated function xxEnableCarcasses()
 {
 	local Carcass C;
