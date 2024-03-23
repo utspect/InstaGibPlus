@@ -129,9 +129,6 @@ var string zzMagicCode;		// The magic code to display.
 
 var string zzPrevClientMessage;	// To log client messages...
 
-var PureStats zzStat;		// For player stats
-var PureStatMutator zzStatMut;	// The mutator that receives special calls
-
 var PureLevelBase PureLevel;	// And Level.
 var PurePlayer PurePlayer;	// And player.
 var bool bDeterminedLocalPlayer;
@@ -397,7 +394,6 @@ replication
 		zzForceSettingsLevel,
 		zzMaximumNetspeed,
 		zzMinimumNetspeed,
-		zzStat,
 		zzTrackFOV,
 		zzWaitTime;
 
@@ -495,7 +491,6 @@ replication
 		IGPlus_ForcedSettings_InitOK,
 		PrintWeaponState,
 		ServerSetDodgeSettings,
-		ShowStats,
 		xxExplodeOther,
 		xxNN_AltFire,
 		xxNN_Fire,
@@ -5161,15 +5156,6 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 	if (InstigatedBy != none)
 		IGPlus_DamageEvent_Add(InstigatedBy.PlayerReplicationInfo, ModifiedDamage1, DamageType);
 
-	if (zzStatMut != None)
-	{	// Damn epic. Damn Damn. Why is armor handled before mutator gets it? Instead of doing it simple, I now have
-		// to do all this magic. :/
-		// If epic hadn't done this mess, I could have done this entirely in a mutator. GG epic.
-		// Also must limit damage incase player has Health < Damage
-		ModifiedDamage1 -= (ModifiedDamage2 - actualDamage);
-		zzStatMut.PlayerTakeDamage(Self, InstigatedBy, Min(Health, ModifiedDamage1), damageType);
-	}
-
 	if (InstigatedBy != Self && PlayerPawn(InstigatedBy) != None)
 	{	// Send the hitsound local message.
 
@@ -5277,15 +5263,6 @@ function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 
 	if ( Level.Game.DamageMutator != None )
 		Level.Game.DamageMutator.MutatorTakeDamage( ActualDamage, Self, InstigatedBy, HitLocation, Momentum, DamageType );
-
-	if (zzStatMut != None)
-	{	// Damn epic. Damn Damn. Why is armor handled before mutator gets it? Instead of doing it simple, I now have
-		// to do all this magic. :/
-		// If epic hadn't done this mess, I could have done this entirely in a mutator. GG epic.
-		// Also must limit damage incase player has Health < Damage
-		ModifiedDamage1 -= (ModifiedDamage2 - actualDamage);
-		zzStatMut.PlayerTakeDamage(Self, InstigatedBy, Min(Health, ModifiedDamage1), damageType);
-	}
 
 	if (InstigatedBy != Self)
 	{	// Send the hitsound local message.
@@ -5401,15 +5378,6 @@ function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 	if ( Level.Game.DamageMutator != None )
 		Level.Game.DamageMutator.MutatorTakeDamage( ActualDamage, Self, InstigatedBy, HitLocation, Momentum, DamageType );
 
-	if (zzStatMut != None)
-	{	// Damn epic. Damn Damn. Why is armor handled before mutator gets it? Instead of doing it simple, I now have
-		// to do all this magic. :/
-		// If epic hadn't done this mess, I could have done this entirely in a mutator. GG epic.
-		// Also must limit damage incase player has Health < Damage
-		ModifiedDamage1 -= (ModifiedDamage2 - actualDamage);
-		zzStatMut.PlayerTakeDamage(Self, InstigatedBy, Min(Health, ModifiedDamage1), damageType);
-	}
-
 	if (InstigatedBy != Self)
 	{	// Send the hitsound local message.
 		RecentDamage = 1;
@@ -5506,8 +5474,6 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 	if ( CarriedDecoration != None )
 		DropDecoration();
 	level.game.Killed(Killer, self, damageType);
-	if (zzStatMut != None)
-		zzStatMut.PlayerKill(Killer, Self);
 	if( Event != '' )
 		foreach AllActors( class 'Actor', A, Event )
 			A.Trigger( Self, Killer );
@@ -8465,21 +8431,6 @@ exec function ToggleInstantRocket()
 	bInstantRocket = !bInstantRocket;
 	ServerSetInstantRocket(bInstantRocket);
 	ClientMessage("Instant Rockets :"@bInstantRocket);
-}
-
-exec function ShowStats(optional byte zzType)
-{
-}
-
-function AttachStats(PureStats zzS, PureStatMutator zzM)
-{
-	zzStat = zzS;
-	zzStatMut = zzM;
-}
-
-function PureStats GetStats()
-{
-	return zzStat;
 }
 
 exec function NeverSwitchOnPickup( bool B )

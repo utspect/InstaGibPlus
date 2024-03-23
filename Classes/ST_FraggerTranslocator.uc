@@ -6,8 +6,6 @@ function Translocate()
 	local Bot B;
 	local Pawn P;
 
-	if (STM != none)
-		STM.PlayerHit(Pawn(Owner), 2, False);			// 2 = Translocator
 	if (Owner.IsA('bbPlayer'))
 		bbPlayer(Owner).IGPlus_BeforeTranslocate();
 
@@ -101,8 +99,6 @@ function Translocate()
 
 	if (Owner.IsA('bbPlayer'))
 		bbPlayer(Owner).IGPlus_AfterTranslocate();
-	if (STM != none)
-		STM.PlayerClear();
 }
 
 defaultproperties

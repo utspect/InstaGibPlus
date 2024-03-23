@@ -14,7 +14,6 @@ simulated function PostBeginPlay()
 	{
 		ForEach AllActors(Class'ST_Mutator', STM)
 			break;		// Find master :D
-		STM.PlayerFire(Instigator, 11);		// 11 = Ripper Primary
 	}
 
 	Super.PostBeginPlay();
@@ -31,7 +30,6 @@ auto state Flying
 				if (Other.bIsPawn && STM.CheckHeadshot(Pawn(Other), HitLocation, Dir) &&
 					(!Instigator.IsA('Bot') || !Bot(Instigator).bNovice)
 				) {
-					STM.PlayerHit(Instigator, 11, True);		// 11 = Ripper Primary Headshot
 					Other.TakeDamage(
 						STM.WeaponSettings.RipperHeadshotDamage,
 						Instigator,
@@ -39,9 +37,7 @@ auto state Flying
 						STM.WeaponSettings.RipperHeadshotMomentum * MomentumTransfer * Dir,
 						'decapitated'
 					);
-					STM.PlayerClear();
 				} else if (Other.bIsPawn == false || STM.CheckBodyShot(Pawn(Other), HitLocation, Dir)) {
-					STM.PlayerHit(Instigator, 11, False);		// 11 = Ripper Primary
 					Other.TakeDamage(
 						STM.WeaponSettings.RipperPrimaryDamage,
 						instigator,
@@ -49,7 +45,6 @@ auto state Flying
 						STM.WeaponSettings.RipperPrimaryMomentum * MomentumTransfer * Dir,
 						'shredded'
 					);
-					STM.PlayerClear();
 				}
 			}
 			if (Other.bIsPawn)

@@ -14,7 +14,6 @@ simulated function PostBeginPlay()
 	{
 		ForEach AllActors(Class'ST_Mutator', STM)
 			break;
-		STM.PlayerFire(Instigator, 9);			// 9 = Plasma Sphere
 	}
 	Super.PostBeginPlay();
 }
@@ -30,14 +29,12 @@ simulated function ProcessTouch (Actor Other, vector HitLocation)
 		}
 		if ( Role == ROLE_Authority )
 		{
-			STM.PlayerHit(Instigator, 9, False);	// 9 = Plasma Sphere
 			Other.TakeDamage(
 				STM.WeaponSettings.PulseSphereDamage,
 				instigator,
 				HitLocation,
 				STM.WeaponSettings.PulseSphereMomentum * MomentumTransfer * Vector(Rotation),
 				MyDamageType);
-			STM.PlayerClear();
 		}
 		Explode(HitLocation, vect(0,0,1));
 	}

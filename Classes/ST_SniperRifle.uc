@@ -50,7 +50,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local vector Momentum;
 
 	PawnOwner = Pawn(Owner);
-	STM.PlayerFire(PawnOwner, 18);        // 18 = Sniper
 
 	s = Spawn(class'UT_ShellCase',, '', Owner.Location + CalcDrawOffset() + 30 * X + (2.8 * FireOffset.Y+5.0) * Y - Z * 1);
 	if (s != None) {
@@ -66,28 +65,24 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		if (Other.bIsPawn && STM.CheckHeadshot(Pawn(Other), HitLocation, X) &&
 			(instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice))
 		) {
-			STM.PlayerHit(PawnOwner, 18, True);        // 18 = Sniper, Headshot
 			Other.TakeDamage(
 				STM.WeaponSettings.SniperHeadshotDamage,
 				PawnOwner,
 				HitLocation,
 				STM.WeaponSettings.SniperHeadshotMomentum * 35000 * X,
 				AltDamageType);
-			STM.PlayerClear();
 		} else if (Other.bIsPawn == false || STM.CheckBodyShot(Pawn(Other), HitLocation, X)) {
 			if (Other.bIsPawn)
 				Momentum = STM.WeaponSettings.SniperMomentum * 30000.0*X;
 			else
 				Momentum = 30000.0*X;
 
-			STM.PlayerHit(PawnOwner, 18, False);        // 18 = Sniper
 			Other.TakeDamage(
 				STM.WeaponSettings.SniperDamage,
 				PawnOwner,
 				HitLocation,
 				Momentum,
 				MyDamageType);
-			STM.PlayerClear();
 		}
 		if (!Other.bIsPawn && !Other.IsA('Carcass'))
 			Spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);

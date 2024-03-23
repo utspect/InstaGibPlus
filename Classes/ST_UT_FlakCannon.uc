@@ -116,7 +116,6 @@ function AltFire( float Value )
 		AdjustedAim = PawnOwner.AdjustToss(AltProjectileSpeed, Start, AimError, True, bAltWarnTarget);	
 		Slug = Spawn(class'ST_FlakSlug',,, Start,AdjustedAim);
 		Slug.STM = STM;
-		STM.PlayerFire(PawnOwner, 15);				// 15 = Flak Slug
 		ClientAltFire(Value);	
 		GoToState('AltFiring');
 	}	

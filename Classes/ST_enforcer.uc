@@ -44,9 +44,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local float Damage;
 
 	PawnOwner = Pawn(Owner);
-	STM.PlayerFire(PawnOwner, 3);			// 3 = Enforcer
-	if (SlaveEnforcer != None)
-		STM.PlayerSpecial(PawnOwner, 3);	// 3 = Enforcer, Slave enforcer is special.
 
 	realLoc = Owner.Location + CalcDrawOffset();
 	s = Spawn(class'UT_ShellCase',, '', realLoc + 20 * X + FireOffset.Y * Y + Z);
@@ -77,7 +74,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		else
 			Damage = STM.WeaponSettings.EnforcerDamageDouble;
 
-		STM.PlayerHit(PawnOwner, 3, False);	// 3 = Enforcer
 		Other.TakeDamage(
 			Damage,
 			PawnOwner,
@@ -85,7 +81,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			Momentum,
 			MyDamageType
 		);
-		STM.PlayerClear();
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 		else
