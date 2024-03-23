@@ -361,6 +361,8 @@ struct ReplBuffer {
 	var int Data[20];
 };
 
+var string IGPlus_LogoVersionText;
+
 replication
 {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1164,10 +1166,21 @@ event Possess()
 	if (bTraceInput)
 		IGPlus_InputLogFile.StartLog();
 
-	if (Level.NetMode != NM_DedicatedServer)
+	if (Level.NetMode != NM_DedicatedServer) {
 		NetStatsElem = Spawn(class'IGPlus_NetStats');
+		IGPlus_LogoVersionText = IGPlus_DetermineLogoVersionText();
+	}
 
 	Super.Possess();
+}
+
+function string IGPlus_DetermineLogoVersionText() {
+	local class<Info> VersionInfoClass;
+	local Info VersionInfoObj;
+
+	VersionInfoClass = class<Info>(DynamicLoadObject(class'StringUtils'.static.GetPackage()$".VersionInfo", class'class', true));
+	VersionInfoObj = Spawn(VersionInfoClass);
+	return VersionInfoObj.GetPropertyText("PackageBaseName")@VersionInfoObj.GetPropertyText("PackageVersion");
 }
 
 function bool IGPlus_DetermineDualButtonSwitchSetting() {
@@ -7925,7 +7938,7 @@ simulated function xxDrawLogo(canvas zzC, float zzx, float zzY, float zzFadeValu
 	zzC.DrawColor = ChallengeHud(MyHud).CyanColor * zzFadeValue;
 	zzC.SetPos(zzx+70,zzY+8);
 	zzC.Font = ChallengeHud(MyHud).MyFonts.GetBigFont(zzC.ClipX);
-	zzC.DrawText(class'VersionInfo'.default.PackageBaseName@class'VersionInfo'.default.PackageVersion);
+	zzC.DrawText(IGPlus_LogoVersionText);
 	zzC.SetPos(zzx+70,zzY+35);
 	zzC.Font = ChallengeHud(MyHud).MyFonts.GetBigFont(zzC.ClipX);
 	if (zzbDoScreenshot)
