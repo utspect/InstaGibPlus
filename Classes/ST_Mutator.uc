@@ -1071,7 +1071,6 @@ function float GetPawnBodyHalfHeight(Pawn P, float DuckFrac) {
 }
 
 function bool CheckHeadShot(Pawn P, vector HitLocation, vector Direction) {
-	local bbPlayer bbP;
 	local float DuckFrac;
 	local float BodyHalfHeight, HeadHalfHeight;
 
@@ -1127,7 +1126,6 @@ function bool CheckBodyShot(Pawn P, vector HitLocation, vector Direction) {
 	local float DuckFrac;
 	local float HalfHeight;
 	local float OffsetZ;
-	local bbPlayer bbP;
 
 	local ST_HitTestHelper HitActor;
 	local vector HitLoc, HitNorm;
