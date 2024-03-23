@@ -22,39 +22,37 @@ simulated function PostBeginPlay()
 
 auto state Flying
 {
-	simulated function ProcessTouch (Actor Other, Vector HitLocation)
-	{
-		if ( bCanHitInstigator || (Other != Instigator) ) 
-		{
-			if ( Role == ROLE_Authority )
-			{
-				if ( Other.bIsPawn && STM.CheckHeadshot(Pawn(Other), HitLocation, Normal(Velocity)) 
-					&& (!Instigator.IsA('Bot') || !Bot(Instigator).bNovice) )
-				{
+	simulated function ProcessTouch (Actor Other, Vector HitLocation) {
+		local vector Dir;
+
+		Dir = Normal(Velocity);
+		if (bCanHitInstigator || (Other != Instigator)) {
+			if (Role == ROLE_Authority) {
+				if (Other.bIsPawn && STM.CheckHeadshot(Pawn(Other), HitLocation, Dir) &&
+					(!Instigator.IsA('Bot') || !Bot(Instigator).bNovice)
+				) {
 					STM.PlayerHit(Instigator, 11, True);		// 11 = Ripper Primary Headshot
 					Other.TakeDamage(
 						STM.WeaponSettings.RipperHeadshotDamage,
 						Instigator,
 						HitLocation,
-						STM.WeaponSettings.RipperHeadshotMomentum * MomentumTransfer * Normal(Velocity),
+						STM.WeaponSettings.RipperHeadshotMomentum * MomentumTransfer * Dir,
 						'decapitated'
 					);
 					STM.PlayerClear();
-				}
-				else			 
-				{
+				} else if (Other.bIsPawn == false || STM.CheckBodyShot(Pawn(Other), HitLocation, Dir)) {
 					STM.PlayerHit(Instigator, 11, False);		// 11 = Ripper Primary
 					Other.TakeDamage(
 						STM.WeaponSettings.RipperPrimaryDamage,
 						instigator,
 						HitLocation,
-						STM.WeaponSettings.RipperPrimaryMomentum * MomentumTransfer * Normal(Velocity),
+						STM.WeaponSettings.RipperPrimaryMomentum * MomentumTransfer * Dir,
 						'shredded'
 					);
 					STM.PlayerClear();
 				}
 			}
-			if ( Other.bIsPawn )
+			if (Other.bIsPawn)
 				PlaySound(MiscSound, SLOT_Misc, 2.0);
 			else
 				PlaySound(ImpactSound, SLOT_Misc, 2.0);

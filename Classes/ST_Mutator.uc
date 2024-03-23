@@ -1053,9 +1053,27 @@ final function EnhancedHurtRadius(
 	Source.bHurtEntry = false;
 }
 
-function bool CheckHeadshot(Pawn P, vector HitLocation, vector Direction) {
-	local float OffsetZ;
+function float GetPawnDuckFraction(Pawn P) {
 	local bbPlayer bbP;
+	bbP = bbPlayer(P);
+	if (bbP != none) {
+		return FClamp(bbP.DuckFraction, 0.0, 1.0);
+	} else {
+		return FClamp(1.0 - (P.EyeHeight / P.default.BaseEyeHeight), 0.0, 1.0);
+	}
+}
+
+function float GetPawnBodyHalfHeight(Pawn P, float DuckFrac) {
+	return Lerp(DuckFrac,
+		P.CollisionHeight - WeaponSettings.HeadHalfHeight,
+		(1.3 * 0.5)*P.CollisionHeight
+	);
+}
+
+function bool CheckHeadShot(Pawn P, vector HitLocation, vector Direction) {
+	local bbPlayer bbP;
+	local float DuckFrac;
+	local float BodyHalfHeight, HeadHalfHeight;
 
 	local ST_HitTestHelper HitActor;
 	local vector HitLoc, HitNorm;
@@ -1067,21 +1085,75 @@ function bool CheckHeadshot(Pawn P, vector HitLocation, vector Direction) {
 	if (WeaponSettings.bEnhancedHeadshotDetection == false)
 		return (HitLocation.Z - P.Location.Z > 0.62 * P.CollisionHeight);
 
+	if (HitLocation.Z - P.Location.Z <= 0.3 * P.CollisionHeight)
+		return false;
+
 	if (CollChecker == none || CollChecker.bDeleteMe) {
 		CollChecker = Spawn(class'ST_HitTestHelper',self, , P.Location);
 		CollChecker.bCollideWorld = false;
 	}
 
-	bbP = bbPlayer(P);
-	if (bbP != none) {
-		OffsetZ = Lerp(bbP.DuckFraction, WeaponSettings.HeadOffsetZ, WeaponSettings.HeadDuckOffsetZ);
-	} else {
-		OffsetZ = Lerp(P.EyeHeight / P.default.BaseEyeHeight, WeaponSettings.HeadDuckOffsetZ, WeaponSettings.HeadOffsetZ);
-	}
+	DuckFrac = GetPawnDuckFraction(P);
+	BodyHalfHeight = GetPawnBodyHalfHeight(P, DuckFrac);
+	HeadHalfHeight = Lerp(DuckFrac,
+		WeaponSettings.HeadHalfHeight,
+		0
+	);
 
 	CollChecker.SetCollision(true, false, false);
 	CollChecker.SetCollisionSize(WeaponSettings.HeadRadius, WeaponSettings.HeadHalfHeight);
-	CollChecker.SetLocation(P.Location + vect(0,0,1)*WeaponSettings.HeadOffsetZ);
+	CollChecker.SetLocation(P.Location + vect(0,0,1)*(BodyHalfHeight + HeadHalfHeight));
+
+	Result = false;
+
+	foreach TraceActors(
+		class'ST_HitTestHelper',
+		HitActor, HitLoc, HitNorm,
+		HitLocation + Direction * (P.CollisionRadius + P.CollisionHeight),
+		HitLocation - Direction * (P.CollisionRadius + P.CollisionHeight)
+	) {
+		if (HitActor == CollChecker) {
+			Result = true;
+			break;
+		}
+	}
+
+	CollChecker.SetCollision(false, false, false);
+
+	return Result;
+}
+
+function bool CheckBodyShot(Pawn P, vector HitLocation, vector Direction) {
+	local float DuckFrac;
+	local float HalfHeight;
+	local float OffsetZ;
+	local bbPlayer bbP;
+
+	local ST_HitTestHelper HitActor;
+	local vector HitLoc, HitNorm;
+	local bool Result;
+
+	if (P == none)
+		return false;
+
+	if (WeaponSettings.bEnhancedHeadshotDetection == false)
+		return CheckHeadShot(P, HitLocation, Direction) == false;
+
+	if (CollChecker == none || CollChecker.bDeleteMe) {
+		CollChecker = Spawn(class'ST_HitTestHelper',self, , P.Location);
+		CollChecker.bCollideWorld = false;
+	}
+
+	DuckFrac = GetPawnDuckFraction(P);
+	HalfHeight = GetPawnBodyHalfHeight(P, DuckFrac);
+	OffsetZ = Lerp(DuckFrac,
+		-WeaponSettings.HeadHalfHeight,
+		-(0.7 * 0.5)*P.CollisionHeight
+	);
+
+	CollChecker.SetCollision(true, false, false);
+	CollChecker.SetCollisionSize(P.CollisionRadius, HalfHeight);
+	CollChecker.SetLocation(P.Location + vect(0,0,1)*OffsetZ);
 
 	Result = false;
 
