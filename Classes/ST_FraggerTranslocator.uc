@@ -1,7 +1,5 @@
 class ST_FraggerTranslocator extends ST_Translocator;
 
-#exec AUDIO IMPORT FILE="Sounds/Fragger/XlocRespawn.wav"
-
 function Translocate()
 {
 	local vector Dest, Start;

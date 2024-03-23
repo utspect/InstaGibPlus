@@ -19,56 +19,6 @@ class NN_FraggerRifle extends NN_SniperRifle;
 // all the unsung heros of uscript who have code in this gun , to the unknown, i salute you.
 ///////////////////////////////////////////////////////////////////////////////
 
-//pickp model thanks to :[lol]:WalknBullseye
-#exec MESH IMPORT MESH=PUGroundg ANIVFILE="MODELS/Fragger/PUGroundg_a.3D" DATAFILE="MODELS/Fragger/PUGroundg_d.3D" X=0 Y=0 Z=0
-#exec MESH ORIGIN MESH=PUGroundg X=0 Y=0 Z=0 YAW=64
-#exec MESH SEQUENCE MESH=PUGroundg SEQ=All          STARTFRAME=0   NUMFRAMES=1
-#exec MESH SEQUENCE MESH=PUGroundg SEQ=Still        STARTFRAME=0   NUMFRAMES=1
-#exec MESHMAP SCALE MESHMAP=PUGroundg X=0.07 Y=0.07 Z=0.14
-
-#exec TEXTURE IMPORT NAME=Multig FILE="Textures/Fragger/Multig.pcx" Mips=on
-
-#exec MESHMAP SETTEXTURE MESHMAP=PUGroundg NUM=0 TEXTURE=Multig
-#exec MESHMAP SETTEXTURE MESHMAP=PUGroundg NUM=1 TEXTURE=Multig
-#exec MESHMAP SETTEXTURE MESHMAP=PUGroundg NUM=2 TEXTURE=Multig
-#exec MESHMAP SETTEXTURE MESHMAP=PUGroundg NUM=3 TEXTURE=Multig
-#exec MESHMAP SETTEXTURE MESHMAP=PUGroundg NUM=4 TEXTURE=Multig
-
-#exec MESH IMPORT MESH=PUHandg ANIVFILE="MODELS/Fragger/PUHandg_a.3D" DATAFILE="MODELS/Fragger/PUHandg_d.3D" X=0 Y=0 Z=0
-#exec MESH ORIGIN MESH=PUHandg X=-150 Y=0 Z=-30 YAW=255 PITCH=0 ROLL=0
-#exec MESH SEQUENCE MESH=PUHandg SEQ=Still          STARTFRAME=0   NUMFRAMES=1
-#exec MESH SEQUENCE MESH=PUHandg SEQ=All            STARTFRAME=0   NUMFRAMES=1
-#exec MESHMAP SCALE MESHMAP=PUHandg X=0.07 Y=0.07 Z=0.14
-
-
-
-#exec MESHMAP SETTEXTURE MESHMAP=PUHandg NUM=0 TEXTURE=Multig
-#exec MESHMAP SETTEXTURE MESHMAP=PUHandg NUM=1 TEXTURE=Multig
-#exec MESHMAP SETTEXTURE MESHMAP=PUHandg NUM=2 TEXTURE=Multig
-#exec MESHMAP SETTEXTURE MESHMAP=PUHandg NUM=3 TEXTURE=Multig
-#exec MESHMAP SETTEXTURE MESHMAP=PUHandg NUM=4 TEXTURE=Multig
-
-//////
-
-#exec AUDIO IMPORT FILE="Sounds/Fragger/FIRE.wav" NAME="FraggerFire"
-#exec AUDIO IMPORT FILE="Sounds/Fragger/holyshit.wav"
-#exec AUDIO IMPORT FILE="Sounds/Fragger/BubbleBlast.wav"
-
-#exec TEXTURE IMPORT FILE="Textures/Fragger/AA.pcx"
-#exec TEXTURE IMPORT FILE="Textures/Fragger/SR.pcx"
-#exec TEXTURE IMPORT FILE="Textures/Fragger/Rifle2c.pcx"
-#exec TEXTURE IMPORT FILE="Textures/Fragger/Rifle2d.pcx"
-
-#exec TEXTURE IMPORT FILE="Textures/Fragger/crosshair.pcx" MIPS="OFF" FLAGS=2
-#EXEC TEXTURE IMPORT FILE="Textures/Fragger/simple.pcx" MIPS=0 FLAGS=2
-#EXEC TEXTURE IMPORT FILE="Textures/Fragger/Cross.pcx" MIPS=0 FLAGS=2
-#EXEC TEXTURE IMPORT FILE="Textures/Fragger/Black.pcx" MIPS=0 FLAGS=2
-#EXEC TEXTURE IMPORT FILE="Textures/Fragger/TDOT.pcx" MIPS=0  FLAGS=2
-#EXEC TEXTURE IMPORT FILE="Textures/Fragger/ShellB.pcx"
-#EXEC TEXTURE IMPORT FILE="Textures/Fragger/ShellR.pcx"
-#EXEC TEXTURE IMPORT FILE="Textures/Fragger/ShellG.pcx"
-
-
 var color TeamColor[6];
 var Texture ShellCaseTex[4];
 

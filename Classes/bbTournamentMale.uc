@@ -6,8 +6,6 @@ class bbTournamentMale extends bbPlayer
 
 var(Sounds) Sound DeathsFemale[6];
 
-#exec OBJ LOAD FILE=..\Sounds\Male1Voice.uax PACKAGE=Male1Voice
-
 function xxPlayDyingSound()
 {
     local int rnd;

@@ -1,7 +1,5 @@
 class IGPlus_NetStats extends Actor;
 
-#EXEC LOAD FILE="Textures/IGPlusNetStats.utx" PACKAGE=InstaGibPlus.NetStats
-
 var ScriptedTexture OldTex;
 var ScriptedTexture NewTex;
 

@@ -1,20 +1,5 @@
 class MutKillFeed extends Mutator;
 
-#exec Texture Import Name=KF_General         File=Textures\Icons\IconSkull.pcx  Mips=Off
-#exec Texture Import Name=KF_ChainSaw        File=Textures\Icons\IconSaw.pcx    Mips=Off
-#exec Texture Import Name=KF_ImpactHammer    File=Textures\Icons\IconHammer.pcx Mips=Off
-#exec Texture Import Name=KF_Translocator    File=Textures\Icons\IconTrans.pcx  Mips=Off
-#exec Texture Import Name=KF_Enforcer        File=Textures\Icons\IconAutoM.pcx  Mips=Off
-#exec Texture Import Name=KF_BioRifle        File=Textures\Icons\IconBio.pcx    Mips=Off
-#exec Texture Import Name=KF_ShockRifle      File=Textures\Icons\IconASMD.pcx   Mips=Off
-#exec Texture Import Name=KF_PulseGun        File=Textures\Icons\IconPulse.pcx  Mips=Off
-#exec Texture Import Name=KF_Ripper          File=Textures\Icons\IconRazor.pcx  Mips=Off
-#exec Texture Import Name=KF_Minigun         File=Textures\Icons\IconMini.pcx   Mips=Off
-#exec Texture Import Name=KF_FlakCannon      File=Textures\Icons\IconFlak.pcx   Mips=Off
-#exec Texture Import Name=KF_RocketLauncher  File=Textures\Icons\Icon8ball.pcx  Mips=Off
-#exec Texture Import Name=KF_SniperRifle     File=Textures\Icons\IconRifle.pcx  Mips=Off
-#exec Texture Import Name=KF_WarheadLauncher File=Textures\Icons\IconWarH.pcx   Mips=Off
-
 struct WeaponIconMapEntry {
 	var class<Weapon> Weapon;
 	var Texture Icon;
