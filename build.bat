@@ -149,9 +149,9 @@ if %BUILD_NOVERINF% == 0 (
 
 pushd "%BUILD_DIR%..\System"
 
+call :PrepareDependencies %DEPENDENCIES%
 set MAKEINI="%BUILD_TEMP%make.ini"
 call :GenerateMakeIni %MAKEINI% %DEPENDENCIES% %PACKAGE_NAME%
-call :PrepareDependencies %DEPENDENCIES%
 
 :: make sure to always rebuild the package
 :: New package GUID, No doubts about staleness
