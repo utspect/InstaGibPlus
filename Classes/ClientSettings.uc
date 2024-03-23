@@ -171,7 +171,7 @@ simulated function CheckConfig() {
 
 	for (i = 0; i < arraycount(sHitSound); i++) {
 		if (Left(sHitSound[i], 12) ~= "InstaGibPlus") {
-			sHitSound[i] = PackageName$Mid(sHitSound[i], InStr(sHitSound[i], "."));
+			sHitSound[i] = string(Sound'HitSound'.Outer.Name)$Mid(sHitSound[i], InStr(sHitSound[i], "."));
 		}
 		if (sHitSound[i] == "" && sHitSound[i] != default.sHitSound[i]) {
 			sHitSound[i] = default.sHitSound[i];
@@ -423,10 +423,10 @@ defaultproperties
 	SelectedTeamHitSound=2
 	HitSoundVolume=4
 	HitSoundTeamVolume=4
-	sHitSound(0)="InstaGibPlus9.HitSound"
+	sHitSound(0)="InstaGibPlusAssets_v1.HitSound"
 	sHitSound(1)="UnrealShare.StingerFire"
-	sHitSound(2)="InstaGibPlus9.HitSoundFriendly"
-	sHitSound(3)="InstaGibPlus9.HitSound1"
+	sHitSound(2)="InstaGibPlusAssets_v1.HitSoundFriendly"
+	sHitSound(3)="InstaGibPlusAssets_v1.HitSound1"
 	cShockBeam=1
 	bHideOwnBeam=False
 	bBeamEnableLight=True
