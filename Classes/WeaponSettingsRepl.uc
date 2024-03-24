@@ -340,6 +340,12 @@ simulated final function float PulseSelectAnimSpeed() {
 	return 100.0;
 }
 
+simulated final function float PulseFiringAnimSpeed() {
+	if (PulseSphereFireRate > 0.0)
+		return FMin(100.0, default.PulseSphereFireRate / PulseSphereFireRate);
+	return 100.0;
+}
+
 simulated final function float ShockSelectAnimSpeed() {
 	if (ShockSelectTime > 0.0)
 		return FMin(100.0, default.ShockSelectTime / ShockSelectTime);

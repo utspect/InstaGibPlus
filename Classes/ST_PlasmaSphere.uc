@@ -1,9 +1,3 @@
-// ===============================================================
-// UTPureStats7A.ST_PlasmaSphere: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class ST_PlasmaSphere extends PlasmaSphere;
 
 var ST_Mutator STM;
@@ -16,7 +10,7 @@ simulated function PostBeginPlay()
 			break;
 	}
 	Speed = STM.WeaponSettings.PulseSphereSpeed;
-	DrawScale=0.120000;
+	DrawScale = 0.12;
 	Super.PostBeginPlay();
 }
 
