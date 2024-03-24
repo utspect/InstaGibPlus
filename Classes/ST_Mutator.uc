@@ -94,33 +94,31 @@ function bool CheckReplaceWeapon(Actor A) {
 	local WeaponSettings WS;
 
 	W = Weapon(A);
-	if (W == none)
-		return false;
-
 	WS = WeaponSettings;
-	     if (W.Class == class'Translocator'     && WS.bReplaceTranslocator)    return DoReplace(W, class'ST_Translocator');
-	else if (W.Class == class'ImpactHammer'     && WS.bReplaceImpactHammer)    return DoReplace(W, class'ST_ImpactHammer');
-	else if (W.Class == class'DispersionPistol' && WS.bReplaceImpactHammer)    return DoReplace(W, class'ST_ImpactHammer');
-	else if (W.Class == class'Enforcer'         && WS.bReplaceEnforcer)        return DoReplace(W, class'ST_enforcer');
-	else if (W.Class == class'AutoMag'          && WS.bReplaceEnforcer)        return DoReplace(W, class'ST_enforcer');
-	else if (W.Class == class'UT_BioRifle'      && WS.bReplaceBioRifle)        return DoReplace(W, class'ST_ut_biorifle');
-	else if (W.Class == class'GesBioRifle'      && WS.bReplaceBioRifle)        return DoReplace(W, class'ST_ut_biorifle');
-	else if (W.Class == class'ShockRifle'       && WS.bReplaceShockRifle)      return DoReplace(W, class'ST_ShockRifle');
-	else if (W.Class == class'ASMD'             && WS.bReplaceShockRifle)      return DoReplace(W, class'ST_ShockRifle');
-	else if (W.Class == class'SuperShockRifle'  && WS.bReplaceSuperShockRifle) return DoReplace(W, class'ST_SuperShockRifle');
-	else if (W.Class == class'PulseGun'         && WS.bReplacePulseGun)        return DoReplace(W, class'ST_PulseGun');
-	else if (W.Class == class'Stinger'          && WS.bReplacePulseGun)        return DoReplace(W, class'ST_PulseGun');
-	else if (W.Class == class'Ripper'           && WS.bReplaceRipper)          return DoReplace(W, class'ST_ripper');
-	else if (W.Class == class'Razorjack'        && WS.bReplaceRipper)          return DoReplace(W, class'ST_ripper');
-	else if (W.Class == class'Minigun'          && WS.bReplaceMinigun)         return DoReplace(W, class'ST_minigun2');
-	else if (W.Class == class'Minigun2'         && WS.bReplaceMinigun)         return DoReplace(W, class'ST_minigun2');
-	else if (W.Class == class'UT_FlakCannon'    && WS.bReplaceFlakCannon)      return DoReplace(W, class'ST_UT_FlakCannon');
-	else if (W.Class == class'FlakCannon'       && WS.bReplaceFlakCannon)      return DoReplace(W, class'ST_UT_FlakCannon');
-	else if (W.Class == class'UT_Eightball'     && WS.bReplaceRocketLauncher)  return DoReplace(W, class'ST_UT_Eightball');
-	else if (W.Class == class'Eightball'        && WS.bReplaceRocketLauncher)  return DoReplace(W, class'ST_UT_Eightball');
-	else if (W.Class == class'SniperRifle'      && WS.bReplaceSniperRifle)     return DoReplace(W, class'ST_SniperRifle');
-	else if (W.Class == class'Rifle'            && WS.bReplaceSniperRifle)     return DoReplace(W, class'ST_SniperRifle');
-	else if (W.Class == class'WarheadLauncher'  && WS.bReplaceWarheadLauncher) return DoReplace(W, class'ST_WarheadLauncher');
+	if (W == none) return false;
+	else if (W.Class == class'Translocator')     { if (WS.bReplaceTranslocator)    return DoReplace(W, class'ST_Translocator'); }
+	else if (W.Class == class'ImpactHammer')     { if (WS.bReplaceImpactHammer)    return DoReplace(W, class'ST_ImpactHammer'); }
+	else if (W.Class == class'DispersionPistol') { if (WS.bReplaceImpactHammer)    return DoReplace(W, class'ST_ImpactHammer'); }
+	else if (W.Class == class'Enforcer')         { if (WS.bReplaceEnforcer)        return DoReplace(W, class'ST_enforcer'); }
+	else if (W.Class == class'AutoMag')          { if (WS.bReplaceEnforcer)        return DoReplace(W, class'ST_enforcer'); }
+	else if (W.Class == class'UT_BioRifle')      { if (WS.bReplaceBioRifle)        return DoReplace(W, class'ST_ut_biorifle'); }
+	else if (W.Class == class'GesBioRifle')      { if (WS.bReplaceBioRifle)        return DoReplace(W, class'ST_ut_biorifle'); }
+	else if (W.Class == class'ShockRifle')       { if (WS.bReplaceShockRifle)      return DoReplace(W, class'ST_ShockRifle'); }
+	else if (W.Class == class'ASMD')             { if (WS.bReplaceShockRifle)      return DoReplace(W, class'ST_ShockRifle'); }
+	else if (W.Class == class'SuperShockRifle')  { if (WS.bReplaceSuperShockRifle) return DoReplace(W, class'ST_SuperShockRifle'); }
+	else if (W.Class == class'PulseGun')         { if (WS.bReplacePulseGun)        return DoReplace(W, class'ST_PulseGun'); }
+	else if (W.Class == class'Stinger')          { if (WS.bReplacePulseGun)        return DoReplace(W, class'ST_PulseGun'); }
+	else if (W.Class == class'Ripper')           { if (WS.bReplaceRipper)          return DoReplace(W, class'ST_ripper'); }
+	else if (W.Class == class'Razorjack')        { if (WS.bReplaceRipper)          return DoReplace(W, class'ST_ripper'); }
+	else if (W.Class == class'Minigun')          { if (WS.bReplaceMinigun)         return DoReplace(W, class'ST_minigun2'); }
+	else if (W.Class == class'Minigun2')         { if (WS.bReplaceMinigun)         return DoReplace(W, class'ST_minigun2'); }
+	else if (W.Class == class'UT_FlakCannon')    { if (WS.bReplaceFlakCannon)      return DoReplace(W, class'ST_UT_FlakCannon'); }
+	else if (W.Class == class'FlakCannon')       { if (WS.bReplaceFlakCannon)      return DoReplace(W, class'ST_UT_FlakCannon'); }
+	else if (W.Class == class'UT_Eightball')     { if (WS.bReplaceRocketLauncher)  return DoReplace(W, class'ST_UT_Eightball'); }
+	else if (W.Class == class'Eightball')        { if (WS.bReplaceRocketLauncher)  return DoReplace(W, class'ST_UT_Eightball'); }
+	else if (W.Class == class'SniperRifle')      { if (WS.bReplaceSniperRifle)     return DoReplace(W, class'ST_SniperRifle'); }
+	else if (W.Class == class'Rifle')            { if (WS.bReplaceSniperRifle)     return DoReplace(W, class'ST_SniperRifle'); }
+	else if (W.Class == class'WarheadLauncher')  { if (WS.bReplaceWarheadLauncher) return DoReplace(W, class'ST_WarheadLauncher'); }
 
 	return false;
 }
