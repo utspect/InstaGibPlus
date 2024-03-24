@@ -1,36 +1,22 @@
-// ===============================================================
-// Stats.ST_ShockProj: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class ST_ShockProj extends ShockProj;
 
 var ST_Mutator STM;
 
-// For Standstill combo Special
-var vector StartLocation;
-
 // For ShockProjectileTakeDamage
 var float Health;
 
-simulated function PostBeginPlay()
-{
-	if (ROLE == ROLE_Authority)
-	{
-		StartLocation = Instigator.Location;
+simulated function PostBeginPlay() {
+	if (ROLE == ROLE_Authority) {
 		ForEach AllActors(Class'ST_Mutator', STM)
-			break;		// Find master :D
+			break; // Find master :D
 	}
-	if (STM.WeaponSettings.ShockProjectileTakeDamage == True)
-	{
+	if (STM.WeaponSettings.ShockProjectileTakeDamage) {
 		Health = STM.WeaponSettings.ShockProjectileHealth;
 	}
 	Super.PostBeginPlay();
 }
 
-function SuperExplosion()	// aka, combo.
-{
+function SuperExplosion() {
 	if (STM.WeaponSettings.bEnableEnhancedSplashCombo) {
 		STM.EnhancedHurtRadius(
 			self,
@@ -54,8 +40,7 @@ function SuperExplosion()	// aka, combo.
 	Destroy(); 
 }
 
-function Explode(vector HitLocation,vector HitNormal)
-{
+function Explode(vector HitLocation,vector HitNormal) {
 	PlaySound(ImpactSound, SLOT_Misc, 0.5,,, 0.5+FRand());
 	if (STM.WeaponSettings.bEnableEnhancedSplash) {
 		STM.EnhancedHurtRadius(
@@ -81,18 +66,15 @@ function Explode(vector HitLocation,vector HitNormal)
 	Destroy();
 }
 
-function TakeDamage( int Damage, Pawn EventInstigator, vector HitLocation, vector Momentum, name DamageType)
-{
-	if (STM.WeaponSettings.ShockProjectileTakeDamage == True)
-	{
-		if (DamageType == 'Pulsed'|| DamageType == 'Corroded')
-			{
-				Health -= Damage;
-				if (Health <= 0)
-				{
-					Spawn(class'ut_RingExplosion',,, Location + Momentum * 0.1, rotator(Momentum));
-					Destroy();
-				}
+function TakeDamage(int Damage, Pawn EventInstigator, vector HitLocation, vector Momentum, name DamageType) {
+	if (STM.WeaponSettings.ShockProjectileTakeDamage == false)
+		return;
+
+	if (DamageType == 'Pulsed'|| DamageType == 'Corroded') {
+		Health -= Damage;
+		if (Health <= 0) {
+			Spawn(class'ut_RingExplosion',,, Location + Momentum * 0.1, rotator(Momentum));
+			Destroy();
 		}
 	}
 }
