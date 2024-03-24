@@ -52,43 +52,12 @@ function Timer()
 
 state OnSurface
 {
-	function ProcessTouch (Actor Other, vector HitLocation)
-	{
-		GotoState('Exploding');
-	}
-
-
-	function Timer()
-	{
-		if ( Mover(Base) != None )
-		{
-			WallTime -= 0.2;
-			if ( WallTime < 0.15 )
-				Global.Timer();
-			else if ( VSize(Location - Base.Location) > BaseOffset + 4 )
-				Global.Timer();
-		}
-		else
-			Global.Timer();
-	}
-	
 	function BeginState()
 	{
-		wallTime = 3.8;
-		
-		MyFear = Spawn(class'BioFear');
-		if ( Mover(Base) != None )
-		{
-			BaseOffset = VSize(Location - Base.Location);
-			SetTimer(0.2, true);
-		}
+		if (STM.WeaponSettings.BioPrimaryInstantExplosion)
+			global.Timer();
 		else
-		{
-			if (STM.WeaponSettings.BioPrimaryInstantExplosion)
-				Timer();
-			else
-				SetTimer(wallTime, false);
-		}
+			super.BeginState();
 	}
 
 }
