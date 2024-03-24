@@ -389,8 +389,16 @@ function float GetPawnBodyHalfHeight(Pawn P, float DuckFrac) {
 	);
 }
 
+function float GetPawnBodyOffsetZ(Pawn P, float DuckFrac) {
+	return Lerp(DuckFrac,
+		-WeaponSettings.HeadHalfHeight,
+		-(0.7 * 0.5)*P.CollisionHeight
+	);
+}
+
 function bool CheckHeadShot(Pawn P, vector HitLocation, vector Direction) {
 	local float DuckFrac;
+	local float BodyOffsetZ;
 	local float BodyHalfHeight, HeadHalfHeight;
 
 	local ST_HitTestHelper HitActor;
@@ -412,6 +420,7 @@ function bool CheckHeadShot(Pawn P, vector HitLocation, vector Direction) {
 	}
 
 	DuckFrac = GetPawnDuckFraction(P);
+	BodyOffsetZ = GetPawnBodyOffsetZ(P, DuckFrac);
 	BodyHalfHeight = GetPawnBodyHalfHeight(P, DuckFrac);
 	HeadHalfHeight = Lerp(DuckFrac,
 		WeaponSettings.HeadHalfHeight,
@@ -420,7 +429,7 @@ function bool CheckHeadShot(Pawn P, vector HitLocation, vector Direction) {
 
 	CollChecker.SetCollision(true, false, false);
 	CollChecker.SetCollisionSize(WeaponSettings.HeadRadius, WeaponSettings.HeadHalfHeight);
-	CollChecker.SetLocation(P.Location + vect(0,0,1)*(BodyHalfHeight + HeadHalfHeight));
+	CollChecker.SetLocation(P.Location + vect(0,0,1)*(BodyOffsetZ + BodyHalfHeight + HeadHalfHeight));
 
 	Result = false;
 
@@ -463,10 +472,7 @@ function bool CheckBodyShot(Pawn P, vector HitLocation, vector Direction) {
 
 	DuckFrac = GetPawnDuckFraction(P);
 	HalfHeight = GetPawnBodyHalfHeight(P, DuckFrac);
-	OffsetZ = Lerp(DuckFrac,
-		-WeaponSettings.HeadHalfHeight,
-		-(0.7 * 0.5)*P.CollisionHeight
-	);
+	OffsetZ = GetPawnBodyOffsetZ(P, DuckFrac);
 
 	CollChecker.SetCollision(true, false, false);
 	CollChecker.SetCollisionSize(P.CollisionRadius, HalfHeight);
