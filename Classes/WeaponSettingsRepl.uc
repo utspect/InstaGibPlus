@@ -57,6 +57,8 @@ var float PulseSelectTime;
 var float PulseDownTime;
 var float PulseSphereDamage;
 var float PulseSphereMomentum;
+var float PulseSphereSpeed;
+var float PulseSphereFireRate;
 var float PulseBoltDPS;
 var float PulseBoltMomentum;
 var float PulseBoltMaxAccumulate;
@@ -70,6 +72,8 @@ var float ShockBeamMomentum;
 var float ShockProjectileDamage;
 var float ShockProjectileHurtRadius;
 var float ShockProjectileMomentum;
+var bool  ShockProjectileTakeDamage;
+var float ShockProjectileHealth;
 var float ShockComboDamage;
 var float ShockComboMomentum;
 var float ShockComboHurtRadius;
@@ -78,6 +82,7 @@ var float BioSelectTime;
 var float BioDownTime;
 var float BioDamage;
 var float BioMomentum;
+var bool  BioPrimaryInstantExplosion;
 var float BioAltDamage;
 var float BioAltMomentum;
 var float BioHurtRadiusBase;
@@ -173,6 +178,8 @@ replication {
 		PulseDownTime,
 		PulseSphereDamage,
 		PulseSphereMomentum,
+		PulseSphereSpeed,
+		PulseSphereFireRate,
 		PulseBoltDPS,
 		PulseBoltMomentum,
 		PulseBoltMaxAccumulate,
@@ -186,6 +193,8 @@ replication {
 		ShockProjectileDamage,
 		ShockProjectileHurtRadius,
 		ShockProjectileMomentum,
+		ShockProjectileTakeDamage,
+		ShockProjectileHealth,
 		ShockComboDamage,
 		ShockComboMomentum,
 		ShockComboHurtRadius,
@@ -194,6 +203,7 @@ replication {
 		BioDownTime,
 		BioDamage,
 		BioMomentum,
+		BioPrimaryInstantExplosion,
 		BioAltDamage,
 		BioAltMomentum,
 		BioHurtRadiusBase,
@@ -482,6 +492,8 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	PulseDownTime = S.PulseDownTime;
 	PulseSphereDamage = S.PulseSphereDamage;
 	PulseSphereMomentum = S.PulseSphereMomentum;
+	PulseSphereSpeed = S.PulseSphereSpeed;
+	PulseSphereFireRate = S.PulseSphereFireRate;
 	PulseBoltDPS = S.PulseBoltDPS;
 	PulseBoltMomentum = S.PulseBoltMomentum;
 	PulseBoltMaxAccumulate = S.PulseBoltMaxAccumulate;
@@ -495,6 +507,8 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	ShockProjectileDamage = S.ShockProjectileDamage;
 	ShockProjectileHurtRadius = S.ShockProjectileHurtRadius;
 	ShockProjectileMomentum = S.ShockProjectileMomentum;
+	ShockProjectileTakeDamage = S.ShockProjectileTakeDamage;
+	ShockProjectileHealth = S.ShockProjectileHealth;
 	ShockComboDamage = S.ShockComboDamage;
 	ShockComboMomentum = S.ShockComboMomentum;
 	ShockComboHurtRadius = S.ShockComboHurtRadius;
@@ -503,6 +517,7 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	BioDownTime = S.BioDownTime;
 	BioDamage = S.BioDamage;
 	BioMomentum = S.BioMomentum;
+	BioPrimaryInstantExplosion = S.BioPrimaryInstantExplosion;
 	BioAltDamage = S.BioAltDamage;
 	BioAltMomentum = S.BioAltMomentum;
 	BioHurtRadiusBase = S.BioHurtRadiusBase;
@@ -637,6 +652,8 @@ defaultproperties
 	PulseDownTime=0.26
 	PulseSphereDamage=20
 	PulseSphereMomentum=1.0
+	PulseSphereSpeed=1450.000000
+	PulseSphereFireRate=0.18
 	PulseBoltDPS=72
 	PulseBoltMomentum=1.0
 	PulseBoltMaxAccumulate=0.08
@@ -650,6 +667,8 @@ defaultproperties
 	ShockProjectileDamage=55
 	ShockProjectileHurtRadius=70
 	ShockProjectileMomentum=1.0
+	ShockProjectileTakeDamage=False
+	ShockProjectileHealth=30
 	ShockComboDamage=165
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
@@ -658,6 +677,7 @@ defaultproperties
 	BioDownTime=0.333333
 	BioDamage=20
 	BioMomentum=1.0
+	BioPrimaryInstantExplosion=False
 	BioAltDamage=75
 	BioAltMomentum=1.0
 	BioHurtRadiusBase=75

@@ -82,6 +82,8 @@ var config float PulseSelectTime;
 var config float PulseDownTime;
 var config float PulseSphereDamage;
 var config float PulseSphereMomentum;
+var config float PulseSphereSpeed;
+var config float PulseSphereFireRate;
 var config float PulseBoltDPS;
 var config float PulseBoltMomentum;
 var config float PulseBoltMaxAccumulate;
@@ -96,6 +98,8 @@ var config float ShockProjectileDamage;
 var config float ShockProjectileHurtRadius;
 var config float ShockProjectileMomentum;
 var config bool  ShockProjectileBlockBullets;
+var config bool  ShockProjectileTakeDamage;
+var config float ShockProjectileHealth;
 var config float ShockComboDamage;
 var config float ShockComboMomentum;
 var config float ShockComboHurtRadius;
@@ -104,6 +108,7 @@ var config float BioSelectTime;
 var config float BioDownTime;
 var config float BioDamage;
 var config float BioMomentum;
+var config bool  BioPrimaryInstantExplosion; 
 var config float BioAltDamage;
 var config float BioAltMomentum;
 var config float BioHurtRadiusBase;
@@ -226,6 +231,8 @@ defaultproperties
 	PulseDownTime=0.26
 	PulseSphereDamage=20
 	PulseSphereMomentum=1.0
+	PulseSphereSpeed=1450.000000
+	PulseSphereFireRate=0.18
 	PulseBoltDPS=72
 	PulseBoltMomentum=1.0
 	PulseBoltMaxAccumulate=0.08
@@ -240,6 +247,8 @@ defaultproperties
 	ShockProjectileHurtRadius=70
 	ShockProjectileMomentum=1.0
 	ShockProjectileBlockBullets=True
+	ShockProjectileTakeDamage=False
+	ShockProjectileHealth=30
 	ShockComboDamage=165
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
@@ -248,6 +257,7 @@ defaultproperties
 	BioDownTime=0.333333
 	BioDamage=20
 	BioMomentum=1.0
+	BioPrimaryInstantExplosion=False
 	BioAltDamage=75
 	BioAltMomentum=1.0
 	BioHurtRadiusBase=75

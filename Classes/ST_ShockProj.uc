@@ -11,6 +11,9 @@ var ST_Mutator STM;
 // For Standstill combo Special
 var vector StartLocation;
 
+// For ShockProjectileTakeDamage
+var float Health;
+
 simulated function PostBeginPlay()
 {
 	if (ROLE == ROLE_Authority)
@@ -19,7 +22,10 @@ simulated function PostBeginPlay()
 		ForEach AllActors(Class'ST_Mutator', STM)
 			break;		// Find master :D
 	}
-
+	if (STM.WeaponSettings.ShockProjectileTakeDamage == True)
+	{
+		Health = STM.WeaponSettings.ShockProjectileHealth;
+	}
 	Super.PostBeginPlay();
 }
 
@@ -73,6 +79,22 @@ function Explode(vector HitLocation,vector HitNormal)
 		Spawn(class'ut_RingExplosion',,, HitLocation+HitNormal*8,rotator(Velocity));		
 
 	Destroy();
+}
+
+function TakeDamage( int Damage, Pawn EventInstigator, vector HitLocation, vector Momentum, name DamageType)
+{
+	if (STM.WeaponSettings.ShockProjectileTakeDamage == True)
+	{
+		if (DamageType == 'Pulsed'|| DamageType == 'Corroded')
+			{
+				Health -= Damage;
+				if (Health <= 0)
+				{
+					Spawn(class'ut_RingExplosion',,, Location + Momentum * 0.1, rotator(Momentum));
+					Destroy();
+				}
+		}
+	}
 }
 
 defaultproperties {

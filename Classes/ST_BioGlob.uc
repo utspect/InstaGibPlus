@@ -77,6 +77,20 @@ state OnSurface
 			return;
 		GotoState('Exploding');
 	}
+
+	function BeginState()
+	{
+		wallTime = 3.8;
+		
+		MyFear = Spawn(class'BioFear');
+		if ( Mover(Base) != None )
+		{
+			BaseOffset = VSize(Location - Base.Location);
+			SetTimer(0.2, true);
+		}
+		else 
+			SetTimer(wallTime, false);
+	}
 }
 
 defaultproperties

@@ -17,6 +17,24 @@ auto state Flying
 	}
 }
 
+state OnSurface
+{
+	function BeginState()
+	{
+		wallTime = 3.8;
+		
+		MyFear = Spawn(class'BioFear');
+		if ( Mover(Base) != None )
+		{
+			BaseOffset = VSize(Location - Base.Location);
+			SetTimer(0.2, true);
+		}
+		else 
+			SetTimer(wallTime, false);
+	}
+
+}
+
 defaultproperties
 {
      speed=300.000000

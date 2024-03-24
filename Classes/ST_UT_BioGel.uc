@@ -50,6 +50,60 @@ function Timer()
 	Destroy();	
 }
 
+state OnSurface
+{
+	function ProcessTouch (Actor Other, vector HitLocation)
+	{
+		GotoState('Exploding');
+	}
+
+
+	function Timer()
+	{
+		if ( Mover(Base) != None )
+		{
+			WallTime -= 0.2;
+			if ( WallTime < 0.15 )
+				Global.Timer();
+			else if ( VSize(Location - Base.Location) > BaseOffset + 4 )
+				Global.Timer();
+		}
+		else
+			Global.Timer();
+	}
+	
+	function BeginState()
+	{
+		wallTime = 3.8;
+		
+		MyFear = Spawn(class'BioFear');
+		if ( Mover(Base) != None )
+		{
+			BaseOffset = VSize(Location - Base.Location);
+			SetTimer(0.2, true);
+		}
+		else
+		{
+			if (STM.WeaponSettings.BioPrimaryInstantExplosion)
+				Timer();
+			else
+				SetTimer(wallTime, false);
+		}
+	}
+
+}
+
+state Exploding
+{
+	ignores Touch, TakeDamage;
+
+	function BeginState()
+	{
+		SetTimer(0.2, False); // Make explosions after touch not random
+	}
+}
+
+
 auto state Flying
 {
 	function ProcessTouch (Actor Other, vector HitLocation) 
