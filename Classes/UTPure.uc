@@ -1069,66 +1069,6 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		else
 			Sender.ClientMessage(BADminText);
 	}
-	else if (Left(MutateString,4) ~= "PCK ")
-	{	// Pure Client Kill (Kick)
-		zzbbPP = bbPlayer(Sender);
-		if (zzbbPP != None)
-			zzbbPP.xxServerCheater("MT"@Mid(MutateString,4));
-	}
-	else if (Left(MutateString,4) ~= "PCD ")
-	{	// Perform Remote Console Command on this player
-		zzbbPP = bbPlayer(Sender);
-		if (zzbbPP != None)
-		{
-			zzS = Mid(MutateString,4);
-			zzi = InStr(zzS, " ");
-			if (zzbbPP.zzRemCmd != "")
-			{
-				zzbbPP.Mutate("pcf"@Left(zzS,zzi)@zzbbPP.zzRemCmd);
-			}
-			else
-			{
-				zzbbPP.zzRemCmd = Left(zzS, zzi);
-				zzbbPP.xxClientConsole(Mid(zzS, zzi+1), 200);
-			}
-		}
-	}
-	else if (Left(MutateString,4) ~= "PID ")
-	{	// Perform Remote .INT reading on this player
-		zzbbPP = bbPlayer(Sender);
-		if (zzbbPP != None)
-		{
-			zzS = Mid(MutateString,4);
-			zzi = InStr(zzS, " ");
-			if (zzbbPP.zzRemCmd != "")
-			{
-				zzbbPP.Mutate("pif"@Left(zzS,zzi)@zzbbPP.zzRemCmd);
-			}
-			else
-			{
-				zzbbPP.zzRemCmd = Left(zzS, zzi);
-				zzbbPP.xxClientReadINT(Mid(zzS, zzi+1));
-			}
-		}
-	}
-	else if (Left(MutateString,4) ~= "PKD ")
-	{	// Perform Remote Alias/Key reading on this player
-		zzbbPP = bbPlayer(Sender);
-		if (zzbbPP != None)
-		{
-			zzS = Mid(MutateString,4);
-			zzi = InStr(zzS, " ");
-			if (zzbbPP.zzRemCmd != "")
-			{
-				zzbbPP.Mutate("pkf"@Left(zzS,zzi)@zzbbPP.zzRemCmd);
-			}
-			else
-			{
-				zzbbPP.zzRemCmd = Left(zzS, zzi);
-				zzbbPP.xxClientKeys((Mid(zzS, zzi+1) == "1"), "Pure", "Player");
-			}
-		}
-	}
 
 	if (Settings.bFastTeams)
 	{

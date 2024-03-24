@@ -130,7 +130,6 @@ var string zzMagicCode;		// The magic code to display.
 var string zzPrevClientMessage;	// To log client messages...
 
 var PureLevelBase PureLevel;	// And Level.
-var PurePlayer PurePlayer;	// And player.
 var bool bDeterminedLocalPlayer;
 var PlayerPawn LocalPlayer;
 
@@ -445,11 +444,8 @@ replication
 
 	reliable if ( RemoteRole == ROLE_AutonomousProxy && !bDemoRecording )
 		xxCheatFound,
-		xxClientConsole,
 		xxClientDoEndShot,
-		xxClientDoScreenshot,
-		xxClientKeys,
-		xxClientReadINT;
+		xxClientDoScreenshot;
 
 	reliable if ((Role == ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ClientProjExplode;
@@ -500,10 +496,6 @@ replication
 		xxSendSpreeToSpecs,
 		xxServerAckScreenshot,
 		xxServerDemoReply,
-		xxServerReceiveConsole,
-		xxServerReceiveINT,
-		xxServerReceiveKeys,
-		xxServerReceiveMenuItems,
 		xxServerSetForceModels,
 		xxServerSetReadyToPlay,
 		xxServerSetTeamInfo,
@@ -3449,11 +3441,6 @@ function bool xxCloseEnough(vector HitLoc, optional int HitRadius)
 
 	return false;
 
-}
-
-function xxServerReceiveMenuItems(string zzMenuItem, bool zzbLast)
-{
-	Mutate("PMI"@zzMenuItem@byte(zzbLast));
 }
 
 function bool xxWeaponIsNewNet( optional bool bAlt )
@@ -8603,158 +8590,6 @@ function xxServerAckScreenshot(string zzResult, string zzMagic)
 			zzPP.ClientMessage(PlayerReplicationInfo.PlayerName@"successfully took screenshot!");
 	}
 	zzUTPure.xxLog("Screenshot from"@zzPP.PlayerReplicationInfo.PlayerName@"->"@zzResult@"Text"@zzMagicCode@"Valid"@(zzMagic == zzMagicCode));
-}
-
-function xxServerReceiveINT(string zzS)
-{
-	if (zzS == "")
-	{
-		bRemValid = True;
-		Mutate("pir"@zzRemCmd@zzRemResult);
-		bRemValid = False;
-		zzRemCmd = zzS;
-		zzRemResult = zzS;
-
-	}
-	else
-		zzRemResult = zzRemResult$"("$zzS$")";
-}
-
-simulated function xxClientReadINT(string zzClass)
-{
-	local int zzx;
-	local string zzEntry, zzDesc, zzS;
-
-	if (Level.NetMode == NM_DedicatedServer)
-	{
-		zzRemCmd = "";	// Oooops, no client to receive
-		return;		// Dont run on server (in case of disconnect)
-	}
-
-	while (zzx < 50)
-	{
-		GetNextIntDesc( zzClass, zzx, zzEntry, zzDesc);
-		if (zzEntry == "")
-			break;
-		zzx++;
-		zzS = zzEntry$","$zzDesc;
-		xxServerReceiveINT(zzS);
-		xxClientLogToDemo(zzS);
-	}
-	xxServerReceiveINT("");
-}
-
-function xxServerReceiveConsole(string zzS, bool zzbLast)
-{
-	if (zzbLast)
-	{
-		bRemValid = True;
-		Mutate("pcr"@zzRemCmd@zzRemResult);
-		bRemValid = False;
-		zzRemCmd = "";
-		zzRemResult = "";
-	}
-	else
-		zzRemResult = zzRemResult$zzS;
-}
-
-simulated function xxClientConsole(string zzcon, int zzC)
-{	// Does a console command, splits up the result, and sends back to server after splitting up
-	local int zzx, zzl;
-	local string zzS;
-	local string zzRes;
-
-	if (Level.NetMode == NM_DedicatedServer)
-	{
-		zzRemCmd = "";	// Oooops, no client to receive
-		return;		// Dont run on server (in case of disconnect)
-	}
-
-	zzRes = ConsoleCommand(zzcon);
-
-	zzl = Len(zzRes);
-	while (zzl > zzx)
-	{
-		zzS = Mid(zzRes, zzx, zzC);
-		xxServerReceiveConsole(zzS, False);
-		xxClientLogToDemo(zzS);
-		zzx += zzC;
-	}
-	xxServerReceiveConsole("", True);
-}
-
-function xxServerReceiveKeys(string zzIdent, string zzValue, bool zzbBind, bool zzbLast)
-{
-	if (zzbLast)
-	{
-		bRemValid = True;
-		Mutate("pkr"@zzRemCmd@zzRemResult);
-		bRemValid = False;
-		zzRemCmd = "";
-		zzRemResult = "";
-	}
-	else
-	{
-		if (zzbBind)
-		{
-			zzRemResult = zzRemResult$"A("$zzIdent$"="$zzValue$")";
-		}
-		else
-		{
-			zzRemResult = zzRemResult$"B("$zzIdent$"="$zzValue$")";
-		}
-	}
-}
-
-simulated function xxClientKeys(bool zzbKeysToo, string zzPure, string zzPlayer)
-{
-	local int zzx;
-	local string zzS;
-	local PureSystem zzPureInput;
-
-	if (Level.NetMode == NM_DedicatedServer)
-	{
-		zzRemCmd = "";	// Oooops, no client to receive
-		return;		// Dont run on server (in case of disconnect)
-	}
-
-	SetPropertyText(zzPure$zzPlayer, GetPropertyText(zzPlayer));
-	zzPureInput = PurePlayer.zzInput;
-
-	if (zzPureInput != None)
-	{
-		for (zzx = 0; zzx < 10; zzx++)
-		{
-			xxSendKeys(string(zzPureInput.zzAliases1[zzx].zzAlias), zzPureInput.zzAliases1[zzx].zzCommand, True, False);
-		}
-		for (zzx = 0; zzx < 10; zzx++)
-		{
-			xxSendKeys(string(zzPureInput.zzAliases2[zzx].zzAlias), zzPureInput.zzAliases2[zzx].zzCommand, True, False);
-		}
-		for (zzx = 0; zzx < 10; zzx++)
-		{
-			xxSendKeys(string(zzPureInput.zzAliases3[zzx].zzAlias), zzPureInput.zzAliases3[zzx].zzCommand, True, False);
-		}
-		for (zzx = 0; zzx < 10; zzx++)
-		{
-			xxSendKeys(string(zzPureInput.zzAliases4[zzx].zzAlias), zzPureInput.zzAliases4[zzx].zzCommand, True, False);
-		}
-		if (zzbKeysToo)
-		{
-			for (zzx = 0; zzx < 255; zzx++)
-			{
-				zzS = Mid(string(GetEnum(Enum'EInputKey', zzx)), 3);
-				xxSendKeys(zzS, zzPureInput.zzKeys[zzx], False, False);
-			}
-		}
-	}
-	xxServerReceiveKeys("", "", False, True);
-}
-
-simulated function xxSendKeys(string zzIdent, string zzValue, bool zzbBind, bool zzbLast)
-{
-	xxServerReceiveKeys(zzIdent, zzValue, zzbBind, zzbLast);
-	xxClientLogToDemo(zzIdent$"="$zzValue);
 }
 
 simulated function xxClientLogToDemo(string zzS)
