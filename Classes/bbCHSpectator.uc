@@ -839,20 +839,6 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 	if (Message == class'CTFMessage2' && RelatedPRI_1 != None && PureFlag(RelatedPRI_1.HasFlag) != None)
 		return;
 
-	// Handle hitsounds properly here before huds get it. Remove damage except if demoplayback :P
-	if (Message == class'PureHitSound')
-	{
-		if (RelatedPRI_1 == None)
-			return;
-
-		if (RelatedPRI_1.Owner == ViewTarget && RelatedPRI_2 != none) {
-			class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
-			class'bbPlayerStatics'.static.PlayHitSound(self, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
-		}
-
-		return;
-	}
-
 	Super.ReceiveLocalizedMessage(Message, Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 }
 
