@@ -4,6 +4,7 @@ class ST_Mutator extends Mutator;
 var string PreFix;
 
 var ST_SpawnNotify SN;
+var int DelaySpawnNotifyReplace;
 var bool bReplaceWeapons;
 
 var ST_HitTestHelper CollChecker;
@@ -34,6 +35,10 @@ function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 			return false;
 		}
 	}
+
+	if (bReplaceWeapons && Other.IsA('Weapon'))
+		return CheckReplaceWeapon(Other) == false;
+		
     return true;
 }
 
@@ -65,6 +70,12 @@ function PreBeginPlay()
 	Super.PreBeginPlay();
 }
 
+function Tick(float Delta) {
+	DelaySpawnNotifyReplace -= 1;
+	if (DelaySpawnNotifyReplace == 0)
+		Disable('Tick');
+}
+
 function AddMutator(Mutator M)
 {
 	if (M.IsA('Arena'))
@@ -75,7 +86,7 @@ function AddMutator(Mutator M)
 
 function bool IsRelevant(Actor Other, out byte bSuperRelevant)
 {
-	if (CheckReplaceWeapon(Other))
+	if (DelaySpawnNotifyReplace <= 0 && CheckReplaceWeapon(Other))
 		return true; // replaced using ST_SpawnNotify
 
 	if (CheckReplacement(Other, bSuperRelevant)) {
@@ -139,7 +150,8 @@ function bool DoReplace(Weapon Other, class<Weapon> ReplacementClass) {
 		W.RespawnTime = Other.RespawnTime;
 		W.PickupAmmoCount = Other.PickupAmmoCount;
 		W.bRotatingPickup = Other.bRotatingPickup;
-		SN.SetReplace(Other, W);
+		if (DelaySpawnNotifyReplace <= 0)
+			SN.SetReplace(Other, W);
 		return true;
 	}
 	return false;
@@ -500,5 +512,6 @@ function bool CheckBodyShot(Pawn P, vector HitLocation, vector Direction) {
 defaultproperties {
 	DefaultWeapon=Class'ST_ImpactHammer'
 
+	DelaySpawnNotifyReplace=2
 	bReplaceWeapons=True
 }
