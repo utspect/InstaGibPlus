@@ -1,4 +1,5 @@
 class IGPlus_HitFeedback extends Mutator;
+// Description="<Internal>"
 
 event PostBeginPlay() {
 	if (Level == none || Level.Game == none) {

@@ -1,4 +1,5 @@
 class ST_Mutator extends Mutator;
+// Description="Replaces all normal weapons with their IG+ equivalent"
 
 // Good to have Variables
 var string PreFix;

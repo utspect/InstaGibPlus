@@ -1,4 +1,5 @@
 class NewNetArena extends Arena;
+// Description=""
 
 var name WeaponNames[8], AmmoNames[8];
 var string WeaponPackages[8], WeaponStrings[8], AmmoStrings[8];

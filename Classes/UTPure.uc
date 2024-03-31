@@ -1,4 +1,5 @@
 class UTPure extends Mutator config(InstaGibPlus);
+// Description="Main IG+ mutator needed for everything else"
 
 var ModifyLoginHandler NextMLH;			// Link list of handlers
 

@@ -1,4 +1,5 @@
 class MutKillFeed extends Mutator;
+// Description="Kill Feed Mutator"
 
 struct WeaponIconMapEntry {
 	var class<Weapon> Weapon;
