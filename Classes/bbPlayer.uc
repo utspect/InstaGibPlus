@@ -7782,7 +7782,12 @@ event PostRender( canvas zzCanvas )
 		IGPlus_SavedInputChain.RemoveOutdatedNodes(Level.TimeSeconds);
 	}
 
-	NetStatsElem.PostRender(zzCanvas, Settings);
+	if (ChallengeHUD(MyHud).bShowInfo == false &&
+		bShowScores == false &&
+		ChallengeHUD(MyHud).bForceScores == false
+	) {
+		NetStatsElem.PostRender(zzCanvas, Settings);
+	}
 
 	IGPlus_LocationOffsetFix_TickBefore();
 
