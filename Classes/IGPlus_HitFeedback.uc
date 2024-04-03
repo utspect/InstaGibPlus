@@ -55,15 +55,26 @@ function MutatorTakeDamage(
 	local int TotalDamage;
 	local IGPlus_HitFeedbackTracker Tracker;
 
-	if (Victim != none)
+	if (InstigatedBy != none && Victim != none) {
 		Tracker = FindTracker(Victim);
-	if (Tracker != none)
-		TotalDamage = Tracker.LastDamage;
+		if (Tracker != none)
+			TotalDamage = Tracker.LastDamage;
 
-	InstigatedBy.ReceiveLocalizedMessage(Class'IGPlus_HitFeedbackMessage', TotalDamage, Victim.PlayerReplicationInfo, InstigatedBy.PlayerReplicationInfo);
-	for (P = Level.PawnList; P != none; P = P.NextPawn)
-		if (P.IsA('PlayerPawn') && PlayerPawn(P).ViewTarget == InstigatedBy)
-			P.ReceiveLocalizedMessage(Class'IGPlus_HitFeedbackMessage', TotalDamage, Victim.PlayerReplicationInfo, InstigatedBy.PlayerReplicationInfo);
+		InstigatedBy.ReceiveLocalizedMessage(
+			Class'IGPlus_HitFeedbackMessage',
+			TotalDamage,
+			Victim.PlayerReplicationInfo,
+			InstigatedBy.PlayerReplicationInfo
+		);
+		for (P = Level.PawnList; P != none; P = P.NextPawn)
+			if (P.IsA('PlayerPawn') && PlayerPawn(P).ViewTarget == InstigatedBy)
+				P.ReceiveLocalizedMessage(
+					Class'IGPlus_HitFeedbackMessage',
+					TotalDamage,
+					Victim.PlayerReplicationInfo,
+					InstigatedBy.PlayerReplicationInfo
+				);
+	}
 
 	super.MutatorTakeDamage(ActualDamage, Victim, InstigatedBy, HitLocation, Momentum, DamageType);
 }
