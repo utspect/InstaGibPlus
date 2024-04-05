@@ -101,6 +101,10 @@ var localized string MoreInformationText;
 	var localized string NetStatsLocationErrorText;
 	var localized string NetStatsLocationErrorHelp;
 
+	var UWindowCheckbox Chk_NetStatsFrameTime;
+	var localized string NetStatsFrameTimeText;
+	var localized string NetStatsFrameTimeHelp;
+
 	var IGPlus_EditControl Edit_NetStatsWidth;
 	var localized string NetStatsWidthText;
 	var localized string NetStatsWidthHelp;
@@ -823,6 +827,7 @@ function Created() {
 	Chk_EnableNetStats = CreateCheckbox(EnableNetStatsText, EnableNetStatsHelp);
 	Chk_NetStatUnconfirmedTime = CreateCheckbox(NetStatUnconfirmedTimeText, NetStatUnconfirmedTimeHelp);
 	Chk_NetStatsLocationError = CreateCheckbox(NetStatsLocationErrorText, NetStatsLocationErrorHelp);
+	Chk_NetStatsFrameTime = CreateCheckbox(NetStatsFrameTimeText, NetStatsFrameTimeHelp);
 	Edit_NetStatsWidth = CreateEdit(ECT_Integer, NetStatsWidthText, NetStatsWidthHelp, 4, 32);
 	SLoc_NetStatsLocation = CreateScreenLocation(100, NetStatsLocationText, NetStatsLocationHelp);
 
@@ -989,6 +994,7 @@ function Load() {
 	Chk_EnableNetStats.bChecked = Settings.bEnableNetStats;
 	Chk_NetStatUnconfirmedTime.bChecked = Settings.bNetStatsUnconfirmedTime;
 	Chk_NetStatsLocationError.bChecked = Settings.bNetStatsLocationError;
+	Chk_NetStatsFrameTime.bChecked = Settings.bNetStatsFrameTime;
 	Edit_NetStatsWidth.SetValue(string(Settings.NetStatsWidth));
 	SLoc_NetStatsLocation.SetLocation(Settings.NetStatsLocationX, Settings.NetStatsLocationY);
 
@@ -1095,6 +1101,7 @@ function Save() {
 	Settings.bEnableNetStats = Chk_EnableNetStats.bChecked;
 	Settings.bNetStatsUnconfirmedTime = Chk_NetStatUnconfirmedTime.bChecked;
 	Settings.bNetStatsLocationError = Chk_NetStatsLocationError.bChecked;
+	Settings.bNetStatsFrameTime = Chk_NetStatsFrameTime.bChecked;
 	Settings.NetStatsWidth = int(Edit_NetStatsWidth.GetValue());
 	SLoc_NetStatsLocation.GetLocation(Settings.NetStatsLocationX, Settings.NetStatsLocationY);
 
@@ -1261,6 +1268,9 @@ defaultproperties
 
 		NetStatsLocationErrorText="Show Location Error"
 		NetStatsLocationErrorHelp="If checked, the netstats graph contains the difference between your predicted location and the actual location on the server"
+
+		NetStatsFrameTimeText="Show Frame Time"
+		NetStatsFrameTimeHelp="If checked, the netstats graph contains how long each frame took to create"
 
 		NetStatsWidthText="Demo Char"
 		NetStatsWidthHelp="Replacement character for those that cannot be used in file-names"

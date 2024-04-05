@@ -6850,6 +6850,7 @@ function xxPlayerTickEvents(float DeltaTime)
 	local float CurrentTime;
 
 	CurrentTime = Level.TimeSeconds;
+	NetStatsElem.FrameTime = DeltaTime / Level.TimeDilation;
 
 	if (Level.NetMode == NM_Client)
 	{

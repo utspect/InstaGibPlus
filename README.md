@@ -94,6 +94,7 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 66. [bEnableNetStats](#benablenetstats)
 67. [bNetStatsUnconfirmedTime](#bnetstatsunconfirmedtime)
 68. [bNetStatsLocationError](#bnetstatslocationerror)
+69. [bNetStatsFrameTime](#bnetstatsframetime)
 69. [NetStatsLocationX](#netstatslocationx)
 70. [NetStatsLocationY](#netstatslocationy)
 71. [NetStatsWidth](#netstatswidth)
@@ -576,6 +577,12 @@ If `True`, shows the netstats graph of the amount of simulated game-time still u
 **Default: True**  
 
 If `True`, the netstats graph will show the distance players are away from where the server has them.
+
+## bNetStatsFrameTime
+**Type: bool**  
+**Default: False**  
+
+If `True`, the netstats graph will show how long each frame took to render.
 
 ## NetStatsLocationX
 **Type: float**  

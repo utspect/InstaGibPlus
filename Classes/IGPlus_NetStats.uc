@@ -6,6 +6,7 @@ var ScriptedTexture NewTex;
 var float LocationError;
 var float UnconfirmedTime;
 var bool bInstantRelocation;
+var float FrameTime;
 
 var float LocErrScale; // pixel per uu
 var float LocErrSize; // in pixel
@@ -13,10 +14,15 @@ var float UnconfirmedTimeScale; // pixel per second
 var float UnconfirmedTimeSize; // in pixel
 var float UnconfirmedTimeMinYellow; // in seconds
 var float UnconfirmedTimeMinRed; // in seconds
+var float FrameTimeScale; // pixel per second
+var float FrameTimeSize; // in pixel
+var float FrameTimeMinYellow; // in seconds
+var float FrameTimeMinRed; // in seconds
 
 var int Yellow;
 var int Blue;
 var int Red;
+var int Green;
 
 var transient ClientSettings Settings;
 
@@ -28,6 +34,9 @@ function PostBeginPlay() {
 }
 
 function DrawBar(ScriptedTexture T, float Y, float YL, int ColorIndex) {
+	if (Y >= T.VSize)
+		return;
+	YL = FClamp(FMin(YL, T.VSize - Y), 0, T.VSize);
 	T.DrawTile(T.USize - 2, Y, 1, YL, ColorIndex, 0, 1, 1, Texture'NetStatsBase', false);
 }
 
@@ -39,6 +48,9 @@ function RenderTexture(ScriptedTexture T) {
 
 	local int MoveTime;
 	local int MoveTimeColor;
+
+	local int FT;
+	local int FTColor;
 
 	if (T != NewTex)
 		return;
@@ -75,6 +87,20 @@ function RenderTexture(ScriptedTexture T) {
 			DrawBar(T, Y+LocErrSize-LocErr, LocErr, Blue);
 		}
 		Y += LocErrSize;
+		Y += 10.0;
+	}
+
+	if (Settings.bNetStatsFrameTime) {
+		FT = Min(int(FrameTime * FrameTimeScale), FrameTimeSize);
+		if (FrameTime >= FrameTimeMinRed)
+			FTColor = Red;
+		else if (FrameTime >= FrameTimeMinYellow)
+			FTColor = Yellow;
+		else
+			FTColor = Green;
+
+		DrawBar(T, Y+FrameTimeSize-FT, FT, FTColor);
+		Y += FrameTimeSize;
 		Y += 10.0;
 	}
 }
@@ -121,10 +147,15 @@ defaultproperties {
 	UnconfirmedTimeSize=68.0
 	UnconfirmedTimeMinYellow=0.075
 	UnconfirmedTimeMinRed=0.150
+	FrameTimeScale=2500.0
+	FrameTimeSize=50.0
+	FrameTimeMinYellow=0.00833333333
+	FrameTimeMinRed=0.01666666666
 
 	Yellow=44
 	Blue=32
 	Red=40
+	Green=48
 
 	DrawType=DT_None
 	bHidden=True

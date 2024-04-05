@@ -92,6 +92,7 @@ var config EFraggerScopeChoice FraggerScopeChoice;
 var config bool   bEnableNetStats;
 var config bool   bNetStatsUnconfirmedTime;
 var config bool   bNetStatsLocationError;
+var config bool   bNetStatsFrameTime;
 var config float  NetStatsLocationX;
 var config float  NetStatsLocationY;
 var config int    NetStatsWidth;
@@ -379,6 +380,7 @@ simulated function string DumpSettings() {
 		GetSetting("bEnableNetStats")$
 		GetSetting("bNetStatsUnconfirmedTime")$
 		GetSetting("bNetStatsLocationError")$
+		GetSetting("bNetStatsFrameTime")$
 		GetSetting("NetStatsLocationX")$
 		GetSetting("NetStatsLocationY")$
 		GetSetting("NetStatsWidth")$
@@ -468,6 +470,7 @@ defaultproperties
 	bEnableNetStats=False
 	bNetStatsUnconfirmedTime=True
 	bNetStatsLocationError=True
+	bNetStatsFrameTime=False
 	NetStatsLocationX=0.5
 	NetStatsLocationY=0.0
 	NetStatsWidth=511
