@@ -1589,10 +1589,17 @@ function xxCheckFOV()
 	}
 }
 
+function TraceMarker_LongFrame() {}
+function TraceMarker_FrameBegin() {}
+
 event PlayerInput( float DeltaTime )
 {
 	local float SmoothTime, FOVScale, MouseScale, AbsSmoothX, AbsSmoothY, MouseTime;
 	local bool bOldWasForward, bOldWasBack, bOldWasLeft, bOldWasRight;
+
+	if (DeltaTime > 0.02)
+		TraceMarker_LongFrame();
+	TraceMarker_FrameBegin();
 
 	if ( bUpdatePosition && IGPlus_EnableInputReplication )
 		ClientUpdatePositionWithInput();
