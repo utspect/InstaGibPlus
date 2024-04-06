@@ -25,10 +25,10 @@ static function ClientReceive(
 	if ((bInstigator || bViewTarget) == false)
 		return;
 
-	if (Settings.HitMarkerSource == HMSRC_Server || bViewTarget)
+	if (bViewTarget || Settings == none || Settings.HitMarkerSource == HMSRC_Server)
 		class'bbPlayerStatics'.static.PlayHitMarker(P, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
 
-	if (Settings.HitSoundSource == HSSRC_Server || bViewTarget)
+	if (bViewTarget || Settings == none || Settings.HitSoundSource == HSSRC_Server)
 		class'bbPlayerStatics'.static.PlayHitSound(P, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
 }
 
