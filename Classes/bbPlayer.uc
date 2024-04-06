@@ -1145,6 +1145,8 @@ event Possess()
 		IGPlus_EnableDualButtonSwitch = IGPlus_DetermineDualButtonSwitchSetting();
 	}
 
+	class'ClientSuperShockBeam'.static.Cleanup();
+
 	IGPlus_InputLogFile = Spawn(class'IGPlus_InputLogFile');
 	if (Level.NetMode == NM_Client)
 		IGPlus_InputLogFile.LogId = "ClientInput";
