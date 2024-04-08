@@ -14,6 +14,9 @@ static function ClientReceive(
 	if (RelatedPRI_1 == none || RelatedPRI_2 == none)
 		return;
 
+	if (RelatedPRI_1 == RelatedPRI_2)
+		return; // self-damage doesnt need feedback
+
 	if (P.IsA('bbPlayer'))
 		Settings = bbPlayer(P).Settings;
 	else if (P.IsA('bbCHSpectator'))
