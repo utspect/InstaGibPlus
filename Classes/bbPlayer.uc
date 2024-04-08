@@ -9503,6 +9503,13 @@ exec function TraceInput() {
 	bTraceInput = !bTraceInput;
 }
 
+function PreCacheReferences() {
+	local IGPlus_ModelImport MI;
+	super.PreCacheReferences();
+
+	MI = new(none) class'IGPlus_ModelImport';
+}
+
 defaultproperties
 {
 	bNewNet=True
