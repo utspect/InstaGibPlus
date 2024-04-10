@@ -28,6 +28,7 @@ var rotator LastTargetViewRotation;
 var rotator LastRotation;
 var Actor LastViewTarget;
 
+var Info VersionInfo;
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
 
@@ -151,7 +152,7 @@ simulated function InitSettings() {
 	if (Settings == none) {
 		ClientSettingsHelper = new(none, 'InstaGibPlus') class'Object';
 		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings';
-		Settings.CheckConfig();
+		Settings.CheckConfig(VersionInfo.GetPropertyText("PackageBaseName"));
 		Log("Loaded Settings!", 'IGPlus');
 	}
 }
@@ -301,10 +302,15 @@ event PlayerTick( float DeltaTime )
 
 event PostBeginPlay()
 {
+	local class<Info> VersionInfoClass;
+	
 	ForEach AllActors(Class'UTPure', zzUTPure)
 		break;
 
 	Super.PostBeginPlay();
+
+	VersionInfoClass = class<Info>(DynamicLoadObject(class'StringUtils'.static.GetPackage()$".VersionInfo", class'class', true));
+	VersionInfo = Spawn(VersionInfoClass);
 
 	InitSettings();
 }

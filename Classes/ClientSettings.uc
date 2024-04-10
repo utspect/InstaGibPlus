@@ -164,15 +164,15 @@ simulated function CreateCrosshairLayers() {
 	}
 }
 
-simulated function CheckConfig() {
+simulated function CheckConfig(string PackageBaseName) {
 	local int i;
 	local string PackageName;
 
 	PackageName = class'StringUtils'.static.GetPackage();
 
 	for (i = 0; i < arraycount(sHitSound); i++) {
-		if (Left(sHitSound[i], 12) ~= "InstaGibPlus") {
-			sHitSound[i] = string(Sound'HitSound'.Outer.Name)$Mid(sHitSound[i], InStr(sHitSound[i], "."));
+		if (Left(sHitSound[i], Len(PackageBaseName)) ~= PackageBaseName) {
+			sHitSound[i] = class'StringUtils'.static.GetPackage()$Mid(sHitSound[i], InStr(sHitSound[i], "."));
 		}
 		if (sHitSound[i] == "" && sHitSound[i] != default.sHitSound[i]) {
 			sHitSound[i] = default.sHitSound[i];

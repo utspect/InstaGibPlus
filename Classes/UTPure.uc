@@ -28,6 +28,7 @@ var bbPlayerReplicationInfo SkinIndexToPRIMap[64];
 
 var IGPlus_GameEventChain GameEventChain;
 var StringUtils StringUtils;
+var Info VersionInfo;
 
 var Object SettingsHelper;
 var ServerSettings Settings;
@@ -69,11 +70,11 @@ function PreBeginPlay()
 
 function PrintVersionInfo() {
 	local string LongStr;
-	LongStr = class'VersionInfo'.default.PackageBaseName@class'VersionInfo'.default.PackageVersion;
+	LongStr = VersionInfo.GetPropertyText("PackageBaseName")@VersionInfo.GetPropertyText("PackageVersion");
 
 	if (Len(LongStr) > 20) {
-		xxLog("#"$StringUtils.CenteredString(class'VersionInfo'.default.PackageBaseName, 29, " ")$"#");
-		LongStr = class'VersionInfo'.default.PackageVersion;
+		xxLog("#"$StringUtils.CenteredString(VersionInfo.GetPropertyText("PackageBaseName"), 29, " ")$"#");
+		LongStr = VersionInfo.GetPropertyText("PackageVersion");
 	}
 
 	xxLog("#"$StringUtils.CenteredString(LongStr, 29, " ")$"#");
@@ -125,10 +126,14 @@ function PostBeginPlay()
 	local string	ServPacks, curMLHPack, sTag, fullpack;
 	local int XC_Version;
 	local string MapName;
+	local class<Info> VersionInfoClass;
 
 	Super.PostBeginPlay();
 
 	InitializeSettings();
+
+	VersionInfoClass = class<Info>(DynamicLoadObject(class'StringUtils'.static.GetPackage()$".VersionInfo", class'class', true));
+	VersionInfo = Spawn(VersionInfoClass);
 
 	xxLog("");
 	xxLog("###############################");
@@ -183,7 +188,7 @@ function PostBeginPlay()
 	{
 
 		// Verify that the PlayerPack Package is in ServerPackages
-		curMLHPack = Settings.PlayerPacks[i]$"H"$class'VersionInfo'.default.PackageVersion;
+		curMLHPack = Settings.PlayerPacks[i]$"H"$VersionInfo.GetPropertyText("PackageVersion");
 		fullpack = curMLHPack$"."$Settings.PlayerPacks[i]$"LoginHandler";
 		if (Instr(CAPS(ServPacks), Caps(Chr(34)$curMLHPack$Chr(34))) != -1)
 		{
@@ -853,7 +858,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 
 	if (MutateString ~= "CheatInfo")
 	{
-		Sender.ClientMessage("This server is running "$class'VersionInfo'.default.PackageBaseName@class'VersionInfo'.default.PackageVersion);
+		Sender.ClientMessage("This server is running "$VersionInfo.GetPropertyText("PackageBaseName")@VersionInfo.GetPropertyText("PackageVersion"));
 		if (Settings.bUTPureEnabled)
 		{
 			Settings.DumpServerSettings(Sender);

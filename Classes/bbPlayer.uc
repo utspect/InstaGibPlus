@@ -266,6 +266,7 @@ var IGPlus_ServerMove IGPlus_ServerMove_FreeList;
 var Utilities Utils;
 var StringUtils StringUtils;
 var bbPlayerStatics PlayerStatics;
+var Info VersionInfo;
 
 struct IGPlus_ForcedSettings_Entry {
 	var int Mode;
@@ -684,7 +685,7 @@ simulated function Touch( actor Other )
 	{
 		if (zzUTPure.Settings.ShowTouchedPackage)
 		{
-			ClientMessage(class'StringUtils'.static.PackageOfObject(Other));
+			ClientMessage(StringUtils.PackageOfObject(Other));
 		}
 
 		if ((Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker')) {
@@ -923,9 +924,9 @@ simulated function InitSettings() {
 		}
 
 	if (Settings == none) {
-		ClientSettingsHelper = new(none, 'InstaGibPlus') class'Object'; // object name = INI file name
+		ClientSettingsHelper = new(none, StringUtils.StringToName(VersionInfo.GetPropertyText("PackageBaseName"))) class'Object'; // object name = INI file name
 		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings'; // object name = Section name
-		Settings.CheckConfig();
+		Settings.CheckConfig(VersionInfo.GetPropertyText("PackageBaseName"));
 		Log("Loaded Settings!", 'IGPlus');
 	}
 }
@@ -933,11 +934,15 @@ simulated function InitSettings() {
 event PostBeginPlay()
 {
 	local int TickRate;
+	local class<Info> VersionInfoClass;
+
 	Super.PostBeginPlay();
 
 	Utils = new(none) class'Utilities';
 	StringUtils = class'StringUtils'.static.Instance();
 	PlayerStatics = Spawn(class'bbPlayerStatics');
+	VersionInfoClass = class<Info>(DynamicLoadObject(StringUtils.GetPackage()$".VersionInfo", class'class', true));
+	VersionInfo = Spawn(VersionInfoClass);
 	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedInputChain');
 	IGPlus_InputReplicationBuffer = new class'IGPlus_DataBuffer';
 
@@ -969,9 +974,13 @@ event PostBeginPlay()
 // called after PostBeginPlay on net client
 simulated event PostNetBeginPlay()
 {
+	local class<Info> VersionInfoClass;
+
 	Utils = new(none) class'Utilities';
 	StringUtils = class'StringUtils'.static.Instance();
 	PlayerStatics = Spawn(class'bbPlayerStatics');
+	VersionInfoClass = class<Info>(DynamicLoadObject(StringUtils.GetPackage()$".VersionInfo", class'class', true));
+	VersionInfo = Spawn(VersionInfoClass);
 	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedInputChain');
 	IGPlus_InputReplicationBuffer = new class'IGPlus_DataBuffer';
 
@@ -1023,11 +1032,14 @@ function ServerSetDodgeSettings(float MaxTime, float MinTime) {
 
 event Possess()
 {
+	local class<Info> VersionInfoClass;
 	local Kicker K;
 
 	Utils = new(none) class'Utilities';
-	StringUtils = new(none) class'StringUtils';
+	StringUtils = class'StringUtils'.static.Instance();
 	PlayerStatics = Spawn(class'bbPlayerStatics');
+	VersionInfoClass = class<Info>(DynamicLoadObject(StringUtils.GetPackage()$".VersionInfo", class'class', true));
+	VersionInfo = Spawn(VersionInfoClass);
 
 	InitSettings();
 
@@ -1164,12 +1176,7 @@ event Possess()
 }
 
 function string IGPlus_DetermineLogoVersionText() {
-	local class<Info> VersionInfoClass;
-	local Info VersionInfoObj;
-
-	VersionInfoClass = class<Info>(DynamicLoadObject(class'StringUtils'.static.GetPackage()$".VersionInfo", class'class', true));
-	VersionInfoObj = Spawn(VersionInfoClass);
-	return VersionInfoObj.GetPropertyText("PackageBaseName")@VersionInfoObj.GetPropertyText("PackageVersion");
+	return VersionInfo.GetPropertyText("PackageBaseName")@VersionInfo.GetPropertyText("PackageVersion");
 }
 
 function bool IGPlus_DetermineDualButtonSwitchSetting() {
