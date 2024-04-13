@@ -6,6 +6,7 @@ var ST_Mutator STM;
 var float Health;
 
 var PlayerPawn InstigatingPlayer;
+var vector ExtrapolationDelta;
 
 simulated function PostBeginPlay() {
 	if (ROLE == ROLE_Authority) {
@@ -23,20 +24,25 @@ simulated function PostNetBeginPlay() {
 	super.PostNetBeginPlay();
 
 	In = PlayerPawn(Instigator);
-	if (In == none || In.Player == none || In.Player.IsA('Viewport') == false)
-		return;
-
-	InstigatingPlayer = In;
+	if (In != none && Viewport(In.Player) != none)
+		InstigatingPlayer = In;
 }
 
 simulated event Tick(float Delta) {
+	local vector NewXPolDelta;
 	super.Tick(Delta);
 
 	if (InstigatingPlayer == none)
 		return;
 
+	// Catch up to server
 	if (OldLocation == Location)
-		MoveSmooth(Velocity * (0.001 * InstigatingPlayer.PlayerReplicationInfo.Ping));
+		MoveSmooth(Velocity * (0.0005 * InstigatingPlayer.PlayerReplicationInfo.Ping));
+
+	// Extrapolate locally to compensate for ping
+	NewXPolDelta = (Velocity * (0.0005 * InstigatingPlayer.PlayerReplicationInfo.Ping));
+	MoveSmooth(NewXPolDelta - ExtrapolationDelta);
+	ExtrapolationDelta = NewXPolDelta;
 }
 
 function SuperExplosion() {
