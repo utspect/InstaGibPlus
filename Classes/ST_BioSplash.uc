@@ -17,7 +17,16 @@ auto state Flying
 	}
 }
 
+state OnSurface
+{
+	function BeginState()
+	{
+		super(UT_BioGel).BeginState();
+	}
+
+}
+
 defaultproperties
 {
-     speed=300.000000
+    speed=300.000000
 }

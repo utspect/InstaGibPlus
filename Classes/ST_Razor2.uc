@@ -14,7 +14,6 @@ simulated function PostBeginPlay()
 	{
 		ForEach AllActors(Class'ST_Mutator', STM)
 			break;		// Find master :D
-		STM.PlayerFire(Instigator, 11);		// 11 = Ripper Primary
 	}
 
 	Super.PostBeginPlay();
@@ -22,39 +21,33 @@ simulated function PostBeginPlay()
 
 auto state Flying
 {
-	simulated function ProcessTouch (Actor Other, Vector HitLocation)
-	{
-		if ( bCanHitInstigator || (Other != Instigator) ) 
-		{
-			if ( Role == ROLE_Authority )
-			{
-				if ( Other.bIsPawn && (HitLocation.Z - Other.Location.Z > 0.62 * Other.CollisionHeight) 
-					&& (!Instigator.IsA('Bot') || !Bot(Instigator).bNovice) )
-				{
-					STM.PlayerHit(Instigator, 11, True);		// 11 = Ripper Primary Headshot
+	simulated function ProcessTouch (Actor Other, Vector HitLocation) {
+		local vector Dir;
+
+		Dir = Normal(Velocity);
+		if (bCanHitInstigator || (Other != Instigator)) {
+			if (Role == ROLE_Authority) {
+				if (Other.bIsPawn && STM.CheckHeadshot(Pawn(Other), HitLocation, Dir) &&
+					(!Instigator.IsA('Bot') || !Bot(Instigator).bNovice)
+				) {
 					Other.TakeDamage(
 						STM.WeaponSettings.RipperHeadshotDamage,
 						Instigator,
 						HitLocation,
-						STM.WeaponSettings.RipperHeadshotMomentum * MomentumTransfer * Normal(Velocity),
+						STM.WeaponSettings.RipperHeadshotMomentum * MomentumTransfer * Dir,
 						'decapitated'
 					);
-					STM.PlayerClear();
-				}
-				else			 
-				{
-					STM.PlayerHit(Instigator, 11, False);		// 11 = Ripper Primary
+				} else if (Other.bIsPawn == false || STM.CheckBodyShot(Pawn(Other), HitLocation, Dir)) {
 					Other.TakeDamage(
 						STM.WeaponSettings.RipperPrimaryDamage,
 						instigator,
 						HitLocation,
-						STM.WeaponSettings.RipperPrimaryMomentum * MomentumTransfer * Normal(Velocity),
+						STM.WeaponSettings.RipperPrimaryMomentum * MomentumTransfer * Dir,
 						'shredded'
 					);
-					STM.PlayerClear();
 				}
 			}
-			if ( Other.bIsPawn )
+			if (Other.bIsPawn)
 				PlaySound(MiscSound, SLOT_Misc, 2.0);
 			else
 				PlaySound(ImpactSound, SLOT_Misc, 2.0);

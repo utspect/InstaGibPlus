@@ -138,7 +138,6 @@ state FireRockets
 					FireRot.Yaw = AdjustedAim.Yaw + Spread*WSettings.RocketSpreadSpacingDegrees*(65536.0/360.0);
 				}
 
-				STM.PlayerFire(PawnOwner, 16);		// 16 = Rockets
 				if ( LockedTarget != None )
 				{
 					s = Spawn( class 'ST_ut_SeekingRocket',, '', FireLocation,FireRot);
@@ -155,7 +154,6 @@ state FireRockets
 			}
 			else 
 			{
-				STM.PlayerFire(PawnOwner, 17);		// 17 = Grenades
 				g = Spawn( class 'ST_ut_Grenade',, '', FireLocation,AdjustedAim);
 				g.STM = STM;
 				g.NumExtraGrenades = DupRockets;

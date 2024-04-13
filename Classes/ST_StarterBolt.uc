@@ -62,7 +62,6 @@ simulated function Tick(float DeltaTime)
 		while (ShootAccum <= 0.0)
 		{	// Handle stats this way.
 			ShootAccum += 0.05;		// TR 20 = 0.05s
-			STM.PlayerFire(Instigator, 10);
 		}
 	}
 
@@ -208,14 +207,12 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 					Momentum = vect(0,0,0);
 				else
 					Momentum = MomentumTransfer * X * AccumulatedDamage;
-				STM.PlayerHit(Instigator, 10, False);						// 10 = Pulse Shaft
 				HitActor.TakeDamage(
 					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 					instigator,
 					HitLocation,
 					STM.WeaponSettings.PulseBoltMomentum * Momentum,
 					MyDamageType);
-				STM.PlayerClear();
 				AccumulatedDamage = 0;
 			}
 			else if ( DamagedActor != HitActor )
@@ -224,14 +221,12 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 					Momentum = vect(0,0,0);
 				else
 					Momentum = MomentumTransfer * X * AccumulatedDamage;
-				STM.PlayerHit(Instigator, 10, False);						// 10 = Pulse Shaft
 				DamagedActor.TakeDamage(
 					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 					instigator,
 					HitLocation,
 					STM.WeaponSettings.PulseBoltMomentum * Momentum,
 					MyDamageType);
-				STM.PlayerClear();
 				AccumulatedDamage = 0;
 			}
 			LastHitTime = Level.TimeSeconds;
@@ -245,14 +240,12 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 					Momentum = vect(0,0,0);
 				else
 					Momentum = MomentumTransfer * X * AccumulatedDamage;
-				STM.PlayerHit(Instigator, 10, True);						// 10 = Pulse Shaft, Overload
 				DamagedActor.TakeDamage(
 					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 					instigator,
 					HitLocation,
 					STM.WeaponSettings.PulseBoltMomentum * Momentum,
 					MyDamageType);
-				STM.PlayerClear();
 				AccumulatedDamage = 0;
 			}
 		}
@@ -289,14 +282,12 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 			else
 				Momentum = MomentumTransfer * X * AccumulatedDamage;
 
-			STM.PlayerHit(Instigator, 10, True);								// 10 = Pulse Shaft
 			DamagedActor.TakeDamage(
 				CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 				instigator,
 				DamagedActor.Location - X * 1.2 * DamagedActor.CollisionRadius,
 				STM.WeaponSettings.PulseBoltMomentum * Momentum,
 				MyDamageType);
-			STM.PlayerClear();
 			AccumulatedDamage = 0;
 			DamagedActor = None;
 		}

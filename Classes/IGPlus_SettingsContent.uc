@@ -101,6 +101,10 @@ var localized string MoreInformationText;
 	var localized string NetStatsLocationErrorText;
 	var localized string NetStatsLocationErrorHelp;
 
+	var UWindowCheckbox Chk_NetStatsFrameTime;
+	var localized string NetStatsFrameTimeText;
+	var localized string NetStatsFrameTimeHelp;
+
 	var IGPlus_EditControl Edit_NetStatsWidth;
 	var localized string NetStatsWidthText;
 	var localized string NetStatsWidthHelp;
@@ -189,6 +193,10 @@ var localized string MoreInformationText;
 	var UWindowCheckbox Chk_HideOwnBeam;
 	var localized string HideOwnBeamText;
 	var localized string HideOwnBeamHelp;
+
+	var UWindowCheckbox Chk_BeamEnableLight;
+	var localized string BeamEnableLightText;
+	var localized string BeamEnableLightHelp;
 
 	var IGPlus_EditControl Edit_BeamScale;
 	var localized string BeamScaleText;
@@ -819,6 +827,7 @@ function Created() {
 	Chk_EnableNetStats = CreateCheckbox(EnableNetStatsText, EnableNetStatsHelp);
 	Chk_NetStatUnconfirmedTime = CreateCheckbox(NetStatUnconfirmedTimeText, NetStatUnconfirmedTimeHelp);
 	Chk_NetStatsLocationError = CreateCheckbox(NetStatsLocationErrorText, NetStatsLocationErrorHelp);
+	Chk_NetStatsFrameTime = CreateCheckbox(NetStatsFrameTimeText, NetStatsFrameTimeHelp);
 	Edit_NetStatsWidth = CreateEdit(ECT_Integer, NetStatsWidthText, NetStatsWidthHelp, 4, 32);
 	SLoc_NetStatsLocation = CreateScreenLocation(100, NetStatsLocationText, NetStatsLocationHelp);
 
@@ -846,6 +855,7 @@ function Created() {
 	Cmb_cShockBeam.AddItem(cShockBeamHidden);
 	Cmb_cShockBeam.AddItem(cShockBeamInstant);
 	Chk_HideOwnBeam = CreateCheckbox(HideOwnBeamText, HideOwnBeamHelp);
+	Chk_BeamEnableLight = CreateCheckbox(BeamEnableLightText, BeamEnableLightHelp);
 	Edit_BeamScale = CreateEdit(ECT_Real, BeamScaleText, BeamScaleHelp, , 64);
 	Edit_BeamFadeCurve = CreateEdit(ECT_Integer, BeamFadeCurveText, BeamFadeCurveHelp, , 64);
 	Edit_BeamDuration = CreateEdit(ECT_Real, BeamDurationText, BeamDurationHelp, , 64);
@@ -984,6 +994,7 @@ function Load() {
 	Chk_EnableNetStats.bChecked = Settings.bEnableNetStats;
 	Chk_NetStatUnconfirmedTime.bChecked = Settings.bNetStatsUnconfirmedTime;
 	Chk_NetStatsLocationError.bChecked = Settings.bNetStatsLocationError;
+	Chk_NetStatsFrameTime.bChecked = Settings.bNetStatsFrameTime;
 	Edit_NetStatsWidth.SetValue(string(Settings.NetStatsWidth));
 	SLoc_NetStatsLocation.SetLocation(Settings.NetStatsLocationX, Settings.NetStatsLocationY);
 
@@ -1000,6 +1011,7 @@ function Load() {
 
 	Cmb_cShockBeam.SetSelectedIndex(Clamp(Settings.cShockBeam - 1, 0, 3));
 	Chk_HideOwnBeam.bChecked = Settings.bHideOwnBeam;
+	Chk_BeamEnableLight.bChecked = Settings.bBeamEnableLight;
 	Edit_BeamScale.SetValue(string(Settings.BeamScale));
 	Edit_BeamFadeCurve.SetValue(string(int(Settings.BeamFadeCurve)));
 	Edit_BeamDuration.SetValue(string(Settings.BeamDuration));
@@ -1089,6 +1101,7 @@ function Save() {
 	Settings.bEnableNetStats = Chk_EnableNetStats.bChecked;
 	Settings.bNetStatsUnconfirmedTime = Chk_NetStatUnconfirmedTime.bChecked;
 	Settings.bNetStatsLocationError = Chk_NetStatsLocationError.bChecked;
+	Settings.bNetStatsFrameTime = Chk_NetStatsFrameTime.bChecked;
 	Settings.NetStatsWidth = int(Edit_NetStatsWidth.GetValue());
 	SLoc_NetStatsLocation.GetLocation(Settings.NetStatsLocationX, Settings.NetStatsLocationY);
 
@@ -1105,6 +1118,7 @@ function Save() {
 
 	Settings.cShockBeam = Cmb_cShockBeam.GetSelectedIndex() + 1;
 	Settings.bHideOwnBeam = Chk_HideOwnBeam.bChecked;
+	Settings.bBeamEnableLight = Chk_BeamEnableLight.bChecked;
 	Settings.BeamScale = float(Edit_BeamScale.GetValue());
 	Settings.BeamFadeCurve = int(Edit_BeamFadeCurve.GetValue());
 	Settings.BeamDuration = float(Edit_BeamDuration.GetValue());
@@ -1255,8 +1269,11 @@ defaultproperties
 		NetStatsLocationErrorText="Show Location Error"
 		NetStatsLocationErrorHelp="If checked, the netstats graph contains the difference between your predicted location and the actual location on the server"
 
-		NetStatsWidthText="Demo Char"
-		NetStatsWidthHelp="Replacement character for those that cannot be used in file-names"
+		NetStatsFrameTimeText="Show Frame Time"
+		NetStatsFrameTimeHelp="If checked, the netstats graph contains how long each frame took to create"
+
+		NetStatsWidthText="Graph Width"
+		NetStatsWidthHelp="Horizontal size of the graph in pixels, max is 511"
 
 		NetStatsLocationText="Location"
 		NetStatsLocationHelp="Where on screen to show the net stats graph"
@@ -1324,6 +1341,9 @@ defaultproperties
 
 		HideOwnBeamText="Always Hide Own Beams"
 		HideOwnBeamHelp="If checked, your own beams will always be hidden"
+
+		BeamEnableLightText="Enable Beam Lighting"
+		BeamEnableLightHelp="If checked, beams will emit light"
 
 		BeamScaleText="Beam Scale"
 		BeamScaleHelp="Diameter of the beam of the IG+ SSR"

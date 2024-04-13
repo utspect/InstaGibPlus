@@ -1,15 +1,11 @@
 class ST_FraggerTranslocator extends ST_Translocator;
 
-#exec AUDIO IMPORT FILE="Sounds/Fragger/XlocRespawn.wav"
-
 function Translocate()
 {
 	local vector Dest, Start;
 	local Bot B;
 	local Pawn P;
 
-	if (STM != none)
-		STM.PlayerHit(Pawn(Owner), 2, False);			// 2 = Translocator
 	if (Owner.IsA('bbPlayer'))
 		bbPlayer(Owner).IGPlus_BeforeTranslocate();
 
@@ -103,8 +99,6 @@ function Translocate()
 
 	if (Owner.IsA('bbPlayer'))
 		bbPlayer(Owner).IGPlus_AfterTranslocate();
-	if (STM != none)
-		STM.PlayerClear();
 }
 
 defaultproperties

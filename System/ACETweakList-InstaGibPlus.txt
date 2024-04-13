@@ -1,6 +1,7 @@
 #####################################################################################################################################################################
 # Type		Class Name									Property Name										Condition		Property Type		Property Value		#
 #####################################################################################################################################################################
+ALLOW		InstaGibPlus.ClientSuperShockBeam			Core.Object.ObjectFlags								EQ				INT					*
 ALLOW		InstaGibPlus.ClientSuperShockBeam			InstaGibPlus.ClientSuperShockBeam.Free				EQ				STRING				*
 ALLOW		InstaGibPlus.bbPlayerStatics				InstaGibPlus.bbPlayerStatics.*						EQ				ANY					*
 ALLOW		InstaGibPlus.PureHUDHelper					InstaGibPlus.PureHUDHelper.*						EQ				ANY					*

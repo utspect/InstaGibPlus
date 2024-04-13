@@ -19,7 +19,6 @@ function NewExplode(vector HitLocation, vector HitNormal, bool bDirect)
 	local vector start;
 	local ST_UTChunkInfo CI;
 
-	STM.PlayerHit(Instigator, 15, bDirect);		// 15 = Flak Slug
 	if (STM.WeaponSettings.bEnableEnhancedSplash) {
 		STM.EnhancedHurtRadius(
 			self,
@@ -36,7 +35,6 @@ function NewExplode(vector HitLocation, vector HitNormal, bool bDirect)
 			STM.WeaponSettings.FlakSlugMomentum * MomentumTransfer,
 			HitLocation);
 	}
-	STM.PlayerClear();				// Damage is given now.
 	start = Location + 10 * HitNormal;
  	Spawn( class'ut_FlameExplosion',,,Start);
 	CI = Spawn(Class'ST_UTChunkInfo', Instigator);

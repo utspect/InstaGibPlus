@@ -13,7 +13,6 @@ function PostBeginPlay()
 {
 	ForEach AllActors(Class'ST_Mutator', STM)
 		break;
-	STM.PlayerFire(Instigator, 4);			// 4 = Bio. (Each Potential Damage giver is 1 shot! Not ammo!)
 	Super.PostBeginPlay();
 	Damage = STM.WeaponSettings.BioDamage;
 	MomentumTransfer = default.MomentumTransfer * STM.WeaponSettings.BioMomentum;
@@ -32,7 +31,6 @@ function Timer()
 	if ( (Mover(Base) != None) && Mover(Base).bDamageTriggered )	// A Base ain't a pawn, so don't worry.
 		Base.TakeDamage( Damage, instigator, Location, MomentumTransfer * Normal(Velocity), MyDamageType);
 
-	STM.PlayerHit(Instigator, 4, bDirect);		// 4 = Bio.
 	if (STM.WeaponSettings.bEnableEnhancedSplashBio) {
 		STM.EnhancedHurtRadius(
 			self,
@@ -49,9 +47,31 @@ function Timer()
 			MomentumTransfer * DrawScale,
 			Location);
 	}
-	STM.PlayerClear();
 	Destroy();	
 }
+
+state OnSurface
+{
+	function BeginState()
+	{
+		if (STM.WeaponSettings.BioPrimaryInstantExplosion)
+			global.Timer();
+		else
+			super.BeginState();
+	}
+
+}
+
+state Exploding
+{
+	ignores Touch, TakeDamage;
+
+	function BeginState()
+	{
+		SetTimer(0.2, False); // Make explosions after touch not random
+	}
+}
+
 
 auto state Flying
 {

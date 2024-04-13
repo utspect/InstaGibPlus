@@ -94,6 +94,7 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 66. [bEnableNetStats](#benablenetstats)
 67. [bNetStatsUnconfirmedTime](#bnetstatsunconfirmedtime)
 68. [bNetStatsLocationError](#bnetstatslocationerror)
+69. [bNetStatsFrameTime](#bnetstatsframetime)
 69. [NetStatsLocationX](#netstatslocationx)
 70. [NetStatsLocationY](#netstatslocationy)
 71. [NetStatsWidth](#netstatswidth)
@@ -577,6 +578,12 @@ If `True`, shows the netstats graph of the amount of simulated game-time still u
 
 If `True`, the netstats graph will show the distance players are away from where the server has them.
 
+## bNetStatsFrameTime
+**Type: bool**  
+**Default: False**  
+
+If `True`, the netstats graph will show how long each frame took to render.
+
 ## NetStatsLocationX
 **Type: float**  
 **Default: 0.5**  
@@ -907,73 +914,76 @@ As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickra
 Server settings can be found inside InstaGibPlus.ini.
 
 1. [HeadshotDamage](#headshotdamage)
-2. [SniperSpeed](#sniperspeed)
-3. [SniperDamagePri](#sniperdamagepri)
-4. [SetPendingWeapon](#setpendingweapon)
-5. [NNAnnouncer](#nnannouncer)
-6. [bUTPureEnabled](#butpureenabled)
-7. [Advertise](#advertise)
-8. [AdvertiseMsg](#advertisemsg)
-9. [bAllowCenterView](#ballowcenterview)
-10. [CenterViewDelay](#centerviewdelay)
-11. [bAllowBehindView](#ballowbehindview)
-12. [TrackFOV](#trackfov)
-13. [bAllowMultiWeapon](#ballowmultiweapon)
-14. [bFastTeams](#bfastteams)
-15. [bUseClickboard](#buseclickboard)
-16. [MinClientRate](#minclientrate)
-17. [MaxClientRate](#maxclientrate)
-18. [bAdvancedTeamSay](#badvancedteamsay)
-19. [ForceSettingsLevel](#forcesettingslevel)
-20. [bWarmup](#bwarmup)
-21. [bCoaches](#bcoaches)
-22. [bAutoPause](#bautopause)
-23. [ForceModels](#forcemodels)
-24. [ImprovedHUD](#improvedhud)
-25. [bDelayedPickupSpawn](#bdelayedpickupspawn)
-26. [bTellSpectators](#btellspectators)
-27. [PlayerPacks](#playerpacks)
-28. [DefaultHitSound](#defaulthitsound)
-29. [DefaultTeamHitSound](#defaultteamhitsound)
-30. [bForceDefaultHitSounds](#bforcedefaulthitsounds)
-31. [TeleRadius](#teleradius)
-32. [ThrowVelocity](#throwvelocity)
-33. [bForceDemo](#bforcedemo)
-34. [bRestrictTrading](#brestricttrading)
-35. [MaxTradeTimeMargin](#maxtradetimemargin)
-36. [TradePingMargin](#tradepingmargin)
-37. [KillCamDelay](#killcamdelay)
-38. [KillCamDuration](#killcamduration)
-39. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
-40. [bOldLandingMomentum](#boldlandingmomentum)
-41. [bEnableSingleButtonDodge](#benablesinglebuttondodge)
-42. [bUseFlipAnimation](#buseflipanimation)
-43. [bEnableWallDodging](#benablewalldodging)
-44. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
-45. [MaxMultiDodges](#maxmultidodges)
-46. [BrightskinMode](#brightskinmode)
-47. [PlayerScale](#playerscale)
-48. [bAlwaysRenderFlagCarrier](#balwaysrenderflagcarrier)
-49. [bAlwaysRenderDroppedFlags](#balwaysrenderdroppedflags)
-50. [MinPosError](#minposerror)
-51. [MaxPosError](#maxposerror)
-52. [MaxHitError](#maxhiterror)
-53. [MaxJitterTime](#maxjittertime)
-54. [MinNetUpdateRate](#minnetupdaterate)
-55. [MaxNetUpdateRate](#maxnetupdaterate)
-56. [bEnableInputReplication](#benableinputreplication)
-57. [bEnableServerExtrapolation](#benableserverextrapolation)
-58. [bEnableServerPacketReordering](#benableserverpacketreordering)
-59. [bEnableLoosePositionCheck](#benableloosepositioncheck)
-60. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
-61. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
-62. [bEnableJitterBounding](#benablejitterbounding)
-63. [bEnableWarpFix](#benablewarpfix)
-64. [WarpFixDelay](#warpfixdelay)
-65. [bEnableCarcassCollision](#benablecarcasscollision)
-66. [ShowTouchedPackage](#showtouchedpackage)
-67. [ExcludeMapsForKickers](#excludemapsforkickers)
-68. [ForcedSettings](#forcedsettings)
+1. [SniperSpeed](#sniperspeed)
+1. [SniperDamagePri](#sniperdamagepri)
+1. [SetPendingWeapon](#setpendingweapon)
+1. [NNAnnouncer](#nnannouncer)
+1. [bUTPureEnabled](#butpureenabled)
+1. [Advertise](#advertise)
+1. [AdvertiseMsg](#advertisemsg)
+1. [bAllowCenterView](#ballowcenterview)
+1. [CenterViewDelay](#centerviewdelay)
+1. [bAllowBehindView](#ballowbehindview)
+1. [TrackFOV](#trackfov)
+1. [bAllowMultiWeapon](#ballowmultiweapon)
+1. [bFastTeams](#bfastteams)
+1. [bUseClickboard](#buseclickboard)
+1. [MinClientRate](#minclientrate)
+1. [MaxClientRate](#maxclientrate)
+1. [bAdvancedTeamSay](#badvancedteamsay)
+1. [ForceSettingsLevel](#forcesettingslevel)
+1. [bWarmup](#bwarmup)
+1. [bCoaches](#bcoaches)
+1. [bAutoPause](#bautopause)
+1. [PauseTotalTime](#pausetotaltime)
+1. [PauseTime](#pausetime)
+1. [ForceModels](#forcemodels)
+1. [ImprovedHUD](#improvedhud)
+1. [bDelayedPickupSpawn](#bdelayedpickupspawn)
+1. [bTellSpectators](#btellspectators)
+1. [PlayerPacks](#playerpacks)
+1. [DefaultHitSound](#defaulthitsound)
+1. [DefaultTeamHitSound](#defaultteamhitsound)
+1. [bForceDefaultHitSounds](#bforcedefaulthitsounds)
+1. [TeleRadius](#teleradius)
+1. [ThrowVelocity](#throwvelocity)
+1. [bForceDemo](#bforcedemo)
+1. [bRestrictTrading](#brestricttrading)
+1. [MaxTradeTimeMargin](#maxtradetimemargin)
+1. [TradePingMargin](#tradepingmargin)
+1. [KillCamDelay](#killcamdelay)
+1. [KillCamDuration](#killcamduration)
+1. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
+1. [bOldLandingMomentum](#boldlandingmomentum)
+1. [bEnableSingleButtonDodge](#benablesinglebuttondodge)
+1. [bUseFlipAnimation](#buseflipanimation)
+1. [bEnableWallDodging](#benablewalldodging)
+1. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
+1. [MaxMultiDodges](#maxmultidodges)
+1. [BrightskinMode](#brightskinmode)
+1. [PlayerScale](#playerscale)
+1. [bAlwaysRenderFlagCarrier](#balwaysrenderflagcarrier)
+1. [bAlwaysRenderDroppedFlags](#balwaysrenderdroppedflags)
+1. [MinPosError](#minposerror)
+1. [MaxPosError](#maxposerror)
+1. [MaxHitError](#maxhiterror)
+1. [MaxJitterTime](#maxjittertime)
+1. [MinNetUpdateRate](#minnetupdaterate)
+1. [MaxNetUpdateRate](#maxnetupdaterate)
+1. [bEnableInputReplication](#benableinputreplication)
+1. [bEnableServerExtrapolation](#benableserverextrapolation)
+1. [bEnableServerPacketReordering](#benableserverpacketreordering)
+1. [bEnableLoosePositionCheck](#benableloosepositioncheck)
+1. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
+1. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
+1. [bEnableJitterBounding](#benablejitterbounding)
+1. [bEnableWarpFix](#benablewarpfix)
+1. [WarpFixDelay](#warpfixdelay)
+1. [FireTimeout](#firetimeout)
+1. [bEnableCarcassCollision](#benablecarcasscollision)
+1. [ShowTouchedPackage](#showtouchedpackage)
+1. [ExcludeMapsForKickers](#excludemapsforkickers)
+1. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1153,6 +1163,20 @@ Whether to allow spectators to coach teams in tournament games or not.
 **Default: True**  
 
 Whether to automatically pause the game in tournament games or not.
+
+## PauseTotalTime
+
+**Type: int**  
+**Default: 300**  
+
+Maximum time a team may pause the game for.
+
+## PauseTime
+
+**Type: int**  
+**Default: 60**  
+
+Length of pause when a pause is triggered.
 
 ### ForceModels
 
@@ -1528,6 +1552,14 @@ Each entry can be used to force a setting on clients:
 **Default: True**  
 
 If True, carcasses left by dead players have collision. If false, carcasses will not have collision.
+
+## FireTimeout
+
+**Type: float**
+**Default: 0.1**
+**Unit: seconds**
+
+Shots more than this long in the past are rejected.
 
 # Building
 

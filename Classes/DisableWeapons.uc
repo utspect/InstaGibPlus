@@ -1,4 +1,5 @@
 class DisableWeapons extends Mutator;
+// Description=""
 
 function bool AlwaysKeep(Actor Other)
 {

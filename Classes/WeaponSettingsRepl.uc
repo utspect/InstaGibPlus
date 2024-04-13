@@ -26,6 +26,10 @@ var float FlakPostSelectTime;
 var float FlakDownTime;
 var float FlakChunkDamage;
 var float FlakChunkMomentum;
+var float FlakChunkLifespan;
+var float FlakChunkDropOffStart;
+var float FlakChunkDropOffEnd;
+var float FlakChunkDropOffDamageRatio;
 var float FlakSlugDamage;
 var float FlakSlugHurtRadius;
 var float FlakSlugMomentum;
@@ -53,6 +57,8 @@ var float PulseSelectTime;
 var float PulseDownTime;
 var float PulseSphereDamage;
 var float PulseSphereMomentum;
+var float PulseSphereSpeed;
+var float PulseSphereFireRate;
 var float PulseBoltDPS;
 var float PulseBoltMomentum;
 var float PulseBoltMaxAccumulate;
@@ -66,6 +72,9 @@ var float ShockBeamMomentum;
 var float ShockProjectileDamage;
 var float ShockProjectileHurtRadius;
 var float ShockProjectileMomentum;
+var bool  ShockProjectileBlockBullets;
+var bool  ShockProjectileTakeDamage;
+var float ShockProjectileHealth;
 var float ShockComboDamage;
 var float ShockComboMomentum;
 var float ShockComboHurtRadius;
@@ -74,6 +83,7 @@ var float BioSelectTime;
 var float BioDownTime;
 var float BioDamage;
 var float BioMomentum;
+var bool  BioPrimaryInstantExplosion;
 var float BioAltDamage;
 var float BioAltMomentum;
 var float BioHurtRadiusBase;
@@ -138,6 +148,10 @@ replication {
 		FlakDownTime,
 		FlakChunkDamage,
 		FlakChunkMomentum,
+		FlakChunkLifespan,
+		FlakChunkDropOffStart,
+		FlakChunkDropOffEnd,
+		FlakChunkDropOffDamageRatio,
 		FlakSlugDamage,
 		FlakSlugHurtRadius,
 		FlakSlugMomentum,
@@ -165,6 +179,8 @@ replication {
 		PulseDownTime,
 		PulseSphereDamage,
 		PulseSphereMomentum,
+		PulseSphereSpeed,
+		PulseSphereFireRate,
 		PulseBoltDPS,
 		PulseBoltMomentum,
 		PulseBoltMaxAccumulate,
@@ -178,6 +194,9 @@ replication {
 		ShockProjectileDamage,
 		ShockProjectileHurtRadius,
 		ShockProjectileMomentum,
+		ShockProjectileBlockBullets,
+		ShockProjectileTakeDamage,
+		ShockProjectileHealth,
 		ShockComboDamage,
 		ShockComboMomentum,
 		ShockComboHurtRadius,
@@ -186,6 +205,7 @@ replication {
 		BioDownTime,
 		BioDamage,
 		BioMomentum,
+		BioPrimaryInstantExplosion,
 		BioAltDamage,
 		BioAltMomentum,
 		BioHurtRadiusBase,
@@ -320,6 +340,12 @@ simulated final function float PulseSelectAnimSpeed() {
 	return 100.0;
 }
 
+simulated final function float PulseFiringAnimSpeed() {
+	if (PulseSphereFireRate > 0.0)
+		return FMin(100.0, default.PulseSphereFireRate / PulseSphereFireRate);
+	return 100.0;
+}
+
 simulated final function float ShockSelectAnimSpeed() {
 	if (ShockSelectTime > 0.0)
 		return FMin(100.0, default.ShockSelectTime / ShockSelectTime);
@@ -443,6 +469,10 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	FlakDownTime = S.FlakDownTime;
 	FlakChunkDamage = S.FlakChunkDamage;
 	FlakChunkMomentum = S.FlakChunkMomentum;
+	FlakChunkLifespan = S.FlakChunkLifespan;
+	FlakChunkDropOffStart = S.FlakChunkDropOffStart;
+	FlakChunkDropOffEnd = S.FlakChunkDropOffEnd;
+	FlakChunkDropOffDamageRatio = S.FlakChunkDropOffDamageRatio;
 	FlakSlugDamage = S.FlakSlugDamage;
 	FlakSlugHurtRadius = S.FlakSlugHurtRadius;
 	FlakSlugMomentum = S.FlakSlugMomentum;
@@ -470,6 +500,8 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	PulseDownTime = S.PulseDownTime;
 	PulseSphereDamage = S.PulseSphereDamage;
 	PulseSphereMomentum = S.PulseSphereMomentum;
+	PulseSphereSpeed = S.PulseSphereSpeed;
+	PulseSphereFireRate = S.PulseSphereFireRate;
 	PulseBoltDPS = S.PulseBoltDPS;
 	PulseBoltMomentum = S.PulseBoltMomentum;
 	PulseBoltMaxAccumulate = S.PulseBoltMaxAccumulate;
@@ -483,6 +515,9 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	ShockProjectileDamage = S.ShockProjectileDamage;
 	ShockProjectileHurtRadius = S.ShockProjectileHurtRadius;
 	ShockProjectileMomentum = S.ShockProjectileMomentum;
+	ShockProjectileBlockBullets = S.ShockProjectileBlockBullets;
+	ShockProjectileTakeDamage = S.ShockProjectileTakeDamage;
+	ShockProjectileHealth = S.ShockProjectileHealth;
 	ShockComboDamage = S.ShockComboDamage;
 	ShockComboMomentum = S.ShockComboMomentum;
 	ShockComboHurtRadius = S.ShockComboHurtRadius;
@@ -491,6 +526,7 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	BioDownTime = S.BioDownTime;
 	BioDamage = S.BioDamage;
 	BioMomentum = S.BioMomentum;
+	BioPrimaryInstantExplosion = S.BioPrimaryInstantExplosion;
 	BioAltDamage = S.BioAltDamage;
 	BioAltMomentum = S.BioAltMomentum;
 	BioHurtRadiusBase = S.BioHurtRadiusBase;
@@ -594,6 +630,10 @@ defaultproperties
 	FlakDownTime=0.333333
 	FlakChunkDamage=16
 	FlakChunkMomentum=1.0
+	FlakChunkLifespan=2.9
+	FlakChunkDropOffStart=0.0
+	FlakChunkDropOffEnd=0.0
+	FlakChunkDropOffDamageRatio=1.0
 	FlakSlugDamage=70
 	FlakSlugHurtRadius=150
 	FlakSlugMomentum=1.0
@@ -621,6 +661,8 @@ defaultproperties
 	PulseDownTime=0.26
 	PulseSphereDamage=20
 	PulseSphereMomentum=1.0
+	PulseSphereSpeed=1450.000000
+	PulseSphereFireRate=0.18
 	PulseBoltDPS=72
 	PulseBoltMomentum=1.0
 	PulseBoltMaxAccumulate=0.08
@@ -634,6 +676,9 @@ defaultproperties
 	ShockProjectileDamage=55
 	ShockProjectileHurtRadius=70
 	ShockProjectileMomentum=1.0
+	ShockProjectileBlockBullets=False
+	ShockProjectileTakeDamage=False
+	ShockProjectileHealth=30
 	ShockComboDamage=165
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
@@ -642,6 +687,7 @@ defaultproperties
 	BioDownTime=0.333333
 	BioDamage=20
 	BioMomentum=1.0
+	BioPrimaryInstantExplosion=False
 	BioAltDamage=75
 	BioAltMomentum=1.0
 	BioHurtRadiusBase=75

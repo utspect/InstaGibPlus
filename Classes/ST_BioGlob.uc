@@ -77,6 +77,11 @@ state OnSurface
 			return;
 		GotoState('Exploding');
 	}
+
+	function BeginState()
+	{
+		super(UT_BioGel).BeginState();
+	}
 }
 
 defaultproperties

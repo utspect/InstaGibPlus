@@ -14,7 +14,6 @@ simulated function PostBeginPlay()
 	{
 		ForEach AllActors(Class'ST_Mutator', STM)
 			break;		// Find master :D
-		STM.PlayerFire(Instigator, 12);		// 12 = Ripper Secondary
 	}
 
 	Super.PostBeginPlay();
@@ -26,7 +25,6 @@ auto state Flying
 	{
 		if ( Other != Instigator ) 
 		{
-			STM.PlayerHit(Instigator, 12, Other.IsA('Pawn'));	// 12 = Ripper Secondary, Direct if Pawn
 			Other.TakeDamage(
 				STM.WeaponSettings.RipperSecondaryDamage,
 				instigator,
@@ -34,7 +32,6 @@ auto state Flying
 				STM.WeaponSettings.RipperSecondaryMomentum * MomentumTransfer * Normal(Velocity),
 				MyDamageType
 			);
-			STM.PlayerClear();
 			Spawn(class'RipperPulse',,,HitLocation);
 			MakeNoise(1.0);
  			Destroy();
@@ -57,7 +54,6 @@ auto state Flying
 		local vector dir;
 
 		if (STM.WeaponSettings.bEnableEnhancedSplash) {
-			STM.PlayerHit(Instigator, 12, False);		// 12 = Ripper Secondary
 			STM.EnhancedHurtRadius(
 				self,
 				STM.WeaponSettings.RipperSecondaryDamage,
@@ -66,7 +62,6 @@ auto state Flying
 				STM.WeaponSettings.RipperSecondaryMomentum * MomentumTransfer,
 				HitLocation,
 				True); // special case for Razor2Alt
-			STM.PlayerClear();
 		} else {
 			if( bHurtEntry )
 				return;
@@ -81,7 +76,6 @@ auto state Flying
 					dir = dir/dist;
 					dir.Z = FMin(0.45, dir.Z); 
 					damageScale = 1 - FMax(0,(dist - Victims.CollisionRadius)/STM.WeaponSettings.RipperSecondaryHurtRadius);
-					STM.PlayerHit(Instigator, 12, False);		// 12 = Ripper Secondary
 					Victims.TakeDamage (
 						damageScale * STM.WeaponSettings.RipperSecondaryDamage,
 						Instigator, 
@@ -89,7 +83,6 @@ auto state Flying
 						STM.WeaponSettings.RipperSecondaryMomentum * damageScale * MomentumTransfer * dir,
 						MyDamageType
 					);
-					STM.PlayerClear();
 				} 
 			}
 			bHurtEntry = false;

@@ -18,7 +18,7 @@ function AddChunk(ST_UTChunk Chunk)
 		return;				// If it for some reason failed to spawn.
 	Chunk.Chunkie = Self;
 	Chunk.ChunkIndex = ChunkCount++;
-	STM.PlayerFire(Pawn(Owner), 14);	// Register that this player has made a new flak chunk.
+	Chunk.LifeSpan = STM.WeaponSettings.FlakChunkLifespan;
 }
 
 function HitSomething(ST_UTChunk Chunk, Actor Other)
@@ -29,7 +29,6 @@ function HitSomething(ST_UTChunk Chunk, Actor Other)
 	HitCount++;
 	Victim[Chunk.ChunkIndex] = Other;
 
-	STM.PlayerHit(Pawn(Owner), 14, False);	// 14 = Flak Chunk
 
 	if (HitCount == ChunkCount)
 	{
@@ -45,13 +44,11 @@ function HitSomething(ST_UTChunk Chunk, Actor Other)
 			if (Victim[x] != A)
 				return;
 		// Whoa! Perfect man!
-		STM.PlayerSpecial(Pawn(Owner), 14);	// 15 = Flak Chunk
 	}
 }
 
 function EndHit()
 {
-	STM.PlayerClear();
 }
 
 // The chunks have a lifespan of 2.9-3.1 seconds, so this is sufficient.

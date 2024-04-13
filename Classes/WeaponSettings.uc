@@ -17,8 +17,13 @@ var config bool bReplaceWarheadLauncher;
 var config bool  bEnableEnhancedSplash;
 var config bool  bEnableEnhancedSplashBio;
 var config bool  bEnableEnhancedSplashCombo;
+var config bool  bEnhancedSplashIgnoreStationaryPawns;
 var config float SplashMaxDiffraction;
 var config float SplashMinDiffractionDistance;
+
+var config bool  bEnhancedHeadshotDetection;
+var config float HeadHalfHeight;
+var config float HeadRadius;
 
 var config float WarheadSelectTime;
 var config float WarheadDownTime;
@@ -46,6 +51,10 @@ var config float FlakPostSelectTime;
 var config float FlakDownTime;
 var config float FlakChunkDamage;
 var config float FlakChunkMomentum;
+var config float FlakChunkLifespan;
+var config float FlakChunkDropOffStart;
+var config float FlakChunkDropOffEnd;
+var config float FlakChunkDropOffDamageRatio;
 var config float FlakSlugDamage;
 var config float FlakSlugHurtRadius;
 var config float FlakSlugMomentum;
@@ -73,6 +82,8 @@ var config float PulseSelectTime;
 var config float PulseDownTime;
 var config float PulseSphereDamage;
 var config float PulseSphereMomentum;
+var config float PulseSphereSpeed;
+var config float PulseSphereFireRate;
 var config float PulseBoltDPS;
 var config float PulseBoltMomentum;
 var config float PulseBoltMaxAccumulate;
@@ -86,6 +97,9 @@ var config float ShockBeamMomentum;
 var config float ShockProjectileDamage;
 var config float ShockProjectileHurtRadius;
 var config float ShockProjectileMomentum;
+var config bool  ShockProjectileBlockBullets;
+var config bool  ShockProjectileTakeDamage;
+var config float ShockProjectileHealth;
 var config float ShockComboDamage;
 var config float ShockComboMomentum;
 var config float ShockComboHurtRadius;
@@ -94,6 +108,7 @@ var config float BioSelectTime;
 var config float BioDownTime;
 var config float BioDamage;
 var config float BioMomentum;
+var config bool  BioPrimaryInstantExplosion; 
 var config float BioAltDamage;
 var config float BioAltMomentum;
 var config float BioHurtRadiusBase;
@@ -155,6 +170,10 @@ defaultproperties
 	SplashMaxDiffraction=0.5
 	SplashMinDiffractionDistance=50.0
 
+	bEnhancedHeadshotDetection=False
+	HeadHalfHeight=7.5
+	HeadRadius=10.0
+
 	WarheadSelectTime=0.5
 	WarheadDownTime=0.233333
 
@@ -181,6 +200,10 @@ defaultproperties
 	FlakDownTime=0.333333
 	FlakChunkDamage=16
 	FlakChunkMomentum=1.0
+	FlakChunkLifespan=2.9
+	FlakChunkDropOffStart=0.0
+	FlakChunkDropOffEnd=0.0
+	FlakChunkDropOffDamageRatio=1.0
 	FlakSlugDamage=70
 	FlakSlugHurtRadius=150
 	FlakSlugMomentum=1.0
@@ -208,6 +231,8 @@ defaultproperties
 	PulseDownTime=0.26
 	PulseSphereDamage=20
 	PulseSphereMomentum=1.0
+	PulseSphereSpeed=1450.000000
+	PulseSphereFireRate=0.18
 	PulseBoltDPS=72
 	PulseBoltMomentum=1.0
 	PulseBoltMaxAccumulate=0.08
@@ -221,6 +246,9 @@ defaultproperties
 	ShockProjectileDamage=55
 	ShockProjectileHurtRadius=70
 	ShockProjectileMomentum=1.0
+	ShockProjectileBlockBullets=True
+	ShockProjectileTakeDamage=False
+	ShockProjectileHealth=30
 	ShockComboDamage=165
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
@@ -229,6 +257,7 @@ defaultproperties
 	BioDownTime=0.333333
 	BioDamage=20
 	BioMomentum=1.0
+	BioPrimaryInstantExplosion=False
 	BioAltDamage=75
 	BioAltMomentum=1.0
 	BioHurtRadiusBase=75

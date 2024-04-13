@@ -21,6 +21,14 @@ final function Reset() {
 // Writing to this Buffer
 //
 
+final function int GetSpace() {
+	return arraycount(BitsData) * 32;
+}
+
+final function int GetSpaceRemaining() {
+	return (arraycount(BitsData) * 32) - NumBits;
+}
+
 final function bool IsSpaceSufficient(int ReqBits) {
 	return (NumBits + ReqBits <= arraycount(BitsData) * 32);
 }
@@ -35,7 +43,7 @@ final function AddBits(int Num, int Bits) {
 	IntRem = 32 - Offset;
 
 	if (Num > IntRem) {
-		or_eq(BitsData[Index], Bits << Offset);
+		BitsData[Index] = BitsData[Index] | Bits << Offset;
 		Bits = Bits >>> IntRem;
 		Num -= IntRem;
 		NumBits += IntRem;
@@ -47,7 +55,7 @@ final function AddBits(int Num, int Bits) {
 	if (Num == 32) {
 		BitsData[Index] = Bits;
 	} else {
-		or_eq(BitsData[Index], (Bits & ((1 << Num) - 1)) << Offset);
+		BitsData[Index] = BitsData[Index] | ((Bits & ((1 << Num) - 1)) << Offset);
 	}
 
 	NumBits += Num;

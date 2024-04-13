@@ -266,8 +266,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 	PawnOwner = Pawn(Owner);
 
-	STM.PlayerFire(PawnOwner, 13);				// 13 = Minigun
-
 	if (Other == Level)
 		Spawn(class'UT_LightWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
 	else if ( (Other!=self) && (Other!=Owner) && (Other != None) )
@@ -285,9 +283,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			X = vect(0, 0, 0);
 		else
 			X *= 2.5;
-		STM.PlayerHit(PawnOwner, 13, False);			// 13 = Minigun
 		Other.TakeDamage(rndDam, PawnOwner, HitLocation, rndDam*500.0*X, MyDamageType);
-		STM.PlayerClear();
 	}
 
 	if (Pawn(Other) != None && Other != Owner && Pawn(Other).Health > 0)
@@ -296,7 +292,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		if (HitCounter == 8)
 		{	// Wowsers!
 			HitCounter = 0;
-			STM.PlayerSpecial(PawnOwner, 13);		// 13 = Minigun
 		}
 	}
 	else

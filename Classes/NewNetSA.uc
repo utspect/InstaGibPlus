@@ -1,4 +1,5 @@
 class NewNetSA extends Arena;
+// Description="SniperArena with lag-compensated SniperRifle"
 
 var WeaponSettings WeaponSettings;
 var WeaponSettingsRepl WSettingsRepl;

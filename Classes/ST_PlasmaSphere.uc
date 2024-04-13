@@ -1,9 +1,3 @@
-// ===============================================================
-// UTPureStats7A.ST_PlasmaSphere: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class ST_PlasmaSphere extends PlasmaSphere;
 
 var ST_Mutator STM;
@@ -14,9 +8,47 @@ simulated function PostBeginPlay()
 	{
 		ForEach AllActors(Class'ST_Mutator', STM)
 			break;
-		STM.PlayerFire(Instigator, 9);			// 9 = Plasma Sphere
 	}
+	Speed = STM.WeaponSettings.PulseSphereSpeed;
+	DrawScale = 0.12;
 	Super.PostBeginPlay();
+}
+
+simulated function Explode(vector HitLocation, vector HitNormal)
+{
+	if ( !bExplosionEffect )
+	{
+		if ( Role == ROLE_Authority )
+			BlowUp(HitLocation);
+		bExplosionEffect = true;
+		if ( !Level.bHighDetailMode || bHitPawn || Level.bDropDetail )
+		{
+			if ( bExploded )
+			{
+				Destroy();
+				return;
+			}
+			else
+				DrawScale = 0.2;
+		}
+		else
+			DrawScale = 0.2;
+
+	    LightType = LT_Steady;
+		LightRadius = 5;
+		SetCollision(false,false,false);
+		LifeSpan = 0.5;
+		Texture = ExpType;
+		DrawType = DT_SpriteAnimOnce;
+		Style = STY_Translucent;
+		if ( Region.Zone.bMoveProjectiles && (Region.Zone.ZoneVelocity != vect(0,0,0)) )
+		{
+			bBounce = true;
+			Velocity = Region.Zone.ZoneVelocity;
+		}
+		else
+			SetPhysics(PHYS_None);
+	}
 }
 
 simulated function ProcessTouch (Actor Other, vector HitLocation)
@@ -30,14 +62,12 @@ simulated function ProcessTouch (Actor Other, vector HitLocation)
 		}
 		if ( Role == ROLE_Authority )
 		{
-			STM.PlayerHit(Instigator, 9, False);	// 9 = Plasma Sphere
 			Other.TakeDamage(
 				STM.WeaponSettings.PulseSphereDamage,
 				instigator,
 				HitLocation,
 				STM.WeaponSettings.PulseSphereMomentum * MomentumTransfer * Vector(Rotation),
 				MyDamageType);
-			STM.PlayerClear();
 		}
 		Explode(HitLocation, vect(0,0,1));
 	}

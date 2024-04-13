@@ -129,7 +129,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local vector Momentum;
 
 	PawnOwner = Pawn(Owner);
-	STM.PlayerFire(PawnOwner, 1);			// 1 = Impact Hammer.
 
 	if ( (Other == None) || (Other == Owner) || (Other == self) || (Owner == None))
 		return;
@@ -140,7 +139,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		ChargeSize = FMax(ChargeSize, 1.0);
 		if ( VSize(HitLocation - Owner.Location) < 80 )
 			Spawn(class'ImpactMark',,, HitLocation+HitNormal, Rotator(HitNormal));
-		STM.PlayerHit(PawnOwner, 1, False);	// 1 = Impact Hammer
 		Owner.TakeDamage(
 			STM.WeaponSettings.HammerSelfDamage,
 			PawnOwner,
@@ -148,7 +146,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			vect(0,0,0),
 			MyDamageType
 		);
-		STM.PlayerClear();
 
 		// Manually do what PawnOwner.AddVelocity from PawnOwner.TakeDamage would do.
 		// Cant use AddVelocity because it takes an additional round trip.
@@ -172,7 +169,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		if (Other.bIsPawn)
 			Momentum *= STM.WeaponSettings.HammerMomentum;
 
-		STM.PlayerHit(PawnOwner, 1, False);	// 1 = Impact Hammer
 		Other.TakeDamage(
 			STM.WeaponSettings.HammerDamage * ChargeSize,
 			PawnOwner,
@@ -180,7 +176,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			Momentum,
 			MyDamageType
 		);
-		STM.PlayerClear();
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}
@@ -194,7 +189,6 @@ function TraceAltFire()
 	local Pawn PawnOwner;
 
 	PawnOwner = Pawn(Owner);
-	STM.PlayerFire(PawnOwner, 1);			// 1 = Impact Hammer.
 
 	Owner.MakeNoise(PawnOwner.SoundDampening);
 	GetAxes(PawnOwner.ViewRotation, X, Y, Z);
@@ -209,7 +203,6 @@ function TraceAltFire()
 		if ( ((P.Physics == PHYS_Projectile) || (P.Physics == PHYS_Falling))
 			&& (Normal(P.Location - Owner.Location) Dot X) > 0.9 )
 		{
-			STM.PlayerSpecial(PawnOwner, 1);		// Deflect/Push aside projectiles.
 			P.speed = VSize(P.Velocity);
 			if ( P.Velocity Dot Y > 0 )
 				P.Velocity = P.Speed * Normal(P.Velocity + (750 - VSize(P.Location - Owner.Location)) * Y);
@@ -234,7 +227,6 @@ function ProcessAltTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, V
 	scale = VSize(realLoc - HitLocation)/180;
 	if ( (Other == Level) || Other.IsA('Mover') )
 	{
-		STM.PlayerHit(PawnOwner, 1, False);	// 1 = IH!
 		Owner.TakeDamage(
 			STM.WeaponSettings.HammerAltSelfDamage * scale,
 			Pawn(Owner),
@@ -242,7 +234,6 @@ function ProcessAltTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, V
 			STM.WeaponSettings.HammerAltSelfMomentum * -40000.0 * X * scale,
 			MyDamageType
 		);
-		STM.PlayerClear();
 	}
 	else
 	{
@@ -250,7 +241,6 @@ function ProcessAltTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, V
 		if (Other.bIsPawn)
 			Momentum *= STM.WeaponSettings.HammerAltMomentum;
 
-		STM.PlayerHit(PawnOwner, 1, False);	// 1 = IH!
 		Other.TakeDamage(
 			STM.WeaponSettings.HammerAltDamage * scale,
 			Pawn(Owner),
@@ -258,7 +248,6 @@ function ProcessAltTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, V
 			Momentum,
 			MyDamageType
 		);
-		STM.PlayerClear();
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}

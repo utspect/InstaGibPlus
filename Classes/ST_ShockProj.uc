@@ -1,32 +1,24 @@
-// ===============================================================
-// Stats.ST_ShockProj: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class ST_ShockProj extends ShockProj;
 
 var ST_Mutator STM;
 
-// For Standstill combo Special
-var vector StartLocation;
+// For ShockProjectileTakeDamage
+var float Health;
 
 var PlayerPawn InstigatingPlayer;
 
-simulated function PostBeginPlay()
-{
-	if (ROLE == ROLE_Authority)
-	{
-		StartLocation = Instigator.Location;
+simulated function PostBeginPlay() {
+	if (ROLE == ROLE_Authority) {
 		ForEach AllActors(Class'ST_Mutator', STM)
-			break;		// Find master :D
+			break; // Find master :D
 	}
-
+	if (STM.WeaponSettings.ShockProjectileTakeDamage) {
+		Health = STM.WeaponSettings.ShockProjectileHealth;
+	}
 	Super.PostBeginPlay();
 }
 
-simulated function PostNetBeginPlay()
-{
+simulated function PostNetBeginPlay() {
 	local PlayerPawn In;
 	super.PostNetBeginPlay();
 
@@ -47,11 +39,7 @@ simulated event Tick(float Delta) {
 		MoveSmooth(Velocity * (0.001 * InstigatingPlayer.PlayerReplicationInfo.Ping));
 }
 
-function SuperExplosion()	// aka, combo.
-{
-	STM.PlayerUnfire(Instigator, 6);			// 6 = Shock Ball -> remove this
-	STM.PlayerFire(Instigator, 7);				// 7 = Shock Combo -> Instigator gets +1 Combo
-	STM.PlayerHit(Instigator, 7, Instigator.Location == StartLocation);	// 7 = Shock Combo, bSpecial if Standstill.
+function SuperExplosion() {
 	if (STM.WeaponSettings.bEnableEnhancedSplashCombo) {
 		STM.EnhancedHurtRadius(
 			self,
@@ -68,7 +56,6 @@ function SuperExplosion()	// aka, combo.
 			STM.WeaponSettings.ShockComboMomentum * MomentumTransfer * 2,
 			Location);
 	}
-	STM.PlayerClear();
 	
 	Spawn(Class'ut_ComboRing',,'',Location, Instigator.ViewRotation);
 	PlaySound(ExploSound,,20.0,,2000,0.6);	
@@ -76,10 +63,8 @@ function SuperExplosion()	// aka, combo.
 	Destroy(); 
 }
 
-function Explode(vector HitLocation,vector HitNormal)
-{
+function Explode(vector HitLocation,vector HitNormal) {
 	PlaySound(ImpactSound, SLOT_Misc, 0.5,,, 0.5+FRand());
-	STM.PlayerHit(Instigator, 6, False);	// 6 = Shock Ball
 	if (STM.WeaponSettings.bEnableEnhancedSplash) {
 		STM.EnhancedHurtRadius(
 			self,
@@ -96,7 +81,6 @@ function Explode(vector HitLocation,vector HitNormal)
 			STM.WeaponSettings.ShockProjectileMomentum * MomentumTransfer,
 			Location);
 	}
-	STM.PlayerClear();
 	if (STM.WeaponSettings.ShockProjectileDamage > 60)
 		Spawn(class'ut_RingExplosion3',,, HitLocation+HitNormal*8,rotator(HitNormal));
 	else
@@ -105,13 +89,18 @@ function Explode(vector HitLocation,vector HitNormal)
 	Destroy();
 }
 
-function TakeDamage( int Damage, Pawn EventInstigator, vector HitLocation, vector Momentum, name DamageType)
-{
-	if (DamageType == 'shot')// || DamageType == 'Pulsed' ||		// Enforcer/Minigun/Sniper, Pulse Sphere
-//		DamageType == 'Corroded' || DamageType == 'jolted')	// Bio and Shock Ball.
-		STM.PlayerSpecial(Instigator, 6);	// 6 = Shock Ball blocked a shot.
-}
+function TakeDamage(int Damage, Pawn EventInstigator, vector HitLocation, vector Momentum, name DamageType) {
+	if (STM.WeaponSettings.ShockProjectileTakeDamage == false)
+		return;
 
+	if (DamageType == 'Pulsed'|| DamageType == 'Corroded') {
+		Health -= Damage;
+		if (Health <= 0) {
+			Spawn(class'ut_RingExplosion',,, Location + Momentum * 0.1, rotator(Momentum));
+			Destroy();
+		}
+	}
+}
 
 defaultproperties {
 }

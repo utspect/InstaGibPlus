@@ -12,6 +12,10 @@ var rotator SavedViewRotation;
 var bool SavedDodging;
 var EDodgeDir SavedDodgeDir;
 var float SavedDodgeClickTimer;
+var float SavedLastTimeForward;
+var float SavedLastTimeBack;
+var float SavedLastTimeLeft;
+var float SavedLastTimeRight;
 
 var bool bLive;
 var bool bForw;
@@ -44,23 +48,18 @@ function CopyFrom(float Delta, bbPlayer P) {
 	SavedDodging = P.bDodging;
 	SavedDodgeDir = P.DodgeDir;
 	SavedDodgeClickTimer = P.DodgeClickTimer;
+	SavedLastTimeForward = P.LastTimeForward;
+	SavedLastTimeBack = P.LastTimeBack;
+	SavedLastTimeLeft = P.LastTimeLeft;
+	SavedLastTimeRight = P.LastTimeRight;
 
 	bLive = P.IsInState('Dying') == false;
-	if (P.IsInState('Dying') || P.IsInState('GameEnded') || P.IsInState('PlayerWaking')) {
-		bForw = false;
-		bBack = false;
-		bLeft = false;
-		bRigh = false;
-		bWalk = false;
-		bDuck = false;
-	} else {
-		bForw = P.bWasForward;
-		bBack = P.bWasBack;
-		bLeft = P.bWasLeft;
-		bRigh = P.bWasRight;
-		bWalk = P.bRun != 0;
-		bDuck = P.bDuck != 0;
-	}
+	bForw = P.bWasForward;
+	bBack = P.bWasBack;
+	bLeft = P.bWasLeft;
+	bRigh = P.bWasRight;
+	bWalk = P.bRun != 0;
+	bDuck = P.bDuck != 0;
 	bJump = (P.aUp > 1.0) || P.IGPlus_PressedJumpSave;
 	bDodg = P.bPressedDodge;
 	bFire = (P.bFire != 0) || P.bJustFired;
@@ -139,21 +138,6 @@ function bool IsSimilarTo(IGPlus_SavedInput Other) {
 		SavedViewRotation.Pitch == Other.SavedViewRotation.Pitch &&
 		SavedViewRotation.Yaw == Other.SavedViewRotation.Yaw;
 }
-
-function IGPlus_SavedInput SerializeNodes(int MaxNumNodes, IGPlus_SavedInput NextNode, IGPlus_DataBuffer B, int SpaceRequired, out float DeltaError) {
-	local IGPlus_SavedInput ReferenceNode;
-
-	if (MaxNumNodes <= 0 || B.IsSpaceSufficient(SpaceRequired + default.SerializedBits) == false || Prev == none)
-		return self;
-
-	ReferenceNode = Prev.SerializeNodes(MaxNumNodes - 1, self, B, SpaceRequired + default.SerializedBits, DeltaError);
-
-	//if (NextNode == none || IsSimilarTo(NextNode) == false) // uncomment to compress Input stream
-		SerializeTo(B, DeltaError);
-
-	return ReferenceNode;
-}
-
 
 defaultproperties {
 	bHidden=True

@@ -10,6 +10,9 @@ var ST_Mutator STM;
 
 var WeaponSettingsRepl WSettings;
 
+// For the PulseSphereFireRate setting
+var float RateOfFire;
+
 simulated final function WeaponSettingsRepl FindWeaponSettings() {
 	local WeaponSettingsRepl S;
 
@@ -33,6 +36,8 @@ function PostBeginPlay()
 
 	ForEach AllActors(Class'ST_Mutator', STM)
 		break;		// Find master :D
+	
+	ProjectileSpeed = STM.WeaponSettings.PulseSphereSpeed;
 }
 
 function SetSwitchPriority(pawn Other)
@@ -65,6 +70,61 @@ function SetSwitchPriority(pawn Other)
 			}
 		}
 	}		
+}
+
+simulated function PlayFiring()
+{
+	FlashCount++;
+	AmbientSound = FireSound;
+	SoundVolume = Pawn(Owner).SoundDampening*255;
+	PlayAnim('shootLOOP', (1 + 0.5 * FireAdjust) * GetWeaponSettings().PulseFiringAnimSpeed(), 0.0);
+	bWarnTarget = (FRand() < 0.2);
+}
+
+state NormalFire
+{
+	ignores AnimEnd;
+
+	function BeginState() {
+		super.BeginState();
+
+		RateOfFire = STM.WeaponSettings.PulseSphereFireRate;
+	}
+
+	function Tick(float DeltaTime) {
+		super.Tick(DeltaTime);
+
+		RateOfFire -= DeltaTime;
+		if (RateOfFire < 0) {
+			Finish(); // potentially fire again
+			RateOfFire += STM.WeaponSettings.PulseSphereFireRate;
+		}
+	}
+Begin:
+}
+
+simulated state ClientFiring
+{
+	simulated function BeginState() {
+		super.BeginState();
+
+		RateOfFire = GetWeaponSettings().PulseSphereFireRate;
+	}
+
+	simulated event Tick(float DeltaTime) {
+		super.Tick(DeltaTime);
+
+		RateOfFire -= DeltaTime;
+		if (RateOfFire < 0) {
+			if ((Pawn(Owner) == none) || (Pawn(Owner).bFire == 0)) {
+				AnimEnd();
+				RateOfFire = 0;
+			} else {
+				RateOfFire += GetWeaponSettings().PulseSphereFireRate;
+			}
+		}
+	}
+Begin:
 }
 
 simulated function PlaySelect() {

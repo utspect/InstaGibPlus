@@ -81,7 +81,6 @@ var int zzPositionIndex;
 var float zzNextPositionTime;
 var bool zzbNN_Tracing;
 var Weapon zzPendingWeapon;
-var bool bJustRespawned;
 var float LastCAPTime; // ServerTime when last CAP was sent
 var float NextRealCAPTime;
 var decoration carriedFlag;
@@ -130,11 +129,7 @@ var string zzMagicCode;		// The magic code to display.
 
 var string zzPrevClientMessage;	// To log client messages...
 
-var PureStats zzStat;		// For player stats
-var PureStatMutator zzStatMut;	// The mutator that receives special calls
-
 var PureLevelBase PureLevel;	// And Level.
-var PurePlayer PurePlayer;	// And player.
 var bool bDeterminedLocalPlayer;
 var PlayerPawn LocalPlayer;
 
@@ -271,6 +266,7 @@ var IGPlus_ServerMove IGPlus_ServerMove_FreeList;
 var Utilities Utils;
 var StringUtils StringUtils;
 var bbPlayerStatics PlayerStatics;
+var Info VersionInfo;
 
 struct IGPlus_ForcedSettings_Entry {
 	var int Mode;
@@ -362,6 +358,8 @@ struct ReplBuffer {
 	var int Data[20];
 };
 
+var string IGPlus_LogoVersionText;
+
 replication
 {
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -396,7 +394,6 @@ replication
 		zzForceSettingsLevel,
 		zzMaximumNetspeed,
 		zzMinimumNetspeed,
-		zzStat,
 		zzTrackFOV,
 		zzWaitTime;
 
@@ -448,11 +445,8 @@ replication
 
 	reliable if ( RemoteRole == ROLE_AutonomousProxy && !bDemoRecording )
 		xxCheatFound,
-		xxClientConsole,
 		xxClientDoEndShot,
-		xxClientDoScreenshot,
-		xxClientKeys,
-		xxClientReadINT;
+		xxClientDoScreenshot;
 
 	reliable if ((Role == ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ClientProjExplode;
@@ -494,7 +488,6 @@ replication
 		IGPlus_ForcedSettings_InitOK,
 		PrintWeaponState,
 		ServerSetDodgeSettings,
-		ShowStats,
 		xxExplodeOther,
 		xxNN_AltFire,
 		xxNN_Fire,
@@ -504,10 +497,6 @@ replication
 		xxSendSpreeToSpecs,
 		xxServerAckScreenshot,
 		xxServerDemoReply,
-		xxServerReceiveConsole,
-		xxServerReceiveINT,
-		xxServerReceiveKeys,
-		xxServerReceiveMenuItems,
 		xxServerSetForceModels,
 		xxServerSetReadyToPlay,
 		xxServerSetTeamInfo,
@@ -696,7 +685,7 @@ simulated function Touch( actor Other )
 	{
 		if (zzUTPure.Settings.ShowTouchedPackage)
 		{
-			ClientMessage(class'StringUtils'.static.PackageOfObject(Other));
+			ClientMessage(StringUtils.PackageOfObject(Other));
 		}
 
 		if ((Other.IsA('Kicker') && Other.Class.Name != 'NN_Kicker')) {
@@ -935,9 +924,9 @@ simulated function InitSettings() {
 		}
 
 	if (Settings == none) {
-		ClientSettingsHelper = new(none, 'InstaGibPlus') class'Object'; // object name = INI file name
+		ClientSettingsHelper = new(none, StringUtils.StringToName(VersionInfo.GetPropertyText("PackageBaseName"))) class'Object'; // object name = INI file name
 		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings'; // object name = Section name
-		Settings.CheckConfig();
+		Settings.CheckConfig(VersionInfo.GetPropertyText("PackageBaseName"));
 		Log("Loaded Settings!", 'IGPlus');
 	}
 }
@@ -945,11 +934,15 @@ simulated function InitSettings() {
 event PostBeginPlay()
 {
 	local int TickRate;
+	local class<Info> VersionInfoClass;
+
 	Super.PostBeginPlay();
 
 	Utils = new(none) class'Utilities';
 	StringUtils = class'StringUtils'.static.Instance();
 	PlayerStatics = Spawn(class'bbPlayerStatics');
+	VersionInfoClass = class<Info>(DynamicLoadObject(StringUtils.GetPackage()$".VersionInfo", class'class', true));
+	VersionInfo = Spawn(VersionInfoClass);
 	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedInputChain');
 	IGPlus_InputReplicationBuffer = new class'IGPlus_DataBuffer';
 
@@ -981,9 +974,13 @@ event PostBeginPlay()
 // called after PostBeginPlay on net client
 simulated event PostNetBeginPlay()
 {
+	local class<Info> VersionInfoClass;
+
 	Utils = new(none) class'Utilities';
 	StringUtils = class'StringUtils'.static.Instance();
 	PlayerStatics = Spawn(class'bbPlayerStatics');
+	VersionInfoClass = class<Info>(DynamicLoadObject(StringUtils.GetPackage()$".VersionInfo", class'class', true));
+	VersionInfo = Spawn(VersionInfoClass);
 	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedInputChain');
 	IGPlus_InputReplicationBuffer = new class'IGPlus_DataBuffer';
 
@@ -1035,11 +1032,14 @@ function ServerSetDodgeSettings(float MaxTime, float MinTime) {
 
 event Possess()
 {
+	local class<Info> VersionInfoClass;
 	local Kicker K;
 
 	Utils = new(none) class'Utilities';
-	StringUtils = new(none) class'StringUtils';
+	StringUtils = class'StringUtils'.static.Instance();
 	PlayerStatics = Spawn(class'bbPlayerStatics');
+	VersionInfoClass = class<Info>(DynamicLoadObject(StringUtils.GetPackage()$".VersionInfo", class'class', true));
+	VersionInfo = Spawn(VersionInfoClass);
 
 	InitSettings();
 
@@ -1157,6 +1157,8 @@ event Possess()
 		IGPlus_EnableDualButtonSwitch = IGPlus_DetermineDualButtonSwitchSetting();
 	}
 
+	class'ClientSuperShockBeam'.static.Cleanup();
+
 	IGPlus_InputLogFile = Spawn(class'IGPlus_InputLogFile');
 	if (Level.NetMode == NM_Client)
 		IGPlus_InputLogFile.LogId = "ClientInput";
@@ -1165,10 +1167,16 @@ event Possess()
 	if (bTraceInput)
 		IGPlus_InputLogFile.StartLog();
 
-	if (Level.NetMode != NM_DedicatedServer)
+	if (Level.NetMode != NM_DedicatedServer) {
 		NetStatsElem = Spawn(class'IGPlus_NetStats');
+		IGPlus_LogoVersionText = IGPlus_DetermineLogoVersionText();
+	}
 
 	Super.Possess();
+}
+
+function string IGPlus_DetermineLogoVersionText() {
+	return VersionInfo.GetPropertyText("PackageBaseName")@VersionInfo.GetPropertyText("PackageVersion");
 }
 
 function bool IGPlus_DetermineDualButtonSwitchSetting() {
@@ -1381,21 +1389,6 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 	if (Message == class'CTFMessage2' && PureFlag(PlayerReplicationInfo.HasFlag) != None)
 		return;
 
-	// Handle hitsounds properly here before huds get it. Remove damage except if demoplayback :P
-	if (Message == class'PureHitSound')
-	{
-		if (RelatedPRI_1 == None)
-			return;
-
-		if (Settings.HitMarkerSource == 0 && RelatedPRI_2 != none)
-			class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
-
-		if (Settings.HitSoundSource == 0 && RelatedPRI_2 != none)
-			class'bbPlayerStatics'.static.PlayHitSound(self, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
-
-		return;
-	}
-
 	if (Message == class'DecapitationMessage')
 	{
 		xxSendHeadshotToSpecs(Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
@@ -1605,10 +1598,17 @@ function xxCheckFOV()
 	}
 }
 
+function TraceMarker_LongFrame() {}
+function TraceMarker_FrameBegin() {}
+
 event PlayerInput( float DeltaTime )
 {
 	local float SmoothTime, FOVScale, MouseScale, AbsSmoothX, AbsSmoothY, MouseTime;
 	local bool bOldWasForward, bOldWasBack, bOldWasLeft, bOldWasRight;
+
+	if (DeltaTime > 0.02)
+		TraceMarker_LongFrame();
+	TraceMarker_FrameBegin();
 
 	if ( bUpdatePosition && IGPlus_EnableInputReplication )
 		ClientUpdatePositionWithInput();
@@ -1909,7 +1909,7 @@ simulated function xxPureCAP(float TimeStamp, name newState, int MiscData, vecto
 	if ( Mover(NewBase) != None )
 		NewLoc += NewBase.Location;
 
-	if ( !IsInState(newState) )
+	if (GetStateName() != NewState)
 		GotoState(newState);
 
 	Carried = CarriedDecoration;
@@ -2116,7 +2116,8 @@ function ClientUpdatePositionWithInput() {
 		AdjustDistance = VSize(IGPlus_AdjustLocationOffset);
 		if ((AdjustDistance < 50) &&
 			FastTrace(Location,IGPlus_PreAdjustLocation) &&
-			IGPlus_AdjustLocationOverride == false
+			IGPlus_AdjustLocationOverride == false &&
+			IsInState('Dying') == false
 		) {
 			// Undo adjustment and re-enact smoothly
 			PostAdjustLocation = Location;
@@ -2125,7 +2126,9 @@ function ClientUpdatePositionWithInput() {
 				IGPlus_AdjustLocationOffset = (PostAdjustLocation - Location);
 			}
 		} else {
-			NetStatsElem.bInstantRelocation = true;
+			if (AdjustDistance >= 1.0) {
+				NetStatsElem.bInstantRelocation = true;
+			}
 			IGPlus_AdjustLocationOffset = vect(0,0,0);
 		}
 	}
@@ -2342,7 +2345,9 @@ function ClearLastServerMoveParams() {
 function IGPlus_ProcessRemoteMovement() {
 	IGPlus_ApplyAllServerMoves();
 
-	if (zzUTPure.Settings.bEnableLoosePositionCheck || IGPlus_EnableInputReplication)
+	if (IGPlus_EnableInputReplication)
+		IGPlus_AcknowledgeInput();
+	else if (zzUTPure.Settings.bEnableLoosePositionCheck)
 		IGPlus_LooseCheckClientError();
 	else
 		IGPlus_CheckClientError();
@@ -2461,7 +2466,6 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	}
 
 	zzKickReady = Max(zzKickReady - 1,0);
-	bJustRespawned = false;
 
 	if (CurrentTimeStamp >= SM.TimeStamp) {
 		ClientDebugMessage("Reject Outdated Move:"@CurrentTimeStamp@SM.TimeStamp);
@@ -3201,8 +3205,12 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 		return;
 	}
 
+	if (bDeleteMe) {
+		ClientDebugMessage("Reject Irrelevant Move");
+		return;
+	}
+
 	zzKickReady = Max(zzKickReady - 1,0);
-	bJustRespawned = false;
 
 	IGPlus_InputReplicationBuffer.NumBitsConsumed = 0;
 	IGPlus_InputReplicationBuffer.NumBits = NumBits;
@@ -3210,11 +3218,6 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 		IGPlus_InputReplicationBuffer.BitsData[i] = B.Data[i];
 
 	debugServerMoveCallsReceived += 1;
-
-	if (bDeleteMe) {
-		ClientDebugMessage("Reject Irrelevant Move");
-		return;
-	}
 
 	if (Level.Pauser == "")
 		UndoExtrapolation();
@@ -3264,7 +3267,12 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	if (IGPlus_UseFastWeaponSwitch && PendingWeapon != None)
 		ChangedWeapon();
 
-	// play back input
+	// simulate lost time to match extrapolation done by all clients
+	LostTime = RefTimeStamp - Old.TimeStamp; // typically <= 0
+	LostTime = zzUTPure.RealPlayTime(ServerTimeStamp, LostTime); // this removed time spent paused
+	if (LostTime > 0.001)
+		SimMoveAutonomous(LostTime);
+
 	while(Old.Next != none) {
 		PlayBackInput(Old, Old.Next);
 		if (bTraceInput && IGPlus_InputLogFile != none)
@@ -3275,10 +3283,16 @@ function ServerApplyInput(float RefTimeStamp, int NumBits, ReplBuffer B) {
 	// clean up
 	IGPlus_SavedInputChain.RemoveOutdatedNodes(Old.TimeStamp);
 
-	// for now always request CAP
-	IGPlus_WantCAP = true;
-
 	IGPlus_WarpFixUpdate = true;
+	IGPlus_WantCAP = true;
+}
+
+function IGPlus_AcknowledgeInput() {
+	if (IGPlus_WantCAP == false)
+		return;
+
+	IGPlus_SendCAP();
+	IGPlus_WantCAP = false;
 }
 
 function float CalculateLocError(float DeltaTime, EPhysics Phys, vector ClientVel) {
@@ -3430,11 +3444,6 @@ function bool xxCloseEnough(vector HitLoc, optional int HitRadius)
 
 }
 
-function xxServerReceiveMenuItems(string zzMenuItem, bool zzbLast)
-{
-	Mutate("PMI"@zzMenuItem@byte(zzbLast));
-}
-
 function bool xxWeaponIsNewNet( optional bool bAlt )
 {
 	if (Weapon == None)
@@ -3467,6 +3476,34 @@ simulated function actor NN_TraceShot(out vector HitLocation, out vector HitNorm
 	{
 		zzbNN_Tracing = false;
 		xxDisableCarcasses();
+	}
+	return Other;
+}
+
+function Actor TraceShot(out vector HitLocation, out vector HitNormal, vector EndTrace, vector StartTrace)
+{
+	local Actor A, Other;
+	local ST_Mutator STM;
+	local bool bSProjBlocks;
+	local bool bWeaponShock;
+
+	STM = zzUTPure.GetStatTrack();
+	bSProjBlocks = true;
+	if (STM != none)
+		bSProjBlocks = STM.WeaponSettings.ShockProjectileBlockBullets;
+	bWeaponShock = (Weapon != none && Weapon.IsA('ShockRifle'));
+	
+	foreach TraceActors( class'Actor', A, HitLocation, HitNormal, EndTrace, StartTrace) {
+		if (Pawn(A) != none) {
+			if ((A != self) && Pawn(A).AdjustHitLocation(HitLocation, EndTrace - StartTrace))
+				Other = A;
+		} else if ((A == Level) || (Mover(A) != None) || A.bProjTarget || (A.bBlockPlayers && A.bBlockActors)) {
+			if (bSProjBlocks || A.IsA('ShockProj') == false || bWeaponShock)
+				Other = A;
+		}
+
+		if (Other != none)
+			break;
 	}
 	return Other;
 }
@@ -3529,6 +3566,11 @@ function xxNN_Fire( float TimeStamp, int ProjIndex, vector ClientLoc, vector Cli
 	if (TimeStamp <= LastFireTimeStamp)
 		return;
 	LastFireTimeStamp = TimeStamp;
+	
+	if (TimeStamp + zzUTPure.Settings.FireTimeout < CurrentTimeStamp) {
+		Log("Rejected Shot"@self@TimeStamp@CurrentTimeStamp, 'IGPlus');
+		return;
+	}
 
 	xxEnableCarcasses();
 	zzNN_ProjIndex = ProjIndex;
@@ -3617,6 +3659,11 @@ function xxNN_AltFire( float TimeStamp, int ProjIndex, vector ClientLoc, vector 
 	if (TimeStamp <= LastAltFireTimeStamp)
 		return;
 	LastAltFireTimeStamp = TimeStamp;
+
+	if (TimeStamp + zzUTPure.Settings.FireTimeout < CurrentTimeStamp) {
+		Log("Rejected Shot"@self@TimeStamp@CurrentTimeStamp, 'IGPlus');
+		return;
+	}
 
 	xxEnableCarcasses();
 	zzNN_ProjIndex = ProjIndex;
@@ -3833,20 +3880,6 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 	aLookUp = 0;
 	aTurn = 0;
 
-	// the following prevents clients from erroneously indicating that they are
-	// dead locally and still sending input activity.
-	I.bLive = I.bLive ||
-		I.bForw ||
-		I.bBack ||
-		I.bLeft ||
-		I.bRigh ||
-		I.bWalk ||
-		I.bDuck ||
-		I.bJump ||
-		I.bDodg ||
-		I.bFire ||
-		I.bAFir;
-
 	bWasForward    = I.bForw;
 	bWasBack       = I.bBack;
 	bWasLeft       = I.bLeft;
@@ -3856,17 +3889,20 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 	bEdgeLeft      = Old.bLeft != bWasLeft;
 	bEdgeRight     = Old.bRigh != bWasRight;
 
-	if (I.bForw) aForward += 6000.0;
-	if (I.bBack) aForward -= 6000.0;
-	if (I.bLeft) aStrafe  += 6000.0;
-	if (I.bRigh) aStrafe  -= 6000.0;
-	if (I.bDuck) aUp      -= 6000.0;
-	if (I.bJump) aUp      += 6000.0;
+	if (I.bLive) {
+		if (I.bForw) aForward += 6000.0;
+		if (I.bBack) aForward -= 6000.0;
+		if (I.bLeft) aStrafe  += 6000.0;
+		if (I.bRigh) aStrafe  -= 6000.0;
+		if (I.bDuck) aUp      -= 6000.0;
+		if (I.bJump) aUp      += 6000.0;
 
-	if (I.bWalk) bRun = 1; else bRun = 0;
-	if (I.bDuck) bDuck = 1; else bDuck = 0;
-	bPressedJump = I.bJump && (I.bJump != Old.bJump);
-	bPressedDodge = I.bDodg && (I.bDodg != Old.bDodg);
+		if (I.bWalk) bRun = 1; else bRun = 0;
+		if (I.bDuck) bDuck = 1; else bDuck = 0;
+		
+		bPressedJump = I.bJump && (I.bJump != Old.bJump);
+		bPressedDodge = I.bDodg && (I.bDodg != Old.bDodg);
+	}
 
 	if (RemoteRole == ROLE_AutonomousProxy) {
 		if (zzUTPure.Settings.bEnablePingCompensatedSpawn) {
@@ -3903,9 +3939,15 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 			bAltFire = 0;
 		}
 	} else if (RemoteRole == ROLE_Authority) {
+		// this assumes that you always replay up until the present, otherwise
+		// youd have to save and restore these values
 		bDodging = Old.SavedDodging;
 		DodgeDir = Old.SavedDodgeDir;
 		DodgeClickTimer = Old.SavedDodgeClickTimer;
+		LastTimeForward = Old.SavedLastTimeForward;
+		LastTimeBack = Old.SavedLastTimeBack;
+		LastTimeLeft = Old.SavedLastTimeLeft;
+		LastTimeRight = Old.SavedLastTimeRight;
 	}
 
 	ViewRotation = I.SavedViewRotation;
@@ -5054,9 +5096,7 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 {
 	local int actualDamage;
 	local bool bAlreadyDead;
-	local int ModifiedDamage1, ModifiedDamage2, RecentDamage;
-	local Pawn P;
-	local Inventory Inv;
+	local int ModifiedDamage1, ModifiedDamage2;
 
 	if ( Role < ROLE_Authority )
 	{
@@ -5102,35 +5142,6 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 	if (InstigatedBy != none)
 		IGPlus_DamageEvent_Add(InstigatedBy.PlayerReplicationInfo, ModifiedDamage1, DamageType);
 
-	if (zzStatMut != None)
-	{	// Damn epic. Damn Damn. Why is armor handled before mutator gets it? Instead of doing it simple, I now have
-		// to do all this magic. :/
-		// If epic hadn't done this mess, I could have done this entirely in a mutator. GG epic.
-		// Also must limit damage incase player has Health < Damage
-		ModifiedDamage1 -= (ModifiedDamage2 - actualDamage);
-		zzStatMut.PlayerTakeDamage(Self, InstigatedBy, Min(Health, ModifiedDamage1), damageType);
-	}
-
-	if (InstigatedBy != Self && PlayerPawn(InstigatedBy) != None)
-	{	// Send the hitsound local message.
-
-		RecentDamage = 1;
-		for ( Inv = InstigatedBy.Inventory; Inv != None; Inv = Inv.Inventory )
-			if (Inv.IsA('UDamage'))
-			{
-				RecentDamage = 3;
-				break;
-			}
-		RecentDamage = RecentDamage * 1.5 * Damage;
-
-		PlayerPawn(InstigatedBy).ReceiveLocalizedMessage(Class'PureHitSound', RecentDamage, PlayerReplicationInfo, InstigatedBy.PlayerReplicationInfo);
-		for (P = Level.PawnList; P != None; P = P.NextPawn)
-		{
-			if (P.IsA('bbCHSpectator') && bbCHSpectator(P).ViewTarget == InstigatedBy)
-				bbCHSpectator(P).ReceiveLocalizedMessage(Class'PureHitSound', RecentDamage, PlayerReplicationInfo, InstigatedBy.PlayerReplicationInfo);
-		}
-	}
-
 	ServerAddMomentum(momentum);
 	Health -= actualDamage;
 
@@ -5174,10 +5185,8 @@ function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 {
 	local int actualDamage;
 	local bool bAlreadyDead;
-	local int ModifiedDamage1, ModifiedDamage2, RecentDamage;
+	local int ModifiedDamage1, ModifiedDamage2;
 	local bool bPreventLockdown;		// Avoid the lockdown effect.
-	local Pawn P;
-	local Inventory Inv;
 
 	if ( Role < ROLE_Authority )
 	{
@@ -5218,34 +5227,6 @@ function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 
 	if ( Level.Game.DamageMutator != None )
 		Level.Game.DamageMutator.MutatorTakeDamage( ActualDamage, Self, InstigatedBy, HitLocation, Momentum, DamageType );
-
-	if (zzStatMut != None)
-	{	// Damn epic. Damn Damn. Why is armor handled before mutator gets it? Instead of doing it simple, I now have
-		// to do all this magic. :/
-		// If epic hadn't done this mess, I could have done this entirely in a mutator. GG epic.
-		// Also must limit damage incase player has Health < Damage
-		ModifiedDamage1 -= (ModifiedDamage2 - actualDamage);
-		zzStatMut.PlayerTakeDamage(Self, InstigatedBy, Min(Health, ModifiedDamage1), damageType);
-	}
-
-	if (InstigatedBy != Self)
-	{	// Send the hitsound local message.
-		RecentDamage = 1;
-		for ( Inv = InstigatedBy.Inventory; Inv != None; Inv = Inv.Inventory )
-			if (Inv.IsA('UDamage'))
-			{
-				RecentDamage = 3;
-				break;
-			}
-		RecentDamage = RecentDamage * 1.5 * Damage;
-
-		InstigatedBy.ReceiveLocalizedMessage(Class'PureHitSound', RecentDamage, PlayerReplicationInfo, InstigatedBy.PlayerReplicationInfo);
-		for (P = Level.PawnList; P != None; P = P.NextPawn)
-		{
-			if (P.IsA('bbCHSpectator') && bbCHSpectator(P).ViewTarget == InstigatedBy)
-				bbCHSpectator(P).ReceiveLocalizedMessage(Class'PureHitSound', RecentDamage, PlayerReplicationInfo, InstigatedBy.PlayerReplicationInfo);
-		}
-	}
 
 	if (!bPreventLockdown && InstigatedBy != self && (momentum dot momentum) > 0)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
 	{
@@ -5290,10 +5271,8 @@ function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 {
 	local int actualDamage;
 	local bool bAlreadyDead;
-	local int ModifiedDamage1, ModifiedDamage2, RecentDamage;
+	local int ModifiedDamage1, ModifiedDamage2;
 	local bool bPreventLockdown;		// Avoid the lockdown effect.
-	local Pawn P;
-	local Inventory Inv;
 
 	if ( Role < ROLE_Authority )
 	{
@@ -5341,34 +5320,6 @@ function StealHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,
 
 	if ( Level.Game.DamageMutator != None )
 		Level.Game.DamageMutator.MutatorTakeDamage( ActualDamage, Self, InstigatedBy, HitLocation, Momentum, DamageType );
-
-	if (zzStatMut != None)
-	{	// Damn epic. Damn Damn. Why is armor handled before mutator gets it? Instead of doing it simple, I now have
-		// to do all this magic. :/
-		// If epic hadn't done this mess, I could have done this entirely in a mutator. GG epic.
-		// Also must limit damage incase player has Health < Damage
-		ModifiedDamage1 -= (ModifiedDamage2 - actualDamage);
-		zzStatMut.PlayerTakeDamage(Self, InstigatedBy, Min(Health, ModifiedDamage1), damageType);
-	}
-
-	if (InstigatedBy != Self)
-	{	// Send the hitsound local message.
-		RecentDamage = 1;
-		for ( Inv = InstigatedBy.Inventory; Inv != None; Inv = Inv.Inventory )
-			if (Inv.IsA('UDamage'))
-			{
-				RecentDamage = 3;
-				break;
-			}
-		RecentDamage = RecentDamage * 1.5 * Damage;
-
-		InstigatedBy.ReceiveLocalizedMessage(Class'PureHitSound', RecentDamage, PlayerReplicationInfo, InstigatedBy.PlayerReplicationInfo);
-		for (P = Level.PawnList; P != None; P = P.NextPawn)
-		{
-			if (P.IsA('bbCHSpectator') && bbCHSpectator(P).ViewTarget == InstigatedBy)
-				bbCHSpectator(P).ReceiveLocalizedMessage(Class'PureHitSound', RecentDamage, PlayerReplicationInfo, InstigatedBy.PlayerReplicationInfo);
-		}
-	}
 
 	if (!bPreventLockdown && InstigatedBy != self && (momentum dot momentum) > 0)	// FIX BY LordHypnos, http://forums.prounreal.com/viewtopic.php?t=34676&postdays=0&postorder=asc&start=0
 	{
@@ -5447,8 +5398,6 @@ function Died(pawn Killer, name damageType, vector HitLocation)
 	if ( CarriedDecoration != None )
 		DropDecoration();
 	level.game.Killed(Killer, self, damageType);
-	if (zzStatMut != None)
-		zzStatMut.PlayerKill(Killer, Self);
 	if( Event != '' )
 		foreach AllActors( class 'Actor', A, Event )
 			A.Trigger( Self, Killer );
@@ -6515,7 +6464,10 @@ state Dying
 
 		xxPlayerTickEvents(DeltaTime);
 		zzTick = DeltaTime;
-		Super.PlayerTick(DeltaTime);
+		if (bUpdatePosition && IGPlus_EnableInputReplication == false)
+			ClientUpdatePosition();
+
+		PlayerMove(DeltaTime);
 
 		if ((Settings.bEnableKillCam && LastKiller != none) &&
 			(TimeDead >= FMax(KillCamDelay, Settings.KillCamMinDelay) && TimeDead < KillCamDelay + KillCamDuration) &&
@@ -6592,6 +6544,9 @@ state Dying
 	function PlayerMove(float DeltaTime)
 	{
 		local vector X,Y,Z;
+
+		Velocity = vect(0,0,0);
+		Acceleration = vect(0,0,0);
 
 		if ( TimeDead >= 1.0 )
 		{
@@ -6690,7 +6645,6 @@ state Dying
 		SetPhysics(PHYS_None);
 		Super.EndState();
 		LastKillTime = 0;
-		bJustRespawned = true;
 		LastKiller = none;
 		ClientUpdateTime = 0;
 		bDodging = false;
@@ -6708,7 +6662,6 @@ state CountdownDying extends Dying
 		bBehindView = false;
 		if (Player != none)
 			ServerReStartPlayer();
-		bJustRespawned = true;
 		bShowScores = false;
 		ClientUpdateTime = 0;
 	}
@@ -6913,6 +6866,7 @@ function xxPlayerTickEvents(float DeltaTime)
 	local float CurrentTime;
 
 	CurrentTime = Level.TimeSeconds;
+	NetStatsElem.FrameTime = DeltaTime / Level.TimeDilation;
 
 	if (Level.NetMode == NM_Client)
 	{
@@ -7845,7 +7799,12 @@ event PostRender( canvas zzCanvas )
 		IGPlus_SavedInputChain.RemoveOutdatedNodes(Level.TimeSeconds);
 	}
 
-	NetStatsElem.PostRender(zzCanvas, Settings);
+	if (ChallengeHUD(MyHud).bShowInfo == false &&
+		bShowScores == false &&
+		ChallengeHUD(MyHud).bForceScores == false
+	) {
+		NetStatsElem.PostRender(zzCanvas, Settings);
+	}
 
 	IGPlus_LocationOffsetFix_TickBefore();
 
@@ -7875,7 +7834,7 @@ simulated function xxDrawLogo(canvas zzC, float zzx, float zzY, float zzFadeValu
 	zzC.DrawColor = ChallengeHud(MyHud).CyanColor * zzFadeValue;
 	zzC.SetPos(zzx+70,zzY+8);
 	zzC.Font = ChallengeHud(MyHud).MyFonts.GetBigFont(zzC.ClipX);
-	zzC.DrawText(class'VersionInfo'.default.PackageBaseName@class'VersionInfo'.default.PackageVersion);
+	zzC.DrawText(IGPlus_LogoVersionText);
 	zzC.SetPos(zzx+70,zzY+35);
 	zzC.Font = ChallengeHud(MyHud).MyFonts.GetBigFont(zzC.ClipX);
 	if (zzbDoScreenshot)
@@ -8180,7 +8139,7 @@ local string pkg, SkinItem, MeshName;
 			MeshName = SkinActor.GetItemName(string(SkinActor.Default.Mesh));
 		SkinItem = SkinActor.GetItemName(SkinName);
 		pkg = Left(SkinName, Len(SkinName) - Len(SkinItem) - 1);
-		bProscribed = !xxValidSP(SkinName, MeshName, SkinActor);
+		bProscribed = !CheckValidSkinPackage(pkg, MeshName);
 		if ( bProscribed )
 			log("Attempted to use illegal skin from package "$pkg$" for "$MeshName);
 	}
@@ -8211,33 +8170,6 @@ static function string xxGetClass(string zzClassname)
 	zzcls = Caps(zzClassname);
 	zzP = instr(zzcls,".");
 	return left(zzcls,zzP);
-}
-
-static function bool xxValidSP(string zzSkinName, string zzMeshName, optional Actor SkinActor)
-{
-	local int XC_Version;
-	local string zzPackName;
-
-	zzPackName = xxGetClass(zzSkinName);
-
-	//Attempt to use XC_Engine natives
-	if ( bbPlayer(SkinActor) != none && SkinActor.Role == ROLE_Authority )
-	{
-		XC_Version = int(SkinActor.ConsoleCommand("get ini:Unreali.SkaarjPlayer XC_Version"));
-		if ( XC_Version >= 13 )
-		{
-			return false;
-		}
-	}
-	//Extra pass before potentially crash code
-	if ( zzPackName ~= "BOTPACK" || zzPackName ~= "UNREALI" || zzPackName ~= "UNREALSHARE")
-		return false;
-	if (Default.zzMyPacks == "")
-		Default.zzMyPacks = Caps(SkinActor.ConsoleCommand("get ini:engine.engine.gameengine serverpackages")); //Can still crash a server
-
-	if ( Instr(Default.zzMyPacks, Chr(34)$zzPackName$Chr(34)) == -1 )
-		return false;
-	return (Left(zzPackName, Len(zzMeshName)) ~= zzMeshName && !(Right(zzSkinName,2) ~= "t_"));
 }
 
 simulated function xxClientDoEndShot()
@@ -8431,21 +8363,6 @@ exec function ToggleInstantRocket()
 	ClientMessage("Instant Rockets :"@bInstantRocket);
 }
 
-exec function ShowStats(optional byte zzType)
-{
-}
-
-function AttachStats(PureStats zzS, PureStatMutator zzM)
-{
-	zzStat = zzS;
-	zzStatMut = zzM;
-}
-
-function PureStats GetStats()
-{
-	return zzStat;
-}
-
 exec function NeverSwitchOnPickup( bool B )
 {
 	bNeverAutoSwitch = B;
@@ -8616,158 +8533,6 @@ function xxServerAckScreenshot(string zzResult, string zzMagic)
 			zzPP.ClientMessage(PlayerReplicationInfo.PlayerName@"successfully took screenshot!");
 	}
 	zzUTPure.xxLog("Screenshot from"@zzPP.PlayerReplicationInfo.PlayerName@"->"@zzResult@"Text"@zzMagicCode@"Valid"@(zzMagic == zzMagicCode));
-}
-
-function xxServerReceiveINT(string zzS)
-{
-	if (zzS == "")
-	{
-		bRemValid = True;
-		Mutate("pir"@zzRemCmd@zzRemResult);
-		bRemValid = False;
-		zzRemCmd = zzS;
-		zzRemResult = zzS;
-
-	}
-	else
-		zzRemResult = zzRemResult$"("$zzS$")";
-}
-
-simulated function xxClientReadINT(string zzClass)
-{
-	local int zzx;
-	local string zzEntry, zzDesc, zzS;
-
-	if (Level.NetMode == NM_DedicatedServer)
-	{
-		zzRemCmd = "";	// Oooops, no client to receive
-		return;		// Dont run on server (in case of disconnect)
-	}
-
-	while (zzx < 50)
-	{
-		GetNextIntDesc( zzClass, zzx, zzEntry, zzDesc);
-		if (zzEntry == "")
-			break;
-		zzx++;
-		zzS = zzEntry$","$zzDesc;
-		xxServerReceiveINT(zzS);
-		xxClientLogToDemo(zzS);
-	}
-	xxServerReceiveINT("");
-}
-
-function xxServerReceiveConsole(string zzS, bool zzbLast)
-{
-	if (zzbLast)
-	{
-		bRemValid = True;
-		Mutate("pcr"@zzRemCmd@zzRemResult);
-		bRemValid = False;
-		zzRemCmd = "";
-		zzRemResult = "";
-	}
-	else
-		zzRemResult = zzRemResult$zzS;
-}
-
-simulated function xxClientConsole(string zzcon, int zzC)
-{	// Does a console command, splits up the result, and sends back to server after splitting up
-	local int zzx, zzl;
-	local string zzS;
-	local string zzRes;
-
-	if (Level.NetMode == NM_DedicatedServer)
-	{
-		zzRemCmd = "";	// Oooops, no client to receive
-		return;		// Dont run on server (in case of disconnect)
-	}
-
-	zzRes = ConsoleCommand(zzcon);
-
-	zzl = Len(zzRes);
-	while (zzl > zzx)
-	{
-		zzS = Mid(zzRes, zzx, zzC);
-		xxServerReceiveConsole(zzS, False);
-		xxClientLogToDemo(zzS);
-		zzx += zzC;
-	}
-	xxServerReceiveConsole("", True);
-}
-
-function xxServerReceiveKeys(string zzIdent, string zzValue, bool zzbBind, bool zzbLast)
-{
-	if (zzbLast)
-	{
-		bRemValid = True;
-		Mutate("pkr"@zzRemCmd@zzRemResult);
-		bRemValid = False;
-		zzRemCmd = "";
-		zzRemResult = "";
-	}
-	else
-	{
-		if (zzbBind)
-		{
-			zzRemResult = zzRemResult$"A("$zzIdent$"="$zzValue$")";
-		}
-		else
-		{
-			zzRemResult = zzRemResult$"B("$zzIdent$"="$zzValue$")";
-		}
-	}
-}
-
-simulated function xxClientKeys(bool zzbKeysToo, string zzPure, string zzPlayer)
-{
-	local int zzx;
-	local string zzS;
-	local PureSystem zzPureInput;
-
-	if (Level.NetMode == NM_DedicatedServer)
-	{
-		zzRemCmd = "";	// Oooops, no client to receive
-		return;		// Dont run on server (in case of disconnect)
-	}
-
-	SetPropertyText(zzPure$zzPlayer, GetPropertyText(zzPlayer));
-	zzPureInput = PurePlayer.zzInput;
-
-	if (zzPureInput != None)
-	{
-		for (zzx = 0; zzx < 10; zzx++)
-		{
-			xxSendKeys(string(zzPureInput.zzAliases1[zzx].zzAlias), zzPureInput.zzAliases1[zzx].zzCommand, True, False);
-		}
-		for (zzx = 0; zzx < 10; zzx++)
-		{
-			xxSendKeys(string(zzPureInput.zzAliases2[zzx].zzAlias), zzPureInput.zzAliases2[zzx].zzCommand, True, False);
-		}
-		for (zzx = 0; zzx < 10; zzx++)
-		{
-			xxSendKeys(string(zzPureInput.zzAliases3[zzx].zzAlias), zzPureInput.zzAliases3[zzx].zzCommand, True, False);
-		}
-		for (zzx = 0; zzx < 10; zzx++)
-		{
-			xxSendKeys(string(zzPureInput.zzAliases4[zzx].zzAlias), zzPureInput.zzAliases4[zzx].zzCommand, True, False);
-		}
-		if (zzbKeysToo)
-		{
-			for (zzx = 0; zzx < 255; zzx++)
-			{
-				zzS = Mid(string(GetEnum(Enum'EInputKey', zzx)), 3);
-				xxSendKeys(zzS, zzPureInput.zzKeys[zzx], False, False);
-			}
-		}
-	}
-	xxServerReceiveKeys("", "", False, True);
-}
-
-simulated function xxSendKeys(string zzIdent, string zzValue, bool zzbBind, bool zzbLast)
-{
-	xxServerReceiveKeys(zzIdent, zzValue, zzbBind, zzbLast);
-	xxClientLogToDemo(zzIdent$"="$zzValue);
 }
 
 simulated function xxClientLogToDemo(string zzS)
@@ -9743,6 +9508,13 @@ exec function TraceInput() {
 		IGPlus_InputLogFile.StartLog();
 	}
 	bTraceInput = !bTraceInput;
+}
+
+function PreCacheReferences() {
+	local IGPlus_ModelImport MI;
+	super.PreCacheReferences();
+
+	MI = new(none) class'IGPlus_ModelImport';
 }
 
 defaultproperties

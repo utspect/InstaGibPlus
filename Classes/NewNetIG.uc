@@ -1,4 +1,5 @@
 class NewNetIG extends Arena;
+// Description="InstaGib with lag-compensated SuperShockRifle"
 
 var WeaponSettings WeaponSettings;
 var WeaponSettingsRepl WSettingsRepl;

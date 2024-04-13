@@ -1,4 +1,5 @@
 class PureClickBoard extends Mutator;
+// Description="<Internal>"
 
 var PureFlag FakeFlag;
 

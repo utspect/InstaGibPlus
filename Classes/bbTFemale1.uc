@@ -14,5 +14,5 @@ defaultproperties
      SpecialMesh="Botpack.TrophyFemale1"
      MenuName="Female Commando"
      VoiceType="BotPack.VoiceFemaleOne"
-     Mesh=LodMesh'Botpack.FCommando'
+     Mesh=LodMesh'IGPlus_FCommando'
 }

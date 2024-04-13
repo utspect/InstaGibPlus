@@ -16,5 +16,5 @@ defaultproperties
      SpecialMesh="Botpack.TrophyFemale2"
      MenuName="Female Soldier"
      VoiceType="BotPack.VoiceFemaleTwo"
-     Mesh=LodMesh'Botpack.SGirl'
+     Mesh=LodMesh'IGPlus_FSoldier'
 }

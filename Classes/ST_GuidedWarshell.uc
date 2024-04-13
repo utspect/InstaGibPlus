@@ -14,8 +14,6 @@ simulated function PostBeginPlay()
 	{
 		ForEach AllActors(Class'ST_Mutator', STM)
 			break;
-		STM.PlayerFire(Instigator, 19);			// 19 = Redeemer.
-		STM.PlayerSpecial(Instigator, 19);		// 19 = Redeemer, Guided.
 	}
 	Super.PostBeginPlay();
 }
@@ -60,9 +58,7 @@ singular function TakeDamage( int NDamage, Pawn instigatedBy, Vector hitlocation
 	{
 		PlaySound(Sound'Expl03',,6.0);
 		spawn(class'WarExplosion',,,Location);
-		STM.PlayerHit(Instigator, 19, False);		// 19 = Redeemer.
 		HurtRadius(Damage,350.0, MyDamageType, MomentumTransfer, HitLocation );
-		STM.PlayerClear();
 		RemoteRole = ROLE_SimulatedProxy;	 		 		
  		Destroy();
 	}
@@ -75,10 +71,8 @@ auto state Flying
 	{
 		if ( Role < ROLE_Authority )
 			return;
-		STM.PlayerHit(Instigator, 19, False);		// 19 = Redeemer.
-		HurtRadius(Damage,300.0, MyDamageType, MomentumTransfer, HitLocation );	 		 		
-		STM.PlayerClear();
- 		spawn(class'ST_ShockWave',,,HitLocation+ HitNormal*16);	
+		HurtRadius(Damage,300.0, MyDamageType, MomentumTransfer, HitLocation );
+ 		Spawn(class'ST_ShockWave',,,HitLocation+ HitNormal*16);	
 		RemoteRole = ROLE_SimulatedProxy;	 		 		
  		Destroy();
 	}

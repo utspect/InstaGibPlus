@@ -8,9 +8,6 @@ class ST_ShockRifle extends ShockRifle;
 
 var ST_Mutator STM;
 
-// For Special Shock Beam
-var int HitCounter;
-
 var WeaponSettingsRepl WSettings;
 
 simulated final function WeaponSettingsRepl FindWeaponSettings() {
@@ -38,23 +35,12 @@ function PostBeginPlay()
 		break;		// Find master :D
 }
 
-function AltFire( float Value )
-{
-	if (Owner == None)
-		return;
-
-	STM.PlayerFire(Pawn(Owner), 6);		// 6 = Shock Ball
-
-	Super.AltFire(Value);
-}
-
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
 	local PlayerPawn PlayerOwner;
 	local Pawn PawnOwner;
 
 	PawnOwner = Pawn(Owner);
-	STM.PlayerFire(PawnOwner, 5);		// 5 = Shock Beam.
 
 	if (Other==None)
 	{
@@ -71,7 +57,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	if ( ST_ShockProj(Other)!=None )
 	{ 
 		AmmoType.UseAmmo(2);
-		STM.PlayerUnfire(PawnOwner, 5);		// 5 = Shock Beam
 		ST_ShockProj(Other).SuperExplosion();
 		return;
 	}
@@ -80,27 +65,13 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 	if ( (Other != self) && (Other != Owner) && (Other != None) ) 
 	{
-		STM.PlayerHit(PawnOwner, 5, False);			// 5 = Shock Beam
 		Other.TakeDamage(
 			STM.WeaponSettings.ShockBeamDamage,
 			PawnOwner,
 			HitLocation,
 			STM.WeaponSettings.ShockBeamMomentum*60000.0*X,
 			MyDamageType);
-		STM.PlayerClear();
 	}
-
-	if (Pawn(Other) != None && Other != Owner && Pawn(Other).Health > 0)
-	{	// We hit a pawn that wasn't the owner or dead. (How can you hit yourself? :P)
-		HitCounter++;						// +1 hit
-		if (HitCounter == 3)
-		{	// Wowsers!
-			HitCounter = 0;
-			STM.PlayerSpecial(PawnOwner, 5);		// 5 = Shock Beam
-		}
-	}
-	else
-		HitCounter = 0;
 }
 
 function SetSwitchPriority(pawn Other)
