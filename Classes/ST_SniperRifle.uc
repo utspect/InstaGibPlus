@@ -60,11 +60,10 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	if (Other == Level) {
 		Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
 	} else if ((Other != self) && (Other != Owner) && (Other != None)) {
-		if (Other.bIsPawn)
-			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
 		if (Other.bIsPawn && STM.CheckHeadshot(Pawn(Other), HitLocation, X) &&
 			(instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice))
 		) {
+			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
 			Other.TakeDamage(
 				STM.WeaponSettings.SniperHeadshotDamage,
 				PawnOwner,
@@ -72,10 +71,12 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 				STM.WeaponSettings.SniperHeadshotMomentum * 35000 * X,
 				AltDamageType);
 		} else if (Other.bIsPawn == false || STM.CheckBodyShot(Pawn(Other), HitLocation, X)) {
-			if (Other.bIsPawn)
+			if (Other.bIsPawn) {
+				Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
 				Momentum = STM.WeaponSettings.SniperMomentum * 30000.0*X;
-			else
+			} else {
 				Momentum = 30000.0*X;
+			}
 
 			Other.TakeDamage(
 				STM.WeaponSettings.SniperDamage,
