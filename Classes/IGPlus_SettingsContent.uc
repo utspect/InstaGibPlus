@@ -697,7 +697,7 @@ function SetUpHitSoundComboBox(IGPlus_ComboBox Cmb) {
 	Cmb.EditBox.bDelayedNotify = true;
 	Cmb.Clear();
 	for (i = 0; i < arraycount(Settings.sHitSound); ++i)
-		Cmb.AddItem(Settings.sHitSound[i], string(i));
+		Cmb.AddItem(string(Settings.LoadedHitSound[i]), string(i));
 }
 
 function SetUpHitSourceComboBox(IGPlus_ComboBox Cmb) {

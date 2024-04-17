@@ -171,7 +171,7 @@ simulated function LoadHitSounds() {
 	local int i;
 
 	for (i = 0; i < arraycount(sHitSound); i++) {
-		if (sHitSound[i] != "")
+		if (sHitSound[i] != "" && (sHitSound[i] ~= "none") == false)
 			LoadedHitSound[i] = Sound(DynamicLoadObject(sHitSound[i], class'Sound', true));
 		else
 			LoadedHitSound[i] = none;
