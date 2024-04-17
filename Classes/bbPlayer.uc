@@ -926,7 +926,7 @@ simulated function InitSettings() {
 	if (Settings == none) {
 		ClientSettingsHelper = new(none, StringUtils.StringToName(VersionInfo.GetPropertyText("PackageBaseName"))) class'Object'; // object name = INI file name
 		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings'; // object name = Section name
-		Settings.CheckConfig(VersionInfo.GetPropertyText("PackageBaseName"));
+		Settings.CheckConfig();
 		Log("Loaded Settings!", 'IGPlus');
 	}
 }
