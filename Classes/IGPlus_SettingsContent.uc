@@ -908,6 +908,7 @@ function Created() {
 	Cmb_HitMarkerColorMode.AddItem(HitMarkerColorModeTeamColor);
 	Edit_HitMarkerSize = CreateEdit(ECT_Integer, HitMarkerSizeText, HitMarkerSizeHelp, , 64);
 	Edit_HitMarkerOffset = CreateEdit(ECT_Integer, HitMarkerOffsetText, HitMarkerOffsetHelp, , 64);
+	Edit_HitMarkerOffset.SetNumericNegative(true);
 	Edit_HitMarkerDuration = CreateEdit(ECT_Real, HitMarkerDurationText, HitMarkerDurationHelp, , 64);
 	Edit_HitMarkerDecayExponent = CreateEdit(ECT_Real, HitMarkerDecayExponentText, HitMarkerDecayExponentHelp, , 64);
 	Chk_EnableHitMarker = CreateCheckbox(EnableHitMarkerText, EnableHitMarkerHelp);
