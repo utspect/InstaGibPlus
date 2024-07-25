@@ -14,9 +14,12 @@ var config bool bReplaceRocketLauncher;
 var config bool bReplaceSniperRifle;
 var config bool bReplaceWarheadLauncher;
 
-var config bool  bEnableEnhancedSplash;
 var config bool  bEnableEnhancedSplashBio;
-var config bool  bEnableEnhancedSplashCombo;
+var config bool  bEnableEnhancedSplashShockCombo;
+var config bool  bEnableEnhancedSplashShockProjectile;
+var config bool  bEnableEnhancedSplashRipperSecondary;
+var config bool  bEnableEnhancedSplashFlakSlug;
+var config bool  bEnableEnhancedSplashRockets;
 var config bool  bEnhancedSplashIgnoreStationaryPawns;
 var config float SplashMaxDiffraction;
 var config float SplashMinDiffractionDistance;
@@ -164,9 +167,12 @@ defaultproperties
 	bReplaceSniperRifle=True
 	bReplaceWarheadLauncher=True
 
-	bEnableEnhancedSplash=True
 	bEnableEnhancedSplashBio=False
-	bEnableEnhancedSplashCombo=False
+	bEnableEnhancedSplashShockCombo=False
+	bEnableEnhancedSplashShockProjectile=False
+	bEnableEnhancedSplashRipperSecondary=True
+	bEnableEnhancedSplashFlakSlug=True
+	bEnableEnhancedSplashRockets=True
 	SplashMaxDiffraction=0.5
 	SplashMinDiffractionDistance=50.0
 
