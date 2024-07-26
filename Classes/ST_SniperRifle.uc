@@ -55,7 +55,7 @@ function TraceFire(float Accuracy) {
 	StartTrace = Owner.Location + PawnOwner.Eyeheight * vect(0,0,1); 
 	AdjustedAim = PawnOwner.AdjustAim(1000000, StartTrace, 2*AimError, False, False);	
 	X = vector(AdjustedAim);
-	EndTrace = StartTrace + 10000 * X; 
+	EndTrace = StartTrace + 100000 * X; 
 	Other = STM.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
 	ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z);
 }
