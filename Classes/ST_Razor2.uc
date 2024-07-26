@@ -27,7 +27,7 @@ auto state Flying
 		Dir = Normal(Velocity);
 		if (bCanHitInstigator || (Other != Instigator)) {
 			if (Role == ROLE_Authority) {
-				if (Other.bIsPawn && STM.CheckHeadshot(Pawn(Other), HitLocation, Dir) &&
+				if (Other.bIsPawn && STM.CheckHeadShot(Pawn(Other), HitLocation, Dir) &&
 					(!Instigator.IsA('Bot') || !Bot(Instigator).bNovice)
 				) {
 					Other.TakeDamage(

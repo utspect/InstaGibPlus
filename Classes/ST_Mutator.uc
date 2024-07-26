@@ -510,6 +510,39 @@ function bool CheckBodyShot(Pawn P, vector HitLocation, vector Direction) {
 	return Result;
 }
 
+function Actor TraceShot(out vector HitLocation, out vector HitNormal, vector EndTrace, vector StartTrace, Pawn PawnOwner) {
+	local Actor A, Other;
+	local Pawn P;
+	local bool bSProjBlocks;
+	local bool bWeaponShock;
+	local vector Dir;
+
+	bSProjBlocks = WeaponSettings.ShockProjectileBlockBullets;
+	bWeaponShock = (PawnOwner.Weapon != none && PawnOwner.Weapon.IsA('ShockRifle'));
+	Dir = Normal(EndTrace - StartTrace);
+	
+	foreach TraceActors(class'Actor', A, HitLocation, HitNormal, EndTrace, StartTrace) {
+		P = Pawn(A);
+		if (P != none) {
+			if (P == PawnOwner)
+				continue;
+			if (P.AdjustHitLocation(HitLocation, EndTrace - StartTrace) == false)
+				continue;
+			if (CheckBodyShot(P, HitLocation, Dir) == false && CheckHeadShot(P, HitLocation, Dir) == false)
+				continue;
+
+			Other = A;
+		} else if ((A == Level) || (Mover(A) != None) || A.bProjTarget || (A.bBlockPlayers && A.bBlockActors)) {
+			if (bSProjBlocks || A.IsA('ShockProj') == false || bWeaponShock)
+				Other = A;
+		}
+
+		if (Other != none)
+			break;
+	}
+	return Other;
+}
+
 defaultproperties {
 	DefaultWeapon=Class'ST_ImpactHammer'
 

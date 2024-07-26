@@ -43,6 +43,23 @@ function PostBeginPlay()
 		break;		// Find master :D
 }
 
+function TraceFire(float Accuracy) {
+	local vector HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
+	local actor Other;
+	local Pawn PawnOwner;
+
+	PawnOwner = Pawn(Owner);
+
+	Owner.MakeNoise(PawnOwner.SoundDampening);
+	GetAxes(PawnOwner.ViewRotation,X,Y,Z);
+	StartTrace = Owner.Location + PawnOwner.Eyeheight * vect(0,0,1); 
+	AdjustedAim = PawnOwner.AdjustAim(1000000, StartTrace, 2*AimError, False, False);	
+	X = vector(AdjustedAim);
+	EndTrace = StartTrace + 10000 * X; 
+	Other = STM.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
+	ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z);
+}
+
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
 	local UT_Shellcase s;
@@ -60,7 +77,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	if (Other == Level) {
 		Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
 	} else if ((Other != self) && (Other != Owner) && (Other != None)) {
-		if (Other.bIsPawn && STM.CheckHeadshot(Pawn(Other), HitLocation, X) &&
+		if (Other.bIsPawn && STM.CheckHeadShot(Pawn(Other), HitLocation, X) &&
 			(instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice))
 		) {
 			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
@@ -70,12 +87,14 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 				HitLocation,
 				STM.WeaponSettings.SniperHeadshotMomentum * 35000 * X,
 				AltDamageType);
-		} else if (Other.bIsPawn == false || STM.CheckBodyShot(Pawn(Other), HitLocation, X)) {
+		} else {
 			if (Other.bIsPawn) {
 				Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
 				Momentum = STM.WeaponSettings.SniperMomentum * 30000.0*X;
 			} else {
 				Momentum = 30000.0*X;
+				if (Other.IsA('Carcass') == false)
+					Spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 			}
 
 			Other.TakeDamage(
@@ -85,8 +104,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 				Momentum,
 				MyDamageType);
 		}
-		if (!Other.bIsPawn && !Other.IsA('Carcass'))
-			Spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}
 }
 
