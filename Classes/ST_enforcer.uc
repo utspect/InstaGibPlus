@@ -35,6 +35,47 @@ function PostBeginPlay()
 		break;		// Find master :D
 }
 
+function TraceFire(float Accuracy) {
+	local vector RealOffset;
+	local vector HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
+	local Actor Other;
+	local Pawn PawnOwner;
+
+	RealOffset = FireOffset;
+	FireOffset *= 0.35;
+	if ( (SlaveEnforcer != None) || bIsSlave )
+		Accuracy = FClamp(3*Accuracy,0.75,3);
+	else if ( Owner.IsA('Bot') && !Bot(Owner).bNovice )
+		Accuracy = FMax(Accuracy, 0.45);
+
+	PawnOwner = Pawn(Owner);
+
+	Owner.MakeNoise(PawnOwner.SoundDampening);
+	GetAxes(PawnOwner.ViewRotation,X,Y,Z);
+	StartTrace = Owner.Location + CalcDrawOffset() + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z; 
+	AdjustedAim = PawnOwner.AdjustAim(1000000, StartTrace, 2*AimError, False, False);	
+	EndTrace = StartTrace + Accuracy * (FRand() - 0.5 )* Y * 1000
+		+ Accuracy * (FRand() - 0.5 ) * Z * 1000;
+	X = vector(AdjustedAim);
+	EndTrace += (10000 * X);
+	if (STM.WeaponSettings.EnforcerUseReducedHitbox)
+		Other = STM.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
+	else
+		Other = PawnOwner.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace);
+	ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z);
+
+	FireOffset = RealOffset;
+
+	// Higor: move slave enforcer to TraceFire start location
+	// to ensure firing sounds are played from the right place
+	if (Owner != None && (Level.NetMode == NM_DedicatedServer || Level.NetMode == NM_ListenServer)) {
+		if (bIsSlave && !bCollideActors)
+			SetLocation(Owner.Location + CalcDrawOffset());
+		else if (SlaveEnforcer != None && !SlaveEnforcer.bCollideActors)
+			SlaveEnforcer.SetLocation(Owner.Location + SlaveEnforcer.CalcDrawOffset());
+	}
+}
+
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
 	local UT_Shellcase s;

@@ -35,6 +35,39 @@ function PostBeginPlay()
 		break;		// Find master :D
 }
 
+function TraceFire(float Accuracy) {
+	local vector HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
+	local actor Other;
+	local Pawn PawnOwner;
+
+	PawnOwner = Pawn(Owner);
+
+	Owner.MakeNoise(PawnOwner.SoundDampening);
+	GetAxes(PawnOwner.ViewRotation,X,Y,Z);
+	StartTrace = Owner.Location + CalcDrawOffset() + FireOffset.Y * Y + FireOffset.Z * Z; 
+	EndTrace = StartTrace + (Accuracy * (FRand() - 0.5 )* Y * 1000) + (Accuracy * (FRand() - 0.5 ) * Z * 1000);
+
+	if (bBotSpecialMove && (Tracked != None) && (
+			((Owner.Acceleration == vect(0,0,0)) && (VSize(Owner.Velocity) < 40)) ||
+			(Normal(Owner.Velocity) Dot Normal(Tracked.Velocity) > 0.95)
+		)
+	) {
+		EndTrace += 10000 * Normal(Tracked.Location - StartTrace);
+	} else {
+		AdjustedAim = PawnOwner.AdjustAim(1000000, StartTrace, 2.75*AimError, False, False);	
+		EndTrace += (10000 * vector(AdjustedAim)); 
+	}
+
+	Tracked = None;
+	bBotSpecialMove = false;
+
+	if (STM.WeaponSettings.ShockBeamUseReducedHitbox)
+		Other = STM.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
+	else
+		Other = PawnOwner.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
+	ProcessTraceHit(Other, HitLocation, HitNormal, vector(AdjustedAim),Y,Z);
+}
+
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
 {
 	local PlayerPawn PlayerOwner;

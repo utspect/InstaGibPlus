@@ -27,7 +27,7 @@ auto state Flying
 		Dir = Normal(Velocity);
 		if (bCanHitInstigator || (Other != Instigator)) {
 			if (Role == ROLE_Authority) {
-				if (Other.bIsPawn && STM.CheckHeadShot(Pawn(Other), HitLocation, Dir) &&
+				if (Other.bIsPawn && (HitLocation.Z - Other.Location.Z > 0.62 * Other.CollisionHeight) &&
 					(!Instigator.IsA('Bot') || !Bot(Instigator).bNovice)
 				) {
 					Other.TakeDamage(
@@ -37,7 +37,7 @@ auto state Flying
 						STM.WeaponSettings.RipperHeadshotMomentum * MomentumTransfer * Dir,
 						'decapitated'
 					);
-				} else if (Other.bIsPawn == false || STM.CheckBodyShot(Pawn(Other), HitLocation, Dir)) {
+				} else {
 					Other.TakeDamage(
 						STM.WeaponSettings.RipperPrimaryDamage,
 						instigator,

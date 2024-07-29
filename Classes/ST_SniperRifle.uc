@@ -55,8 +55,11 @@ function TraceFire(float Accuracy) {
 	StartTrace = Owner.Location + PawnOwner.Eyeheight * vect(0,0,1); 
 	AdjustedAim = PawnOwner.AdjustAim(1000000, StartTrace, 2*AimError, False, False);	
 	X = vector(AdjustedAim);
-	EndTrace = StartTrace + 100000 * X; 
-	Other = STM.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
+	EndTrace = StartTrace + 100000 * X;
+	if (STM.WeaponSettings.SniperUseReducedHitbox)
+		Other = STM.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
+	else
+		Other = PawnOwner.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace);
 	ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z);
 }
 
@@ -77,7 +80,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	if (Other == Level) {
 		Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
 	} else if ((Other != self) && (Other != Owner) && (Other != None)) {
-		if (Other.bIsPawn && STM.CheckHeadShot(Pawn(Other), HitLocation, X) &&
+		if (Other.bIsPawn && CheckHeadShot(Pawn(Other), HitLocation, X) &&
 			(instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice))
 		) {
 			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
@@ -105,6 +108,13 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 				MyDamageType);
 		}
 	}
+}
+
+function bool CheckHeadShot(Pawn P, vector HitLocation, vector BulletDir) {
+	if (STM.WeaponSettings.SniperUseReducedHitbox == false)
+		return (HitLocation.Z - P.Location.Z > 0.62 * P.CollisionHeight);
+
+	return STM.CheckHeadShot(P, HitLocation, BulletDir);
 }
 
 function SetSwitchPriority(pawn Other)

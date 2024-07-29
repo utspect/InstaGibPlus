@@ -421,9 +421,6 @@ function bool CheckHeadShot(Pawn P, vector HitLocation, vector Direction) {
 	if (P == none)
 		return false;
 
-	if (WeaponSettings.bEnhancedHeadshotDetection == false)
-		return (HitLocation.Z - P.Location.Z > 0.62 * P.CollisionHeight);
-
 	if (HitLocation.Z - P.Location.Z <= 0.3 * P.CollisionHeight)
 		return false;
 
@@ -474,9 +471,6 @@ function bool CheckBodyShot(Pawn P, vector HitLocation, vector Direction) {
 
 	if (P == none)
 		return false;
-
-	if (WeaponSettings.bEnhancedHeadshotDetection == false)
-		return CheckHeadShot(P, HitLocation, Direction) == false;
 
 	if (CollChecker == none || CollChecker.bDeleteMe) {
 		CollChecker = Spawn(class'ST_HitTestHelper',self, , P.Location);
