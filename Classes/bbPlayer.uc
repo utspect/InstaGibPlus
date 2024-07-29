@@ -944,7 +944,7 @@ event PostBeginPlay()
 	VersionInfoClass = class<Info>(DynamicLoadObject(StringUtils.GetPackage()$".VersionInfo", class'class', true));
 	VersionInfo = Spawn(VersionInfoClass);
 	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedInputChain');
-	IGPlus_InputReplicationBuffer = new class'IGPlus_DataBuffer';
+	IGPlus_InputReplicationBuffer = new(XLevel) class'IGPlus_DataBuffer';
 
 	InitSettings();
 
@@ -982,7 +982,7 @@ simulated event PostNetBeginPlay()
 	VersionInfoClass = class<Info>(DynamicLoadObject(StringUtils.GetPackage()$".VersionInfo", class'class', true));
 	VersionInfo = Spawn(VersionInfoClass);
 	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedInputChain');
-	IGPlus_InputReplicationBuffer = new class'IGPlus_DataBuffer';
+	IGPlus_InputReplicationBuffer = new(XLevel) class'IGPlus_DataBuffer';
 
 	InitSettings();
 
