@@ -53,7 +53,7 @@ auto state Flying
 		local float damageScale, dist;
 		local vector dir;
 
-		if (STM.WeaponSettings.bEnableEnhancedSplash) {
+		if (STM.WeaponSettings.bEnableEnhancedSplashRipperSecondary) {
 			STM.EnhancedHurtRadius(
 				self,
 				STM.WeaponSettings.RipperSecondaryDamage,

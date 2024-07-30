@@ -206,6 +206,7 @@ function Created() {
 	Edit_OffsetX.SetDelayedNotify(true);
 	Edit_OffsetX.SetNumericOnly(true);
 	Edit_OffsetX.SetNumericFloat(false);
+	Edit_OffsetX.SetNumericNegative(true);
 	Edit_OffsetX.EditBoxWidthFraction = (1.0/3.0);
 	Edit_OffsetX.EditBoxWidth = 50;
 
@@ -217,6 +218,7 @@ function Created() {
 	Edit_OffsetY.SetDelayedNotify(true);
 	Edit_OffsetY.SetNumericOnly(true);
 	Edit_OffsetY.SetNumericFloat(false);
+	Edit_OffsetY.SetNumericNegative(true);
 	Edit_OffsetY.EditBoxWidthFraction = (1.0/3.0);
 	Edit_OffsetY.EditBoxWidth = 50;
 

@@ -19,7 +19,7 @@ function NewExplode(vector HitLocation, vector HitNormal, bool bDirect)
 	local vector start;
 	local ST_UTChunkInfo CI;
 
-	if (STM.WeaponSettings.bEnableEnhancedSplash) {
+	if (STM.WeaponSettings.bEnableEnhancedSplashFlakSlug) {
 		STM.EnhancedHurtRadius(
 			self,
 			STM.WeaponSettings.FlakSlugDamage,

@@ -70,8 +70,11 @@ state FireRockets
 		local float Spread;
 		local int i;
 
+		if (bCanClientFire == false)
+			return;
+			
 		PawnOwner = Pawn(Owner);
-		if ( PawnOwner == None )
+		if (PawnOwner == None)
 			return;
 		PawnOwner.PlayRecoil(FiringSpeed);
 		PlayerOwner = PlayerPawn(Owner);

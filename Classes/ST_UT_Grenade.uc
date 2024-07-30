@@ -28,7 +28,7 @@ function Explosion(vector HitLocation)
 
 function BlowUp(vector HitLocation)
 {
-	if (STM.WeaponSettings.bEnableEnhancedSplash) {
+	if (STM.WeaponSettings.bEnableEnhancedSplashRockets) {
 		STM.EnhancedHurtRadius(
 			self,
 			STM.WeaponSettings.GrenadeDamage,

@@ -697,7 +697,7 @@ function SetUpHitSoundComboBox(IGPlus_ComboBox Cmb) {
 	Cmb.EditBox.bDelayedNotify = true;
 	Cmb.Clear();
 	for (i = 0; i < arraycount(Settings.sHitSound); ++i)
-		Cmb.AddItem(Settings.sHitSound[i], string(i));
+		Cmb.AddItem(string(Settings.LoadedHitSound[i]), string(i));
 }
 
 function SetUpHitSourceComboBox(IGPlus_ComboBox Cmb) {
@@ -772,6 +772,7 @@ function SaveHitSounds() {
 		Settings.sHitSound[i++] = Item.Value;
 		Item = UWindowComboListItem(Item.Next);
 	}
+	Settings.LoadHitSounds();
 }
 
 function ShowCrosshairFactoryDialog() {
@@ -907,6 +908,7 @@ function Created() {
 	Cmb_HitMarkerColorMode.AddItem(HitMarkerColorModeTeamColor);
 	Edit_HitMarkerSize = CreateEdit(ECT_Integer, HitMarkerSizeText, HitMarkerSizeHelp, , 64);
 	Edit_HitMarkerOffset = CreateEdit(ECT_Integer, HitMarkerOffsetText, HitMarkerOffsetHelp, , 64);
+	Edit_HitMarkerOffset.SetNumericNegative(true);
 	Edit_HitMarkerDuration = CreateEdit(ECT_Real, HitMarkerDurationText, HitMarkerDurationHelp, , 64);
 	Edit_HitMarkerDecayExponent = CreateEdit(ECT_Real, HitMarkerDecayExponentText, HitMarkerDecayExponentHelp, , 64);
 	Chk_EnableHitMarker = CreateCheckbox(EnableHitMarkerText, EnableHitMarkerHelp);
@@ -1146,10 +1148,6 @@ function Save() {
 	Settings.bHitSoundTeamPitchShift = Chk_HitSoundTeamPitchShift.bChecked;
 	Settings.HitSoundTeamVolume = float(Edit_HitSoundTeamVolume.GetValue());
 	Settings.SelectedTeamHitSound = Cmb_SelectedTeamHitSound.GetSelectedIndex2();
-
-	// force reloading of hit sounds in case the selected ones changed
-	class'bbPlayerStatics'.default.PlayedHitSound = none;
-	class'bbPlayerStatics'.default.PlayedTeamHitSound = none;
 
 	SaveHitSounds();
 

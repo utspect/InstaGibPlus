@@ -926,7 +926,7 @@ simulated function InitSettings() {
 	if (Settings == none) {
 		ClientSettingsHelper = new(none, StringUtils.StringToName(VersionInfo.GetPropertyText("PackageBaseName"))) class'Object'; // object name = INI file name
 		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings'; // object name = Section name
-		Settings.CheckConfig(VersionInfo.GetPropertyText("PackageBaseName"));
+		Settings.CheckConfig();
 		Log("Loaded Settings!", 'IGPlus');
 	}
 }
@@ -944,7 +944,7 @@ event PostBeginPlay()
 	VersionInfoClass = class<Info>(DynamicLoadObject(StringUtils.GetPackage()$".VersionInfo", class'class', true));
 	VersionInfo = Spawn(VersionInfoClass);
 	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedInputChain');
-	IGPlus_InputReplicationBuffer = new class'IGPlus_DataBuffer';
+	IGPlus_InputReplicationBuffer = new(XLevel) class'IGPlus_DataBuffer';
 
 	InitSettings();
 
@@ -982,7 +982,7 @@ simulated event PostNetBeginPlay()
 	VersionInfoClass = class<Info>(DynamicLoadObject(StringUtils.GetPackage()$".VersionInfo", class'class', true));
 	VersionInfo = Spawn(VersionInfoClass);
 	IGPlus_SavedInputChain = Spawn(class'IGPlus_SavedInputChain');
-	IGPlus_InputReplicationBuffer = new class'IGPlus_DataBuffer';
+	IGPlus_InputReplicationBuffer = new(XLevel) class'IGPlus_DataBuffer';
 
 	InitSettings();
 
@@ -4580,7 +4580,6 @@ exec function setForcedTeamSkins(int maleSkin, int femaleSkin) {
 exec function SetHitSound(byte hs) {
 	if (hs >= 0 && hs < 16) {
 		Settings.SelectedHitSound = hs;
-		class'bbPlayerStatics'.default.PlayedHitSound = none;
 		IGPlus_SaveSettings();
 		ClientMessage("HitSound set!");
 	} else {
@@ -4591,7 +4590,6 @@ exec function SetHitSound(byte hs) {
 exec function SetTeamHitSound(byte hs) {
 	if (hs >= 0 && hs < 16) {
 		Settings.SelectedTeamHitSound = hs;
-		class'bbPlayerStatics'.default.PlayedTeamHitSound = none;
 		IGPlus_SaveSettings();
 		ClientMessage("Team HitSound set!");
 	} else {

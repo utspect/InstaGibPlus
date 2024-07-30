@@ -46,7 +46,7 @@ simulated event Tick(float Delta) {
 }
 
 function SuperExplosion() {
-	if (STM.WeaponSettings.bEnableEnhancedSplashCombo) {
+	if (STM.WeaponSettings.bEnableEnhancedSplashShockCombo) {
 		STM.EnhancedHurtRadius(
 			self,
 			STM.WeaponSettings.ShockComboDamage,
@@ -71,7 +71,7 @@ function SuperExplosion() {
 
 function Explode(vector HitLocation,vector HitNormal) {
 	PlaySound(ImpactSound, SLOT_Misc, 0.5,,, 0.5+FRand());
-	if (STM.WeaponSettings.bEnableEnhancedSplash) {
+	if (STM.WeaponSettings.bEnableEnhancedSplashShockProjectile) {
 		STM.EnhancedHurtRadius(
 			self,
 			STM.WeaponSettings.ShockProjectileDamage,

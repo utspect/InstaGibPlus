@@ -152,7 +152,7 @@ simulated function InitSettings() {
 	if (Settings == none) {
 		ClientSettingsHelper = new(none, 'InstaGibPlus') class'Object';
 		Settings = new(ClientSettingsHelper, 'ClientSettings') class'ClientSettings';
-		Settings.CheckConfig(VersionInfo.GetPropertyText("PackageBaseName"));
+		Settings.CheckConfig();
 		Log("Loaded Settings!", 'IGPlus');
 	}
 }

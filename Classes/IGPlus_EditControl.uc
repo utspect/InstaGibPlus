@@ -6,10 +6,26 @@ var float EditBoxMinWidth;
 var float EditBoxMaxWidth;
 var float EditBoxWidthFraction;
 
+function Created() {
+	Super.Created();
+	
+	EditBox = IGPlus_EditBox(CreateWindow(class'IGPlus_EditBox', 0, 0, WinWidth, WinHeight)); 
+	EditBox.NotifyOwner = Self;
+	EditBox.bSelectOnFocus = True;
+
+	EditBoxWidth = WinWidth / 2;
+
+	SetEditTextColor(LookAndFeel.EditBoxTextColor);
+}
+
 function AfterCreate() {
 	EditBoxWidthFraction = FClamp(EditBoxWidth / WinWidth, 0.05, 0.95);
 	EditBoxMinWidth = WinWidth * EditBoxWidthFraction;
 	EditBoxMaxWidth = WinWidth * EditBoxWidthFraction;
+}
+
+function SetNumericNegative(bool bEnable) {
+	IGPlus_EditBox(EditBox).bNumericNegative = bEnable;
 }
 
 function MouseLeave() {

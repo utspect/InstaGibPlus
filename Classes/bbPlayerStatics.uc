@@ -10,8 +10,6 @@ var float HitMarkerLifespan;
 var float HitMarkerSize;
 var color HitMarkerColor;
 var color HitMarkerTeamColors[4];
-var Sound PlayedHitSound;
-var Sound PlayedTeamHitSound;
 
 static function DrawFPS(Canvas C, HUD MyHud, ClientSettings Settings, float DeltaTime) {
 	local string FPS;
@@ -164,17 +162,11 @@ static function DrawHitMarker(Canvas C, ClientSettings Settings, float DeltaTime
 }
 
 static function Sound GetHitSound(ClientSettings Settings) {
-	if (default.PlayedHitSound == none) {
-		default.PlayedHitSound = Sound(DynamicLoadObject(Settings.sHitSound[Settings.SelectedHitSound], class'Sound'));
-	}
-	return default.PlayedHitSound;
+	return Settings.LoadedHitSound[Settings.SelectedHitSound];
 }
 
 static function Sound GetTeamHitSound(ClientSettings Settings) {
-	if (default.PlayedTeamHitSound == none) {
-		default.PlayedTeamHitSound = Sound(DynamicLoadObject(Settings.sHitSound[Settings.SelectedTeamHitSound], class'Sound'));
-	}
-	return default.PlayedTeamHitSound;
+	return Settings.LoadedHitSound[Settings.SelectedTeamHitSound];
 }
 
 static function PlaySoundWithPitch469(PlayerPawn Me, Sound S, float Volume, optional byte Priority, optional float Pitch) {
