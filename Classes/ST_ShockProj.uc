@@ -1,6 +1,7 @@
 class ST_ShockProj extends ShockProj;
 
 var ST_Mutator STM;
+var WeaponSettingsRepl WSettings;
 
 // For ShockProjectileTakeDamage
 var float Health;
@@ -8,24 +9,54 @@ var float Health;
 var PlayerPawn InstigatingPlayer;
 var vector ExtrapolationDelta;
 
+simulated final function WeaponSettingsRepl FindWeaponSettings() {
+	local WeaponSettingsRepl S;
+
+	foreach AllActors(class'WeaponSettingsRepl', S)
+		return S;
+
+	return none;
+}
+
+simulated final function WeaponSettingsRepl GetWeaponSettings() {
+	if (WSettings != none)
+		return WSettings;
+
+	WSettings = FindWeaponSettings();
+	return WSettings;
+}
+
 simulated function PostBeginPlay() {
-	if (ROLE == ROLE_Authority) {
+	if (Instigator != none && Instigator.Role == ROLE_Authority) {
 		ForEach AllActors(Class'ST_Mutator', STM)
 			break; // Find master :D
-	}
-	if (STM.WeaponSettings.ShockProjectileTakeDamage) {
-		Health = STM.WeaponSettings.ShockProjectileHealth;
+
+		if (STM.WeaponSettings.ShockProjectileTakeDamage) {
+			Health = STM.WeaponSettings.ShockProjectileHealth;
+		}
 	}
 	Super.PostBeginPlay();
 }
 
 simulated function PostNetBeginPlay() {
 	local PlayerPawn In;
+	local ST_ShockRifle SR;
+
 	super.PostNetBeginPlay();
 
-	In = PlayerPawn(Instigator);
-	if (In != none && Viewport(In.Player) != none)
-		InstigatingPlayer = In;
+	if (GetWeaponSettings().ShockProjectileCompensatePing) {
+		In = PlayerPawn(Instigator);
+		if (In != none && Viewport(In.Player) != none)
+			InstigatingPlayer = In;
+
+		if (InstigatingPlayer != none) {
+			SR = ST_ShockRifle(InstigatingPlayer.Weapon);
+			if (SR != none && SR.LocalDummy != none && SR.LocalDummy.bDeleteMe == false)
+				SR.LocalDummy.Destroy();
+		}
+	} else {
+		Disable('Tick');
+	}
 }
 
 simulated event Tick(float Delta) {

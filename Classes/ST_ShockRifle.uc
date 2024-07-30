@@ -7,8 +7,9 @@
 class ST_ShockRifle extends ShockRifle;
 
 var ST_Mutator STM;
-
 var WeaponSettingsRepl WSettings;
+
+var ST_ShockProj LocalDummy;
 
 simulated final function WeaponSettingsRepl FindWeaponSettings() {
 	local WeaponSettingsRepl S;
@@ -169,6 +170,52 @@ state ClientFiring {
 	simulated function bool ClientAltFire(float Value) {
 		return false;
 	}
+}
+
+state ClientAltFiring {
+	simulated function BeginState() {
+		local Pawn PawnOwner;
+		local vector X, Y, Z;
+		local vector Start;
+
+		if (GetWeaponSettings().ShockProjectileCompensatePing == false)
+			return;
+
+		PawnOwner = Pawn(Owner);
+
+		GetAxes(PawnOwner.ViewRotation,X,Y,Z);
+		Start = Owner.Location + CalcDrawOffsetClient() + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z;
+		LocalDummy = ST_ShockProj(Spawn(AltProjectileClass,,, Start,PawnOwner.ViewRotation));
+		LocalDummy.RemoteRole = ROLE_None;
+		LocalDummy.LifeSpan = 0.25;
+		LocalDummy.bCollideWorld = false;
+		LocalDummy.SetCollision(false, false, false);
+	}
+}
+
+// compatibility between client and server logic
+simulated function vector CalcDrawOffsetClient() {
+	local vector DrawOffset;
+	local Pawn PawnOwner;
+	local vector WeaponBob;
+
+	DrawOffset = CalcDrawOffset();
+
+	if (Level.NetMode != NM_Client)
+		return DrawOffset;
+
+	PawnOwner = Pawn(Owner);
+
+	// correct for EyeHeight differences between server and client
+	DrawOffset -= (PawnOwner.EyeHeight * vect(0,0,1));
+	DrawOffset += (PawnOwner.BaseEyeHeight * vect(0,0,1));
+
+	// remove WeaponBob, not applied on server
+	WeaponBob = BobDamping * PawnOwner.WalkBob;
+    WeaponBob.Z = (0.45 + 0.55 * BobDamping) * PawnOwner.WalkBob.Z;
+    DrawOffset -= WeaponBob;
+
+	return DrawOffset;
 }
 
 defaultproperties {
