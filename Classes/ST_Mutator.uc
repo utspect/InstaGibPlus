@@ -437,6 +437,9 @@ function bool CheckHeadShot(Pawn P, vector HitLocation, vector Direction) {
 		0
 	);
 
+	if (HeadHalfHeight <= 0.0)
+		return false;
+
 	CollChecker.SetCollision(true, false, false);
 	CollChecker.SetCollisionSize(WeaponSettings.HeadRadius, WeaponSettings.HeadHalfHeight);
 	CollChecker.SetLocation(P.Location + vect(0,0,1)*(BodyOffsetZ + BodyHalfHeight + HeadHalfHeight));
