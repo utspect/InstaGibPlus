@@ -177,17 +177,26 @@ state ClientAltFiring {
 		local Pawn PawnOwner;
 		local vector X, Y, Z;
 		local vector Start;
+		local float Hand;
 
 		if (GetWeaponSettings().ShockProjectileCompensatePing == false)
 			return;
 
 		PawnOwner = Pawn(Owner);
 
+		if (Owner.IsA('PlayerPawn'))
+			Hand = FClamp(PlayerPawn(Owner).Handedness, -1.0, 1.0);
+		else
+			Hand = 1.0;
+
 		GetAxes(PawnOwner.ViewRotation,X,Y,Z);
-		Start = Owner.Location + CalcDrawOffsetClient() + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z;
+		if (bHideWeapon)
+			Start = Owner.Location + CalcDrawOffsetClient() + FireOffset.X * X + FireOffset.Z * Z;
+		else
+			Start = Owner.Location + CalcDrawOffsetClient() + FireOffset.X * X + FireOffset.Y * Hand * Y + FireOffset.Z * Z;
 		LocalDummy = ST_ShockProj(Spawn(AltProjectileClass,,, Start,PawnOwner.ViewRotation));
 		LocalDummy.RemoteRole = ROLE_None;
-		LocalDummy.LifeSpan = 0.25;
+		LocalDummy.LifeSpan = PawnOwner.PlayerReplicationInfo.Ping * 0.00125;
 		LocalDummy.bCollideWorld = false;
 		LocalDummy.SetCollision(false, false, false);
 	}
