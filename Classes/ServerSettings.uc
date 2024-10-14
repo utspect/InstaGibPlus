@@ -80,6 +80,14 @@ var config bool  bEnableWarpFix;
 var config bool  bEnableCarcassCollision;
 var config bool  ShowTouchedPackage;
 
+enum EHitFeedbackMode {
+	HFM_Disabled,
+	HFM_VisibleOnly,
+	HFM_Always
+};
+
+var config EHitFeedbackMode HitFeedbackMode;
+
 //Add the maplist where kickers will work using normal network
 var config array<string> ExcludeMapsForKickers;
 
@@ -132,6 +140,7 @@ function DumpServerSettings(PlayerPawn P) {
 	DumpSetting(P, "bEnableJitterBounding");
 	DumpSetting(P, "bEnableWarpFix");
 	DumpSetting(P, "ShowTouchedPackage");
+	DumpSetting(P, "HitFeedbackMode");
 }
 
 defaultproperties
@@ -197,4 +206,5 @@ defaultproperties
 	bEnableJitterBounding=False
 	bEnableWarpFix=True
 	bEnableCarcassCollision=True
+	HitFeedbackMode=HFM_Always
 }

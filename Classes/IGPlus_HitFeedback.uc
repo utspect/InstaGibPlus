@@ -1,6 +1,8 @@
 class IGPlus_HitFeedback extends Mutator;
 // Description="<Internal>"
 
+var bool bCheckVisibility;
+
 event PostBeginPlay() {
 	if (Level == none || Level.Game == none) {
 		Destroy(); // spawned client-side? wtf?
@@ -43,6 +45,39 @@ function ModifyPlayer(Pawn P) {
 		CreateTracker(P);
 }
 
+function bool CheckVisibility(Pawn Orig, Pawn Dest) {
+	local rotator DirYaw;
+	local vector X,Y,Z;
+	local vector Start;
+	local vector End[7];
+	local int i;
+
+	if (bCheckVisibility == false)
+		return true;
+
+	DirYaw = rotator(Dest.Location - Orig.Location);
+	DirYaw.Pitch = 0;
+	DirYaw.Roll = 0;
+
+	GetAxes(DirYaw,X,Y,Z);
+
+	Start = Orig.Location + vect(0,0,1)*Orig.BaseEyeHeight;
+
+	End[0] = Dest.Location;                                            // center
+	End[1] = End[0] + Y*Dest.CollisionRadius + Z*Dest.CollisionHeight; // top left
+	End[2] = End[0] - Y*Dest.CollisionRadius + Z*Dest.CollisionHeight; // top right
+	End[3] = End[0] + Y*Dest.CollisionRadius;                          // center left
+	End[4] = End[0] - Y*Dest.CollisionRadius;                          // center right
+	End[5] = End[0] + Y*Dest.CollisionRadius - Z*Dest.CollisionHeight; // bottom left
+	End[6] = End[0] - Y*Dest.CollisionRadius - Z*Dest.CollisionHeight; // bottom right
+
+	for (i = 0; i < arraycount(End); ++i)
+		if (FastTrace(End[i], Start))
+			return true;
+
+	return false;
+}
+
 function MutatorTakeDamage(
 	out int ActualDamage,
 	Pawn Victim,
@@ -56,6 +91,9 @@ function MutatorTakeDamage(
 	local IGPlus_HitFeedbackTracker Tracker;
 
 	if (InstigatedBy != none && Victim != none) {
+		if (CheckVisibility(InstigatedBy, Victim) == false)
+			return;
+
 		Tracker = FindTracker(Victim);
 		if (Tracker != none)
 			TotalDamage = Tracker.LastDamage;

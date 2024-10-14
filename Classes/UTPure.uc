@@ -20,6 +20,7 @@ var string zzDefaultPackages[8];
 
 // Auto Pause Handler
 var PureAutoPause zzAutoPauser;
+var IGPlus_HitFeedback MutHitFeedback;
 
 //Add the maplist where kickers will work using normal network
 var bool bExludeKickers;
@@ -243,7 +244,10 @@ function PostBeginPlay()
 	Spawn(class'NN_SpawnNotify');
 	Spawn(class'IGPlus_UnlagPause');
 	Spawn(class'IGPlus_CarcassSpawnNotify').bEnableCarcassCollision = Settings.bEnableCarcassCollision;
-	Spawn(class'IGPlus_HitFeedback');
+	if (Settings.HitFeedbackMode != HFM_Disabled) {
+		MutHitFeedback = Spawn(class'IGPlus_HitFeedback');
+		MutHitFeedback.bCheckVisibility = (Settings.HitFeedbackMode == HFM_VisibleOnly);
+	}
 
 	if (Settings.NNAnnouncer)
 		Spawn(class'NNAnnouncerSA');
