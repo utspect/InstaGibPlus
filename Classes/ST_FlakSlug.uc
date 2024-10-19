@@ -7,11 +7,35 @@
 class ST_FlakSlug extends flakslug;
 
 var ST_Mutator STM;
+var WeaponSettingsRepl WSettings;
+
+simulated final function WeaponSettingsRepl FindWeaponSettings() {
+    local WeaponSettingsRepl S;
+
+    foreach AllActors(class'WeaponSettingsRepl', S)
+        return S;
+
+    return none;
+}
+
+simulated final function WeaponSettingsRepl GetWeaponSettings() {
+    if (WSettings != none)
+        return WSettings;
+
+    WSettings = FindWeaponSettings();
+    return WSettings;
+}
 
 function ProcessTouch (Actor Other, vector HitLocation)
 {
-	if ( Other != instigator ) 
-		NewExplode(HitLocation,Normal(HitLocation-Other.Location), Other.IsA('Pawn'));
+
+    if (Other == Instigator)
+        return;
+
+    if (Other.IsA('ShockProj') && GetWeaponSettings().ShockProjectileBlockFlakSlug == false)
+        return; // If ShockProjectileBlockFlakSlug is False, we do nothing and the flak slug passes through
+
+    NewExplode(HitLocation, Normal(HitLocation-Other.Location), Other.IsA('Pawn'));
 }
 
 function NewExplode(vector HitLocation, vector HitNormal, bool bDirect)
