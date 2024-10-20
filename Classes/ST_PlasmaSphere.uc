@@ -8,8 +8,8 @@ simulated function PostBeginPlay()
 	{
 		ForEach AllActors(Class'ST_Mutator', STM)
 			break;
+		Speed = STM.WeaponSettings.PulseSphereSpeed;
 	}
-	Speed = STM.WeaponSettings.PulseSphereSpeed;
 	DrawScale = 0.12;
 	Super.PostBeginPlay();
 }
