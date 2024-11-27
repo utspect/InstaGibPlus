@@ -4881,6 +4881,13 @@ simulated function bool ClientAdjustHitLocation(out vector HitLocation, vector T
 	local float adjZ, maxZ;
 	local vector delta;
 
+	// This rejects shots where theres geometry going through the collision
+	// cylinder. This is possible in networked play where Location is rounded to
+	// the nearest Integer for each axis, if rubbing up against really thin
+	// walls.
+	if (FastTrace(Location, HitLocation) == false)
+		return false;
+
 	if (Role != ROLE_Authority)
 		maxZ = Location.Z + (1.0 - 0.7 * DuckFractionRepl/255.0) * CollisionHeight;
 	else
