@@ -449,9 +449,9 @@ function Notify(UWindowDialogControl C, byte E) {
 		} else if (C == Edit_OffsetY && Edit_OffsetY.EditBox.bCanEdit) {
 			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).OffsetY = int(Edit_OffsetY.GetValue());
 		} else if (C == Edit_ScaleX && Edit_ScaleX.EditBox.bCanEdit) {
-			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).ScaleX = int(Edit_ScaleX.GetValue());
+			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).ScaleX = float(Edit_ScaleX.GetValue());
 		} else if (C == Edit_ScaleY && Edit_ScaleY.EditBox.bCanEdit) {
-			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).ScaleY = int(Edit_ScaleY.GetValue());
+			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).ScaleY = float(Edit_ScaleY.GetValue());
 		} else if (C == Edit_ColorRed && Edit_ColorRed.EditBox.bCanEdit) {
 			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).Color.R = byte(Edit_ColorRed.GetValue());
 		} else if (C == Edit_ColorGreen && Edit_ColorGreen.EditBox.bCanEdit) {
