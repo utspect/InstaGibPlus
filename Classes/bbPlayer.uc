@@ -180,6 +180,7 @@ var vector TlocPrevLocation;
 var bool IGPlus_DidTranslocate;
 var bool IGPlus_NotifiedTranslocate;
 var bool IGPlus_WantCAP;
+var bool IGPlus_SkipMovesUntilNextTick;
 
 // SSR Beam
 var float LastWeaponEffectCreated;
@@ -2352,6 +2353,8 @@ function IGPlus_ProcessRemoteMovement() {
 	else
 		IGPlus_CheckClientError();
 
+	IGPlus_SkipMovesUntilNextTick = false;
+
 	if (((ServerTimeStamp - LastCAPTime) / Level.TimeDilation) > FakeCAPInterval && ServerTimeStamp >= NextRealCAPTime) {
 		xxFakeCAP(CurrentTimeStamp);
 		LastCAPTime = ServerTimeStamp;
@@ -2501,23 +2504,31 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	else
 		ClientLocAbs = SM.ClientLocation + SM.ClientBase.Location;
 
-	if (bWasPaused == false)
+	if (ServerTimeStamp == 0.0) {
+		ServerDeltaTime = SM.MoveDeltaTime;
+	} else {
+		ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
+		if (Level.Pauser == "" && bWasPaused)
+			ServerDeltaTime = FMin(ServerDeltaTime, SM.MoveDeltaTime);
+	}
+
+	if (zzUTPure.Settings.bEnableWarpFix && ServerDeltaTime > zzUTPure.Settings.WarpFixDelay) {
+		IGPlus_SkipMovesUntilNextTick = true;
+	}
+
+	if (bWasPaused == false && IGPlus_SkipMovesUntilNextTick == false) {
 		if (IGPlus_OldServerMove(SM.TimeStamp, SM.OldMoveData1, SM.OldMoveData2)) {
 			xxFakeCAP(CurrentTimeStamp);
 			LastCAPTime = Level.TimeSeconds;
 		}
+	}
 
 	if (ServerTimeStamp == 0.0) {
-		ServerDeltaTime = SM.MoveDeltaTime;
 		DeltaTime = SM.MoveDeltaTime;
 	} else {
-		ServerDeltaTime = Level.TimeSeconds - ServerTimeStamp;
 		DeltaTime = SM.TimeStamp - CurrentTimeStamp;
-
-		if (Level.Pauser == "" && bWasPaused) {
-			ServerDeltaTime = FMin(ServerDeltaTime, SM.MoveDeltaTime);
+		if (Level.Pauser == "" && bWasPaused)
 			DeltaTime = FMin(DeltaTime, SM.MoveDeltaTime);
-		}
 	}
 
 	ExtrapolationDelta += (ServerDeltaTime - DeltaTime);
@@ -2598,9 +2609,7 @@ function IGPlus_ApplyServerMove(IGPlus_ServerMove SM) {
 	LastAddVelocityAppliedIndex = AddVelocityId;
 
 	// Predict new position
-	if ((Level.Pauser == "") && (DeltaTime > 0) &&
-		(zzUTPure.Settings.bEnableWarpFix == false || DeltaTime <= zzUTPure.Settings.WarpFixDelay)
-	) {
+	if ((Level.Pauser == "") && (DeltaTime > 0) && (IGPlus_SkipMovesUntilNextTick == false)) {
 		if (zzUTPure.Settings.bEnableJitterBounding && DeltaTime > zzUTPure.Settings.MaxJitterTime) {
 			SimTime = DeltaTime - zzUTPure.Settings.MaxJitterTime;
 			if (SimTime >= 0.005 || bIs469Server) {
@@ -2807,7 +2816,11 @@ function bool IGPlus_IsCAPNecessary() {
 		zzIgnoreUpdateUntil = ServerTimeStamp;
 	}
 
-	bForceUpdate = zzbForceUpdate || ClientTlocCounter != TlocCounter || (zzForceUpdateUntil >= ServerTimeStamp);
+	bForceUpdate = 
+		zzbForceUpdate ||
+		IGPlus_SkipMovesUntilNextTick ||
+		ClientTlocCounter != TlocCounter ||
+		zzForceUpdateUntil >= ServerTimeStamp;
 
 	clientLastUpdateTime = ServerTimeStamp;
 	debugClientForceUpdate = bForceUpdate;
@@ -3899,7 +3912,7 @@ function PlayBackInput(IGPlus_SavedInput Old, IGPlus_SavedInput I) {
 
 		if (I.bWalk) bRun = 1; else bRun = 0;
 		if (I.bDuck) bDuck = 1; else bDuck = 0;
-		
+
 		bPressedJump = I.bJump && (I.bJump != Old.bJump);
 		bPressedDodge = I.bDodg && (I.bDodg != Old.bDodg);
 	}
