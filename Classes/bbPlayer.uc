@@ -7409,6 +7409,8 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	local vector VelXpol;
 	local float CosAlpha;
 	local float SinAlpha;
+	local vector LocDelta;
+	local vector MaxMove;
 
 	if (IGPlus_LocationOffsetFix_Moved == false)
 		return;
@@ -7419,6 +7421,10 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	}
 
 	bReplicatedVelocity = IGPlus_LocationOffsetFix_WasVelocityReplicated();
+
+	LocDelta = Location - IGPlus_LocationOffsetFix_SafeLocation;
+	MaxMove = 2.0*DeltaTime*Velocity;
+
 	if (bReplicatedVelocity == false) {
 		Velocity = IGPlus_LocationOffsetFix_Velocity;
 
@@ -7427,7 +7433,7 @@ simulated function IGPlus_LocationOffsetFix_After(float DeltaTime) {
 	}
 
 	// detect whether server replicated new location
-	if (VSize(Location - IGPlus_LocationOffsetFix_SafeLocation) > VSize(2*DeltaTime*Velocity)+MaxStepHeight) {
+	if (VSize(LocDelta) > VSize(MaxMove) + MaxStepHeight) {
 		IGPlus_LocationOffsetFix_PredictionOffset = IGPlus_LocationOffsetFix_OldLocation - Location - IGPlus_LocationOffsetFix_ExtrapolationOffset;
 		IGPlus_LocationOffsetFix_OldLocation = Location;
 		IGPlus_LocationOffsetFix_ServerLocation = Location;
