@@ -148,13 +148,13 @@ static function DrawHitMarker(Canvas C, ClientSettings Settings, float DeltaTime
 	C.bNoSmooth = false;
 	C.DrawColor = default.HitMarkerColor * ((default.HitMarkerLifespan/Settings.HitMarkerDuration) ** Settings.HitMarkerDecayExponent);
 	C.SetPos(C.SizeX/2 - MarkerOffset - MarkerSize, C.SizeY/2 - MarkerOffset - MarkerSize);
-	C.DrawTile(texture'HitMarkerArrow', MarkerSize, MarkerSize, 0, 0, 512, 512);
+	C.DrawTile(texture'HitMarkerArrowTL', MarkerSize, MarkerSize, 0, 0, 512, 512);
 	C.SetPos(C.SizeX/2 + MarkerOffset, C.SizeY/2 - MarkerOffset - MarkerSize);
-	C.DrawTile(texture'HitMarkerArrow', MarkerSize, MarkerSize, 0, 0, -512, 512);
+	C.DrawTile(texture'HitMarkerArrowTR', MarkerSize, MarkerSize, 0, 0, 512, 512);
 	C.SetPos(C.SizeX/2 - MarkerOffset - MarkerSize, C.SizeY/2 + MarkerOffset);
-	C.DrawTile(texture'HitMarkerArrow', MarkerSize, MarkerSize, 0, 0, 512, -512);
+	C.DrawTile(texture'HitMarkerArrowBL', MarkerSize, MarkerSize, 0, 0, 512, 512);
 	C.SetPos(C.SizeX/2 + MarkerOffset, C.SizeY/2 + MarkerOffset);
-	C.DrawTile(texture'HitMarkerArrow', MarkerSize, MarkerSize, 0, 0, -512, -512);
+	C.DrawTile(texture'HitMarkerArrowBR', MarkerSize, MarkerSize, 0, 0, 512, 512);
 
 	class'CanvasUtils'.static.RestoreCanvas(C);
 
