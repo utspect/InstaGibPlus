@@ -6,7 +6,7 @@
 
 class ST_UT_FlakCannon extends UT_FlakCannon;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 var WeaponSettingsRepl WSettings;
 
@@ -31,7 +31,7 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
 }
 
@@ -63,7 +63,7 @@ function Fire( float Value )
 		Spawn(class'WeaponLight',,'',Start+X*20,rot(0,0,0));		
 		Start = Start + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z;	
 		CI = Spawn(class'ST_UTChunkInfo', PawnOwner);
-		CI.STM = STM;
+		CI.WImp = WImp;
 		// My comment
 		// I am not sure why EPIC has decided to do flak (or rockets) this way, as they could
 		// Have created a masterchunk on client that spawned the rest of the chunks according to
@@ -115,7 +115,7 @@ function AltFire( float Value )
 		Start = Start + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z; 
 		AdjustedAim = PawnOwner.AdjustToss(AltProjectileSpeed, Start, AimError, True, bAltWarnTarget);	
 		Slug = Spawn(class'ST_FlakSlug',,, Start,AdjustedAim);
-		Slug.STM = STM;
+		Slug.WImp = WImp;
 		ClientAltFire(Value);	
 		GoToState('AltFiring');
 	}	

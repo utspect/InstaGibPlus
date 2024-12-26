@@ -6,7 +6,7 @@
 
 class ST_enforcer extends enforcer;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 var WeaponSettingsRepl WSettings;
 
@@ -31,7 +31,7 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
 }
 
@@ -58,8 +58,8 @@ function TraceFire(float Accuracy) {
 		+ Accuracy * (FRand() - 0.5 ) * Z * 1000;
 	X = vector(AdjustedAim);
 	EndTrace += (10000 * X);
-	if (STM.WeaponSettings.EnforcerUseReducedHitbox)
-		Other = STM.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
+	if (WImp.WeaponSettings.EnforcerUseReducedHitbox)
+		Other = WImp.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
 	else
 		Other = PawnOwner.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace);
 	ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z);
@@ -105,15 +105,15 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		Momentum = 3000.0 * X;
 		if (Other.bIsPawn) {
 			if (SlaveEnforcer == none && bIsSlave == false)
-				Momentum *= STM.WeaponSettings.EnforcerMomentum;
+				Momentum *= WImp.WeaponSettings.EnforcerMomentum;
 			else
-				Momentum *= STM.WeaponSettings.EnforcerMomentumDouble;
+				Momentum *= WImp.WeaponSettings.EnforcerMomentumDouble;
 		}
 
 		if (SlaveEnforcer == none && bIsSlave == false)
-			Damage = STM.WeaponSettings.EnforcerDamage;
+			Damage = WImp.WeaponSettings.EnforcerDamage;
 		else
-			Damage = STM.WeaponSettings.EnforcerDamageDouble;
+			Damage = WImp.WeaponSettings.EnforcerDamageDouble;
 
 		Other.TakeDamage(
 			Damage,

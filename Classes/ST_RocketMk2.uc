@@ -6,7 +6,7 @@
 
 class ST_RocketMk2 extends RocketMk2;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 var bool bDirect;
 
 auto state Flying
@@ -52,20 +52,20 @@ auto state Flying
 
 	function BlowUp(vector HitLocation)
 	{
-		if (STM.WeaponSettings.bEnableEnhancedSplashRockets) {
-			STM.EnhancedHurtRadius(
+		if (WImp.WeaponSettings.bEnableEnhancedSplashRockets) {
+			WImp.EnhancedHurtRadius(
 				self,
-				STM.WeaponSettings.RocketDamage,
-				STM.WeaponSettings.RocketHurtRadius,
+				WImp.WeaponSettings.RocketDamage,
+				WImp.WeaponSettings.RocketHurtRadius,
 				MyDamageType,
-				STM.WeaponSettings.RocketMomentum * MomentumTransfer,
+				WImp.WeaponSettings.RocketMomentum * MomentumTransfer,
 				HitLocation);
 		} else {
 			HurtRadius(
-				STM.WeaponSettings.RocketDamage,
-				STM.WeaponSettings.RocketHurtRadius,
+				WImp.WeaponSettings.RocketDamage,
+				WImp.WeaponSettings.RocketHurtRadius,
 				MyDamageType,
-				STM.WeaponSettings.RocketMomentum * MomentumTransfer,
+				WImp.WeaponSettings.RocketMomentum * MomentumTransfer,
 				HitLocation);
 		}
 

@@ -1,14 +1,14 @@
 class ST_PlasmaSphere extends PlasmaSphere;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 simulated function PostBeginPlay()
 {
 	if (ROLE == ROLE_Authority)
 	{
-		ForEach AllActors(Class'ST_Mutator', STM)
+		ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 			break;
-		Speed = STM.WeaponSettings.PulseSphereSpeed;
+		Speed = WImp.WeaponSettings.PulseSphereSpeed;
 	}
 	DrawScale = 0.12;
 	Super.PostBeginPlay();
@@ -63,10 +63,10 @@ simulated function ProcessTouch (Actor Other, vector HitLocation)
 		if ( Role == ROLE_Authority )
 		{
 			Other.TakeDamage(
-				STM.WeaponSettings.PulseSphereDamage,
+				WImp.WeaponSettings.PulseSphereDamage,
 				instigator,
 				HitLocation,
-				STM.WeaponSettings.PulseSphereMomentum * MomentumTransfer * Vector(Rotation),
+				WImp.WeaponSettings.PulseSphereMomentum * MomentumTransfer * Vector(Rotation),
 				MyDamageType);
 		}
 		Explode(HitLocation, vect(0,0,1));

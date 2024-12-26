@@ -6,7 +6,7 @@
 
 class ST_UT_Grenade extends UT_Grenade;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 function Explosion(vector HitLocation)
 {
@@ -28,20 +28,20 @@ function Explosion(vector HitLocation)
 
 function BlowUp(vector HitLocation)
 {
-	if (STM.WeaponSettings.bEnableEnhancedSplashRockets) {
-		STM.EnhancedHurtRadius(
+	if (WImp.WeaponSettings.bEnableEnhancedSplashRockets) {
+		WImp.EnhancedHurtRadius(
 			self,
-			STM.WeaponSettings.GrenadeDamage,
-			STM.WeaponSettings.GrenadeHurtRadius,
+			WImp.WeaponSettings.GrenadeDamage,
+			WImp.WeaponSettings.GrenadeHurtRadius,
 			MyDamageType,
-			STM.WeaponSettings.GrenadeMomentum * MomentumTransfer,
+			WImp.WeaponSettings.GrenadeMomentum * MomentumTransfer,
 			HitLocation);
 	} else {
 		HurtRadius(
-			STM.WeaponSettings.GrenadeDamage,
-			STM.WeaponSettings.GrenadeHurtRadius,
+			WImp.WeaponSettings.GrenadeDamage,
+			WImp.WeaponSettings.GrenadeHurtRadius,
 			MyDamageType,
-			STM.WeaponSettings.GrenadeMomentum * MomentumTransfer,
+			WImp.WeaponSettings.GrenadeMomentum * MomentumTransfer,
 			HitLocation);
 	}
 	MakeNoise(1.0);

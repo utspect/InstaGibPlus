@@ -6,7 +6,7 @@
 
 class ST_FlakSlug extends flakslug;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 var WeaponSettingsRepl WSettings;
 
 simulated final function WeaponSettingsRepl FindWeaponSettings() {
@@ -43,26 +43,26 @@ function NewExplode(vector HitLocation, vector HitNormal, bool bDirect)
 	local vector start;
 	local ST_UTChunkInfo CI;
 
-	if (STM.WeaponSettings.bEnableEnhancedSplashFlakSlug) {
-		STM.EnhancedHurtRadius(
+	if (WImp.WeaponSettings.bEnableEnhancedSplashFlakSlug) {
+		WImp.EnhancedHurtRadius(
 			self,
-			STM.WeaponSettings.FlakSlugDamage,
-			STM.WeaponSettings.FlakSlugHurtRadius,
+			WImp.WeaponSettings.FlakSlugDamage,
+			WImp.WeaponSettings.FlakSlugHurtRadius,
 			'FlakDeath',
-			STM.WeaponSettings.FlakSlugMomentum * MomentumTransfer,
+			WImp.WeaponSettings.FlakSlugMomentum * MomentumTransfer,
 			HitLocation);
 	} else {
 		HurtRadius(
-			STM.WeaponSettings.FlakSlugDamage,
-			STM.WeaponSettings.FlakSlugHurtRadius,
+			WImp.WeaponSettings.FlakSlugDamage,
+			WImp.WeaponSettings.FlakSlugHurtRadius,
 			'FlakDeath',
-			STM.WeaponSettings.FlakSlugMomentum * MomentumTransfer,
+			WImp.WeaponSettings.FlakSlugMomentum * MomentumTransfer,
 			HitLocation);
 	}
 	start = Location + 10 * HitNormal;
  	Spawn( class'ut_FlameExplosion',,,Start);
 	CI = Spawn(Class'ST_UTChunkInfo', Instigator);
-	CI.STM = STM;
+	CI.WImp = WImp;
 	CI.AddChunk(Spawn( class 'ST_UTChunk2',, '', Start));
 	CI.AddChunk(Spawn( class 'ST_UTChunk3',, '', Start));
 	CI.AddChunk(Spawn( class 'ST_UTChunk4',, '', Start));

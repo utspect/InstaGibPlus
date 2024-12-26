@@ -3496,14 +3496,14 @@ simulated function actor NN_TraceShot(out vector HitLocation, out vector HitNorm
 function Actor TraceShot(out vector HitLocation, out vector HitNormal, vector EndTrace, vector StartTrace)
 {
 	local Actor A, Other;
-	local ST_Mutator STM;
+	local IGPlus_WeaponImplementation WImp;
 	local bool bSProjBlocks;
 	local bool bWeaponShock;
 
-	STM = zzUTPure.GetStatTrack();
+	WImp = zzUTPure.GetWeaponImpl();
 	bSProjBlocks = true;
-	if (STM != none)
-		bSProjBlocks = STM.WeaponSettings.ShockProjectileBlockBullets;
+	if (WImp != none)
+		bSProjBlocks = WImp.WeaponSettings.ShockProjectileBlockBullets;
 	bWeaponShock = (Weapon != none && Weapon.IsA('ShockRifle'));
 	
 	foreach TraceActors( class'Actor', A, HitLocation, HitNormal, EndTrace, StartTrace) {

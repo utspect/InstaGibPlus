@@ -6,16 +6,16 @@
 
 class ST_UT_BioGel extends UT_BioGel;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 var bool bDirect;
 
 function PostBeginPlay()
 {
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 		break;
 	Super.PostBeginPlay();
-	Damage = STM.WeaponSettings.BioDamage;
-	MomentumTransfer = default.MomentumTransfer * STM.WeaponSettings.BioMomentum;
+	Damage = WImp.WeaponSettings.BioDamage;
+	MomentumTransfer = default.MomentumTransfer * WImp.WeaponSettings.BioMomentum;
 }
 
 
@@ -31,18 +31,18 @@ function Timer()
 	if ( (Mover(Base) != None) && Mover(Base).bDamageTriggered )	// A Base ain't a pawn, so don't worry.
 		Base.TakeDamage( Damage, instigator, Location, MomentumTransfer * Normal(Velocity), MyDamageType);
 
-	if (STM.WeaponSettings.bEnableEnhancedSplashBio) {
-		STM.EnhancedHurtRadius(
+	if (WImp.WeaponSettings.bEnableEnhancedSplashBio) {
+		WImp.EnhancedHurtRadius(
 			self,
 			Damage * DrawScale,
-			FMin(STM.WeaponSettings.BioHurtRadiusMax, DrawScale * STM.WeaponSettings.BioHurtRadiusBase),
+			FMin(WImp.WeaponSettings.BioHurtRadiusMax, DrawScale * WImp.WeaponSettings.BioHurtRadiusBase),
 			MyDamageType,
 			MomentumTransfer * DrawScale,
 			Location);
 	} else {
 		HurtRadius(
 			Damage * DrawScale,
-			FMin(STM.WeaponSettings.BioHurtRadiusMax, DrawScale * STM.WeaponSettings.BioHurtRadiusBase),
+			FMin(WImp.WeaponSettings.BioHurtRadiusMax, DrawScale * WImp.WeaponSettings.BioHurtRadiusBase),
 			MyDamageType,
 			MomentumTransfer * DrawScale,
 			Location);
@@ -54,7 +54,7 @@ state OnSurface
 {
 	function BeginState()
 	{
-		if (STM.WeaponSettings.BioPrimaryInstantExplosion)
+		if (WImp.WeaponSettings.BioPrimaryInstantExplosion)
 			global.Timer();
 		else
 			super.BeginState();

@@ -6,13 +6,13 @@
 
 class ST_Razor2Alt extends Razor2Alt;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 simulated function PostBeginPlay()
 {
 	if (ROLE == ROLE_Authority)
 	{
-		ForEach AllActors(Class'ST_Mutator', STM)
+		ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 			break;		// Find master :D
 	}
 
@@ -26,10 +26,10 @@ auto state Flying
 		if ( Other != Instigator ) 
 		{
 			Other.TakeDamage(
-				STM.WeaponSettings.RipperSecondaryDamage,
+				WImp.WeaponSettings.RipperSecondaryDamage,
 				instigator,
 				HitLocation,
-				STM.WeaponSettings.RipperSecondaryMomentum * MomentumTransfer * Normal(Velocity),
+				WImp.WeaponSettings.RipperSecondaryMomentum * MomentumTransfer * Normal(Velocity),
 				MyDamageType
 			);
 			Spawn(class'RipperPulse',,,HitLocation);
@@ -53,13 +53,13 @@ auto state Flying
 		local float damageScale, dist;
 		local vector dir;
 
-		if (STM.WeaponSettings.bEnableEnhancedSplashRipperSecondary) {
-			STM.EnhancedHurtRadius(
+		if (WImp.WeaponSettings.bEnableEnhancedSplashRipperSecondary) {
+			WImp.EnhancedHurtRadius(
 				self,
-				STM.WeaponSettings.RipperSecondaryDamage,
-				STM.WeaponSettings.RipperSecondaryHurtRadius,
+				WImp.WeaponSettings.RipperSecondaryDamage,
+				WImp.WeaponSettings.RipperSecondaryHurtRadius,
 				MyDamageType,
-				STM.WeaponSettings.RipperSecondaryMomentum * MomentumTransfer,
+				WImp.WeaponSettings.RipperSecondaryMomentum * MomentumTransfer,
 				HitLocation,
 				True); // special case for Razor2Alt
 		} else {
@@ -67,7 +67,7 @@ auto state Flying
 				return;
 
 			bHurtEntry = true;
-			foreach VisibleCollidingActors( class 'Actor', Victims, STM.WeaponSettings.RipperSecondaryHurtRadius, HitLocation )
+			foreach VisibleCollidingActors( class 'Actor', Victims, WImp.WeaponSettings.RipperSecondaryHurtRadius, HitLocation )
 			{
 				if( Victims != self )
 				{
@@ -75,12 +75,12 @@ auto state Flying
 					dist = FMax(1,VSize(dir));
 					dir = dir/dist;
 					dir.Z = FMin(0.45, dir.Z); 
-					damageScale = 1 - FMax(0,(dist - Victims.CollisionRadius)/STM.WeaponSettings.RipperSecondaryHurtRadius);
+					damageScale = 1 - FMax(0,(dist - Victims.CollisionRadius)/WImp.WeaponSettings.RipperSecondaryHurtRadius);
 					Victims.TakeDamage (
-						damageScale * STM.WeaponSettings.RipperSecondaryDamage,
+						damageScale * WImp.WeaponSettings.RipperSecondaryDamage,
 						Instigator, 
 						Victims.Location - 0.5 * (Victims.CollisionHeight + Victims.CollisionRadius) * dir,
-						STM.WeaponSettings.RipperSecondaryMomentum * damageScale * MomentumTransfer * dir,
+						WImp.WeaponSettings.RipperSecondaryMomentum * damageScale * MomentumTransfer * dir,
 						MyDamageType
 					);
 				} 

@@ -41,11 +41,11 @@ simulated function PostBeginPlay()
 		aimerror *= -1;
 
 	if (ROLE == ROLE_Authority)
-		ForEach AllActors(Class'ST_Mutator', STM)
+		ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 			break;		// Find master :D
 
-	GrowthDelay = STM.WeaponSettings.PulseBoltGrowthDelay;
-	MaxSegments = STM.WeaponSettings.PulseBoltMaxSegments;
+	GrowthDelay = WImp.WeaponSettings.PulseBoltGrowthDelay;
+	MaxSegments = WImp.WeaponSettings.PulseBoltMaxSegments;
 }
 
 simulated function Tick(float DeltaTime)
@@ -201,17 +201,17 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 			{
 				AccumulatedDamage = FMin(
 					0.5 * (Level.TimeSeconds - LastHitTime),
-					STM.WeaponSettings.PulseBoltMaxAccumulate
+					WImp.WeaponSettings.PulseBoltMaxAccumulate
 				);
 				if (Level.Game.GetPropertyText("NoLockdown") == "1")
 					Momentum = vect(0,0,0);
 				else
 					Momentum = MomentumTransfer * X * AccumulatedDamage;
 				HitActor.TakeDamage(
-					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+					CalcDamage(WImp.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 					instigator,
 					HitLocation,
-					STM.WeaponSettings.PulseBoltMomentum * Momentum,
+					WImp.WeaponSettings.PulseBoltMomentum * Momentum,
 					MyDamageType);
 				AccumulatedDamage = 0;
 			}
@@ -222,10 +222,10 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 				else
 					Momentum = MomentumTransfer * X * AccumulatedDamage;
 				DamagedActor.TakeDamage(
-					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+					CalcDamage(WImp.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 					instigator,
 					HitLocation,
-					STM.WeaponSettings.PulseBoltMomentum * Momentum,
+					WImp.WeaponSettings.PulseBoltMomentum * Momentum,
 					MyDamageType);
 				AccumulatedDamage = 0;
 			}
@@ -241,10 +241,10 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 				else
 					Momentum = MomentumTransfer * X * AccumulatedDamage;
 				DamagedActor.TakeDamage(
-					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+					CalcDamage(WImp.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 					instigator,
 					HitLocation,
-					STM.WeaponSettings.PulseBoltMomentum * Momentum,
+					WImp.WeaponSettings.PulseBoltMomentum * Momentum,
 					MyDamageType);
 				AccumulatedDamage = 0;
 			}
@@ -283,10 +283,10 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 				Momentum = MomentumTransfer * X * AccumulatedDamage;
 
 			DamagedActor.TakeDamage(
-				CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+				CalcDamage(WImp.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 				instigator,
 				DamagedActor.Location - X * 1.2 * DamagedActor.CollisionRadius,
-				STM.WeaponSettings.PulseBoltMomentum * Momentum,
+				WImp.WeaponSettings.PulseBoltMomentum * Momentum,
 				MyDamageType);
 			AccumulatedDamage = 0;
 			DamagedActor = None;

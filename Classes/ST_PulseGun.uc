@@ -6,7 +6,7 @@
 
 class ST_PulseGun extends PulseGun;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 var WeaponSettingsRepl WSettings;
 
@@ -34,10 +34,10 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
 	
-	ProjectileSpeed = STM.WeaponSettings.PulseSphereSpeed;
+	ProjectileSpeed = WImp.WeaponSettings.PulseSphereSpeed;
 }
 
 function SetSwitchPriority(pawn Other)
@@ -88,7 +88,7 @@ state NormalFire
 	function BeginState() {
 		super.BeginState();
 
-		RateOfFire = STM.WeaponSettings.PulseSphereFireRate;
+		RateOfFire = WImp.WeaponSettings.PulseSphereFireRate;
 	}
 
 	function Tick(float DeltaTime) {
@@ -97,7 +97,7 @@ state NormalFire
 		RateOfFire -= DeltaTime;
 		if (RateOfFire < 0) {
 			Finish(); // potentially fire again
-			RateOfFire += STM.WeaponSettings.PulseSphereFireRate;
+			RateOfFire += WImp.WeaponSettings.PulseSphereFireRate;
 		}
 	}
 Begin:

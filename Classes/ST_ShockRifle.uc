@@ -6,7 +6,7 @@
 
 class ST_ShockRifle extends ShockRifle;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 var WeaponSettingsRepl WSettings;
 
 var ST_ShockProj LocalDummy;
@@ -32,7 +32,7 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
 }
 
@@ -62,8 +62,8 @@ function TraceFire(float Accuracy) {
 	Tracked = None;
 	bBotSpecialMove = false;
 
-	if (STM.WeaponSettings.ShockBeamUseReducedHitbox)
-		Other = STM.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
+	if (WImp.WeaponSettings.ShockBeamUseReducedHitbox)
+		Other = WImp.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
 	else
 		Other = PawnOwner.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
 	ProcessTraceHit(Other, HitLocation, HitNormal, vector(AdjustedAim),Y,Z);
@@ -100,10 +100,10 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	if ( (Other != self) && (Other != Owner) && (Other != None) ) 
 	{
 		Other.TakeDamage(
-			STM.WeaponSettings.ShockBeamDamage,
+			WImp.WeaponSettings.ShockBeamDamage,
 			PawnOwner,
 			HitLocation,
-			STM.WeaponSettings.ShockBeamMomentum*60000.0*X,
+			WImp.WeaponSettings.ShockBeamMomentum*60000.0*X,
 			MyDamageType);
 	}
 }

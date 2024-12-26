@@ -6,13 +6,13 @@
 
 class ST_Razor2 extends Razor2;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 simulated function PostBeginPlay()
 {
 	if (ROLE == ROLE_Authority)
 	{
-		ForEach AllActors(Class'ST_Mutator', STM)
+		ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 			break;		// Find master :D
 	}
 
@@ -31,18 +31,18 @@ auto state Flying
 					(!Instigator.IsA('Bot') || !Bot(Instigator).bNovice)
 				) {
 					Other.TakeDamage(
-						STM.WeaponSettings.RipperHeadshotDamage,
+						WImp.WeaponSettings.RipperHeadshotDamage,
 						Instigator,
 						HitLocation,
-						STM.WeaponSettings.RipperHeadshotMomentum * MomentumTransfer * Dir,
+						WImp.WeaponSettings.RipperHeadshotMomentum * MomentumTransfer * Dir,
 						'decapitated'
 					);
 				} else {
 					Other.TakeDamage(
-						STM.WeaponSettings.RipperPrimaryDamage,
+						WImp.WeaponSettings.RipperPrimaryDamage,
 						instigator,
 						HitLocation,
-						STM.WeaponSettings.RipperPrimaryMomentum * MomentumTransfer * Dir,
+						WImp.WeaponSettings.RipperPrimaryMomentum * MomentumTransfer * Dir,
 						'shredded'
 					);
 				}

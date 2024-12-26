@@ -1,11 +1,11 @@
 class NewNetIG extends Arena;
 // Description="InstaGib with lag-compensated SuperShockRifle"
 
-var WeaponSettings WeaponSettings;
-var WeaponSettingsRepl WSettingsRepl;
+var IGPlus_WeaponImplementation WImp;
 
 function InitializeSettings() {
-	class'WeaponSettingsRepl'.static.CreateWeaponSettings(Level, "WeaponSettingsNewNet", WeaponSettings, WSettingsRepl);
+	WImp = Spawn(class'IGPlus_WeaponImplementationBase');
+	WImp.InitWeaponSettings("WeaponSettingsNewNet");
 }
 
 function PreBeginPlay() {

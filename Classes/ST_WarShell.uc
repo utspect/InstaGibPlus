@@ -6,13 +6,13 @@
 
 class ST_WarShell extends WarShell;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 simulated function PostBeginPlay()
 {
 	if (ROLE == ROLE_Authority)
 	{
-		ForEach AllActors(Class'ST_Mutator', STM)
+		ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 			break;
 	}
 	Super.PostBeginPlay();

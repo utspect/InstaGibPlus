@@ -20,7 +20,7 @@ function ProcessTouch (Actor Other, vector HitLocation)
 		return;
 	
 	// For ShockProjectileBlockFlakChunk
-    if (ShockProj(Other) != None && !Chunkie.STM.WeaponSettings.ShockProjectileBlockFlakChunk)
+    if (ShockProj(Other) != None && !Chunkie.WImp.WeaponSettings.ShockProjectileBlockFlakChunk)
         return;
 
 	if ( (Chunk(Other) == None) && ((Physics == PHYS_Falling) || (Other != Instigator)) )
@@ -35,7 +35,7 @@ function ProcessTouch (Actor Other, vector HitLocation)
 					CalcDamage(),
 					instigator,
 					HitLocation,
-					Chunkie.STM.WeaponSettings.FlakChunkMomentum * (MomentumTransfer * Velocity/speed),
+					Chunkie.WImp.WeaponSettings.FlakChunkMomentum * (MomentumTransfer * Velocity/speed),
 					MyDamageType);
 				Chunkie.EndHit();
 			}
@@ -51,11 +51,11 @@ function float CalcDamage() {
 	local float T1, T2;
 	local float Time;
 
-	Base = Chunkie.STM.WeaponSettings.FlakChunkDamage;
-	Reduced = Base * Chunkie.STM.WeaponSettings.FlakChunkDropOffDamageRatio;
-	T1 = Chunkie.STM.WeaponSettings.FlakChunkDropOffStart;
-	T2 = Chunkie.STM.WeaponSettings.FlakChunkDropOffEnd;
-	Time = Chunkie.STM.WeaponSettings.FlakChunkLifespan - Lifespan;
+	Base = Chunkie.WImp.WeaponSettings.FlakChunkDamage;
+	Reduced = Base * Chunkie.WImp.WeaponSettings.FlakChunkDropOffDamageRatio;
+	T1 = Chunkie.WImp.WeaponSettings.FlakChunkDropOffStart;
+	T2 = Chunkie.WImp.WeaponSettings.FlakChunkDropOffEnd;
+	Time = Chunkie.WImp.WeaponSettings.FlakChunkLifespan - Lifespan;
 
 	if (Time <= T1)
 		return Base;

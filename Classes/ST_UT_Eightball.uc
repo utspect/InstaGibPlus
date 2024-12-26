@@ -6,7 +6,7 @@
 
 class ST_UT_Eightball extends UT_Eightball;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 var WeaponSettingsRepl WSettings;
 
@@ -31,7 +31,7 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
 }
 
@@ -144,21 +144,21 @@ state FireRockets
 				if ( LockedTarget != None )
 				{
 					s = Spawn( class 'ST_ut_SeekingRocket',, '', FireLocation,FireRot);
-					s.STM = STM;
+					s.WImp = WImp;
 					s.Seeking = LockedTarget;
 					s.NumExtraRockets = DupRockets;
 				}
 				else 
 				{
 					r = Spawn( class'ST_rocketmk2',, '', FireLocation,FireRot);
-					r.STM = STM;
+					r.WImp = WImp;
 					r.NumExtraRockets = DupRockets;
 				}
 			}
 			else 
 			{
 				g = Spawn( class 'ST_ut_Grenade',, '', FireLocation,AdjustedAim);
-				g.STM = STM;
+				g.WImp = WImp;
 				g.NumExtraGrenades = DupRockets;
 				if ( DupRockets > 0 )
 				{

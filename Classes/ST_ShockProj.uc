@@ -1,6 +1,6 @@
 class ST_ShockProj extends ShockProj;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 var WeaponSettingsRepl WSettings;
 
 // For ShockProjectileTakeDamage
@@ -28,11 +28,11 @@ simulated final function WeaponSettingsRepl GetWeaponSettings() {
 
 simulated function PostBeginPlay() {
 	if (Instigator != none && Instigator.Role == ROLE_Authority) {
-		ForEach AllActors(Class'ST_Mutator', STM)
+		ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 			break; // Find master :D
 
-		if (STM.WeaponSettings.ShockProjectileTakeDamage) {
-			Health = STM.WeaponSettings.ShockProjectileHealth;
+		if (WImp.WeaponSettings.ShockProjectileTakeDamage) {
+			Health = WImp.WeaponSettings.ShockProjectileHealth;
 		}
 	}
 	Super.PostBeginPlay();
@@ -77,20 +77,20 @@ simulated event Tick(float Delta) {
 }
 
 function SuperExplosion() {
-	if (STM.WeaponSettings.bEnableEnhancedSplashShockCombo) {
-		STM.EnhancedHurtRadius(
+	if (WImp.WeaponSettings.bEnableEnhancedSplashShockCombo) {
+		WImp.EnhancedHurtRadius(
 			self,
-			STM.WeaponSettings.ShockComboDamage,
-			STM.WeaponSettings.ShockComboHurtRadius,
+			WImp.WeaponSettings.ShockComboDamage,
+			WImp.WeaponSettings.ShockComboHurtRadius,
 			MyDamageType,
-			STM.WeaponSettings.ShockComboMomentum * MomentumTransfer * 2,
+			WImp.WeaponSettings.ShockComboMomentum * MomentumTransfer * 2,
 			Location);
 	} else {
 		HurtRadius(
-			STM.WeaponSettings.ShockComboDamage,
-			STM.WeaponSettings.ShockComboHurtRadius,
+			WImp.WeaponSettings.ShockComboDamage,
+			WImp.WeaponSettings.ShockComboHurtRadius,
 			MyDamageType,
-			STM.WeaponSettings.ShockComboMomentum * MomentumTransfer * 2,
+			WImp.WeaponSettings.ShockComboMomentum * MomentumTransfer * 2,
 			Location);
 	}
 	
@@ -102,23 +102,23 @@ function SuperExplosion() {
 
 function Explode(vector HitLocation,vector HitNormal) {
 	PlaySound(ImpactSound, SLOT_Misc, 0.5,,, 0.5+FRand());
-	if (STM.WeaponSettings.bEnableEnhancedSplashShockProjectile) {
-		STM.EnhancedHurtRadius(
+	if (WImp.WeaponSettings.bEnableEnhancedSplashShockProjectile) {
+		WImp.EnhancedHurtRadius(
 			self,
-			STM.WeaponSettings.ShockProjectileDamage,
-			STM.WeaponSettings.ShockProjectileHurtRadius,
+			WImp.WeaponSettings.ShockProjectileDamage,
+			WImp.WeaponSettings.ShockProjectileHurtRadius,
 			MyDamageType,
-			STM.WeaponSettings.ShockProjectileMomentum * MomentumTransfer,
+			WImp.WeaponSettings.ShockProjectileMomentum * MomentumTransfer,
 			Location);
 	} else {
 		HurtRadius(
-			STM.WeaponSettings.ShockProjectileDamage,
-			STM.WeaponSettings.ShockProjectileHurtRadius,
+			WImp.WeaponSettings.ShockProjectileDamage,
+			WImp.WeaponSettings.ShockProjectileHurtRadius,
 			MyDamageType,
-			STM.WeaponSettings.ShockProjectileMomentum * MomentumTransfer,
+			WImp.WeaponSettings.ShockProjectileMomentum * MomentumTransfer,
 			Location);
 	}
-	if (STM.WeaponSettings.ShockProjectileDamage > 60)
+	if (WImp.WeaponSettings.ShockProjectileDamage > 60)
 		Spawn(class'ut_RingExplosion3',,, HitLocation+HitNormal*8,rotator(HitNormal));
 	else
 		Spawn(class'ut_RingExplosion',,, HitLocation+HitNormal*8,rotator(Velocity));		
@@ -127,7 +127,7 @@ function Explode(vector HitLocation,vector HitNormal) {
 }
 
 function TakeDamage(int Damage, Pawn EventInstigator, vector HitLocation, vector Momentum, name DamageType) {
-	if (STM.WeaponSettings.ShockProjectileTakeDamage == false)
+	if (WImp.WeaponSettings.ShockProjectileTakeDamage == false)
 		return;
 
 	if (DamageType == 'Pulsed'|| DamageType == 'Corroded') {

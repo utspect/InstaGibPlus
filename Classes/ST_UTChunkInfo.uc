@@ -10,7 +10,7 @@ var Actor Victim[8];
 var int HitCount;
 var int ChunkCount;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 function AddChunk(ST_UTChunk Chunk)
 {
@@ -18,7 +18,7 @@ function AddChunk(ST_UTChunk Chunk)
 		return;				// If it for some reason failed to spawn.
 	Chunk.Chunkie = Self;
 	Chunk.ChunkIndex = ChunkCount++;
-	Chunk.LifeSpan = STM.WeaponSettings.FlakChunkLifespan;
+	Chunk.LifeSpan = WImp.WeaponSettings.FlakChunkLifespan;
 }
 
 function HitSomething(ST_UTChunk Chunk, Actor Other)

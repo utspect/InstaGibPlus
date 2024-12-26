@@ -11,8 +11,8 @@ var vector SpawnPoint;
 
 function PostBeginPlay() {
 	super.PostBeginPlay();
-	Damage = STM.WeaponSettings.BioAltDamage;
-	MomentumTransfer = default.MomentumTransfer * STM.WeaponSettings.BioAltMomentum;
+	Damage = WImp.WeaponSettings.BioAltDamage;
+	MomentumTransfer = default.MomentumTransfer * WImp.WeaponSettings.BioAltMomentum;
 }
 
 auto state Flying

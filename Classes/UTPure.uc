@@ -34,8 +34,8 @@ var Info VersionInfo;
 var Object SettingsHelper;
 var ServerSettings Settings;
 
-var ST_Mutator StatTrack;
-var bool bStatTrackSearched;
+var IGPlus_WeaponImplementation WImp;
+var bool bWImpSearched;
 
 replication
 {
@@ -81,16 +81,16 @@ function PrintVersionInfo() {
 	xxLog("#"$StringUtils.CenteredString(LongStr, 29, " ")$"#");
 }
 
-function ST_Mutator GetStatTrack() {
-	if (bStatTrackSearched)
-		return StatTrack;
+function IGPlus_WeaponImplementation GetWeaponImpl() {
+	if (bWImpSearched)
+		return WImp;
 
-	foreach AllActors(class'ST_Mutator', StatTrack)
+	foreach AllActors(class'IGPlus_WeaponImplementation', WImp)
 		break;
 
-	bStatTrackSearched = true;
+	bWImpSearched = true;
 	
-	return StatTrack;
+	return WImp;
 }
 
 function string GetAllOptions() {

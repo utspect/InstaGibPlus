@@ -6,7 +6,7 @@
 
 class ST_PBolt extends PBolt;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 var float GrowthAccumulator;
 var float GrowthDelay;
 var int MaxSegments;
@@ -32,7 +32,7 @@ simulated function CheckBeam(vector X, float DeltaTime)
 				PlasmaBeam = Spawn(class'ST_PBolt',,, Location + BeamSize * X);
 				PlasmaBeam.Position = Position + 1;
 				ST_PBolt(PlasmaBeam).GrowthAccumulator = GrowthAccumulator - GrowthDelay;
-				ST_PBolt(PlasmaBeam).STM = STM;
+				ST_PBolt(PlasmaBeam).WImp = WImp;
 				ST_PBolt(PlasmaBeam).GrowthDelay = GrowthDelay;
 				ST_PBolt(PlasmaBeam).MaxSegments = MaxSegments;
 				GrowthAccumulator = 0.0;

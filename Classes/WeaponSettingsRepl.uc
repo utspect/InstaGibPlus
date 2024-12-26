@@ -1,5 +1,8 @@
 class WeaponSettingsRepl extends Actor;
 
+var float HeadHalfHeight;
+var float HeadRadius;
+
 var float WarheadSelectTime;
 var float WarheadDownTime;
 
@@ -129,6 +132,9 @@ var float TranslocatorHealth;
 
 replication {
 	reliable if (Role == ROLE_Authority)
+		HeadHalfHeight,
+		HeadRadius,
+		
 		WarheadSelectTime,
 		WarheadDownTime,
 
@@ -455,6 +461,9 @@ simulated final function float TranslocatorDownAnimSpeed() {
 }
 
 function InitFromWeaponSettings(WeaponSettings S) {
+	HeadHalfHeight = S.HeadHalfHeight;
+	HeadRadius = S.HeadRadius;
+
 	WarheadSelectTime = S.WarheadSelectTime;
 	WarheadDownTime = S.WarheadDownTime;
 
@@ -584,44 +593,15 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	TranslocatorHealth = S.TranslocatorHealth;
 }
 
-final static function CreateWeaponSettings(
-	LevelInfo L,
-	string DefaultName,
-	out WeaponSettings WS,
-	out WeaponSettingsRepl WSR
-) {
-	local Object Helper;
-	local string Options;
-	local int Pos;
-	local string SettingsName;
-	local StringUtils SU;
-
-	Options = L.GetLocalURL();
-	Pos = InStr(Options, "?");
-	if (Pos < 0)
-		Options = "";
-	else
-		Options = Mid(Options, Pos);
-
-	SU = class'StringUtils'.static.Instance();
-
-	SettingsName = L.Game.ParseOption(Options, "IGPlusWeaponSettings");
-	if (SettingsName == "")
-		SettingsName = DefaultName;
-
-	Helper = new(L.XLevel, 'InstaGibPlus') class'Object';
-	WS = new(Helper, SU.StringToName(SettingsName)) class'WeaponSettings';
-	WS.SaveConfig();
-	WSR = L.Spawn(class'WeaponSettingsRepl');
-	WSR.InitFromWeaponSettings(WS);
-}
-
 defaultproperties
 {
 	RemoteRole=ROLE_DumbProxy
 	bHidden=True
 	bAlwaysRelevant=True
 	DrawType=DT_None
+
+	HeadHalfHeight=7.5
+	HeadRadius=10.0
 
 	WarheadSelectTime=0.5
 	WarheadDownTime=0.233333

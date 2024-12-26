@@ -46,7 +46,7 @@ class ST_minigun2 extends minigun2;
 // using Sleep() and different Tickrates.
 //
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 var float FireInterval, NextFireInterval;
 
 // For Special minigun
@@ -75,7 +75,7 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
 }
 
@@ -93,8 +93,8 @@ function Fire( float Value )
 		bCanClientFire = true;
 		bPointing=True;
 		ShotAccuracy = 0.2;
-		FireInterval = STM.WeaponSettings.MinigunSpinUpTime;		// Spinup
-		NextFireInterval = STM.WeaponSettings.MinigunBulletInterval;	// 12.5 shots/sec
+		FireInterval = WImp.WeaponSettings.MinigunSpinUpTime;		// Spinup
+		NextFireInterval = WImp.WeaponSettings.MinigunBulletInterval;	// 12.5 shots/sec
 		ClientFire(value);
 		GotoState('NormalFire');
 	}
@@ -113,8 +113,8 @@ function AltFire( float Value )
 		bPointing=True;
 		bCanClientFire = true;
 		ShotAccuracy = 0.95;
-		FireInterval = STM.WeaponSettings.MinigunSpinUpTime;		// Spinup
-		NextFireInterval = STM.WeaponSettings.MinigunBulletInterval;	// Use Primary fire speed until completely spun up
+		FireInterval = WImp.WeaponSettings.MinigunSpinUpTime;		// Spinup
+		NextFireInterval = WImp.WeaponSettings.MinigunBulletInterval;	// Use Primary fire speed until completely spun up
 		Pawn(Owner).PlayRecoil(FiringSpeed);
 		SoundVolume = 255*Pawn(Owner).SoundDampening;
 		ClientAltFire(value);
@@ -221,7 +221,7 @@ state AltFiring
 			AmbientSound = AltFireSound;
 			SoundVolume = 255*Pawn(Owner).SoundDampening;
 			LoopAnim('Shoot2',1.9);
-			NextFireInterval = STM.WeaponSettings.MinigunAlternateBulletInterval;	// 20.0 shots/sec ..12.5 shots/sec
+			NextFireInterval = WImp.WeaponSettings.MinigunAlternateBulletInterval;	// 20.0 shots/sec ..12.5 shots/sec
 		}
 		else if ( AmbientSound == None )
 			AmbientSound = FireSound;
@@ -278,7 +278,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 		if ( Other.IsA('Bot') && (FRand() < 0.2) )
 			Pawn(Other).WarnTarget(PawnOwner, 500, X);
-		rndDam = STM.WeaponSettings.MinigunMinDamage + Rand(STM.WeaponSettings.MinigunMaxDamage - STM.WeaponSettings.MinigunMinDamage + 1);
+		rndDam = WImp.WeaponSettings.MinigunMinDamage + Rand(WImp.WeaponSettings.MinigunMaxDamage - WImp.WeaponSettings.MinigunMinDamage + 1);
 		if ( Level.Game.GetPropertyText("NoLockdown") == "1" || FRand() >= 0.2 )
 			X = vect(0, 0, 0);
 		else

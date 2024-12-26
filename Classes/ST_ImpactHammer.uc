@@ -6,7 +6,7 @@
 
 class ST_ImpactHammer extends ImpactHammer;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 var WeaponSettingsRepl WSettings;
 
 simulated final function WeaponSettingsRepl FindWeaponSettings() {
@@ -30,7 +30,7 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
 }
 
@@ -140,7 +140,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		if ( VSize(HitLocation - Owner.Location) < 80 )
 			Spawn(class'ImpactMark',,, HitLocation+HitNormal, Rotator(HitNormal));
 		Owner.TakeDamage(
-			STM.WeaponSettings.HammerSelfDamage,
+			WImp.WeaponSettings.HammerSelfDamage,
 			PawnOwner,
 			HitLocation,
 			vect(0,0,0),
@@ -167,10 +167,10 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 		Momentum = 66000.0 * ChargeSize * X;
 		if (Other.bIsPawn)
-			Momentum *= STM.WeaponSettings.HammerMomentum;
+			Momentum *= WImp.WeaponSettings.HammerMomentum;
 
 		Other.TakeDamage(
-			STM.WeaponSettings.HammerDamage * ChargeSize,
+			WImp.WeaponSettings.HammerDamage * ChargeSize,
 			PawnOwner,
 			HitLocation,
 			Momentum,
@@ -228,10 +228,10 @@ function ProcessAltTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, V
 	if ( (Other == Level) || Other.IsA('Mover') )
 	{
 		Owner.TakeDamage(
-			STM.WeaponSettings.HammerAltSelfDamage * scale,
+			WImp.WeaponSettings.HammerAltSelfDamage * scale,
 			Pawn(Owner),
 			HitLocation,
-			STM.WeaponSettings.HammerAltSelfMomentum * -40000.0 * X * scale,
+			WImp.WeaponSettings.HammerAltSelfMomentum * -40000.0 * X * scale,
 			MyDamageType
 		);
 	}
@@ -239,10 +239,10 @@ function ProcessAltTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, V
 	{
 		Momentum = 30000.0 * X * scale;
 		if (Other.bIsPawn)
-			Momentum *= STM.WeaponSettings.HammerAltMomentum;
+			Momentum *= WImp.WeaponSettings.HammerAltMomentum;
 
 		Other.TakeDamage(
-			STM.WeaponSettings.HammerAltDamage * scale,
+			WImp.WeaponSettings.HammerAltDamage * scale,
 			Pawn(Owner),
 			HitLocation,
 			Momentum,
