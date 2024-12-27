@@ -882,18 +882,43 @@ If `SensitivityY` is not provided by the user, it is assumed to be the same as `
 
 # Server Installation
 
-Extract the zipped files to your system folder.  
+Extract the zipped files to your installation's folder.  
 Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or Deepu's Ultimate NewNet.  
 Add the following lines to your server's **UnrealTournament.ini** under **[Engine.GameEngine]**:
 
-**ServerPackages=InstaGibPlus9**
-**ServerActors=InstaGibPlus9.NewNetServer**
-**ServerActors=InstaGibPlus9.PureStats**
+**ServerPackages=InstaGibPlus_v11**
+**ServerPackages=InstaGibPlusAssets_v2**
 
-<b>It is highly recommended to set your server's tickrate to 100.</b>
+InstaGibPlus is a collection of mutators.
+
+## InstaGibPlus_v11.UTPure
+
+Always required. Enables basic InstaGibPlus functionality.
+
+ServerActor alternative is **InstaGibPlus_v11.NewNetServer**.
+
+## InstaGibPlus_v11.ST_Mutator
+
+Replaces all normal weapons with IG+ alternatives.
+
+## InstaGibPlus_v11.NewNetIG
+
+InstaGib, but with a ping compensated custom weapon.
+
+## InstaGibPlus_v11.NewNetSA
+
+SniperArena, but with a ping compensated custom weapon.
+
+## InstaGibPlus_v11.MutFraggerArena
+
+Similar to SniperArena, but with a Sniper Rifle that has custom zoom and is inaccurate when moving or not zoomed in, plus a translocator.
+
+## InstaGibPlus_v11.MutKillFeed
+
+Allows players to replace the messages of players dying in the console with weapon icons in a configurable location on your screen.
 
 # Usage
-For InstaGib, make sure the mutator **InstaGibPlus9.NewNetIG** is loaded via your map vote configuration or during server launch.
+For InstaGib, make sure the mutator **InstaGibPlus_v11.NewNetIG** is loaded via your map vote configuration or during server launch.
 
 InstaGib+ has minimal weapons code and will load the default UT weapons if the NewNetIG mutator is not loaded, so it is absolutely unusable in normal weapons, make sure to use it only if your objective is to play or to run an InstaGib centered server.
 
