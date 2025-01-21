@@ -65,7 +65,7 @@ function EnhancedHurtRadius(
 	}
 
 	foreach CollChecker.TouchingActors(class'Actor', Victim) {
-		if (Victim == self)
+		if (Victim == Source)
 			continue;
 
 		if (Victim.IsA('StationaryPawn') && WeaponSettings.bEnhancedSplashIgnoreStationaryPawns) {
