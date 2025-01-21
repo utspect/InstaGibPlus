@@ -150,7 +150,7 @@ simulated function Tick(float DeltaTime)
 				AimRotation = Instigator.ViewRotation;
 				SetRotation(AimRotation);
 			}
-			Drawoffset = Instigator.Weapon.CalcDrawOffset();
+			DrawOffset = Instigator.Weapon.CalcDrawOffset();
 		}
 		GetAxes(Instigator.ViewRotation,X,Y,Z);
 
@@ -167,8 +167,12 @@ simulated function Tick(float DeltaTime)
 			else
 				FireOffset.Y = -1 * Default.FireOffset.Y;
 		}
-		Origin = Instigator.Location + DrawOffset;
-		SetLocation(Origin + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z);
+		if (Instigator.IsA('PlayerPawn')) {
+			Origin = Instigator.Location + PlayerPawn(Instigator).EyeHeight * vect(0,0,1);
+		} else {
+			Origin = Instigator.Location + DrawOffset;
+		}
+		SetLocation(Instigator.Location + DrawOffset + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z);
 	}
 	else {
 		GetAxes(Rotation,X,Y,Z);
@@ -193,7 +197,7 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 	HitActor = Trace(HitLocation, HitNormal, Origin + BeamLen * BeamSize * X, Origin, true);
 	if ( (HitActor != None)	&& (HitActor != Instigator)
 		&& (HitActor.bProjTarget || (HitActor == Level) || (HitActor.bBlockActors && HitActor.bBlockPlayers))
-		&& ((Pawn(HitActor) == None) || Pawn(HitActor).AdjustHitLocation(HitLocation, Velocity)) )
+		&& ((Pawn(HitActor) == None) || Pawn(HitActor).AdjustHitLocation(HitLocation, X)) )
 	{
 		if ( Level.Netmode != NM_Client )
 		{
