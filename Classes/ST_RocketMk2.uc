@@ -7,7 +7,6 @@
 class ST_RocketMk2 extends RocketMk2;
 
 var IGPlus_WeaponImplementation WImp;
-var bool bDirect;
 
 auto state Flying
 {
@@ -15,7 +14,6 @@ auto state Flying
 	{
 		if ( (Other != instigator) && !Other.IsA('Projectile') ) 
 		{
-			bDirect = Other.IsA('Pawn');
 			Explode(HitLocation,Normal(HitLocation-Other.Location));
 		}
 	}

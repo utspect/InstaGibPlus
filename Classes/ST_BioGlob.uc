@@ -1,9 +1,3 @@
-// ===============================================================
-// UTPureStats7A.ST_BioGlob: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class ST_BioGlob extends ST_UT_BioGel;
 
 var int NumSplash;
@@ -89,8 +83,4 @@ defaultproperties
      speed=700.000000
      Damage=75.000000
      MomentumTransfer=30000
-}
-
-
-defaultproperties {
 }

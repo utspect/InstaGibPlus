@@ -35,10 +35,10 @@ function ProcessTouch (Actor Other, vector HitLocation)
     if (Other.IsA('ShockProj') && GetWeaponSettings().ShockProjectileBlockFlakSlug == false)
         return; // If ShockProjectileBlockFlakSlug is False, we do nothing and the flak slug passes through
 
-    NewExplode(HitLocation, Normal(HitLocation-Other.Location), Other.IsA('Pawn'));
+    NewExplode(HitLocation, Normal(HitLocation-Other.Location));
 }
 
-function NewExplode(vector HitLocation, vector HitNormal, bool bDirect)
+function NewExplode(vector HitLocation, vector HitNormal)
 {
 	local vector start;
 	local ST_UTChunkInfo CI;
@@ -73,7 +73,7 @@ function NewExplode(vector HitLocation, vector HitNormal, bool bDirect)
 
 function Explode(vector HitLocation, vector HitNormal)
 {
-	NewExplode(HitLocation, HitNormal, False);
+	NewExplode(HitLocation, HitNormal);
 }
 
 defaultproperties {

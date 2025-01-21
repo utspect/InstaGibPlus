@@ -7,7 +7,6 @@
 class ST_UT_SeekingRocket extends UT_SeekingRocket;
 
 var IGPlus_WeaponImplementation WImp;
-var bool bDirect;
 
 auto state Flying
 {
@@ -16,7 +15,6 @@ auto state Flying
 		if ( (Other != instigator) && !Other.IsA('Projectile') ) 
 		{
 			bDirect = Other.IsA('Pawn');
-			Explode(HitLocation,Normal(HitLocation-Other.Location));
 		}
 	}
 

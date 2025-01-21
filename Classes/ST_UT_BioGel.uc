@@ -1,13 +1,6 @@
-// ===============================================================
-// UTPureStats7A.ST_UT_BioGel: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class ST_UT_BioGel extends UT_BioGel;
 
 var IGPlus_WeaponImplementation WImp;
-var bool bDirect;
 
 function PostBeginPlay()
 {
@@ -79,11 +72,7 @@ auto state Flying
 	{ 
 		if ( Pawn(Other)!=Instigator || bOnGround) 
 		{
-			bDirect = Other.IsA('Pawn') && !bOnGround;
 			Global.Timer(); 
 		}
 	}
-}
-
-defaultproperties {
 }
