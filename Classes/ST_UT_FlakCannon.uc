@@ -10,6 +10,8 @@ var IGPlus_WeaponImplementation WImp;
 
 var WeaponSettingsRepl WSettings;
 
+var class<ST_UTChunk> ChunkClasses[4];
+
 simulated final function WeaponSettingsRepl FindWeaponSettings() {
 	local WeaponSettingsRepl S;
 
@@ -39,6 +41,7 @@ function PostBeginPlay()
 function Fire( float Value )
 {
 	local Vector Start, X,Y,Z;
+	local vector R;
 	local Bot B;
 	local ST_UTChunkInfo CI;
 	local Pawn PawnOwner;
@@ -64,27 +67,39 @@ function Fire( float Value )
 		Start = Start + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z;	
 		CI = Spawn(class'ST_UTChunkInfo', PawnOwner);
 		CI.WImp = WImp;
-		// My comment
-		// I am not sure why EPIC has decided to do flak (or rockets) this way, as they could
-		// Have created a masterchunk on client that spawned the rest of the chunks according to
-		// The below rules, creating less network traffic. Of course it would pose a problem
-		// When you run into a chunk that wasn't relevant when the original shot was fired. Oh well :/
-		CI.AddChunk(Spawn( class 'ST_UTChunk1',, '', Start, AdjustedAim));
-		CI.AddChunk(Spawn( class 'ST_UTChunk2',, '', Start - Z, AdjustedAim));
-		CI.AddChunk(Spawn( class 'ST_UTChunk3',, '', Start + 2 * Y + Z, AdjustedAim));
-		CI.AddChunk(Spawn( class 'ST_UTChunk4',, '', Start - Y, AdjustedAim));
-		CI.AddChunk(Spawn( class 'ST_UTChunk1',, '', Start + 2 * Y - Z, AdjustedAim));
-		CI.AddChunk(Spawn( class 'ST_UTChunk2',, '', Start, AdjustedAim));
 
-		// lower skill bots fire less flak chunks
-		if ( (B == None) || !B.bNovice || ((B.Enemy != None) && (B.Enemy.Weapon != None) && B.Enemy.Weapon.bMeleeWeapon) )
-		{
-			CI.AddChunk(Spawn( class 'ST_UTChunk3',, '', Start + Y - Z, AdjustedAim));
-			CI.AddChunk(Spawn( class 'ST_UTChunk4',, '', Start + 2 * Y + Z, AdjustedAim));
+		if (B != none || WImp.WeaponSettings.FlakChunkRandomSpread) {
+			// My comment
+			// I am not sure why EPIC has decided to do flak (or rockets) this way, as they could
+			// Have created a masterchunk on client that spawned the rest of the chunks according to
+			// The below rules, creating less network traffic. Of course it would pose a problem
+			// When you run into a chunk that wasn't relevant when the original shot was fired. Oh well :/
+			CI.AddChunk(Spawn( class 'ST_UTChunk1',CI, '', Start, AdjustedAim));
+			CI.AddChunk(Spawn( class 'ST_UTChunk2',CI, '', Start - Z, AdjustedAim));
+			CI.AddChunk(Spawn( class 'ST_UTChunk3',CI, '', Start + 2 * Y + Z, AdjustedAim));
+			CI.AddChunk(Spawn( class 'ST_UTChunk4',CI, '', Start - Y, AdjustedAim));
+			CI.AddChunk(Spawn( class 'ST_UTChunk1',CI, '', Start + 2 * Y - Z, AdjustedAim));
+			CI.AddChunk(Spawn( class 'ST_UTChunk2',CI, '', Start, AdjustedAim));
+
+			// lower skill bots fire less flak chunks
+			if ( (B == None) || !B.bNovice || ((B.Enemy != None) && (B.Enemy.Weapon != None) && B.Enemy.Weapon.bMeleeWeapon) )
+			{
+				CI.AddChunk(Spawn( class 'ST_UTChunk3',CI, '', Start + Y - Z, AdjustedAim));
+				CI.AddChunk(Spawn( class 'ST_UTChunk4',CI, '', Start + 2 * Y + Z, AdjustedAim));
+			}
+			else if ( B.Skill > 1 )
+				CI.AddChunk(Spawn( class 'ST_UTChunk3',CI, '', Start + Y - Z, AdjustedAim));
+		} else {
+			R = X / Tan(3.0*Pi/180.0);
+
+			CI.AddChunk(Spawn(ChunkClasses[Rand(arraycount(ChunkClasses))], CI,, Start,                                         rotator(R)));
+			CI.AddChunk(Spawn(ChunkClasses[Rand(arraycount(ChunkClasses))], CI,, Start + Y*Cos(0.0)        + Z*Sin(0.0),        rotator(R + Y*Cos(0.0)        + Z*Sin(0.0))));
+			CI.AddChunk(Spawn(ChunkClasses[Rand(arraycount(ChunkClasses))], CI,, Start + Y*Cos(Pi/3.0)     + Z*Sin(Pi/3.0),     rotator(R + Y*Cos(Pi/3.0)     + Z*Sin(Pi/3.0))));
+			CI.AddChunk(Spawn(ChunkClasses[Rand(arraycount(ChunkClasses))], CI,, Start + Y*Cos(2.0*Pi/3.0) + Z*Sin(2.0*Pi/3.0), rotator(R + Y*Cos(2.0*Pi/3.0) + Z*Sin(2.0*Pi/3.0))));
+			CI.AddChunk(Spawn(ChunkClasses[Rand(arraycount(ChunkClasses))], CI,, Start + Y*Cos(Pi)         + Z*Sin(Pi),         rotator(R + Y*Cos(Pi)         + Z*Sin(Pi))));
+			CI.AddChunk(Spawn(ChunkClasses[Rand(arraycount(ChunkClasses))], CI,, Start + Y*Cos(4.0*Pi/3.0) + Z*Sin(4.0*Pi/3.0), rotator(R + Y*Cos(4.0*Pi/3.0) + Z*Sin(4.0*Pi/3.0))));
+			CI.AddChunk(Spawn(ChunkClasses[Rand(arraycount(ChunkClasses))], CI,, Start + Y*Cos(5.0*Pi/3.0) + Z*Sin(5.0*Pi/3.0), rotator(R + Y*Cos(5.0*Pi/3.0) + Z*Sin(5.0*Pi/3.0))));
 		}
-		else if ( B.Skill > 1 )
-			CI.AddChunk(Spawn( class 'ST_UTChunk3',, '', Start + Y - Z, AdjustedAim));
-
 		ClientFire(Value);
 		GoToState('NormalFire');
 	}
@@ -183,4 +198,8 @@ simulated function PlayPostSelect() {
 }
 
 defaultproperties {
+	ChunkClasses(0)=class'ST_UTChunk1'
+	ChunkClasses(1)=class'ST_UTChunk2'
+	ChunkClasses(2)=class'ST_UTChunk3'
+	ChunkClasses(3)=class'ST_UTChunk4'
 }

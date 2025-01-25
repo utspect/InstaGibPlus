@@ -34,6 +34,7 @@ var float FlakChunkLifespan;
 var float FlakChunkDropOffStart;
 var float FlakChunkDropOffEnd;
 var float FlakChunkDropOffDamageRatio;
+var bool  FlakChunkRandomSpread;
 var float FlakSlugDamage;
 var float FlakSlugHurtRadius;
 var float FlakSlugMomentum;
@@ -165,6 +166,7 @@ replication {
 		FlakChunkDropOffStart,
 		FlakChunkDropOffEnd,
 		FlakChunkDropOffDamageRatio,
+		FlakChunkRandomSpread,
 		FlakSlugDamage,
 		FlakSlugHurtRadius,
 		FlakSlugMomentum,
@@ -495,6 +497,7 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	FlakChunkDropOffStart = S.FlakChunkDropOffStart;
 	FlakChunkDropOffEnd = S.FlakChunkDropOffEnd;
 	FlakChunkDropOffDamageRatio = S.FlakChunkDropOffDamageRatio;
+	FlakChunkRandomSpread = S.FlakChunkRandomSpread;
 	FlakSlugDamage = S.FlakSlugDamage;
 	FlakSlugHurtRadius = S.FlakSlugHurtRadius;
 	FlakSlugMomentum = S.FlakSlugMomentum;
@@ -634,6 +637,7 @@ defaultproperties
 	FlakChunkDropOffStart=0.0
 	FlakChunkDropOffEnd=0.0
 	FlakChunkDropOffDamageRatio=1.0
+	FlakChunkRandomSpread=True
 	FlakSlugDamage=70
 	FlakSlugHurtRadius=150
 	FlakSlugMomentum=1.0

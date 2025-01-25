@@ -58,6 +58,7 @@ var config float FlakChunkLifespan;
 var config float FlakChunkDropOffStart;
 var config float FlakChunkDropOffEnd;
 var config float FlakChunkDropOffDamageRatio;
+var config bool  FlakChunkRandomSpread;
 var config float FlakSlugDamage;
 var config float FlakSlugHurtRadius;
 var config float FlakSlugMomentum;
@@ -215,6 +216,7 @@ defaultproperties
 	FlakChunkDropOffStart=0.0
 	FlakChunkDropOffEnd=0.0
 	FlakChunkDropOffDamageRatio=1.0
+	FlakChunkRandomSpread=True
 	FlakSlugDamage=70
 	FlakSlugHurtRadius=150
 	FlakSlugMomentum=1.0

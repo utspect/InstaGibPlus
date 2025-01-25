@@ -9,6 +9,34 @@ class ST_UTChunk extends UTChunk;
 var ST_UTChunkInfo Chunkie;
 var int ChunkIndex;
 
+simulated function PostBeginPlay() {
+	local rotator RandRot;
+
+	if (Level.NetMode != NM_DedicatedServer) {
+		if (!Region.Zone.bWaterZone)
+			Trail = Spawn(class'ChunkTrail',self);
+		SetTimer(0.1, true);
+	}
+
+	if (Role == ROLE_Authority) {
+		Chunkie = ST_UTChunkInfo(Owner);
+
+		if (Chunkie == none || Chunkie.WImp.WeaponSettings.FlakChunkRandomSpread) {
+			RandRot = Rotation;
+			RandRot.Pitch += FRand() * 2000 - 1000;
+			RandRot.Yaw += FRand() * 2000 - 1000;
+			RandRot.Roll += FRand() * 2000 - 1000;
+			Velocity = Vector(RandRot) * (Speed + (FRand() * 200 - 100));
+			if (Region.zone.bWaterZone)
+				Velocity *= 0.65;
+		} else {
+			Velocity = vector(Rotation) * Speed;
+		}
+	}
+
+	super(Projectile).PostBeginPlay();
+}
+
 function ProcessTouch (Actor Other, vector HitLocation)
 {
 	// Physics for chunks is split into 3 phases:
