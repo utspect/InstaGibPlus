@@ -10,14 +10,6 @@ var IGPlus_WeaponImplementation WImp;
 
 auto state Flying
 {
-	function ProcessTouch (Actor Other, Vector HitLocation)
-	{
-		if ( (Other != instigator) && !Other.IsA('Projectile') ) 
-		{
-			bDirect = Other.IsA('Pawn');
-		}
-	}
-
 	function HitWall (vector HitNormal, actor Wall)
 	{
 		if ( (Mover(Wall) != None) && Mover(Wall).bDamageTriggered )

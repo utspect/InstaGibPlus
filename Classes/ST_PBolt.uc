@@ -1,9 +1,3 @@
-// ===============================================================
-// UTPureStats7A.ST_PBolt: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class ST_PBolt extends PBolt;
 
 var IGPlus_WeaponImplementation WImp;

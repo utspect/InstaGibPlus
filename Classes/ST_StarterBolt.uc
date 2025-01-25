@@ -1,9 +1,3 @@
-// ===============================================================
-// UTPureStats7A.ST_StarterBolt: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class ST_StarterBolt extends ST_PBolt;
 
 var float OldError, NewError, StartError, AimError; //used for bot aiming
