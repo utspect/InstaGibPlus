@@ -27,11 +27,14 @@ simulated function PostBeginPlay() {
 			RandRot.Yaw += FRand() * 2000 - 1000;
 			RandRot.Roll += FRand() * 2000 - 1000;
 			Velocity = Vector(RandRot) * (Speed + (FRand() * 200 - 100));
-			if (Region.zone.bWaterZone)
-				Velocity *= 0.65;
 		} else {
 			Velocity = vector(Rotation) * Speed;
+			RandRot = Rotation;
+			RandRot.Roll = Rand(65536);
+			SetRotation(RandRot);
 		}
+		if (Region.zone.bWaterZone)
+			Velocity *= 0.65;
 	}
 
 	super(Projectile).PostBeginPlay();
