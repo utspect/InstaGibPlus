@@ -7783,7 +7783,6 @@ event PostRender( canvas zzCanvas )
 
 	// Render our UTPure Logo
 	xxRenderLogo(zzCanvas);
-	xxCleanAvars();
 
 	IGPlus_FixNetspeed();
 
@@ -8981,14 +8980,6 @@ function Typing( bool bTyping )
 ////////////////////////////
 // Tracebot stopper: By DB
 ////////////////////////////
-
-function xxCleanAvars()
-{
-	aMouseX = 0.0;
-	aMouseY = 0.0;
-	aTurn = 0.0;
-	aUp = 0.0;
-}
 
 simulated function xxGetDemoPlaybackSpec()
 {

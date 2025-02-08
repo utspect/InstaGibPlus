@@ -54,23 +54,18 @@ function ProcessTouch (Actor Other, vector HitLocation)
     if (ShockProj(Other) != None && !Chunkie.WImp.WeaponSettings.ShockProjectileBlockFlakChunk)
         return;
 
-	if ( (Chunk(Other) == None) && ((Physics == PHYS_Falling) || (Other != Instigator)) )
-	{
+	if ((Chunk(Other) == None) && ((Physics == PHYS_Falling) || (Other != Instigator))) {
 		speed = VSize(Velocity);
-		if ( speed > 200 )
-		{
-			if ( Role == ROLE_Authority )
-			{
-				Chunkie.HitSomething(Self, Other);
+		if (speed > 200) {
+			if (Role == ROLE_Authority) {
 				Other.TakeDamage(
 					CalcDamage(),
 					instigator,
 					HitLocation,
 					Chunkie.WImp.WeaponSettings.FlakChunkMomentum * (MomentumTransfer * Velocity/speed),
 					MyDamageType);
-				Chunkie.EndHit();
 			}
-			if ( FRand() < 0.5 )
+			if (FRand() < 0.5)
 				PlaySound(Sound 'ChunkHit',, 4.0,,200);
 		}
 		bHidden = true;
