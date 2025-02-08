@@ -8,7 +8,6 @@ function PostBeginPlay() {
 
 	HitTestHelper = Spawn(class'ST_HitTestHelper');
 	CollChecker = Spawn(class'ST_HitTestHelper');
-	CollChecker.bCollideWorld = false;
 	CollChecker.SetCollision(true, false, false);
 }
 
@@ -40,7 +39,6 @@ function EnhancedHurtRadius(
 
 	if (CollChecker == none || CollChecker.bDeleteMe) {
 		CollChecker = Spawn(class'ST_HitTestHelper',self, , Source.Location);
-		CollChecker.bCollideWorld = false;
 	}
 
 	CollChecker.SetCollision(true, false, false);
@@ -110,8 +108,9 @@ function EnhancedHurtRadius(
 				// give Pawns a second chance to be hit
 				if (HitTestHelper == none || HitTestHelper.bDeleteMe)
 					HitTestHelper = Spawn(class'ST_HitTestHelper', self, , Source.Location);
-				else
-					HitTestHelper.SetLocation(Source.Location);
+				
+				HitTestHelper.bCollideWorld = true;
+				HitTestHelper.SetLocation(Source.Location);
 
 				HitTestHelper.FlyTowards(Victim.Location, DamageRadius);
 				if (FastTrace(Victim.Location, HitTestHelper.Location) == false)
@@ -199,7 +198,6 @@ simulated function bool CheckHeadShot(Pawn P, vector HitLocation, vector Directi
 
 	if (CollChecker == none || CollChecker.bDeleteMe) {
 		CollChecker = Spawn(class'ST_HitTestHelper',self, , P.Location);
-		CollChecker.bCollideWorld = false;
 	}
 
 	DuckFrac = GetPawnDuckFraction(P);

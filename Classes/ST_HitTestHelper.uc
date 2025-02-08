@@ -32,7 +32,7 @@ event HitWall(vector HitNormal, actor HitWall) {
 
 defaultproperties {
 	Physics=PHYS_Projectile;
-	bCollideWorld=True
+	bCollideWorld=False
 	bCollideActors=False
 	bBlockActors=False
 	bBlockPlayers=False
