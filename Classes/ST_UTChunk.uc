@@ -47,7 +47,7 @@ function ProcessTouch (Actor Other, vector HitLocation)
 	// PHYS_Falling -- after hitting surface while in PHYS_Projectile
 	// PHYS_None -- after touching standable ground while in PHYS_Falling
 
-	if (Physics == PHYS_None)
+	if (Physics == PHYS_None || bHidden)
 		return;
 	
 	// For ShockProjectileBlockFlakChunk
@@ -73,7 +73,7 @@ function ProcessTouch (Actor Other, vector HitLocation)
 			if ( FRand() < 0.5 )
 				PlaySound(Sound 'ChunkHit',, 4.0,,200);
 		}
-		Destroy();
+		bHidden = true;
 	}
 }
 
