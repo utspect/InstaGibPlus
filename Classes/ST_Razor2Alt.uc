@@ -1,9 +1,3 @@
-// ===============================================================
-// UTPureStats7A.ST_Razor2Alt: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class ST_Razor2Alt extends Razor2Alt;
 
 var IGPlus_WeaponImplementation WImp;
