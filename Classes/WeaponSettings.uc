@@ -157,6 +157,8 @@ var config float TranslocatorHealth;
 
 var config string DefaultWeaponClass;
 
+var config int   InvisibilityDuration;
+
 defaultproperties
 {
 	bReplaceImpactHammer=True
@@ -314,4 +316,6 @@ defaultproperties
 	TranslocatorHealth=65.0
 
 	DefaultWeaponClass=""
+
+	InvisibilityDuration=45
 }

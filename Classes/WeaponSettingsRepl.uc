@@ -131,6 +131,8 @@ var float TranslocatorOutSelectTime;
 var float TranslocatorDownTime;
 var float TranslocatorHealth;
 
+var int   InvisibilityDuration;
+
 replication {
 	reliable if (Role == ROLE_Authority)
 		HeadHalfHeight,
@@ -261,7 +263,9 @@ replication {
 		TranslocatorSelectTime,
 		TranslocatorOutSelectTime,
 		TranslocatorDownTime,
-		TranslocatorHealth;
+		TranslocatorHealth,
+
+		InvisibilityDuration;
 }
 
 simulated final function float WarheadSelectAnimSpeed() {
@@ -594,6 +598,8 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	TranslocatorOutSelectTime = S.TranslocatorOutSelectTime;
 	TranslocatorDownTime = S.TranslocatorDownTime;
 	TranslocatorHealth = S.TranslocatorHealth;
+
+	InvisibilityDuration = S.InvisibilityDuration;
 }
 
 defaultproperties
@@ -733,4 +739,6 @@ defaultproperties
 	TranslocatorOutSelectTime=0.27
 	TranslocatorDownTime=0.212121
 	TranslocatorHealth=65.0
+
+	InvisibilityDuration=45
 }

@@ -1,5 +1,7 @@
 class ST_Invisibility extends UT_Invisibility;
 
+var IGPlus_WeaponImplementation WImp;
+
 state Activated {
 	function BeginState() {
 		local ST_ShieldBelt S;
@@ -13,7 +15,10 @@ state Activated {
 			false,
 			true
 		);
-		SetTimer(0.5, true);
+		foreach AllActors(class'IGPlus_WeaponImplementation', WImp)
+			break;
+		Charge = WImp.WeaponSettings.InvisibilityDuration;
+		SetTimer(Level.TimeDilation, true);
 		S = ST_ShieldBelt(Pawn(Owner).FindInventoryType(class'ST_ShieldBelt'));
 		if ((S != none) && (S.MyEffect != none)) {
 			S.MyEffect.bHidden = true;
@@ -31,6 +36,21 @@ state Activated {
 		S = ST_ShieldBelt(Pawn(Owner).FindInventoryType(class'ST_ShieldBelt'));
 		if ((S != none) && (S.MyEffect != none))
 			S.MyEffect.bHidden = false;
+	}
+
+	function Timer() {
+		local PlayerPawn PP;
+
+		Charge -= 1;
+		Pawn(Owner).Visibility = 10;
+
+		if (Charge <= 0)
+			UsedUp();
+		else if (Charge <= 5) {
+			PP = PlayerPawn(Owner);
+			if (PP != none)
+				PP.ClientPlaySound(DeactivateSound,,true);
+		}
 	}
 
 	function SetOwnerDisplay() {
@@ -62,4 +82,8 @@ state Activated {
 				true
 			);
 	}
+}
+
+defaultproperties {
+	DeactivateSound=sound'UnrealI.Pickups.fFieldh2'
 }
