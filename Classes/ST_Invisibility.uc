@@ -17,7 +17,10 @@ state Activated {
 		);
 		foreach AllActors(class'IGPlus_WeaponImplementation', WImp)
 			break;
-		Charge = WImp.WeaponSettings.InvisibilityDuration;
+		if (WImp != none)
+			Charge = WImp.WeaponSettings.InvisibilityDuration;
+		else
+			Charge = Charge / (2 * Level.TimeDilation);
 		SetTimer(Level.TimeDilation, true);
 		S = ST_ShieldBelt(Pawn(Owner).FindInventoryType(class'ST_ShieldBelt'));
 		if ((S != none) && (S.MyEffect != none)) {
