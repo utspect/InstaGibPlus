@@ -24,13 +24,24 @@ function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 	{
 		if ( Other.IsA('Armor2') || Other.IsA('Armor') )
 		{
-			ReplaceWith( Other, PreFix$"NN_Armor2" );
+			ReplaceWith( Other, PreFix$".NN_Armor2" );
 			return false;
 		} else if ( Other.IsA('ThighPads') || Other.IsA('KevlarSuit') )
 		{
-			ReplaceWith( Other, PreFix$"NN_ThighPads" );
+			ReplaceWith( Other, PreFix$".NN_ThighPads" );
 			return false;
 		}
+	} else {
+		// All armor pieces and invisibility need to be replaced as one unit
+		// If this is not done, players can end up with more than 150 armor
+		if (Other.Class == class'Armor')           { ReplaceWith(Other, PreFix$".ST_Armor"); return false; }
+		if (Other.Class == class'Armor2')          { ReplaceWith(Other, PreFix$".ST_Armor"); return false; }
+		if (Other.Class == class'ThighPads')       { ReplaceWith(Other, PreFix$".ST_ThighPads"); return false; }
+		if (Other.Class == class'KevlarSuit')      { ReplaceWith(Other, PreFix$".ST_ThighPads"); return false; }
+		if (Other.Class == class'UT_ShieldBelt')   { ReplaceWith(Other, PreFix$".ST_ShieldBelt"); return false; }
+		if (Other.Class == class'ShieldBelt')      { ReplaceWith(Other, PreFix$".ST_ShieldBelt"); return false; }
+		if (Other.Class == class'Invisibility')    { ReplaceWith(Other, PreFix$".ST_Invisibility"); return false; }
+		if (Other.Class == class'UT_Invisibility') { ReplaceWith(Other, PreFix$".ST_Invisibility"); return false; }
 	}
 
 	if (bReplaceWeapons && Other.IsA('Weapon'))
