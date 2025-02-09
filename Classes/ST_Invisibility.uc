@@ -88,5 +88,5 @@ state Activated {
 }
 
 defaultproperties {
-	DeactivateSound=sound'UnrealI.Pickups.fFieldh2'
+	DeactivateSound=sound'UnrealI.Generic.Teleport2'
 }
