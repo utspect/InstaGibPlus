@@ -77,9 +77,12 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
 	}
 
-	if (Other == Level || Other.IsA('Mover')) {
+	if (Other == Level) {
 		Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
 	} else if ((Other != self) && (Other != Owner) && (Other != None)) {
+		if (Other.IsA('Mover'))
+			Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
+
 		if (Other.bIsPawn && CheckHeadShot(Pawn(Other), HitLocation, X) &&
 			(instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice))
 		) {
