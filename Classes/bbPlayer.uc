@@ -9300,6 +9300,8 @@ function PlayInAir() {
 
 	if (Level.NetMode != NM_DedicatedServer && Settings.bReduceEyeHeightInAir)
 		BaseEyeHeight = 0.7 * default.BaseEyeHeight;
+	else
+		BaseEyeHeight = default.BaseEyeHeight;
 
 	if ( (GetAnimGroup(AnimSequence) == 'Landing') && !bLastJumpAlt )
 	{
