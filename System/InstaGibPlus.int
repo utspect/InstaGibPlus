@@ -1,37 +1,35 @@
 [Public]
-Object=(Name=InstaGibPlus.ST_Mutator,Class=Class,MetaClass=Engine.Mutator,Description="IG+10 ST_Mutator,Replaces all normal weapons with their IG+ equivalent")
-Object=(Name=InstaGibPlus.PureStatMutator,Class=Class,MetaClass=Engine.Mutator,Description="PureStatMutator,<Insert description here>")
-Object=(Name=InstaGibPlus.UTPure,Class=Class,MetaClass=Engine.Mutator,Description="IG+10 UTPure,Main IG+ mutator needed for everything else")
-Object=(Name=InstaGibPlus.MutKillFeed,Class=Class,MetaClass=Engine.Mutator,Description="IG+10 Kill Feed,Kill Feed Mutator")
-Object=(Name=InstaGibPlus.PureClickBoard,Class=Class,MetaClass=Engine.Mutator,Description="PureClickBoard,<Insert description here>")
-Object=(Name=InstaGibPlus.MutFraggerArena,Class=Class,MetaClass=Engine.Mutator,Description="Fragger Arena,Sniper+Translocator camping combat")
+Object=(Name=InstaGibPlus.ST_Mutator,Class=Class,MetaClass=Engine.Mutator,Description="ST_Mutator,Replaces all normal weapons with their IG+ equivalent")
+Object=(Name=InstaGibPlus.UTPure,Class=Class,MetaClass=Engine.Mutator,Description="UTPure,Main IG+ mutator needed for everything else")
+Object=(Name=InstaGibPlus.MutKillFeed,Class=Class,MetaClass=Engine.Mutator,Description="MutKillFeed,Kill Feed Mutator")
+Object=(Name=InstaGibPlus.PureClickBoard,Class=Class,MetaClass=Engine.Mutator,Description="PureClickBoard,<Internal>")
+Object=(Name=InstaGibPlus.MutFraggerArena,Class=Class,MetaClass=Engine.Mutator,Description="MutFraggerArena,Sniper+Translocator camping combat")
 Object=(Name=InstaGibPlus.NewNetArena,Class=Class,MetaClass=Engine.Mutator,Description="NewNetArena,<Insert description here>")
-Object=(Name=InstaGibPlus.NewNetIG,Class=Class,MetaClass=Engine.Mutator,Description="IG+10 NewNetIG,InstaGib with lag-compensated SuperShockRifle")
+Object=(Name=InstaGibPlus.NewNetIG,Class=Class,MetaClass=Engine.Mutator,Description="NewNetIG,InstaGib with lag-compensated SuperShockRifle")
+Object=(Name=InstaGibPlus.IGPlus_HitFeedback,Class=Class,MetaClass=Engine.Mutator,Description="IGPlus_HitFeedback,<Internal>")
 Object=(Name=InstaGibPlus.NNAnnouncer,Class=Class,MetaClass=Engine.Mutator,Description="NNAnnouncer,<Insert description here>")
-Object=(Name=InstaGibPlus.NewNetSA,Class=Class,MetaClass=Engine.Mutator,Description="IG+10 NewNetSA,SniperArena with lag-compensated SniperRifle")
-Object=(Name=InstaGibPlus.DisableNewNet,Class=Class,MetaClass=Engine.Mutator,Description="DisableNewNet,<Insert description here>")
 Object=(Name=InstaGibPlus.DisableWeapons,Class=Class,MetaClass=Engine.Mutator,Description="DisableWeapons,<Insert description here>")
+Object=(Name=InstaGibPlus.DisableNewNet,Class=Class,MetaClass=Engine.Mutator,Description="DisableNewNet,<Insert description here>")
+Object=(Name=InstaGibPlus.NewNetSA,Class=Class,MetaClass=Engine.Mutator,Description="NewNetSA,SniperArena with lag-compensated SniperRifle")
 Object=(Name=InstaGibPlus.NN_FraggerRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.NN_SniperRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.NN_ShockRifle,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus.ST_sgShockRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.NN_ASMD,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.NN_SuperShockRifle,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus.ST_ImpactHammer,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.ST_enforcer,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus.ST_UT_FlakCannon,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus.ST_ImpactHammer,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.ST_SniperRifle,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus.ST_UT_FlakCannon,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus.ST_ripper,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.ST_WarheadLauncher,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus.ST_ut_biorifle,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus.ST_ShockRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.ST_minigun2,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.ST_UT_Eightball,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus.ST_ripper,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus.ST_PulseGun,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus.ST_ut_biorifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.ST_SuperShockRifle,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus.ST_Translocator,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus.ST_PulseGun,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus.ST_ShockRifle,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.ST_FraggerTranslocator,Class=Class,MetaClass=Engine.Weapon)
-Object=(Name=InstaGibPlus.ST_WildcardsWeapons,Class=Class,MetaClass=Engine.Weapon)
+Object=(Name=InstaGibPlus.ST_Translocator,Class=Class,MetaClass=Engine.Weapon)
 Object=(Name=InstaGibPlus.NN_SniperArenaRifle,Class=Class,MetaClass=Engine.Weapon)
 
 [NN_FraggerRifle]
@@ -79,11 +77,24 @@ DebugMovementText="Trace Movement Input"
 DebugMovementHelp="If checked, trace movement input to demo"
 LocationOffsetFixText="Location Offset Fix"
 LocationOffsetFixHelp="If checked, tries to work around a UT bug that prevents synchronized player locations "
+NetStatsText="NetStats"
+EnableNetStatsText="Enable NetStats"
+EnableNetStatsHelp="If checked, shows a graph at the top with information about network communication"
+NetStatUnconfirmedTimeText="Show Unconfirmed Time"
+NetStatUnconfirmedTimeHelp="If checked, the netstats graph contains time the client simulated, but which the server hasnt acknowledged yet"
+NetStatsLocationErrorText="Show Location Error"
+NetStatsLocationErrorHelp="If checked, the netstats graph contains the difference between your predicted location and the actual location on the server"
+NetStatsFrameTimeText="Show Frame Time"
+NetStatsFrameTimeHelp="If checked, the netstats graph contains how long each frame took to create"
+NetStatsWidthText="Graph Width"
+NetStatsWidthHelp="Horizontal size of the graph in pixels, max is 511"
+NetStatsLocationText="Location"
+NetStatsLocationHelp="Where on screen to show the net stats graph"
 AutoDemoLblText="Auto Demo"
 AutoDemoText="Enable AutoDemo"
 AutoDemoHelp="If checked, automatically starts recording a demo when the match starts"
 DemoMaskText="Demo Name Mask"
-DemoMaskHelp="Mask for the name of automatically recorded demos; MUST NOT contain spaces\n%E --> Name of the map file\n%F --> Title of the map\n%D --> Day (two digits)\n%M --> Month (two digits)\n%Y --> Year\n%H --> Hour\n%N --> Minute\n%T --> Combined Hour and Minute (two digits each)\n%C --> Clan Tags (detected by determining common prefix of all players on a team, or 'Unknown')\n%L --> Name of the recording player\n%% --> Replaced with a single %"
+DemoMaskHelp="Mask for the name of automatically recorded demos; MUST NOT contain spaces\\n%E --> Name of the map file\\n%F --> Title of the map\\n%D --> Day (two digits)\\n%M --> Month (two digits)\\n%Y --> Year\\n%H --> Hour\\n%N --> Minute\\n%T --> Combined Hour and Minute (two digits each)\\n%C --> Clan Tags (detected by determining common prefix of all players on a team, or 'Unknown')\\n%L --> Name of the recording player\\n%% --> Replaced with a single %"
 DemoPathText="Demo Path"
 DemoPathHelp="Path to store automatically recorded demos in; MUST NOT contain spaces"
 DemoCharText="Demo Char"
@@ -127,6 +138,8 @@ cShockBeamHidden="Hidden"
 cShockBeamInstant="Instant"
 HideOwnBeamText="Always Hide Own Beams"
 HideOwnBeamHelp="If checked, your own beams will always be hidden"
+BeamEnableLightText="Enable Beam Lighting"
+BeamEnableLightHelp="If checked, beams will emit light"
 BeamScaleText="Beam Scale"
 BeamScaleHelp="Diameter of the beam of the IG+ SSR"
 BeamFadeCurveText="Beam Fade Curve"
@@ -259,9 +272,6 @@ KilledString="was killed by"
 [bbTBoss]
 MenuName="Boss"
 
-[ST_TBossBot]
-MenuName="Boss"
-
 [IGPlus_SettingsDialog]
 WindowTitle="IG+ Settings"
 
@@ -300,44 +310,15 @@ MonsterKillString="M O N S T E R  K I L L !!!"
 LudicrousKillString="L U D I C R O U S  K I L L !!!"
 HolyShitString="H O L Y  S H I T!!!"
 
-[ST_SpecialMessage]
-SpecialMessage[1]="Deflect!"
-SpecialMessage[4]="Direct Hit Bio!"
-SpecialMessage[5]="Excellent!"
-SpecialMessage[6]="Block!"
-SpecialMessage[7]="Standstill Combo!"
-SpecialMessage[8]="Dual Midair!"
-SpecialMessage[12]="Direct Hit Ripper!"
-SpecialMessage[13]="8 Hit Streak!"
-SpecialMessage[14]="Perfect Flak +8!"
-SpecialMessage[15]="Direct Hit Slug!"
-SpecialMessage[16]="Direct Hit Rocket!"
-SpecialMessage[17]="Non-bouncey Pipe!"
-SpecialMessage2[0]="Capture Assist!"
-SpecialMessage2[1]="Solo Capture!"
-SpecialMessage2[2]="Close Call!"
-
 [bbTMale1]
 MenuName="Male Commando"
-
-[bbTMale2]
-MenuName="Male Soldier"
-
-[bbTFemale2]
-MenuName="Female Soldier"
 
 [bbTFemale1]
 MenuName="Female Commando"
 
-[ST_TMale2Bot]
-MenuName="Male Soldier"
-
-[ST_TMale1Bot]
-MenuName="Male Commando"
-
-[ST_TFemale1Bot]
-MenuName="Female Commando"
-
-[ST_TFemale2Bot]
+[bbTFemale2]
 MenuName="Female Soldier"
+
+[bbTMale2]
+MenuName="Male Soldier"
 

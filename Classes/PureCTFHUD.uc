@@ -180,7 +180,7 @@ simulated function DrawStatus(Canvas Canvas)
 		if (PawnOwner.PlayerReplicationInfo.IsA('bbPlayerReplicationInfo'))
 			ArmorAmount = bbPlayerReplicationInfo(PawnOwner.PlayerReplicationInfo).Armor;
 	}
-	DrawBigNum(Canvas, Min(150,ArmorAmount), X + 4 * Scale, Y + 16 * Scale, 1);
+	DrawBigNum(Canvas, ArmorAmount, X + 4 * Scale, Y + 16 * Scale, 1);
 
 	if ((bbPlayer(PlayerOwner) != None && bbPlayer(PlayerOwner).HUDInfo > 0) || bbCHSpectator(PlayerOwner) != None)
 	{

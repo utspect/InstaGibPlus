@@ -206,6 +206,7 @@ function Created() {
 	Edit_OffsetX.SetDelayedNotify(true);
 	Edit_OffsetX.SetNumericOnly(true);
 	Edit_OffsetX.SetNumericFloat(false);
+	Edit_OffsetX.SetNumericNegative(true);
 	Edit_OffsetX.EditBoxWidthFraction = (1.0/3.0);
 	Edit_OffsetX.EditBoxWidth = 50;
 
@@ -217,6 +218,7 @@ function Created() {
 	Edit_OffsetY.SetDelayedNotify(true);
 	Edit_OffsetY.SetNumericOnly(true);
 	Edit_OffsetY.SetNumericFloat(false);
+	Edit_OffsetY.SetNumericNegative(true);
 	Edit_OffsetY.EditBoxWidthFraction = (1.0/3.0);
 	Edit_OffsetY.EditBoxWidth = 50;
 
@@ -447,9 +449,9 @@ function Notify(UWindowDialogControl C, byte E) {
 		} else if (C == Edit_OffsetY && Edit_OffsetY.EditBox.bCanEdit) {
 			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).OffsetY = int(Edit_OffsetY.GetValue());
 		} else if (C == Edit_ScaleX && Edit_ScaleX.EditBox.bCanEdit) {
-			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).ScaleX = int(Edit_ScaleX.GetValue());
+			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).ScaleX = float(Edit_ScaleX.GetValue());
 		} else if (C == Edit_ScaleY && Edit_ScaleY.EditBox.bCanEdit) {
-			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).ScaleY = int(Edit_ScaleY.GetValue());
+			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).ScaleY = float(Edit_ScaleY.GetValue());
 		} else if (C == Edit_ColorRed && Edit_ColorRed.EditBox.bCanEdit) {
 			IGPlus_CrosshairLayersListItem(LB_Layers.SelectedItem).Color.R = byte(Edit_ColorRed.GetValue());
 		} else if (C == Edit_ColorGreen && Edit_ColorGreen.EditBox.bCanEdit) {

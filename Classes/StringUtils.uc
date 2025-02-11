@@ -3,15 +3,7 @@ class StringUtils extends Object;
 var name TempName;
 
 static final function string PackageOfClass(class C) {
-	local string Result;
-	local int DotPos;
-
-	Result = string(C);
-
-	DotPos = InStr(Result, ".");
-	if (DotPos < 0) return "";
-
-	return Left(Result, DotPos);
+	return string(C.Outer.Name);
 }
 
 static final function string PackageOfObject(Object O) {
@@ -64,7 +56,7 @@ static final function string Trim(string source)
 	// Remove leading spaces.
 	result = source;
 	while (index < len(result) && mid(result, index, 1) == " ")
-        {
+	{
 		index++;
 	}
 	result = mid(result, index);
@@ -72,7 +64,7 @@ static final function string Trim(string source)
 	// Remove trailing spaces.
 	index = len(result) - 1;
 	while (index >= 0 && mid(result, index, 1) == " ")
-        {
+	{
 		index--;
 	}
 	result = left(result, index + 1);

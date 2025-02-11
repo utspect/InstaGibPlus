@@ -1,4 +1,5 @@
 class DisableNewNet extends Mutator;
+// Description=""
 
 function bool AlwaysKeep(Actor Other)
 {

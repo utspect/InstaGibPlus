@@ -6,7 +6,7 @@
 
 class ST_SuperShockRifle extends SuperShockRifle;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 var WeaponSettingsRepl WSettings;
 
@@ -31,7 +31,7 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
 }
 
@@ -41,8 +41,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local Pawn PawnOwner;
 
 	PawnOwner = Pawn(Owner);
-
-	STM.PlayerFire(PawnOwner, 8);		// 8 = Super Shock
 
 	if (Other==None)
 	{
@@ -56,10 +54,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 	if ( (Other != self) && (Other != Owner) && (Other != None) ) 
 	{
-		STM.PlayerHit(PawnOwner, 8, (PawnOwner.Physics == PHYS_Falling) && (Other.Physics == PHYS_Falling));
-						// 8 = Super Shock, Special if Both players are off the ground.
 		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, MyDamageType);
-		STM.PlayerClear();
 	}
 }
 

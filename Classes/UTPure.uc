@@ -1,13 +1,5 @@
 class UTPure extends Mutator config(InstaGibPlus);
-
-#exec Texture Import File=Textures\NewNetLogo.pcx Name=NewNetLogo Mips=Off
-#exec Texture Import File=Textures\bootbit.pcx Name=PureBoots Mips=Off
-#exec Texture Import File=Textures\hudbgplain.pcx Name=PureTimeBG Mips=Off
-#exec Texture Import File=Textures\smallwhitething.pcx Name=PureSWT Mips=Off
-#exec Texture Import File=Textures\Arrow.pcx Name=HitMarkerArrow Mips=Off
-#exec Audio Import FILE=Sounds\HitSound.wav Name=HitSound
-#exec Audio Import FILE=Sounds\HitSound1.wav Name=HitSound1
-#exec Audio Import FILE=Sounds\HitSoundFriendly.wav Name=HitSoundFriendly
+// Description="Main IG+ mutator needed for everything else"
 
 var ModifyLoginHandler NextMLH;			// Link list of handlers
 
@@ -28,16 +20,22 @@ var string zzDefaultPackages[8];
 
 // Auto Pause Handler
 var PureAutoPause zzAutoPauser;
+var IGPlus_HitFeedback MutHitFeedback;
 
 //Add the maplist where kickers will work using normal network
 var bool bExludeKickers;
 
 var bbPlayerReplicationInfo SkinIndexToPRIMap[64];
 
+var IGPlus_GameEventChain GameEventChain;
 var StringUtils StringUtils;
+var Info VersionInfo;
 
 var Object SettingsHelper;
 var ServerSettings Settings;
+
+var IGPlus_WeaponImplementation WImp;
+var bool bWImpSearched;
 
 replication
 {
@@ -52,6 +50,8 @@ function PreBeginPlay()
 	if (zzDMP == None)
 		return;
 
+	GameEventChain = new(none) class'IGPlus_GameEventChain';
+	GameEventChain.Play(Level.TimeSeconds);
 	StringUtils = class'StringUtils'.static.Instance();
 
 	// toggle first blood so it doesn't get triggered during warmup
@@ -71,14 +71,26 @@ function PreBeginPlay()
 
 function PrintVersionInfo() {
 	local string LongStr;
-	LongStr = class'VersionInfo'.default.PackageBaseName@class'VersionInfo'.default.PackageVersion;
+	LongStr = VersionInfo.GetPropertyText("PackageBaseName")@VersionInfo.GetPropertyText("PackageVersion");
 
 	if (Len(LongStr) > 20) {
-		xxLog("#"$StringUtils.CenteredString(class'VersionInfo'.default.PackageBaseName, 29, " ")$"#");
-		LongStr = class'VersionInfo'.default.PackageVersion;
+		xxLog("#"$StringUtils.CenteredString(VersionInfo.GetPropertyText("PackageBaseName"), 29, " ")$"#");
+		LongStr = VersionInfo.GetPropertyText("PackageVersion");
 	}
 
 	xxLog("#"$StringUtils.CenteredString(LongStr, 29, " ")$"#");
+}
+
+function IGPlus_WeaponImplementation GetWeaponImpl() {
+	if (bWImpSearched)
+		return WImp;
+
+	foreach AllActors(class'IGPlus_WeaponImplementation', WImp)
+		break;
+
+	bWImpSearched = true;
+	
+	return WImp;
 }
 
 function string GetAllOptions() {
@@ -115,10 +127,14 @@ function PostBeginPlay()
 	local string	ServPacks, curMLHPack, sTag, fullpack;
 	local int XC_Version;
 	local string MapName;
+	local class<Info> VersionInfoClass;
 
 	Super.PostBeginPlay();
 
 	InitializeSettings();
+
+	VersionInfoClass = class<Info>(DynamicLoadObject(class'StringUtils'.static.GetPackage()$".VersionInfo", class'class', true));
+	VersionInfo = Spawn(VersionInfoClass);
 
 	xxLog("");
 	xxLog("###############################");
@@ -173,7 +189,7 @@ function PostBeginPlay()
 	{
 
 		// Verify that the PlayerPack Package is in ServerPackages
-		curMLHPack = Settings.PlayerPacks[i]$"H"$class'VersionInfo'.default.PackageVersion;
+		curMLHPack = Settings.PlayerPacks[i]$"H"$VersionInfo.GetPropertyText("PackageVersion");
 		fullpack = curMLHPack$"."$Settings.PlayerPacks[i]$"LoginHandler";
 		if (Instr(CAPS(ServPacks), Caps(Chr(34)$curMLHPack$Chr(34))) != -1)
 		{
@@ -210,8 +226,11 @@ function PostBeginPlay()
 		MLH.Accepted();
 
 	//Log("bAutoPause:"@bAutoPause@"bTeamGame:"@zzDMP.bTeamGame@"bTournament:"@zzDMP.bTournament);
-	if (Settings.bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament)
+	if (Settings.bAutoPause && zzDMP.bTeamGame && zzDMP.bTournament) {
 		zzAutoPauser = Spawn(Class'PureAutoPause');
+		zzAutoPauser.Settings = Settings;
+		zzAutoPauser.Initialize();
+	}
 
 	if (Settings.bUseClickboard)
 		SetupClickBoard();
@@ -224,6 +243,11 @@ function PostBeginPlay()
 
 	Spawn(class'NN_SpawnNotify');
 	Spawn(class'IGPlus_UnlagPause');
+	Spawn(class'IGPlus_CarcassSpawnNotify').bEnableCarcassCollision = Settings.bEnableCarcassCollision;
+	if (Settings.HitFeedbackMode != HFM_Disabled) {
+		MutHitFeedback = Spawn(class'IGPlus_HitFeedback');
+		MutHitFeedback.bCheckVisibility = (Settings.HitFeedbackMode == HFM_VisibleOnly);
+	}
 
 	if (Settings.NNAnnouncer)
 		Spawn(class'NNAnnouncerSA');
@@ -370,12 +394,18 @@ event Tick(float zzDelta)
 
 	if (Level.Pauser != "")		// This code is to avoid players being kicked when paused.
 	{
+		if (GameEventChain.IsPlaying())
+			GameEventChain.Pause(Level.TimeSeconds);
+
 		zzbPaused = True;
 		zzPauseCountdown = 45.0; // Give it 45 seconds to wear off
 		zzDMP.SentText = Max(zzDMP.SentText - 100, 0);	// Fix to avoid the "Pause text freeze bug"
 	}
 	else
 	{
+		if (GameEventChain.IsPaused())
+			GameEventChain.Play(Level.TimeSeconds);
+
 		if (zzPauseCountdown > 0.0)
 			zzPauseCountdown -= zzDelta;
 		else
@@ -708,7 +738,7 @@ function ModifyPlayer(Pawn Other)
 				zzP.zzbForceDemo = Settings.bForceDemo;
 				zzP.zzbGameStarted = True;
 			}
-			if (Settings.bEnablePingCompensatedSpawn) {
+			if (zzP.RemoteRole == ROLE_AutonomousProxy && Settings.bEnablePingCompensatedSpawn) {
 				zzP.bHidden = true;
 				zzP.SetCollision(false, false, false);
 				// we are not undoing the effects because we cant "unplay" a sound
@@ -832,7 +862,7 @@ function Mutate(string MutateString, PlayerPawn Sender)
 
 	if (MutateString ~= "CheatInfo")
 	{
-		Sender.ClientMessage("This server is running "$class'VersionInfo'.default.PackageBaseName@class'VersionInfo'.default.PackageVersion);
+		Sender.ClientMessage("This server is running "$VersionInfo.GetPropertyText("PackageBaseName")@VersionInfo.GetPropertyText("PackageVersion"));
 		if (Settings.bUTPureEnabled)
 		{
 			Settings.DumpServerSettings(Sender);
@@ -1049,66 +1079,6 @@ function Mutate(string MutateString, PlayerPawn Sender)
 		}
 		else
 			Sender.ClientMessage(BADminText);
-	}
-	else if (Left(MutateString,4) ~= "PCK ")
-	{	// Pure Client Kill (Kick)
-		zzbbPP = bbPlayer(Sender);
-		if (zzbbPP != None)
-			zzbbPP.xxServerCheater("MT"@Mid(MutateString,4));
-	}
-	else if (Left(MutateString,4) ~= "PCD ")
-	{	// Perform Remote Console Command on this player
-		zzbbPP = bbPlayer(Sender);
-		if (zzbbPP != None)
-		{
-			zzS = Mid(MutateString,4);
-			zzi = InStr(zzS, " ");
-			if (zzbbPP.zzRemCmd != "")
-			{
-				zzbbPP.Mutate("pcf"@Left(zzS,zzi)@zzbbPP.zzRemCmd);
-			}
-			else
-			{
-				zzbbPP.zzRemCmd = Left(zzS, zzi);
-				zzbbPP.xxClientConsole(Mid(zzS, zzi+1), 200);
-			}
-		}
-	}
-	else if (Left(MutateString,4) ~= "PID ")
-	{	// Perform Remote .INT reading on this player
-		zzbbPP = bbPlayer(Sender);
-		if (zzbbPP != None)
-		{
-			zzS = Mid(MutateString,4);
-			zzi = InStr(zzS, " ");
-			if (zzbbPP.zzRemCmd != "")
-			{
-				zzbbPP.Mutate("pif"@Left(zzS,zzi)@zzbbPP.zzRemCmd);
-			}
-			else
-			{
-				zzbbPP.zzRemCmd = Left(zzS, zzi);
-				zzbbPP.xxClientReadINT(Mid(zzS, zzi+1));
-			}
-		}
-	}
-	else if (Left(MutateString,4) ~= "PKD ")
-	{	// Perform Remote Alias/Key reading on this player
-		zzbbPP = bbPlayer(Sender);
-		if (zzbbPP != None)
-		{
-			zzS = Mid(MutateString,4);
-			zzi = InStr(zzS, " ");
-			if (zzbbPP.zzRemCmd != "")
-			{
-				zzbbPP.Mutate("pkf"@Left(zzS,zzi)@zzbbPP.zzRemCmd);
-			}
-			else
-			{
-				zzbbPP.zzRemCmd = Left(zzS, zzi);
-				zzbbPP.xxClientKeys((Mid(zzS, zzi+1) == "1"), "Pure", "Player");
-			}
-		}
 	}
 
 	if (Settings.bFastTeams)
@@ -1356,6 +1326,10 @@ function string GetForcedSettingValue(int Index) {
 
 function int GetForcedSettingMode(int Index) {
 	return Settings.ForcedSettings[Index].Mode;
+}
+
+function float RealPlayTime(float TimeStamp, float DeltaTime) {
+	return GameEventChain.RealPlayTime(TimeStamp, DeltaTime);
 }
 
 defaultproperties

@@ -1,4 +1,5 @@
 class MutFraggerArena extends Arena;
+// Description="Sniper+Translocator camping combat"
 
 ////////////////////////////////////////////////////////////////////////////////
 //   CustomArena
@@ -17,24 +18,29 @@ class MutFraggerArena extends Arena;
 //Begin No Telefragging addition
 var config bool NoTeleFrag;
 
-var WeaponSettings WeaponSettings;
-var WeaponSettingsRepl WSettingsRepl;
+var IGPlus_WeaponImplementation WImpl;
 
 function InitializeSettings() {
-     class'WeaponSettingsRepl'.static.CreateWeaponSettings(Level, "WeaponSettingsFraggerArena", WeaponSettings, WSettingsRepl);
+	WImpl = Spawn(class'IGPlus_WeaponImplementationBase');
+	WImpl.InitWeaponSettings("WeaponSettingsFraggerArena");
 }
 
 function PreBeginPlay() {
-     super.PreBeginPlay();
+	super.PreBeginPlay();
 
-     InitializeSettings();
+	InitializeSettings();
+	if (WImpl.WeaponSettings.DefaultWeaponClass != "") {
+		DefaultWeapon = class<Weapon>(DynamicLoadObject(WImpl.WeaponSettings.DefaultWeaponClass, class'Class', true));
+		if (DefaultWeapon == none)
+			DefaultWeapon = default.DefaultWeapon;
+	}
 }
 
 function ModifyPlayer(Pawn Other)
 {
    DeathMatchPlus(Level.Game).GiveWeapon(Other, string(class'NN_FraggerRifle'));
    if(NextMutator != None)
-      NextMutator.ModifyPlayer(Other);
+	  NextMutator.ModifyPlayer(Other);
 }
 
 function bool AlwaysKeep(Actor Other)
@@ -134,15 +140,15 @@ function Timer()
 
 function PunishTelefragger(Pawn Llama, Pawn Victim)
 {
-       BroadcastLocalizedMessage(class'LlamaMessage', 0, Llama.PlayerReplicationInfo, Victim.PlayerReplicationInfo);
-       DoPunishment(Llama);
+	BroadcastLocalizedMessage(class'LlamaMessage', 0, Llama.PlayerReplicationInfo, Victim.PlayerReplicationInfo);
+	DoPunishment(Llama);
 }
 
 function DoPunishment(Pawn Llama)
 {
-      //test dont do anything;
-		Llama.Health = -1000;
-		Llama.Died(Llama, 'Suicided', Llama.Location);
+	//test dont do anything;
+	Llama.Health = -1000;
+	Llama.Died(Llama, 'Suicided', Llama.Location);
 }
 //End No Telefragging addition
 

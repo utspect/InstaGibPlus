@@ -391,20 +391,12 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 {
 	local Pawn PawnOwner;
 	local Pawn P;
-	local bbPlayer bbP;
 	local vector HitOffset;
 	local vector SmokeOffset;
-
-	if (Owner.IsA('Bot'))
-	{
-		Super.ProcessTraceHit(Other, HitLocation, HitNormal, X, Y, Z);
-		return;
-	}
 
 	yModInit();
 
 	PawnOwner = Pawn(Owner);
-	bbP = bbPlayer(Owner);
 
 	if (Other==None) {
 		HitNormal = -X;
@@ -416,47 +408,37 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 	SmokeOffset = CalcDrawOffset() + (FireOffset.X + 20) * X + FireOffset.Y * Y + FireOffset.Z * Z;
 	SpawnEffect(HitLocation, Owner.Location + SmokeOffset);
-	if (Owner.IsA('Bot') == false) {
-		for (P = Level.PawnList; P != none; P = P.NextPawn) {
-			if (P == Owner) continue;
-			if (bbPlayer(P) != none)
-				bbPlayer(P).SendWeaponEffect(
-					class'SuperShockRifleWeaponEffect',
-					Pawn(Owner).PlayerReplicationInfo,
-					Owner.Location + SmokeOffset,
-					SmokeOffset,
-					Other,
-					HitLocation,
-					HitOffset,
-					HitNormal);
-			else if (bbCHSpectator(P) != none)
-				bbCHSpectator(P).SendWeaponEffect(
-					class'SuperShockRifleWeaponEffect',
-					Pawn(Owner).PlayerReplicationInfo,
-					Owner.Location + SmokeOffset,
-					SmokeOffset,
-					Other,
-					HitLocation,
-					HitOffset,
-					HitNormal);
-		}
+	for (P = Level.PawnList; P != none; P = P.NextPawn) {
+		if (P == Owner) continue;
+		if (bbPlayer(P) != none)
+			bbPlayer(P).SendWeaponEffect(
+				class'SuperShockRifleWeaponEffect',
+				Pawn(Owner).PlayerReplicationInfo,
+				Owner.Location + SmokeOffset,
+				SmokeOffset,
+				Other,
+				HitLocation,
+				HitOffset,
+				HitNormal);
+		else if (bbCHSpectator(P) != none)
+			bbCHSpectator(P).SendWeaponEffect(
+				class'SuperShockRifleWeaponEffect',
+				Pawn(Owner).PlayerReplicationInfo,
+				Owner.Location + SmokeOffset,
+				SmokeOffset,
+				Other,
+				HitLocation,
+				HitOffset,
+				HitNormal);
 	}
 
 	if ( (Other != self) && (Other != Owner) && (Other != None) )
-	{
 		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, ST_MyDamageType);
-	}
 }
 
 function SpawnEffect(vector HitLocation, vector SmokeLocation)
 {
 	local SuperShockBeam SSB;
-
-	if (Owner.IsA('Bot'))
-	{
-		Super.SpawnEffect(HitLocation, SmokeLocation);
-		return;
-	}
 
 	// This is only done to fix stats, because stats count the number of
 	// SuperShockBeams that were spawned

@@ -14,6 +14,7 @@ replication {
         Armor,
         FaceName,
         MaxMultiDodges,
+        SkinIndex,
         SkinName;
 }
 

@@ -46,6 +46,7 @@ var config float  HitSoundTeamVolume;
 var config string sHitSound[16];
 var config int    cShockBeam;
 var config bool   bHideOwnBeam;
+var config bool   bBeamEnableLight;
 var config float  BeamScale;
 var config float  BeamFadeCurve;
 var config float  BeamDuration;
@@ -88,6 +89,14 @@ enum EFraggerScopeChoice {
 };
 var config EFraggerScopeChoice FraggerScopeChoice;
 
+var config bool   bEnableNetStats;
+var config bool   bNetStatsUnconfirmedTime;
+var config bool   bNetStatsLocationError;
+var config bool   bNetStatsFrameTime;
+var config float  NetStatsLocationX;
+var config float  NetStatsLocationY;
+var config int    NetStatsWidth;
+
 enum EHitMarkerSource {
 	HMSRC_Server,
 	HMSRC_Client
@@ -124,6 +133,9 @@ var CrosshairLayer TopLayer;
 
 var config float MenuX, MenuY, MenuWidth, MenuHeight;
 
+var Sound DefaultHitSound[16];
+var Sound LoadedHitSound[16];
+
 simulated function AppendLayer(CrosshairLayer L) {
 	if (BottomLayer == none) {
 		BottomLayer = L;
@@ -155,21 +167,22 @@ simulated function CreateCrosshairLayers() {
 	}
 }
 
-simulated function CheckConfig() {
+simulated function LoadHitSounds() {
 	local int i;
-	local string PackageName;
-
-	PackageName = class'StringUtils'.static.GetPackage();
 
 	for (i = 0; i < arraycount(sHitSound); i++) {
-		if (Left(sHitSound[i], 12) ~= "InstaGibPlus") {
-			sHitSound[i] = PackageName$Mid(sHitSound[i], InStr(sHitSound[i], "."));
-		}
-		if (sHitSound[i] == "" && sHitSound[i] != default.sHitSound[i]) {
-			sHitSound[i] = default.sHitSound[i];
-		}
+		if (sHitSound[i] != "" && (sHitSound[i] ~= "none") == false)
+			LoadedHitSound[i] = Sound(DynamicLoadObject(sHitSound[i], class'Sound', true));
+		else
+			LoadedHitSound[i] = none;
+		
+		if (LoadedHitSound[i] == none && DefaultHitSound[i] != none)
+			LoadedHitSound[i] = DefaultHitSound[i];
 	}
+}
 
+simulated function CheckConfig() {
+	LoadHitSounds();
 	CreateCrosshairLayers();
 
 	if (FPSCounterSmoothingStrength <= 0)
@@ -333,6 +346,7 @@ simulated function string DumpSettings() {
 		DumpHitSounds()$
 		GetSetting("cShockBeam")$
 		GetSetting("bHideOwnBeam")$
+		GetSetting("bBeamEnableLight")$
 		GetSetting("BeamScale")$
 		GetSetting("BeamFadeCurve")$
 		GetSetting("BeamDuration")$
@@ -367,6 +381,13 @@ simulated function string DumpSettings() {
 		GetSetting("KillFeedSpeed")$
 		GetSetting("KillFeedScale")$
 		GetSetting("FraggerScopeChoice")$
+		GetSetting("bEnableNetStats")$
+		GetSetting("bNetStatsUnconfirmedTime")$
+		GetSetting("bNetStatsLocationError")$
+		GetSetting("bNetStatsFrameTime")$
+		GetSetting("NetStatsLocationX")$
+		GetSetting("NetStatsLocationY")$
+		GetSetting("NetStatsWidth")$
 		GetSetting("bEnableHitMarker")$
 		GetSetting("bEnableTeamHitMarker")$
 		GetSetting("HitMarkerColorMode")$
@@ -408,12 +429,13 @@ defaultproperties
 	SelectedTeamHitSound=2
 	HitSoundVolume=4
 	HitSoundTeamVolume=4
-	sHitSound(0)="InstaGibPlus9.HitSound"
-	sHitSound(1)="UnrealShare.StingerFire"
-	sHitSound(2)="InstaGibPlus9.HitSoundFriendly"
-	sHitSound(3)="InstaGibPlus9.HitSound1"
+	DefaultHitSound(0)=Sound'HitSound'
+	DefaultHitSound(1)=Sound'StingerFire'
+	DefaultHitSound(2)=Sound'HitSoundFriendly'
+	DefaultHitSound(3)=Sound'HitSound1'
 	cShockBeam=1
 	bHideOwnBeam=False
+	bBeamEnableLight=True
 	BeamScale=0.45
 	BeamFadeCurve=4
 	BeamDuration=0.75
@@ -449,6 +471,13 @@ defaultproperties
 	KillFeedSpeed=1.0
 	KillFeedScale=1.0
 	FraggerScopeChoice=FSC_Moveable
+	bEnableNetStats=False
+	bNetStatsUnconfirmedTime=True
+	bNetStatsLocationError=True
+	bNetStatsFrameTime=False
+	NetStatsLocationX=0.5
+	NetStatsLocationY=0.0
+	NetStatsWidth=511
 	bEnableHitMarker=False
 	bEnableTeamHitMarker=False
 	HitMarkerColorMode=HMCM_FriendOrFoe

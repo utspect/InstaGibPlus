@@ -8,8 +8,10 @@
 ::     Example: C:\UT99\MyPackage\Build\Build.bat BuildDir "C:\UT99\MyPackage\"
 ::   NoInt - Do not automatically generate a .int for the package
 ::   NoUz - Do not automatically generate a .u.uz for the package
+::   NoVerInf - Do not automatically generate the VersionInfo class
 ::   Silent - Suppresses compatibility warnings, automatically resolves them
 ::   NoBind - Prevents binding native functions to C++ implementations, useful when adding new natives
+::   StripSource - Removes source code text from package
 ::   Verbose - Can be used multiple times. More verbose -> More output from script
 :: 
 :: Dependencies:
@@ -92,9 +94,11 @@ setlocal enabledelayedexpansion enableextensions
 set BUILD_DIR=%~dp0
 set BUILD_NOINT=0
 set BUILD_NOUZ=0
+set BUILD_NOVERINF=0
 set BUILD_SILENT=0
 set BUILD_NOBIND=0
 set BUILD_BYTEHAX=0
+set BUILD_STRIPSOURCE=0
 set VERBOSE=0
 
 :ParseArgs
@@ -103,14 +107,16 @@ set VERBOSE=0
         shift /1
     )
 
-    if /I "%1" EQU "NoInt"    ( set BUILD_NOINT=1 )
-    if /I "%1" EQU "NoUz"     ( set BUILD_NOUZ=1 )
+    if /I "%1" EQU "NoInt"       ( set BUILD_NOINT=1 )
+    if /I "%1" EQU "NoUz"        ( set BUILD_NOUZ=1 )
+    if /I "%1" EQU "NoVerInf"    ( set BUILD_NOVERINF=1 )
 
-    if /I "%1" EQU "Silent"   ( set BUILD_SILENT=1 )
-    if /I "%1" EQU "NoBind"   ( set BUILD_NOBIND=1 )
-    if /I "%1" EQU "ByteHax"  ( set BUILD_BYTEHAX=1 )
+    if /I "%1" EQU "Silent"      ( set BUILD_SILENT=1 )
+    if /I "%1" EQU "NoBind"      ( set BUILD_NOBIND=1 )
+    if /I "%1" EQU "ByteHax"     ( set BUILD_BYTEHAX=1 )
+    if /I "%1" EQU "StripSource" ( set BUILD_STRIPSOURCE=1 )
 
-    if /I "%1" EQU "Verbose"  ( set /A VERBOSE+=1 )
+    if /I "%1" EQU "Verbose"     ( set /A VERBOSE+=1 )
     
     shift /1
     if [%1] NEQ [] goto ParseArgs
@@ -129,19 +135,23 @@ if %VERBOSE% GEQ 1 (
     echo BUILD_TEMP=%BUILD_TEMP%
     echo BUILD_NOINT=%BUILD_NOINT%
     echo BUILD_NOUZ=%BUILD_NOUZ%
+    echo BUILD_NOVERINF=%BUILD_NOVERINF%
     echo BUILD_SILENT=%BUILD_SILENT%
     echo BUILD_NOBIND=%BUILD_NOBIND%
     echo BUILD_BYTEHAX=%BUILD_BYTEHAX%
+    echo BUILD_STRIPSOURCE=%BUILD_STRIPSOURCE%
     echo VERBOSE=%VERBOSE%
 )
 
-call "%BUILD_DIR%Build\CreateVersionInfo.bat" %PACKAGE_NAME% dev %PACKAGE_NAME%
+if %BUILD_NOVERINF% == 0 (
+    call "%BUILD_DIR%Build\CreateVersionInfo.bat" %PACKAGE_NAME% dev %PACKAGE_NAME%
+)
 
 pushd "%BUILD_DIR%..\System"
 
+call :PrepareDependencies %DEPENDENCIES%
 set MAKEINI="%BUILD_TEMP%make.ini"
 call :GenerateMakeIni %MAKEINI% %DEPENDENCIES% %PACKAGE_NAME%
-call :PrepareDependencies %DEPENDENCIES%
 
 :: make sure to always rebuild the package
 :: New package GUID, No doubts about staleness
@@ -157,6 +167,10 @@ call :Invoke ucc make %MAKE_PARAMS%
 
 :: dont do the post-process steps if compilation failed
 if ERRORLEVEL 1 goto compile_failed
+
+if %BUILD_STRIPSOURCE% == 1 (
+    call :Invoke ucc stripsource %PACKAGE_NAME%
+)
 
 :: copy to release location
 if not exist "%BUILD_DIR%System" (mkdir "%BUILD_DIR%System")

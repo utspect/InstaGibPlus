@@ -21,6 +21,7 @@ enum EZoomState {
 };
 var EZoomState ZoomState;
 
+var IGPlus_WeaponImplementation WImp;
 var WeaponSettingsRepl WSettings;
 
 
@@ -41,8 +42,11 @@ simulated final function WeaponSettingsRepl GetWeaponSettings() {
 	return WSettings;
 }
 
-function PostBeginPlay() {
+simulated function PostBeginPlay() {
 	super(SniperRifle).PostBeginPlay();
+
+	foreach AllActors(class'IGPlus_WeaponImplementation', WImp)
+		break;
 }
 
 simulated function RenderOverlays(Canvas Canvas)
@@ -278,21 +282,14 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 
 	NN_DoShellCase(PlayerPawn(Owner), Owner.Location + CDO + 30 * X + (2.8 * yMod+5.0) * Y - Z * 1, X, Y, Z);
 
-	if (Other == Level || Other.IsA('Mover'))
-	{
+	if (Other == Level || Other.IsA('Mover')) {
 		Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
 		if (bbPlayer(Owner) != None)
 			bbPlayer(Owner).xxClientDemoFix(None, class'UT_HeavyWallHitEffect', HitLocation+HitNormal,,, Rotator(HitNormal));
-	}
-	else if ( (Other != self) && (Other != Owner) && (Other != None) )
-	{
-		if ( Other.bIsPawn )
-		{
-			HitLocation += (X * Other.CollisionRadius * 0.5);
-			if (HitLocation.Z - Other.Location.Z > GetMinHeadshotZ(Pawn(Other))) {
-				class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, GetWeaponSettings().SniperHeadshotDamage, AltDamageType);
-				return true;
-			}
+	} else if ((Other != self) && (Other != Owner) && (Other != None)) {
+		if (Other.bIsPawn && CheckHeadShot(Pawn(Other), HitLocation, X)) {
+			class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, GetWeaponSettings().SniperHeadshotDamage, AltDamageType);
+			return true;
 		}
 
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
@@ -300,6 +297,15 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 	}
 	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, GetWeaponSettings().SniperDamage, MyDamageType);
 	return false;
+}
+
+simulated function bool CheckHeadShot(Pawn P, vector HitLocation, vector BulletDir) {
+	if (GetWeaponSettings().SniperUseReducedHitbox == false) {
+		HitLocation += (BulletDir * (P.CollisionRadius * 0.5));
+		return (HitLocation.Z - P.Location.Z > GetMinHeadshotZ(P));
+	}
+
+	return WImp.CheckHeadShot(P, HitLocation, BulletDir);
 }
 
 simulated function float GetMinHeadshotZ(Pawn Other) {
@@ -441,23 +447,21 @@ function TraceFire( float Accuracy )
 
 	Owner.MakeNoise(bbP.SoundDampening);
 	GetAxes(bbP.zzNN_ViewRot,X,Y,Z);
-	StartTrace = Owner.Location + bbP.Eyeheight * vect(0,0,1);
+	StartTrace = Owner.Location + bbP.EyeHeight * vect(0,0,1);
 	AdjustedAim = bbP.AdjustAim(1000000, StartTrace, 2*AimError, False, False);
 	X = vector(AdjustedAim);
 	EndTrace = StartTrace + 100000 * X + Accuracy * (FRand() - 0.5)* Y * 1000 + Accuracy * (FRand() - 0.5) * Z * 1000;
 
-	if (bbP.zzNN_HitActor != None && VSize(bbP.zzNN_HitDiff) > bbP.zzNN_HitActor.CollisionRadius + bbP.zzNN_HitActor.CollisionHeight)
-		bbP.zzNN_HitDiff = vect(0,0,0);
-
-	if (bbP.zzNN_HitActor != None && (bbP.zzNN_HitActor.IsA('Pawn') || bbP.zzNN_HitActor.IsA('Projectile')) && FastTrace(bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff, StartTrace))
+	NN_HitLoc = bbP.zzNN_HitLoc;
+	if (bbP.zzNN_HitActor != None && (bbP.zzNN_HitActor.IsA('Pawn') || bbP.zzNN_HitActor.IsA('Projectile')) )
 	{
 		NN_HitLoc = bbP.zzNN_HitActor.Location + bbP.zzNN_HitDiff;
 	}
-	else
-	{
-		bbP.zzNN_HitActor = bbP.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
-		NN_HitLoc = bbP.zzNN_HitLoc;
-	}
+	
+	// determine HitNormal
+	bbP.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
+
+	// apply damage
 	ProcessTraceHit(bbP.zzNN_HitActor, NN_HitLoc, HitNormal, X,Y,Z);
 	bbP.zzNN_HitActor = None;
 }

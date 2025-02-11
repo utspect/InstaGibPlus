@@ -1,13 +1,6 @@
-// ===============================================================
-// Stats.ST_RocketMk2: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class ST_RocketMk2 extends RocketMk2;
 
-var ST_Mutator STM;
-var bool bDirect;
+var IGPlus_WeaponImplementation WImp;
 
 auto state Flying
 {
@@ -15,7 +8,6 @@ auto state Flying
 	{
 		if ( (Other != instigator) && !Other.IsA('Projectile') ) 
 		{
-			bDirect = Other.IsA('Pawn');
 			Explode(HitLocation,Normal(HitLocation-Other.Location));
 		}
 	}
@@ -52,14 +44,22 @@ auto state Flying
 
 	function BlowUp(vector HitLocation)
 	{
-		STM.PlayerHit(Instigator, 16, bDirect);		// 16 = Rockets.
-		HurtRadius(
-			STM.WeaponSettings.RocketDamage,
-			STM.WeaponSettings.RocketHurtRadius,
-			MyDamageType,
-			STM.WeaponSettings.RocketMomentum * MomentumTransfer,
-			HitLocation);
-		STM.PlayerClear();
+		if (WImp.WeaponSettings.bEnableEnhancedSplashRockets) {
+			WImp.EnhancedHurtRadius(
+				self,
+				WImp.WeaponSettings.RocketDamage,
+				WImp.WeaponSettings.RocketHurtRadius,
+				MyDamageType,
+				WImp.WeaponSettings.RocketMomentum * MomentumTransfer,
+				HitLocation);
+		} else {
+			HurtRadius(
+				WImp.WeaponSettings.RocketDamage,
+				WImp.WeaponSettings.RocketHurtRadius,
+				MyDamageType,
+				WImp.WeaponSettings.RocketMomentum * MomentumTransfer,
+				HitLocation);
+		}
 
 		MakeNoise(1.0);
 	}

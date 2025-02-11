@@ -1,9 +1,5 @@
 class CrosshairLayer extends Object;
 
-// 1x1 white texture as base for painting crosshairs
-#exec Texture Import File=Textures\CrossHairBase.pcx Name=CrossHairBase Mips=Off
-
-
 var Texture Texture;
 var int OffsetX;
 var int OffsetY;

@@ -1,20 +1,4 @@
-// ===============================================================
-// UTPureRC7A.PureAutoPause: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
-// Changelog:
-
-// Pure7A: - Created
-// Pure7D: - Fixed slow countdown
-
-class PureAutoPause extends Info config(InstaGibPlus);
-
-// config variables
-var globalconfig int PauseTotalTime;	// Total amount of Seconds a team may pause a game.
-var globalconfig int PauseTime;		// Amount of seconds a team may pause pr pause/timeout.
-var globalconfig int Timeouts;		// Max amount of times a team may take timeouts. (for Coaches)
+class PureAutoPause extends Info;
 
 // Team variables - Only 2 teams supported. Should be fairly simple to expand to 4 if people need.
 var int TeamSize[2];			// How many players should be on a team. if less, we pause (if allowed)
@@ -26,6 +10,8 @@ var int TeamTimeoutLeft[2];		// Number of timeouts a team has left.
 var TeamGamePlus TGP;
 var int CountDownCounter;		// I love typing.
 
+var ServerSettings Settings;
+
 function PostBeginPlay()
 {
 	TGP = TeamGamePlus(Level.Game);
@@ -34,15 +20,16 @@ function PostBeginPlay()
 		Destroy();		// Don't like myself :(
 		return;
 	}
-	SaveConfig();			// Make the entries for easier modification later.
+}
 
-	TeamPauseLeft[0] = PauseTotalTime;
-	TeamCurPauseLeft[0] = PauseTime;
-	TeamTimeoutLeft[0] = Timeouts;
+function Initialize() {
+	TeamPauseLeft[0] = Settings.PauseTotalTime;
+	TeamCurPauseLeft[0] = Settings.PauseTime;
+	TeamTimeoutLeft[0] = Settings.Timeouts;
 
-	TeamPauseLeft[1] = PauseTotalTime;
-	TeamCurPauseLeft[1] = PauseTime;
-	TeamTimeoutLeft[1] = Timeouts;
+	TeamPauseLeft[1] = Settings.PauseTotalTime;
+	TeamCurPauseLeft[1] = Settings.PauseTime;
+	TeamTimeoutLeft[1] = Settings.Timeouts;
 }
 
 // Player wants AutoPause to keep on
@@ -79,19 +66,19 @@ function bool PlayerHold(PlayerReplicationInfo PRI)
 
 	if (TeamMissing(0))
 	{
-		TeamCurPauseLeft[0] = PauseTime;
-		TeamPauseLeft[0] = Min(PauseTotalTime, TeamPauseLeft[0] + PauseTime);
+		TeamCurPauseLeft[0] = Settings.PauseTime;
+		TeamPauseLeft[0] = Min(Settings.PauseTotalTime, TeamPauseLeft[0] + Settings.PauseTime);
 		bHeld = True;
 	}
 	if (TeamMissing(1))
 	{
-		TeamCurPauseLeft[1] = PauseTime;
-		TeamPauseLeft[1] = Min(PauseTotalTime, TeamPauseLeft[1] + PauseTime);
+		TeamCurPauseLeft[1] = Settings.PauseTime;
+		TeamPauseLeft[1] = Min(Settings.PauseTotalTime, TeamPauseLeft[1] + Settings.PauseTime);
 		bHeld = True;
 	}
 
 	if (bHeld)
-		BroadcastMessage(PRI.PlayerName@"gave"@NiceTime(PauseTime)@"more time!", True);
+		BroadcastMessage(PRI.PlayerName@"gave"@NiceTime(Settings.PauseTime)@"more time!", True);
 	return bHeld;
 }
 
@@ -123,7 +110,7 @@ state CountdownGame
 
 	function BeginState()
 	{
-		BroadcastMessage("PureAutoPause enabled! Pausetimes: per="$NiceTime(PauseTime)@"total="$NiceTime(PauseTotalTime));
+		BroadcastMessage("PureAutoPause enabled! Pausetimes: per="$NiceTime(Settings.PauseTime)@"total="$NiceTime(Settings.PauseTotalTime));
 	}
 }
 
@@ -205,9 +192,9 @@ state AutoPausedGame
 		Team = 1 - PRI.Team;			// Get *OTHER* team :X
 		if (TeamMissing(Team))
 		{
-			TeamCurPauseLeft[Team] = PauseTime;
-			TeamPauseLeft[Team] = Min(PauseTotalTime, TeamPauseLeft[Team] + PauseTime);
-			BroadcastMessage(PRI.PlayerName@"gave"@NiceTime(PauseTime)@"more time!", True);
+			TeamCurPauseLeft[Team] = Settings.PauseTime;
+			TeamPauseLeft[Team] = Min(Settings.PauseTotalTime, TeamPauseLeft[Team] + Settings.PauseTime);
+			BroadcastMessage(PRI.PlayerName@"gave"@NiceTime(Settings.PauseTime)@"more time!", True);
 			return True;
 		}
 		return False;				// Nothing done.
@@ -275,8 +262,8 @@ state AutoPausedGame
 
 	function BeginState()
 	{
-		TeamCurPauseLeft[0] = Min(PauseTime, TeamPauseLeft[0]);
-		TeamCurPauseLeft[1] = Min(PauseTime, TeamPauseLeft[1]);
+		TeamCurPauseLeft[0] = Min(Settings.PauseTime, TeamPauseLeft[0]);
+		TeamCurPauseLeft[1] = Min(Settings.PauseTime, TeamPauseLeft[1]);
 		HandleAutoPause(False);
 		SetTimer(Level.TimeDilation, True);
 	}
@@ -453,7 +440,5 @@ function Unpause()
 
 defaultproperties
 {
-     PauseTotalTime=300
-     pausetime=60
      bAlwaysTick=True
 }

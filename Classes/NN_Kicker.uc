@@ -3,6 +3,7 @@ class NN_Kicker extends Botpack.Kicker;
 simulated event Touch(Actor Other) {
 	local Actor A;
 	local vector D;
+	local bbPlayer P;
 
 	if (!Other.IsA(KickedClasses))
 		return;
@@ -16,11 +17,12 @@ simulated event Touch(Actor Other) {
 	if (Abs(D.Z) > Other.CollisionHeight + CollisionHeight)
 		return;
 
-	if (Other.IsA('bbPlayer')) {
+	P = bbPlayer(Other);
+	if (P != none && P.bUpdating == false) {
 		if (Level.NetMode == NM_Client)
-			bbPlayer(Other).ClientDebugMessage("Kicker Touched (client)");
+			P.ClientDebugMessage("Kicker Touched (client)");
 		else
-			bbPlayer(Other).ClientDebugMessage("Kicker Touched (server)");
+			P.ClientDebugMessage("Kicker Touched (server)");
 	}
 
 	PendingTouch = Other.PendingTouch;
@@ -31,8 +33,11 @@ simulated event Touch(Actor Other) {
 }
 
 simulated event PostTouch(Actor Other) {
-	if (Other.IsA('bbPlayer'))
-		bbPlayer(Other).ClientDebugMessage("Kick");
+	local bbPlayer P;
+	P = bbPlayer(Other);
+	if (P != none && P.bUpdating == false)
+		P.ClientDebugMessage("Kick");
+
 	super.PostTouch(Other);
 }
 

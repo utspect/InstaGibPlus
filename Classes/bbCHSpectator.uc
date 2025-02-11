@@ -11,10 +11,6 @@ var int zzAdminLoginTries;
 // Nice to have
 var UTPure zzUTPure;
 
-// Stats
-var PureStats Stat;		// For player stats
-var Class<PureStats> cStat;	// The class to use
-
 var int   zzRecentDmgGiven, zzRecentTeamDmgGiven;
 var float   zzLastHitSound, zzLastTeamHitSound, zzNextTimeTime;
 
@@ -32,6 +28,7 @@ var rotator LastTargetViewRotation;
 var rotator LastRotation;
 var Actor LastViewTarget;
 
+var Info VersionInfo;
 var Object ClientSettingsHelper;
 var ClientSettings Settings;
 
@@ -48,13 +45,6 @@ var IGPlus_SettingsDialog IGPlus_SettingsMenu;
 
 replication
 {
-	// Server -> Client
-	reliable if (bNetOwner && ROLE == ROLE_Authority)
-		Stat;
-	// Client -> Server
-	reliable if (ROLE < ROLE_Authority)
-		ShowStats; //, xxServerActivateMover;
-
 	reliable if (RemoteRole == ROLE_AutonomousProxy)
 		IGPlus_NotifyPlayerRestart;
 		
@@ -312,13 +302,15 @@ event PlayerTick( float DeltaTime )
 
 event PostBeginPlay()
 {
+	local class<Info> VersionInfoClass;
+	
 	ForEach AllActors(Class'UTPure', zzUTPure)
 		break;
 
-	if (cStat != None)
-		Stat = Spawn(cStat, Self);
-
 	Super.PostBeginPlay();
+
+	VersionInfoClass = class<Info>(DynamicLoadObject(class'StringUtils'.static.GetPackage()$".VersionInfo", class'class', true));
+	VersionInfo = Spawn(VersionInfoClass);
 
 	InitSettings();
 }
@@ -376,12 +368,6 @@ event PostRender( canvas Canvas )
 
 	class'bbPlayerStatics'.static.DrawFPS(Canvas, MyHud, Settings, LastDeltaTime);
 	class'bbPlayerStatics'.static.DrawHitMarker(Canvas, Settings, LastDeltaTime);
-
-	if (Stat != None && Stat.bShowStats)
-	{
-		Stat.PostRender( Canvas );
-		return;
-	}
 }
 
 function xxCalcBehindView(out vector CameraLocation, out rotator CameraRotation, float Dist)
@@ -859,20 +845,6 @@ event ReceiveLocalizedMessage( class<LocalMessage> Message, optional int Sw, opt
 	if (Message == class'CTFMessage2' && RelatedPRI_1 != None && PureFlag(RelatedPRI_1.HasFlag) != None)
 		return;
 
-	// Handle hitsounds properly here before huds get it. Remove damage except if demoplayback :P
-	if (Message == class'PureHitSound')
-	{
-		if (RelatedPRI_1 == None)
-			return;
-
-		if (RelatedPRI_1.Owner == ViewTarget && RelatedPRI_2 != none) {
-			class'bbPlayerStatics'.static.PlayHitMarker(self, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
-			class'bbPlayerStatics'.static.PlayHitSound(self, Settings, Abs(Sw), RelatedPRI_2.Team, RelatedPRI_1.Team);
-		}
-
-		return;
-	}
-
 	Super.ReceiveLocalizedMessage(Message, Sw, RelatedPRI_1, RelatedPRI_2, OptionalObject);
 }
 
@@ -927,10 +899,6 @@ exec function FindFlag()
 		ViewClass(Class'CTFFlag');
 	else
 		ViewPlayerNum(zzFC.PlayerID);
-}
-
-exec function ShowStats()
-{
 }
 
 exec function ShowFPS() {

@@ -6,9 +6,12 @@
 
 class ST_PulseGun extends PulseGun;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 var WeaponSettingsRepl WSettings;
+
+// For the PulseSphereFireRate setting
+var float RateOfFire;
 
 simulated final function WeaponSettingsRepl FindWeaponSettings() {
 	local WeaponSettingsRepl S;
@@ -31,8 +34,10 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
+	
+	ProjectileSpeed = WImp.WeaponSettings.PulseSphereSpeed;
 }
 
 function SetSwitchPriority(pawn Other)
@@ -67,13 +72,70 @@ function SetSwitchPriority(pawn Other)
 	}		
 }
 
+simulated function PlayFiring()
+{
+	FlashCount++;
+	AmbientSound = FireSound;
+	SoundVolume = Pawn(Owner).SoundDampening*255;
+	PlayAnim('shootLOOP', (1 + 0.5 * FireAdjust) * GetWeaponSettings().PulseFiringAnimSpeed(), 0.0);
+	bWarnTarget = (FRand() < 0.2);
+}
+
+state NormalFire
+{
+	ignores AnimEnd;
+
+	function BeginState() {
+		super.BeginState();
+
+		RateOfFire = WImp.WeaponSettings.PulseSphereFireRate;
+	}
+
+	function Tick(float DeltaTime) {
+		super.Tick(DeltaTime);
+
+		RateOfFire -= DeltaTime;
+		if (RateOfFire < 0) {
+			Finish(); // potentially fire again
+			RateOfFire += WImp.WeaponSettings.PulseSphereFireRate;
+		}
+	}
+Begin:
+}
+
+simulated state ClientFiring
+{
+	simulated function BeginState() {
+		super.BeginState();
+
+		RateOfFire = GetWeaponSettings().PulseSphereFireRate;
+	}
+
+	simulated event Tick(float DeltaTime) {
+		super.Tick(DeltaTime);
+
+		RateOfFire -= DeltaTime;
+		if (RateOfFire < 0) {
+			if ((Pawn(Owner) == none) || (Pawn(Owner).bFire == 0)) {
+				AnimEnd();
+				RateOfFire = 0;
+			} else {
+				RateOfFire += GetWeaponSettings().PulseSphereFireRate;
+			}
+		}
+	}
+Begin:
+}
+
 simulated function PlaySelect() {
 	bForceFire = false;
 	bForceAltFire = false;
 	bCanClientFire = false;
 	if ( !IsAnimating() || (AnimSequence != 'Select') )
 		PlayAnim('Select',GetWeaponSettings().PulseSelectAnimSpeed(),0.0);
-	Owner.PlaySound(SelectSound, SLOT_Misc, Pawn(Owner).SoundDampening);	
+	Owner.PlaySound(SelectSound, SLOT_Misc, Pawn(Owner).SoundDampening);
+	
+	AmbientSound = none;
 }
 
 simulated function TweenDown() {

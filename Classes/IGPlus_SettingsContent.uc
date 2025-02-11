@@ -85,6 +85,34 @@ var localized string MoreInformationText;
 	var localized string LocationOffsetFixText;
 	var localized string LocationOffsetFixHelp;
 
+// NetStats
+	var UWindowLabelControl Lbl_NetStats;
+	var localized string NetStatsText;
+
+	var UWindowCheckbox Chk_EnableNetStats;
+	var localized string EnableNetStatsText;
+	var localized string EnableNetStatsHelp;
+
+	var UWindowCheckbox Chk_NetStatUnconfirmedTime;
+	var localized string NetStatUnconfirmedTimeText;
+	var localized string NetStatUnconfirmedTimeHelp;
+
+	var UWindowCheckbox Chk_NetStatsLocationError;
+	var localized string NetStatsLocationErrorText;
+	var localized string NetStatsLocationErrorHelp;
+
+	var UWindowCheckbox Chk_NetStatsFrameTime;
+	var localized string NetStatsFrameTimeText;
+	var localized string NetStatsFrameTimeHelp;
+
+	var IGPlus_EditControl Edit_NetStatsWidth;
+	var localized string NetStatsWidthText;
+	var localized string NetStatsWidthHelp;
+
+	var IGPlus_ScreenLocationControl SLoc_NetStatsLocation;
+	var localized string NetStatsLocationText;
+	var localized string NetStatsLocationHelp;
+
 // Auto Demo
 	var UWindowLabelControl Lbl_AutoDemo;
 	var localized string AutoDemoLblText;
@@ -165,6 +193,10 @@ var localized string MoreInformationText;
 	var UWindowCheckbox Chk_HideOwnBeam;
 	var localized string HideOwnBeamText;
 	var localized string HideOwnBeamHelp;
+
+	var UWindowCheckbox Chk_BeamEnableLight;
+	var localized string BeamEnableLightText;
+	var localized string BeamEnableLightHelp;
 
 	var IGPlus_EditControl Edit_BeamScale;
 	var localized string BeamScaleText;
@@ -630,7 +662,6 @@ function IGPlus_Button CreateButton(
 	InsertControl(Btn);
 
 	return Btn;
-
 }
 
 function SetUpForcedModelComboBox(IGPlus_ComboBox Cmb) {
@@ -666,7 +697,7 @@ function SetUpHitSoundComboBox(IGPlus_ComboBox Cmb) {
 	Cmb.EditBox.bDelayedNotify = true;
 	Cmb.Clear();
 	for (i = 0; i < arraycount(Settings.sHitSound); ++i)
-		Cmb.AddItem(Settings.sHitSound[i], string(i));
+		Cmb.AddItem(string(Settings.LoadedHitSound[i]), string(i));
 }
 
 function SetUpHitSourceComboBox(IGPlus_ComboBox Cmb) {
@@ -741,6 +772,7 @@ function SaveHitSounds() {
 		Settings.sHitSound[i++] = Item.Value;
 		Item = UWindowComboListItem(Item.Next);
 	}
+	Settings.LoadHitSounds();
 }
 
 function ShowCrosshairFactoryDialog() {
@@ -792,6 +824,14 @@ function Created() {
 	Chk_DebugMovement = CreateCheckbox(DebugMovementText, DebugMovementHelp);
 	Chk_LocationOffsetFix = CreateCheckbox(LocationOffsetFixText, LocationOffsetFixHelp);
 
+	Lbl_NetStats = CreateSeparator(NetStatsText);
+	Chk_EnableNetStats = CreateCheckbox(EnableNetStatsText, EnableNetStatsHelp);
+	Chk_NetStatUnconfirmedTime = CreateCheckbox(NetStatUnconfirmedTimeText, NetStatUnconfirmedTimeHelp);
+	Chk_NetStatsLocationError = CreateCheckbox(NetStatsLocationErrorText, NetStatsLocationErrorHelp);
+	Chk_NetStatsFrameTime = CreateCheckbox(NetStatsFrameTimeText, NetStatsFrameTimeHelp);
+	Edit_NetStatsWidth = CreateEdit(ECT_Integer, NetStatsWidthText, NetStatsWidthHelp, 4, 32);
+	SLoc_NetStatsLocation = CreateScreenLocation(100, NetStatsLocationText, NetStatsLocationHelp);
+
 	Lbl_AutoDemo = CreateSeparator(AutoDemoLblText);
 	Chk_AutoDemo = CreateCheckbox(AutoDemoText, AutoDemoHelp);
 	Edit_DemoMask = CreateEditResizable(ECT_Text, DemoMaskText, 0.7, 100, MaxInt, DemoMaskHelp);
@@ -816,6 +856,7 @@ function Created() {
 	Cmb_cShockBeam.AddItem(cShockBeamHidden);
 	Cmb_cShockBeam.AddItem(cShockBeamInstant);
 	Chk_HideOwnBeam = CreateCheckbox(HideOwnBeamText, HideOwnBeamHelp);
+	Chk_BeamEnableLight = CreateCheckbox(BeamEnableLightText, BeamEnableLightHelp);
 	Edit_BeamScale = CreateEdit(ECT_Real, BeamScaleText, BeamScaleHelp, , 64);
 	Edit_BeamFadeCurve = CreateEdit(ECT_Integer, BeamFadeCurveText, BeamFadeCurveHelp, , 64);
 	Edit_BeamDuration = CreateEdit(ECT_Real, BeamDurationText, BeamDurationHelp, , 64);
@@ -867,6 +908,7 @@ function Created() {
 	Cmb_HitMarkerColorMode.AddItem(HitMarkerColorModeTeamColor);
 	Edit_HitMarkerSize = CreateEdit(ECT_Integer, HitMarkerSizeText, HitMarkerSizeHelp, , 64);
 	Edit_HitMarkerOffset = CreateEdit(ECT_Integer, HitMarkerOffsetText, HitMarkerOffsetHelp, , 64);
+	Edit_HitMarkerOffset.SetNumericNegative(true);
 	Edit_HitMarkerDuration = CreateEdit(ECT_Real, HitMarkerDurationText, HitMarkerDurationHelp, , 64);
 	Edit_HitMarkerDecayExponent = CreateEdit(ECT_Real, HitMarkerDecayExponentText, HitMarkerDecayExponentHelp, , 64);
 	Chk_EnableHitMarker = CreateCheckbox(EnableHitMarkerText, EnableHitMarkerHelp);
@@ -951,6 +993,13 @@ function Load() {
 	Chk_DebugMovement.bChecked = Settings.bDebugMovement;
 	Chk_LocationOffsetFix.bChecked = Settings.bEnableLocationOffsetFix;
 
+	Chk_EnableNetStats.bChecked = Settings.bEnableNetStats;
+	Chk_NetStatUnconfirmedTime.bChecked = Settings.bNetStatsUnconfirmedTime;
+	Chk_NetStatsLocationError.bChecked = Settings.bNetStatsLocationError;
+	Chk_NetStatsFrameTime.bChecked = Settings.bNetStatsFrameTime;
+	Edit_NetStatsWidth.SetValue(string(Settings.NetStatsWidth));
+	SLoc_NetStatsLocation.SetLocation(Settings.NetStatsLocationX, Settings.NetStatsLocationY);
+
 	Chk_AutoDemo.bChecked = Settings.bAutoDemo;
 	Edit_DemoMask.SetValue(Settings.DemoMask);
 	Edit_DemoPath.SetValue(Settings.DemoPath);
@@ -964,6 +1013,7 @@ function Load() {
 
 	Cmb_cShockBeam.SetSelectedIndex(Clamp(Settings.cShockBeam - 1, 0, 3));
 	Chk_HideOwnBeam.bChecked = Settings.bHideOwnBeam;
+	Chk_BeamEnableLight.bChecked = Settings.bBeamEnableLight;
 	Edit_BeamScale.SetValue(string(Settings.BeamScale));
 	Edit_BeamFadeCurve.SetValue(string(int(Settings.BeamFadeCurve)));
 	Edit_BeamDuration.SetValue(string(Settings.BeamDuration));
@@ -1050,6 +1100,13 @@ function Save() {
 	Settings.bDebugMovement = Chk_DebugMovement.bChecked;
 	Settings.bEnableLocationOffsetFix = Chk_LocationOffsetFix.bChecked;
 
+	Settings.bEnableNetStats = Chk_EnableNetStats.bChecked;
+	Settings.bNetStatsUnconfirmedTime = Chk_NetStatUnconfirmedTime.bChecked;
+	Settings.bNetStatsLocationError = Chk_NetStatsLocationError.bChecked;
+	Settings.bNetStatsFrameTime = Chk_NetStatsFrameTime.bChecked;
+	Settings.NetStatsWidth = int(Edit_NetStatsWidth.GetValue());
+	SLoc_NetStatsLocation.GetLocation(Settings.NetStatsLocationX, Settings.NetStatsLocationY);
+
 	Settings.bAutoDemo = Chk_AutoDemo.bChecked;
 	Settings.DemoMask = Edit_DemoMask.GetValue();
 	Settings.DemoPath = Edit_DemoPath.GetValue();
@@ -1063,6 +1120,7 @@ function Save() {
 
 	Settings.cShockBeam = Cmb_cShockBeam.GetSelectedIndex() + 1;
 	Settings.bHideOwnBeam = Chk_HideOwnBeam.bChecked;
+	Settings.bBeamEnableLight = Chk_BeamEnableLight.bChecked;
 	Settings.BeamScale = float(Edit_BeamScale.GetValue());
 	Settings.BeamFadeCurve = int(Edit_BeamFadeCurve.GetValue());
 	Settings.BeamDuration = float(Edit_BeamDuration.GetValue());
@@ -1090,10 +1148,6 @@ function Save() {
 	Settings.bHitSoundTeamPitchShift = Chk_HitSoundTeamPitchShift.bChecked;
 	Settings.HitSoundTeamVolume = float(Edit_HitSoundTeamVolume.GetValue());
 	Settings.SelectedTeamHitSound = Cmb_SelectedTeamHitSound.GetSelectedIndex2();
-
-	// force reloading of hit sounds in case the selected ones changed
-	class'bbPlayerStatics'.default.PlayedHitSound = none;
-	class'bbPlayerStatics'.default.PlayedTeamHitSound = none;
 
 	SaveHitSounds();
 
@@ -1202,6 +1256,26 @@ defaultproperties
 		LocationOffsetFixText="Location Offset Fix"
 		LocationOffsetFixHelp="If checked, tries to work around a UT bug that prevents synchronized player locations "
 
+	NetStatsText="NetStats"
+
+		EnableNetStatsText="Enable NetStats"
+		EnableNetStatsHelp="If checked, shows a graph at the top with information about network communication"
+
+		NetStatUnconfirmedTimeText="Show Unconfirmed Time"
+		NetStatUnconfirmedTimeHelp="If checked, the netstats graph contains time the client simulated, but which the server hasnt acknowledged yet"
+
+		NetStatsLocationErrorText="Show Location Error"
+		NetStatsLocationErrorHelp="If checked, the netstats graph contains the difference between your predicted location and the actual location on the server"
+
+		NetStatsFrameTimeText="Show Frame Time"
+		NetStatsFrameTimeHelp="If checked, the netstats graph contains how long each frame took to create"
+
+		NetStatsWidthText="Graph Width"
+		NetStatsWidthHelp="Horizontal size of the graph in pixels, max is 511"
+
+		NetStatsLocationText="Location"
+		NetStatsLocationHelp="Where on screen to show the net stats graph"
+
 	AutoDemoLblText="Auto Demo"
 
 		AutoDemoText="Enable AutoDemo"
@@ -1265,6 +1339,9 @@ defaultproperties
 
 		HideOwnBeamText="Always Hide Own Beams"
 		HideOwnBeamHelp="If checked, your own beams will always be hidden"
+
+		BeamEnableLightText="Enable Beam Lighting"
+		BeamEnableLightHelp="If checked, beams will emit light"
 
 		BeamScaleText="Beam Scale"
 		BeamScaleHelp="Diameter of the beam of the IG+ SSR"

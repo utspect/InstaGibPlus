@@ -7,8 +7,6 @@
 
 class PureFlag extends GreenFlag;
 
-#exec Texture Import File=Textures\PureFlag.pcx Name=PureFlag Mips=Off
-
 event PreBeginPlay()
 {
 // Dont call PreBP or risk being Destroyed

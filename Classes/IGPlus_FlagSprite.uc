@@ -1,11 +1,5 @@
 class IGPlus_FlagSprite extends Actor;
 
-#exec Texture Import File=Textures\Flag.pcx Mips=Off
-#exec Texture Import File=Textures\FlagRed.pcx Mips=Off
-#exec Texture Import File=Textures\FlagBlue.pcx Mips=Off
-#exec Texture Import File=Textures\FlagGreen.pcx Mips=Off
-#exec Texture Import File=Textures\FlagGold.pcx Mips=Off
-
 simulated function ConfigureForTeam(byte Team) {
 	switch(Team) {
 		case 0:

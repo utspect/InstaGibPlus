@@ -6,7 +6,7 @@
 
 class ST_Translocator extends Translocator;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 var WeaponSettingsRepl WSettings;
 
@@ -31,7 +31,7 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
 }
 
@@ -44,23 +44,16 @@ function ReturnToPreviousWeapon()
 
 function Translocate()
 {
-	if (STM != none)
-		STM.PlayerHit(Pawn(Owner), 2, False);			// 2 = Translocator
 	if (Owner.IsA('bbPlayer'))
 		bbPlayer(Owner).IGPlus_BeforeTranslocate();
 	Super.Translocate();
 	if (Owner.IsA('bbPlayer'))
 		bbPlayer(Owner).IGPlus_AfterTranslocate();
-	if (STM != none)
-		STM.PlayerClear();
 }
 
 function ThrowTarget()
 {
 	local Vector Start, X,Y,Z;
-
-	if (STM != none)
-		STM.PlayerFire(Pawn(Owner), 2);		// 2 = Translocator
 
 	if (Level.Game.LocalLog != None)
 		Level.Game.LocalLog.LogSpecialEvent("throw_translocator", Pawn(Owner).PlayerReplicationInfo.PlayerID);

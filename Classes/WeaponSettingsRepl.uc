@@ -1,5 +1,8 @@
 class WeaponSettingsRepl extends Actor;
 
+var float HeadHalfHeight;
+var float HeadRadius;
+
 var float WarheadSelectTime;
 var float WarheadDownTime;
 
@@ -10,6 +13,7 @@ var float SniperHeadshotDamage;
 var float SniperMomentum;
 var float SniperHeadshotMomentum;
 var float SniperReloadTime;
+var bool  SniperUseReducedHitbox;
 
 var float EightballSelectTime;
 var float EightballDownTime;
@@ -26,6 +30,11 @@ var float FlakPostSelectTime;
 var float FlakDownTime;
 var float FlakChunkDamage;
 var float FlakChunkMomentum;
+var float FlakChunkLifespan;
+var float FlakChunkDropOffStart;
+var float FlakChunkDropOffEnd;
+var float FlakChunkDropOffDamageRatio;
+var bool  FlakChunkRandomSpread;
 var float FlakSlugDamage;
 var float FlakSlugHurtRadius;
 var float FlakSlugMomentum;
@@ -53,6 +62,8 @@ var float PulseSelectTime;
 var float PulseDownTime;
 var float PulseSphereDamage;
 var float PulseSphereMomentum;
+var float PulseSphereSpeed;
+var float PulseSphereFireRate;
 var float PulseBoltDPS;
 var float PulseBoltMomentum;
 var float PulseBoltMaxAccumulate;
@@ -63,9 +74,16 @@ var float ShockSelectTime;
 var float ShockDownTime;
 var float ShockBeamDamage;
 var float ShockBeamMomentum;
+var bool  ShockBeamUseReducedHitbox;
 var float ShockProjectileDamage;
 var float ShockProjectileHurtRadius;
 var float ShockProjectileMomentum;
+var bool  ShockProjectileBlockBullets;
+var bool  ShockProjectileBlockFlakChunk;
+var bool  ShockProjectileBlockFlakSlug;
+var bool  ShockProjectileTakeDamage;
+var bool  ShockProjectileCompensatePing;
+var float ShockProjectileHealth;
 var float ShockComboDamage;
 var float ShockComboMomentum;
 var float ShockComboHurtRadius;
@@ -74,6 +92,7 @@ var float BioSelectTime;
 var float BioDownTime;
 var float BioDamage;
 var float BioMomentum;
+var bool  BioPrimaryInstantExplosion;
 var float BioAltDamage;
 var float BioAltMomentum;
 var float BioHurtRadiusBase;
@@ -86,6 +105,7 @@ var float EnforcerMomentum;
 var float EnforcerReloadTime;
 var float EnforcerReloadTimeAlt;
 var float EnforcerReloadTimeRepeat;
+var bool  EnforcerUseReducedHitbox;
 
 var bool  EnforcerAllowDouble;
 var float EnforcerDamageDouble;
@@ -111,8 +131,13 @@ var float TranslocatorOutSelectTime;
 var float TranslocatorDownTime;
 var float TranslocatorHealth;
 
+var int   InvisibilityDuration;
+
 replication {
 	reliable if (Role == ROLE_Authority)
+		HeadHalfHeight,
+		HeadRadius,
+		
 		WarheadSelectTime,
 		WarheadDownTime,
 
@@ -123,6 +148,7 @@ replication {
 		SniperMomentum,
 		SniperHeadshotMomentum,
 		SniperReloadTime,
+		SniperUseReducedHitbox,
 
 		EightballSelectTime,
 		EightballDownTime,
@@ -138,6 +164,11 @@ replication {
 		FlakDownTime,
 		FlakChunkDamage,
 		FlakChunkMomentum,
+		FlakChunkLifespan,
+		FlakChunkDropOffStart,
+		FlakChunkDropOffEnd,
+		FlakChunkDropOffDamageRatio,
+		FlakChunkRandomSpread,
 		FlakSlugDamage,
 		FlakSlugHurtRadius,
 		FlakSlugMomentum,
@@ -165,6 +196,8 @@ replication {
 		PulseDownTime,
 		PulseSphereDamage,
 		PulseSphereMomentum,
+		PulseSphereSpeed,
+		PulseSphereFireRate,
 		PulseBoltDPS,
 		PulseBoltMomentum,
 		PulseBoltMaxAccumulate,
@@ -175,9 +208,16 @@ replication {
 		ShockDownTime,
 		ShockBeamDamage,
 		ShockBeamMomentum,
+		ShockBeamUseReducedHitbox,
 		ShockProjectileDamage,
 		ShockProjectileHurtRadius,
 		ShockProjectileMomentum,
+		ShockProjectileBlockBullets,
+		ShockProjectileBlockFlakChunk,
+		ShockProjectileBlockFlakSlug,
+		ShockProjectileTakeDamage,
+		ShockProjectileCompensatePing,
+		ShockProjectileHealth,
 		ShockComboDamage,
 		ShockComboMomentum,
 		ShockComboHurtRadius,
@@ -186,6 +226,7 @@ replication {
 		BioDownTime,
 		BioDamage,
 		BioMomentum,
+		BioPrimaryInstantExplosion,
 		BioAltDamage,
 		BioAltMomentum,
 		BioHurtRadiusBase,
@@ -198,6 +239,7 @@ replication {
 		EnforcerReloadTime,
 		EnforcerReloadTimeAlt,
 		EnforcerReloadTimeRepeat,
+		EnforcerUseReducedHitbox,
 
 		EnforcerAllowDouble,
 		EnforcerDamageDouble,
@@ -221,7 +263,9 @@ replication {
 		TranslocatorSelectTime,
 		TranslocatorOutSelectTime,
 		TranslocatorDownTime,
-		TranslocatorHealth;
+		TranslocatorHealth,
+
+		InvisibilityDuration;
 }
 
 simulated final function float WarheadSelectAnimSpeed() {
@@ -317,6 +361,12 @@ simulated final function float MinigunUnwindAnimSpeed() {
 simulated final function float PulseSelectAnimSpeed() {
 	if (PulseSelectTime > 0.0)
 		return FMin(100.0, default.PulseSelectTime / PulseSelectTime);
+	return 100.0;
+}
+
+simulated final function float PulseFiringAnimSpeed() {
+	if (PulseSphereFireRate > 0.0)
+		return FMin(100.0, default.PulseSphereFireRate / PulseSphereFireRate);
 	return 100.0;
 }
 
@@ -417,6 +467,9 @@ simulated final function float TranslocatorDownAnimSpeed() {
 }
 
 function InitFromWeaponSettings(WeaponSettings S) {
+	HeadHalfHeight = S.HeadHalfHeight;
+	HeadRadius = S.HeadRadius;
+
 	WarheadSelectTime = S.WarheadSelectTime;
 	WarheadDownTime = S.WarheadDownTime;
 
@@ -427,6 +480,7 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	SniperMomentum = S.SniperMomentum;
 	SniperHeadshotMomentum = S.SniperHeadshotMomentum;
 	SniperReloadTime = S.SniperReloadTime;
+	SniperUseReducedHitbox = S.SniperUseReducedHitbox;
 
 	EightballSelectTime = S.EightballSelectTime;
 	EightballDownTime = S.EightballDownTime;
@@ -443,6 +497,11 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	FlakDownTime = S.FlakDownTime;
 	FlakChunkDamage = S.FlakChunkDamage;
 	FlakChunkMomentum = S.FlakChunkMomentum;
+	FlakChunkLifespan = S.FlakChunkLifespan;
+	FlakChunkDropOffStart = S.FlakChunkDropOffStart;
+	FlakChunkDropOffEnd = S.FlakChunkDropOffEnd;
+	FlakChunkDropOffDamageRatio = S.FlakChunkDropOffDamageRatio;
+	FlakChunkRandomSpread = S.FlakChunkRandomSpread;
 	FlakSlugDamage = S.FlakSlugDamage;
 	FlakSlugHurtRadius = S.FlakSlugHurtRadius;
 	FlakSlugMomentum = S.FlakSlugMomentum;
@@ -470,6 +529,8 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	PulseDownTime = S.PulseDownTime;
 	PulseSphereDamage = S.PulseSphereDamage;
 	PulseSphereMomentum = S.PulseSphereMomentum;
+	PulseSphereSpeed = S.PulseSphereSpeed;
+	PulseSphereFireRate = S.PulseSphereFireRate;
 	PulseBoltDPS = S.PulseBoltDPS;
 	PulseBoltMomentum = S.PulseBoltMomentum;
 	PulseBoltMaxAccumulate = S.PulseBoltMaxAccumulate;
@@ -480,9 +541,17 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	ShockDownTime = S.ShockDownTime;
 	ShockBeamDamage = S.ShockBeamDamage;
 	ShockBeamMomentum = S.ShockBeamMomentum;
+	ShockBeamUseReducedHitbox = S.ShockBeamUseReducedHitbox;
 	ShockProjectileDamage = S.ShockProjectileDamage;
 	ShockProjectileHurtRadius = S.ShockProjectileHurtRadius;
 	ShockProjectileMomentum = S.ShockProjectileMomentum;
+	ShockProjectileBlockBullets = S.ShockProjectileBlockBullets;
+	ShockProjectileBlockFlakChunk = S.ShockProjectileBlockFlakChunk;
+	ShockProjectileBlockFlakSlug = S.ShockProjectileBlockFlakSlug;
+	
+	ShockProjectileTakeDamage = S.ShockProjectileTakeDamage;
+	ShockProjectileCompensatePing = S.ShockProjectileCompensatePing;
+	ShockProjectileHealth = S.ShockProjectileHealth;
 	ShockComboDamage = S.ShockComboDamage;
 	ShockComboMomentum = S.ShockComboMomentum;
 	ShockComboHurtRadius = S.ShockComboHurtRadius;
@@ -491,6 +560,7 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	BioDownTime = S.BioDownTime;
 	BioDamage = S.BioDamage;
 	BioMomentum = S.BioMomentum;
+	BioPrimaryInstantExplosion = S.BioPrimaryInstantExplosion;
 	BioAltDamage = S.BioAltDamage;
 	BioAltMomentum = S.BioAltMomentum;
 	BioHurtRadiusBase = S.BioHurtRadiusBase;
@@ -503,6 +573,7 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	EnforcerReloadTime = S.EnforcerReloadTime;
 	EnforcerReloadTimeAlt = S.EnforcerReloadTimeAlt;
 	EnforcerReloadTimeRepeat = S.EnforcerReloadTimeRepeat;
+	EnforcerUseReducedHitbox = S.EnforcerUseReducedHitbox;
 
 	EnforcerAllowDouble = S.EnforcerAllowDouble;
 	EnforcerDamageDouble = S.EnforcerDamageDouble;
@@ -527,38 +598,8 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	TranslocatorOutSelectTime = S.TranslocatorOutSelectTime;
 	TranslocatorDownTime = S.TranslocatorDownTime;
 	TranslocatorHealth = S.TranslocatorHealth;
-}
 
-final static function CreateWeaponSettings(
-	LevelInfo L,
-	string DefaultName,
-	out WeaponSettings WS,
-	out WeaponSettingsRepl WSR
-) {
-	local Object Helper;
-	local string Options;
-	local int Pos;
-	local string SettingsName;
-	local StringUtils SU;
-
-	Options = L.GetLocalURL();
-	Pos = InStr(Options, "?");
-	if (Pos < 0)
-		Options = "";
-	else
-		Options = Mid(Options, Pos);
-
-	SU = class'StringUtils'.static.Instance();
-
-	SettingsName = L.Game.ParseOption(Options, "IGPlusWeaponSettings");
-	if (SettingsName == "")
-		SettingsName = DefaultName;
-
-	Helper = new(none, 'InstaGibPlus') class'Object';
-	WS = new(Helper, SU.StringToName(SettingsName)) class'WeaponSettings';
-	WS.SaveConfig();
-	WSR = L.Spawn(class'WeaponSettingsRepl');
-	WSR.InitFromWeaponSettings(WS);
+	InvisibilityDuration = S.InvisibilityDuration;
 }
 
 defaultproperties
@@ -567,6 +608,9 @@ defaultproperties
 	bHidden=True
 	bAlwaysRelevant=True
 	DrawType=DT_None
+
+	HeadHalfHeight=7.5
+	HeadRadius=10.0
 
 	WarheadSelectTime=0.5
 	WarheadDownTime=0.233333
@@ -578,6 +622,7 @@ defaultproperties
 	SniperMomentum=1.0
 	SniperHeadshotMomentum=1.0
 	SniperReloadTime=0.6666666666
+	SniperUseReducedHitbox=False
 
 	EightballSelectTime=0.606061
 	EightballDownTime=0.366667
@@ -594,6 +639,11 @@ defaultproperties
 	FlakDownTime=0.333333
 	FlakChunkDamage=16
 	FlakChunkMomentum=1.0
+	FlakChunkLifespan=2.9
+	FlakChunkDropOffStart=0.0
+	FlakChunkDropOffEnd=0.0
+	FlakChunkDropOffDamageRatio=1.0
+	FlakChunkRandomSpread=True
 	FlakSlugDamage=70
 	FlakSlugHurtRadius=150
 	FlakSlugMomentum=1.0
@@ -621,6 +671,8 @@ defaultproperties
 	PulseDownTime=0.26
 	PulseSphereDamage=20
 	PulseSphereMomentum=1.0
+	PulseSphereSpeed=1450.000000
+	PulseSphereFireRate=0.18
 	PulseBoltDPS=72
 	PulseBoltMomentum=1.0
 	PulseBoltMaxAccumulate=0.08
@@ -631,9 +683,16 @@ defaultproperties
 	ShockDownTime=0.259259
 	ShockBeamDamage=40
 	ShockBeamMomentum=1.0
+	ShockBeamUseReducedHitbox=False
 	ShockProjectileDamage=55
 	ShockProjectileHurtRadius=70
 	ShockProjectileMomentum=1.0
+	ShockProjectileBlockBullets=True
+	ShockProjectileBlockFlakChunk=True
+	ShockProjectileBlockFlakSlug=True
+	ShockProjectileTakeDamage=False
+	ShockProjectileCompensatePing=False
+	ShockProjectileHealth=30
 	ShockComboDamage=165
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
@@ -642,6 +701,7 @@ defaultproperties
 	BioDownTime=0.333333
 	BioDamage=20
 	BioMomentum=1.0
+	BioPrimaryInstantExplosion=False
 	BioAltDamage=75
 	BioAltMomentum=1.0
 	BioHurtRadiusBase=75
@@ -654,6 +714,7 @@ defaultproperties
 	EnforcerReloadTime=0.27
 	EnforcerReloadTimeAlt=0.26
 	EnforcerReloadTimeRepeat=0.266667
+	EnforcerUseReducedHitbox=False
 
 	EnforcerAllowDouble=True
 	EnforcerDamageDouble=17
@@ -678,4 +739,6 @@ defaultproperties
 	TranslocatorOutSelectTime=0.27
 	TranslocatorDownTime=0.212121
 	TranslocatorHealth=65.0
+
+	InvisibilityDuration=45
 }

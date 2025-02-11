@@ -91,18 +91,25 @@ These settings can be found in **InstaGibPlus.ini** under section **\[ClientSett
 63. [KillFeedSpeed](#killfeedspeed)
 64. [KillFeedScale](#killfeedscale)
 65. [FraggerScopeChoice](#fraggerscopechoice)
-66. [bEnableHitMarker](#benablehitmarker)
-67. [bEnableTeamHitMarker](#benableteamhitmarker)
-68. [HitMarkerColorMode](#hitmarkercolormode)
-69. [HitMarkerColor](#hitmarkercolor)
-70. [HitMarkerTeamColor](#hitmarkerteamcolor)
-71. [HitMarkerSize](#hitmarkersize)
-72. [HitMarkerOffset](#hitmarkeroffset)
-73. [HitMarkerDuration](#hitmarkerduration)
-74. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
-75. [HitMarkerSource](#hitmarkersource)
-76. [bUseCrosshairFactory](#busecrosshairfactory)
-77. [CrosshairLayers](#crosshairlayers)
+66. [bEnableNetStats](#benablenetstats)
+67. [bNetStatsUnconfirmedTime](#bnetstatsunconfirmedtime)
+68. [bNetStatsLocationError](#bnetstatslocationerror)
+69. [bNetStatsFrameTime](#bnetstatsframetime)
+69. [NetStatsLocationX](#netstatslocationx)
+70. [NetStatsLocationY](#netstatslocationy)
+71. [NetStatsWidth](#netstatswidth)
+72. [bEnableHitMarker](#benablehitmarker)
+73. [bEnableTeamHitMarker](#benableteamhitmarker)
+74. [HitMarkerColorMode](#hitmarkercolormode)
+75. [HitMarkerColor](#hitmarkercolor)
+76. [HitMarkerTeamColor](#hitmarkerteamcolor)
+77. [HitMarkerSize](#hitmarkersize)
+78. [HitMarkerOffset](#hitmarkeroffset)
+79. [HitMarkerDuration](#hitmarkerduration)
+70. [HitMarkerDecayExponent](#hitmarkerdecayexponent)
+81. [HitMarkerSource](#hitmarkersource)
+82. [bUseCrosshairFactory](#busecrosshairfactory)
+83. [CrosshairLayers](#crosshairlayers)
 
 ## bForceModels
 **Type: bool**  
@@ -161,7 +168,7 @@ Any value below zero disables forcing models. For example, if you set [DesiredSk
 
 ## bSkinEnemyUseIndexMap
 **Type: bool**  
-**Default: False**
+**Default: False**  
 
 * `False` ➜ Assign each enemy `DesiredSkin` or `DesiredSkinFemale`
 * `True` ➜ Assigns each enemy a different skin, according to that players index into [SkinEnemyIndexMap](#skinenemyindexmap)
@@ -175,7 +182,7 @@ Any value below zero disables forcing models. For example, if you set [DesiredSk
 
 ## bUnlitSkins
 **Type: bool**  
-**Default: True**
+**Default: True**  
 
 If `True`, player skins will not be affected by surrounding lighting, usually making them brighter.
 
@@ -249,11 +256,13 @@ Specifies sounds that can be played.
 
 If `True`, automatically create a screenshot at the end of a match.
 If `False`, no screenshot is automatically created.
+
 ## bAutoDemo
 **Type: bool**  
 **Default: False**  
 
 If `True`, automatically start recording a demo when the game starts.
+
 ## DemoMask
 **Type: string**  
 **Default: %l\_\[%y\_%m\_%d\_%t\]\_\[%c\]\_%e**  
@@ -319,18 +328,21 @@ If `True`, hides your own SuperShockRifle beams, no matter the value of [cShockB
 **Type: float**  
 **Default: 0.45**  
 
-Visuals for the beam are scaled with this factor
+Visuals for the beam are scaled with this factor.
+
 ## BeamFadeCurve
 **Type: float**  
 **Default: 4.0**  
 
-Exponent of the polynomial curve the beam's visuals decay with
+Exponent of the polynomial curve the beam's visuals decay with.
+
 ## BeamDuration
 **Type: float**  
 **Default: 0.75**  
 **Unit: s**  
 
 The time the beam's visuals decay over.
+
 ## BeamOriginMode
 **Type: int**  
 **Default: 0**  
@@ -395,6 +407,7 @@ Higher values result in less frequent acknowledgements which can result in degra
 The default mouse input smoothing algorithm always smears input over at least two frames, half the input being applied on one frame, the other half on the next frame. If set to `True`, the game will always apply all input on the current frame. If set to `False`, the default algorithm will be used.
 
 This is a backport from UT99 client version 469, where the equivalent setting is called bNoMouseSmoothing.
+
 ## bLogClientMessages
 **Type: bool**  
 **Default: True**  
@@ -405,11 +418,13 @@ Causes all ClientMessages to be logged, if set to `True`
 **Default: False**  
 
 Causes IG+ to write movement debugging events to console/demo, depending on whether debug data is enabled at the moment (see [EnableDebugData](#enabledebugdata))
+
 ## bEnableKillCam
 **Type: bool**  
 **Default: False**  
 
 KillCam follows the player that killed you for two seconds.
+
 ## MinDodgeClickTime
 **Type: float**  
 **Default: 0.0**  
@@ -426,6 +441,7 @@ A players view is defined by yaw and pitch, which are quantized to 65536 degrees
 
 If `True`, two successive inputs of 1.5° change in yaw result in a 2° turn (int(1.5) + int(1.5) = 1 + 1 = 2).
 If `False`, two successive inputs of 1.5° change in yaw result in a 3° turn.
+
 ## SmoothVRController
 **Type: PIDControllerSettings**  
 **Default: (p=0.09,i=0.05,d=0.00)**  
@@ -490,13 +506,13 @@ If `True`, you ready up when spawning for the first time during warmup. If `Fals
 
 ## bShowDeathReport
 **Type: bool**  
-**Default: False** 
+**Default: False**  
 
 If `True`, show a report of damage taken that lead to death. The report starts from the last time you gained health or armor.
 
 ## bSmoothFOVChanges
 **Type: bool**  
-**Default: False** 
+**Default: False**  
 
 If `True`, smooth changes to your FOV, which can happen when spawning, teleporting or zooming.  
 If `False`, your FOV immediately changes to the desired FOV without a smooth transition.
@@ -544,15 +560,57 @@ Which scope the FraggerRifle uses when zoming.
 * `FSC_Static` ➜ Few moving parts when zooming in
 * `FSC_Moveable` ➜ More moving parts when zooming in
 
+## bEnableNetStats
+**Type: bool**  
+**Default: False**  
+
+If `True`, shows a graph containing statistics related to the netcode. for simulated game-time still unconfirmed by server (top), as well as a graph for the distance players are away from where the server has them (bottom).
+
+## bNetStatsUnconfirmedTime
+**Type: bool**  
+**Default: True**  
+
+If `True`, shows the netstats graph of the amount of simulated game-time still unconfirmed by the server. This graph will always be at the top.
+
+## bNetStatsLocationError
+**Type: bool**  
+**Default: True**  
+
+If `True`, the netstats graph will show the distance players are away from where the server has them.
+
+## bNetStatsFrameTime
+**Type: bool**  
+**Default: False**  
+
+If `True`, the netstats graph will show how long each frame took to render.
+
+## NetStatsLocationX
+**Type: float**  
+**Default: 0.5**  
+
+Horizontal position of the netstats graph. Left edge of screen is 0. Right edge of screen is 1.
+
+## NetStatsLocationY
+**Type: float**  
+**Default: 0.0**  
+
+Vertical position of the netstats graph. Top of screen is 0. Bottom of screen is 1.
+
+## NetStatsWidth
+**Type: int**  
+**Default: 511**  
+
+Controls how wide the netstats graph is in pixel. Maximum value is 511. Each pixel represents a single frame rendered.
+
 ## bEnableHitMarker
 **Type: bool**  
-**Default: False** 
+**Default: False**  
 
 If `True`, plays an animation on the hud whenever you damage an enemy.
 
 ## bEnableTeamHitMarker
 **Type: bool**  
-**Default: False** 
+**Default: False**  
 
 If `True`, plays an animation on the hud whenever you damage a teammate.
 
@@ -569,30 +627,34 @@ If `True`, plays an animation on the hud whenever you damage a teammate.
 
 The color of the HitMarker when damaging enemies. Fades over [HitMarkerDuration](#hitmarkerduration) to completely transparent.
 
+Note that transparency is based on color brightness, and black is completely transparent.
+
 ## HitMarkerTeamColor
 **Type: color**  
-**Default: (R=0,G=0,B=255,A=255)** 
+**Default: (R=0,G=0,B=255,A=255)**  
 
 The color of the HitMarker when damaging teammates. Fades over [HitMarkerDuration](#hitmarkerduration) to completely transparent.
+
+Note that transparency is based on color brightness, and black is completely transparent.
 
 ## HitMarkerSize
 **Type: float**  
 **Default: 128.0**  
-**Unit: pixel** 
+**Unit: pixel**  
 
 The length of the arrows that the HitMarker places on screen.
 
 ## HitMarkerOffset
 **Type: float**  
 **Default: 32.0**  
-**Unit: pixel** 
+**Unit: pixel**  
 
 How far away from the center of the screen the arrows are placed.
 
 ## HitMarkerDuration
 **Type: float**  
 **Default: 0.3**  
-**Unit: seconds** 
+**Unit: seconds**  
 
 How long the HitMarker stays on screen. Negative values effectively disable HitMarker.
 
@@ -604,7 +666,7 @@ How quickly the HitMarker becomes transparent. Higher values mean sharper drop-o
 
 ## HitMarkerSource
 **Type: EHitMarkerSource**  
-**Default: HMSRC_Server** 
+**Default: HMSRC_Server**  
 
 * `HMSRC_Server` ➜ HitMarkers are triggered server-side, accurate but delayed by ping
 * `HMSRC_Client` ➜ HitMarkers are triggered client-side, inaccurate but instant
@@ -820,18 +882,43 @@ If `SensitivityY` is not provided by the user, it is assumed to be the same as `
 
 # Server Installation
 
-Extract the zipped files to your system folder.  
+Extract the zipped files to your installation's folder.  
 Remove any mention in your ServerPackages and ServerActors of TimTim's NewNet or Deepu's Ultimate NewNet.  
 Add the following lines to your server's **UnrealTournament.ini** under **[Engine.GameEngine]**:
 
-**ServerPackages=InstaGibPlus9**
-**ServerActors=InstaGibPlus9.NewNetServer**
-**ServerActors=InstaGibPlus9.PureStats**
+**ServerPackages=InstaGibPlus_v11**
+**ServerPackages=InstaGibPlusAssets_v2**
 
-<b>It is highly recommended to set your server's tickrate to 100.</b>
+InstaGibPlus is a collection of mutators.
+
+## InstaGibPlus_v11.UTPure
+
+Always required. Enables basic InstaGibPlus functionality.
+
+ServerActor alternative is **InstaGibPlus_v11.NewNetServer**.
+
+## InstaGibPlus_v11.ST_Mutator
+
+Replaces all normal weapons with IG+ alternatives.
+
+## InstaGibPlus_v11.NewNetIG
+
+InstaGib, but with a ping compensated custom weapon.
+
+## InstaGibPlus_v11.NewNetSA
+
+SniperArena, but with a ping compensated custom weapon.
+
+## InstaGibPlus_v11.MutFraggerArena
+
+Similar to SniperArena, but with a Sniper Rifle that has custom zoom and is inaccurate when moving or not zoomed in, plus a translocator.
+
+## InstaGibPlus_v11.MutKillFeed
+
+Allows players to replace the messages of players dying in the console with weapon icons in a configurable location on your screen.
 
 # Usage
-For InstaGib, make sure the mutator **InstaGibPlus9.NewNetIG** is loaded via your map vote configuration or during server launch.
+For InstaGib, make sure the mutator **InstaGibPlus_v11.NewNetIG** is loaded via your map vote configuration or during server launch.
 
 InstaGib+ has minimal weapons code and will load the default UT weapons if the NewNetIG mutator is not loaded, so it is absolutely unusable in normal weapons, make sure to use it only if your objective is to play or to run an InstaGib centered server.
 
@@ -852,71 +939,77 @@ As spectator, you may need to add 'mutate pure' + command (mutate pureshowtickra
 Server settings can be found inside InstaGibPlus.ini.
 
 1. [HeadshotDamage](#headshotdamage)
-2. [SniperSpeed](#sniperspeed)
-3. [SniperDamagePri](#sniperdamagepri)
-4. [SetPendingWeapon](#setpendingweapon)
-5. [NNAnnouncer](#nnannouncer)
-6. [bUTPureEnabled](#butpureenabled)
-7. [Advertise](#advertise)
-8. [AdvertiseMsg](#advertisemsg)
-9. [bAllowCenterView](#ballowcenterview)
-10. [CenterViewDelay](#centerviewdelay)
-11. [bAllowBehindView](#ballowbehindview)
-12. [TrackFOV](#trackfov)
-13. [bAllowMultiWeapon](#ballowmultiweapon)
-14. [bFastTeams](#bfastteams)
-15. [bUseClickboard](#buseclickboard)
-16. [MinClientRate](#minclientrate)
-17. [MaxClientRate](#maxclientrate)
-18. [bAdvancedTeamSay](#badvancedteamsay)
-19. [ForceSettingsLevel](#forcesettingslevel)
-20. [bWarmup](#bwarmup)
-21. [bCoaches](#bcoaches)
-22. [bAutoPause](#bautopause)
-23. [ForceModels](#forcemodels)
-24. [ImprovedHUD](#improvedhud)
-25. [bDelayedPickupSpawn](#bdelayedpickupspawn)
-26. [bTellSpectators](#btellspectators)
-27. [PlayerPacks](#playerpacks)
-28. [DefaultHitSound](#defaulthitsound)
-29. [DefaultTeamHitSound](#defaultteamhitsound)
-30. [bForceDefaultHitSounds](#bforcedefaulthitsounds)
-31. [TeleRadius](#teleradius)
-32. [ThrowVelocity](#throwvelocity)
-33. [bForceDemo](#bforcedemo)
-34. [bRestrictTrading](#brestricttrading)
-35. [MaxTradeTimeMargin](#maxtradetimemargin)
-36. [TradePingMargin](#tradepingmargin)
-37. [KillCamDelay](#killcamdelay)
-38. [KillCamDuration](#killcamduration)
-39. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
-40. [bOldLandingMomentum](#boldlandingmomentum)
-41. [bEnableSingleButtonDodge](#benablesinglebuttondodge)
-42. [bUseFlipAnimation](#buseflipanimation)
-43. [bEnableWallDodging](#benablewalldodging)
-44. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
-45. [MaxMultiDodges](#maxmultidodges)
-46. [BrightskinMode](#brightskinmode)
-47. [PlayerScale](#playerscale)
-48. [bAlwaysRenderFlagCarrier](#balwaysrenderflagcarrier)
-49. [bAlwaysRenderDroppedFlags](#balwaysrenderdroppedflags)
-50. [MinPosError](#minposerror)
-51. [MaxPosError](#maxposerror)
-52. [MaxHitError](#maxhiterror)
-53. [MaxJitterTime](#maxjittertime)
-54. [MinNetUpdateRate](#minnetupdaterate)
-55. [MaxNetUpdateRate](#maxnetupdaterate)
-56. [bEnableServerExtrapolation](#benableserverextrapolation)
-57. [bEnableServerPacketReordering](#benableserverpacketreordering)
-58. [bEnableLoosePositionCheck](#benableloosepositioncheck)
-59. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
-60. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
-61. [bEnableJitterBounding](#benablejitterbounding)
-62. [bEnableWarpFix](#benablewarpfix)
-63. [WarpFixDelay](#warpfixdelay)
-64. [ShowTouchedPackage](#showtouchedpackage)
-65. [ExcludeMapsForKickers](#excludemapsforkickers)
-66. [ForcedSettings](#forcedsettings)
+1. [SniperSpeed](#sniperspeed)
+1. [SniperDamagePri](#sniperdamagepri)
+1. [SetPendingWeapon](#setpendingweapon)
+1. [NNAnnouncer](#nnannouncer)
+1. [bUTPureEnabled](#butpureenabled)
+1. [Advertise](#advertise)
+1. [AdvertiseMsg](#advertisemsg)
+1. [bAllowCenterView](#ballowcenterview)
+1. [CenterViewDelay](#centerviewdelay)
+1. [bAllowBehindView](#ballowbehindview)
+1. [TrackFOV](#trackfov)
+1. [bAllowMultiWeapon](#ballowmultiweapon)
+1. [bFastTeams](#bfastteams)
+1. [bUseClickboard](#buseclickboard)
+1. [MinClientRate](#minclientrate)
+1. [MaxClientRate](#maxclientrate)
+1. [bAdvancedTeamSay](#badvancedteamsay)
+1. [ForceSettingsLevel](#forcesettingslevel)
+1. [bWarmup](#bwarmup)
+1. [bCoaches](#bcoaches)
+1. [bAutoPause](#bautopause)
+1. [PauseTotalTime](#pausetotaltime)
+1. [PauseTime](#pausetime)
+1. [ForceModels](#forcemodels)
+1. [ImprovedHUD](#improvedhud)
+1. [bDelayedPickupSpawn](#bdelayedpickupspawn)
+1. [bTellSpectators](#btellspectators)
+1. [PlayerPacks](#playerpacks)
+1. [DefaultHitSound](#defaulthitsound)
+1. [DefaultTeamHitSound](#defaultteamhitsound)
+1. [bForceDefaultHitSounds](#bforcedefaulthitsounds)
+1. [TeleRadius](#teleradius)
+1. [ThrowVelocity](#throwvelocity)
+1. [bForceDemo](#bforcedemo)
+1. [bRestrictTrading](#brestricttrading)
+1. [MaxTradeTimeMargin](#maxtradetimemargin)
+1. [TradePingMargin](#tradepingmargin)
+1. [KillCamDelay](#killcamdelay)
+1. [KillCamDuration](#killcamduration)
+1. [bJumpingPreservesMomentum](#bjumpingpreservesmomentum)
+1. [bOldLandingMomentum](#boldlandingmomentum)
+1. [bEnableSingleButtonDodge](#benablesinglebuttondodge)
+1. [bUseFlipAnimation](#buseflipanimation)
+1. [bEnableWallDodging](#benablewalldodging)
+1. [bDodgePreserveZMomentum](#bdodgepreservezmomentum)
+1. [MaxMultiDodges](#maxmultidodges)
+1. [BrightskinMode](#brightskinmode)
+1. [PlayerScale](#playerscale)
+1. [bAlwaysRenderFlagCarrier](#balwaysrenderflagcarrier)
+1. [bAlwaysRenderDroppedFlags](#balwaysrenderdroppedflags)
+1. [MinPosError](#minposerror)
+1. [MaxPosError](#maxposerror)
+1. [MaxHitError](#maxhiterror)
+1. [MaxJitterTime](#maxjittertime)
+1. [MinNetUpdateRate](#minnetupdaterate)
+1. [MaxNetUpdateRate](#maxnetupdaterate)
+1. [bEnableInputReplication](#benableinputreplication)
+1. [bEnableServerExtrapolation](#benableserverextrapolation)
+1. [bEnableServerPacketReordering](#benableserverpacketreordering)
+1. [bEnableLoosePositionCheck](#benableloosepositioncheck)
+1. [bPlayersAlwaysRelevant](#bplayersalwaysrelevant)
+1. [bEnablePingCompensatedSpawn](#benablepingcompensatedspawn)
+1. [bEnableJitterBounding](#benablejitterbounding)
+1. [bEnableWarpFix](#benablewarpfix)
+1. [WarpFixDelay](#warpfixdelay)
+1. [FireTimeout](#firetimeout)
+1. [bEnableCarcassCollision](#benablecarcasscollision)
+1. [ShowTouchedPackage](#showtouchedpackage)
+1. [ExcludeMapsForKickers](#excludemapsforkickers)
+1. [HitFeedbackMode](#hitfeedbackmode)
+1. [ForcedSettings](#forcedsettings)
 
 ## HeadshotDamage
 
@@ -1097,6 +1190,20 @@ Whether to allow spectators to coach teams in tournament games or not.
 
 Whether to automatically pause the game in tournament games or not.
 
+## PauseTotalTime
+
+**Type: int**  
+**Default: 300**  
+
+Maximum time a team may pause the game for.
+
+## PauseTime
+
+**Type: int**  
+**Default: 60**  
+
+Length of pause when a pause is triggered.
+
 ### ForceModels
 
 **Type: int**  
@@ -1148,6 +1255,17 @@ Config list of supported player packs
 
 ## bForceDefaultHitSounds
 **Reserved**
+
+## HitFeedbackMode
+
+**Type: EHitFeedbackMode**  
+**Default: HFM_Always**  
+
+Determines how server-side hit feedback is handled.
+
+* `HFM_Disabled`: No feedback to clients
+* `HFM_VisibleOnly`: Feedback only if client can see the victim
+* `HFM_Always`: Feedback always provided
 
 ## TeleRadius
 
@@ -1258,10 +1376,27 @@ Maximum time after death (on server) that players can still fire their weapons. 
 
 Trade uncertainty relative to shooters ping. Reasonable values range from 0 to 1. Higher values lead to more trades.
 
+## bEnableInputReplication
+
+**Type: bool**
+**Default: False**
+
+If enabled, players will replicate their movement at a higher fidelity, in exchange for more upstream traffic.  
+Players will replicate (up to) the 10 most recent simulation steps to the server at their selected NetUpdateRate.
+
+[bEnableServerPacketReordering](#benableserverpacketreordering) has no effect if input replication is enabled.
+
+Restrictions:
+- Players should not run very high FPS (>500).
+- Speed parameters of movement axis inputs are ignored.
+- Pitch is only replicated within [-90°..+90°). Values outside this range may not be replicated correctly.
+
+Disable to restore default netcode behavior.
+
 ## bEnableServerExtrapolation
 
 **Type: bool**  
-**Default: True**  
+**Default: False**  
 
 If enabled the server will extrapolate client movement when the client's movement updates are too far behind the server's timepoint.
 
@@ -1279,7 +1414,7 @@ Disable to restore default netcode behavior.
 ## bEnableLoosePositionCheck
 
 **Type: bool**  
-**Default: True**  
+**Default: False**  
 
 If enabled the server will loosen the check of players position, by factoring in current movement The server will even use the players reported position instead of the calculated one, if the loose check is successful.
 
@@ -1307,7 +1442,7 @@ Disable to restore default netcode behavior.
 ## bEnableJitterBounding
 
 **Type: bool**  
-**Default: True**  
+**Default: False**  
 
 If enabled, updates by clients over more than [MaxJitterTime](#maxjittertime) will be cut down to MaxJitterTime in order to reduce visible warping for other players.
 
@@ -1428,8 +1563,8 @@ If True, players are able to see their own flags through walls if those flags ar
 
 ## ForcedSettings
 
-**Type: ForcedSettingsEntry\[128\]**
-**Default: (Key="",Value="",Mode=0)**
+**Type: ForcedSettingsEntry\[128\]**  
+**Default: (Key="",Value="",Mode=0)**  
 
 Type `ForcedSettingsEntry` is defined like this:  
 ```unrealscript
@@ -1447,6 +1582,21 @@ Each entry can be used to force a setting on clients:
   * `0` ➜ Initial only
   * `1` ➜ Always, but reset after leaving server
   * `2` ➜ Always, but don't reset (should not be used)
+
+## bEnableCarcassCollision
+
+**Type: bool**  
+**Default: True**  
+
+If True, carcasses left by dead players have collision. If false, carcasses will not have collision.
+
+## FireTimeout
+
+**Type: float**
+**Default: 0.1**
+**Unit: seconds**
+
+Shots more than this long in the past are rejected.
 
 # Building
 

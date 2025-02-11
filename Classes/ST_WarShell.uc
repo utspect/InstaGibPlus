@@ -6,15 +6,14 @@
 
 class ST_WarShell extends WarShell;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 simulated function PostBeginPlay()
 {
 	if (ROLE == ROLE_Authority)
 	{
-		ForEach AllActors(Class'ST_Mutator', STM)
+		ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 			break;
-		STM.PlayerFire(Instigator, 19);			// 19 = Redeemer.
 	}
 	Super.PostBeginPlay();
 }
@@ -26,9 +25,7 @@ singular function TakeDamage( int NDamage, Pawn instigatedBy, Vector hitlocation
 	{
 		PlaySound(Sound'Expl03',,6.0);
 		spawn(class'WarExplosion',,,Location);
-		STM.PlayerHit(Instigator, 19, False);		// 19 = Redeemer.
 		HurtRadius(Damage,350.0, MyDamageType, MomentumTransfer, HitLocation );
-		STM.PlayerClear();
 		RemoteRole = ROLE_SimulatedProxy;	 		 		
  		Destroy();
 	}
@@ -41,9 +38,7 @@ auto state Flying
 	{
 		if ( Role < ROLE_Authority )
 			return;
-		STM.PlayerHit(Instigator, 19, False);		// 19 = Redeemer.
 		HurtRadius(Damage,300.0, MyDamageType, MomentumTransfer, HitLocation );	 		 		
-		STM.PlayerClear();
  		spawn(class'ST_ShockWave',,,HitLocation+ HitNormal*16);	
 		RemoteRole = ROLE_SimulatedProxy;	 		 		
  		Destroy();

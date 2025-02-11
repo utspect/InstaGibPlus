@@ -15,15 +15,15 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Download 469c Patch
-        uses: robinraju/release-downloader@v1.7
+      - name: Download 469d Patch
+        uses: robinraju/release-downloader@v1.9
         with:
           repository: "OldUnreal/UnrealTournamentPatches"
-          tag: "v469c"
-          fileName: "OldUnreal-UTPatch469c-Windows.zip"
+          tag: "v469d"
+          fileName: "OldUnreal-UTPatch469d-Windows.zip"
           
       - name: Extract Patch
-        run: 7z x "OldUnreal-UTPatch469c-Windows.zip"
+        run: 7z x "OldUnreal-UTPatch469d-Windows.zip"
 
       - name: Determine Package Name
         run: |
@@ -45,7 +45,7 @@ jobs:
         run: echo ("${{ env.PKG_NAME }}") >> PackageName
 
       - name: Create Package Name Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PackageName
           path: PackageName
@@ -53,11 +53,11 @@ jobs:
           if-no-files-found: error
 
       - name: Checkout ${{ github.event.repository.name }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{ env.PKG_NAME }}/
 
-      - name: Rename Localization Files
+      - name: Rename + Update Files
         run: |
           function Replace-PackageName-File {
             param(
@@ -68,8 +68,13 @@ jobs:
             $OldName = $File.Name
             $NewName = ($File.Name -replace "${{ github.event.repository.name }}\.","${{ env.PKG_NAME }}.")
             $NewItem = ("${{ env.PKG_NAME }}"+$SubDir+$NewName)
-            Write-Output ($SubDir + $OldName + " -> " + $SubDir + $NewName)
-            if (Test-Path -Path $NewItem) { Remove-Item $NewItem }
+            if ($OldName -eq $NewName) {
+              Rename-Item -Path $File.FullName -NewName ($File.FullName+".bak")
+              $File = (Get-Item ($File.FullName+".bak"))
+            } else {
+              Write-Output ($SubDir + $OldName + " -> " + $SubDir + $NewName)
+              if (Test-Path -Path $NewItem) { Remove-Item $NewItem }
+            }
             (Get-Content -Path $File.FullName) | ForEach-Object {
               ($_ -replace "${{ github.event.repository.name }}\.","${{ env.PKG_NAME }}.") >> $NewItem
             }
@@ -92,6 +97,7 @@ jobs:
           Replace-PackageName "/System/"  "ACEFileList-${{ github.event.repository.name }}.*"
           Replace-PackageName "/System/"  "ACETweakList-${{ github.event.repository.name }}.*"
           Replace-PackageName "/Classes/" "${{ github.event.repository.name }}.upkg"
+          Replace-PackageName "/Classes/" "*.uc"
 
       - name: Extract Necessary Resources
         run: 7z x "${{ env.PKG_NAME }}/Build/BuildEnv.zip"
@@ -107,7 +113,7 @@ jobs:
 
       - name: Save UCC.log
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ucc-output
           path: System/UCC.log
@@ -130,7 +136,7 @@ jobs:
           }
 
       - name: Save ${{ github.event.repository.name }} Package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "${{ env.PKG_NAME }}"
           path: |
@@ -145,7 +151,7 @@ jobs:
 
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: PackageName
 
@@ -155,7 +161,7 @@ jobs:
           Remove-Item -Path "PackageName"
 
       - name: Download Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.PKG_NAME }}
 

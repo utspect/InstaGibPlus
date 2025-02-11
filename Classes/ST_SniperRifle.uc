@@ -6,7 +6,7 @@
 
 class ST_SniperRifle extends SniperRifle;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 enum EZoomState {
 	ZS_None,
@@ -39,8 +39,28 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
+}
+
+function TraceFire(float Accuracy) {
+	local vector HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
+	local actor Other;
+	local Pawn PawnOwner;
+
+	PawnOwner = Pawn(Owner);
+
+	Owner.MakeNoise(PawnOwner.SoundDampening);
+	GetAxes(PawnOwner.ViewRotation,X,Y,Z);
+	StartTrace = Owner.Location + PawnOwner.Eyeheight * vect(0,0,1); 
+	AdjustedAim = PawnOwner.AdjustAim(1000000, StartTrace, 2*AimError, False, False);	
+	X = vector(AdjustedAim);
+	EndTrace = StartTrace + 100000 * X;
+	if (WImp.WeaponSettings.SniperUseReducedHitbox)
+		Other = WImp.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
+	else
+		Other = PawnOwner.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace);
+	ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z);
 }
 
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
@@ -50,51 +70,54 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local vector Momentum;
 
 	PawnOwner = Pawn(Owner);
-	STM.PlayerFire(PawnOwner, 18);		// 18 = Sniper
 
 	s = Spawn(class'UT_ShellCase',, '', Owner.Location + CalcDrawOffset() + 30 * X + (2.8 * FireOffset.Y+5.0) * Y - Z * 1);
-	if ( s != None )
-	{
+	if (s != None) {
 		s.DrawScale = 2.0;
 		s.Eject(((FRand()*0.3+0.4)*X + (FRand()*0.2+0.2)*Y + (FRand()*0.3+1.0) * Z)*160);
 	}
-	if (Other == Level)
+
+	if (Other == Level) {
 		Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
-	else if ( (Other != self) && (Other != Owner) && (Other != None) )
-	{
-		if ( Other.bIsPawn )
+	} else if ((Other != self) && (Other != Owner) && (Other != None)) {
+		if (Other.IsA('Mover'))
+			Spawn(class'UT_HeavyWallHitEffect',,, HitLocation+HitNormal, Rotator(HitNormal));
+
+		if (Other.bIsPawn && CheckHeadShot(Pawn(Other), HitLocation, X) &&
+			(instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice))
+		) {
 			Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
-		if ( Other.bIsPawn && (HitLocation.Z - Other.Location.Z > 0.62 * Other.CollisionHeight)
-			&& (instigator.IsA('PlayerPawn') || (instigator.IsA('Bot') && !Bot(Instigator).bNovice)) )
-		{
-			STM.PlayerHit(PawnOwner, 18, True);		// 18 = Sniper, Headshot
 			Other.TakeDamage(
-				STM.WeaponSettings.SniperHeadshotDamage,
+				WImp.WeaponSettings.SniperHeadshotDamage,
 				PawnOwner,
 				HitLocation,
-				STM.WeaponSettings.SniperHeadshotMomentum * 35000 * X,
+				WImp.WeaponSettings.SniperHeadshotMomentum * 35000 * X,
 				AltDamageType);
-			STM.PlayerClear();
-		}
-		else
-		{
-			if (Other.bIsPawn)
-				Momentum = STM.WeaponSettings.SniperMomentum * 30000.0*X;
-			else
+		} else {
+			if (Other.bIsPawn) {
+				Other.PlaySound(Sound 'ChunkHit',, 4.0,,100);
+				Momentum = WImp.WeaponSettings.SniperMomentum * 30000.0*X;
+			} else {
 				Momentum = 30000.0*X;
+				if (Other.IsA('Carcass') == false)
+					Spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
+			}
 
-			STM.PlayerHit(PawnOwner, 18, False);		// 18 = Sniper
 			Other.TakeDamage(
-				STM.WeaponSettings.SniperDamage,
+				WImp.WeaponSettings.SniperDamage,
 				PawnOwner,
 				HitLocation,
 				Momentum,
 				MyDamageType);
-			STM.PlayerClear();
 		}
-		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
-			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 	}
+}
+
+function bool CheckHeadShot(Pawn P, vector HitLocation, vector BulletDir) {
+	if (WImp.WeaponSettings.SniperUseReducedHitbox == false)
+		return (HitLocation.Z - P.Location.Z > 0.62 * P.CollisionHeight);
+
+	return WImp.CheckHeadShot(P, HitLocation, BulletDir);
 }
 
 function SetSwitchPriority(pawn Other)
@@ -178,36 +201,39 @@ simulated function bool ClientAltFire(float Value) {
 }
 
 simulated function Tick(float DeltaTime) {
-	if (Owner != none &&
-		Owner.IsA('PlayerPawn') &&
+	local PlayerPawn P;
+
+	P = PlayerPawn(Owner);
+	if (P != none &&
+		P.Weapon == self &&
 		bCanClientFire
 	) {
 		switch (ZoomState) {
 		case ZS_None:
-			if (Pawn(Owner).bAltFire != 0) {
-				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
-					PlayerPawn(Owner).StartZoom();
+			if (P.bAltFire != 0) {
+				if (P.Player.IsA('ViewPort'))
+					P.StartZoom();
 				SetTimer(0.2, true);
 				ZoomState = ZS_Zooming;
 			}
 			break;
 		case ZS_Zooming:
-			if (Pawn(Owner).bAltFire == 0) {
-				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
-					PlayerPawn(Owner).StopZoom();
+			if (P.bAltFire == 0) {
+				if (P.Player.IsA('ViewPort'))
+					P.StopZoom();
 				ZoomState = ZS_Zoomed;
 			}
 			break;
 		case ZS_Zoomed:
-			if (Pawn(Owner).bAltFire != 0) {
-				if (PlayerPawn(Owner).Player.IsA('ViewPort'))
-					PlayerPawn(Owner).EndZoom();
+			if (P.bAltFire != 0) {
+				if (P.Player.IsA('ViewPort'))
+					P.EndZoom();
 				SetTimer(0.0, false);
 				ZoomState = ZS_Reset;
 			}
 			break;
 		case ZS_Reset:
-			if (Pawn(Owner).bAltFire == 0) {
+			if (P.bAltFire == 0) {
 				ZoomState = ZS_None;
 			}
 			break;

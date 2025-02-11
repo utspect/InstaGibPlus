@@ -6,7 +6,7 @@
 
 class ST_enforcer extends enforcer;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 var WeaponSettingsRepl WSettings;
 
@@ -31,8 +31,49 @@ function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 
-	ForEach AllActors(Class'ST_Mutator', STM)
+	ForEach AllActors(class'IGPlus_WeaponImplementation', WImp)
 		break;		// Find master :D
+}
+
+function TraceFire(float Accuracy) {
+	local vector RealOffset;
+	local vector HitLocation, HitNormal, StartTrace, EndTrace, X,Y,Z;
+	local Actor Other;
+	local Pawn PawnOwner;
+
+	RealOffset = FireOffset;
+	FireOffset *= 0.35;
+	if ( (SlaveEnforcer != None) || bIsSlave )
+		Accuracy = FClamp(3*Accuracy,0.75,3);
+	else if ( Owner.IsA('Bot') && !Bot(Owner).bNovice )
+		Accuracy = FMax(Accuracy, 0.45);
+
+	PawnOwner = Pawn(Owner);
+
+	Owner.MakeNoise(PawnOwner.SoundDampening);
+	GetAxes(PawnOwner.ViewRotation,X,Y,Z);
+	StartTrace = Owner.Location + CalcDrawOffset() + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z; 
+	AdjustedAim = PawnOwner.AdjustAim(1000000, StartTrace, 2*AimError, False, False);	
+	EndTrace = StartTrace + Accuracy * (FRand() - 0.5 )* Y * 1000
+		+ Accuracy * (FRand() - 0.5 ) * Z * 1000;
+	X = vector(AdjustedAim);
+	EndTrace += (10000 * X);
+	if (WImp.WeaponSettings.EnforcerUseReducedHitbox)
+		Other = WImp.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace, PawnOwner);
+	else
+		Other = PawnOwner.TraceShot(HitLocation, HitNormal, EndTrace, StartTrace);
+	ProcessTraceHit(Other, HitLocation, HitNormal, X,Y,Z);
+
+	FireOffset = RealOffset;
+
+	// Higor: move slave enforcer to TraceFire start location
+	// to ensure firing sounds are played from the right place
+	if (Owner != None && (Level.NetMode == NM_DedicatedServer || Level.NetMode == NM_ListenServer)) {
+		if (bIsSlave && !bCollideActors)
+			SetLocation(Owner.Location + CalcDrawOffset());
+		else if (SlaveEnforcer != None && !SlaveEnforcer.bCollideActors)
+			SlaveEnforcer.SetLocation(Owner.Location + SlaveEnforcer.CalcDrawOffset());
+	}
 }
 
 function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vector X, Vector Y, Vector Z)
@@ -44,9 +85,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local float Damage;
 
 	PawnOwner = Pawn(Owner);
-	STM.PlayerFire(PawnOwner, 3);			// 3 = Enforcer
-	if (SlaveEnforcer != None)
-		STM.PlayerSpecial(PawnOwner, 3);	// 3 = Enforcer, Slave enforcer is special.
 
 	realLoc = Owner.Location + CalcDrawOffset();
 	s = Spawn(class'UT_ShellCase',, '', realLoc + 20 * X + FireOffset.Y * Y + Z);
@@ -67,17 +105,16 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		Momentum = 3000.0 * X;
 		if (Other.bIsPawn) {
 			if (SlaveEnforcer == none && bIsSlave == false)
-				Momentum *= STM.WeaponSettings.EnforcerMomentum;
+				Momentum *= WImp.WeaponSettings.EnforcerMomentum;
 			else
-				Momentum *= STM.WeaponSettings.EnforcerMomentumDouble;
+				Momentum *= WImp.WeaponSettings.EnforcerMomentumDouble;
 		}
 
 		if (SlaveEnforcer == none && bIsSlave == false)
-			Damage = STM.WeaponSettings.EnforcerDamage;
+			Damage = WImp.WeaponSettings.EnforcerDamage;
 		else
-			Damage = STM.WeaponSettings.EnforcerDamageDouble;
+			Damage = WImp.WeaponSettings.EnforcerDamageDouble;
 
-		STM.PlayerHit(PawnOwner, 3, False);	// 3 = Enforcer
 		Other.TakeDamage(
 			Damage,
 			PawnOwner,
@@ -85,7 +122,6 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 			Momentum,
 			MyDamageType
 		);
-		STM.PlayerClear();
 		if ( !Other.bIsPawn && !Other.IsA('Carcass') )
 			spawn(class'UT_SpriteSmokePuff',,,HitLocation+HitNormal*9);
 		else

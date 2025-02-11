@@ -1,9 +1,3 @@
-// ===============================================================
-// UTPureStats7A.ST_StarterBolt: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class ST_StarterBolt extends ST_PBolt;
 
 var float OldError, NewError, StartError, AimError; //used for bot aiming
@@ -41,11 +35,11 @@ simulated function PostBeginPlay()
 		aimerror *= -1;
 
 	if (ROLE == ROLE_Authority)
-		ForEach AllActors(Class'ST_Mutator', STM)
+		ForEach AllActors(Class'IGPlus_WeaponImplementation', WImp)
 			break;		// Find master :D
 
-	GrowthDelay = STM.WeaponSettings.PulseBoltGrowthDelay;
-	MaxSegments = STM.WeaponSettings.PulseBoltMaxSegments;
+	GrowthDelay = WImp.WeaponSettings.PulseBoltGrowthDelay;
+	MaxSegments = WImp.WeaponSettings.PulseBoltMaxSegments;
 }
 
 simulated function Tick(float DeltaTime)
@@ -62,7 +56,6 @@ simulated function Tick(float DeltaTime)
 		while (ShootAccum <= 0.0)
 		{	// Handle stats this way.
 			ShootAccum += 0.05;		// TR 20 = 0.05s
-			STM.PlayerFire(Instigator, 10);
 		}
 	}
 
@@ -151,7 +144,7 @@ simulated function Tick(float DeltaTime)
 				AimRotation = Instigator.ViewRotation;
 				SetRotation(AimRotation);
 			}
-			Drawoffset = Instigator.Weapon.CalcDrawOffset();
+			DrawOffset = Instigator.Weapon.CalcDrawOffset();
 		}
 		GetAxes(Instigator.ViewRotation,X,Y,Z);
 
@@ -168,8 +161,12 @@ simulated function Tick(float DeltaTime)
 			else
 				FireOffset.Y = -1 * Default.FireOffset.Y;
 		}
-		Origin = Instigator.Location + DrawOffset;
-		SetLocation(Origin + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z);
+		if (Instigator.IsA('PlayerPawn')) {
+			Origin = Instigator.Location + PlayerPawn(Instigator).EyeHeight * vect(0,0,1);
+		} else {
+			Origin = Instigator.Location + DrawOffset;
+		}
+		SetLocation(Instigator.Location + DrawOffset + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z);
 	}
 	else {
 		GetAxes(Rotation,X,Y,Z);
@@ -194,7 +191,7 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 	HitActor = Trace(HitLocation, HitNormal, Origin + BeamLen * BeamSize * X, Origin, true);
 	if ( (HitActor != None)	&& (HitActor != Instigator)
 		&& (HitActor.bProjTarget || (HitActor == Level) || (HitActor.bBlockActors && HitActor.bBlockPlayers))
-		&& ((Pawn(HitActor) == None) || Pawn(HitActor).AdjustHitLocation(HitLocation, Velocity)) )
+		&& ((Pawn(HitActor) == None) || Pawn(HitActor).AdjustHitLocation(HitLocation, X)) )
 	{
 		if ( Level.Netmode != NM_Client )
 		{
@@ -202,20 +199,18 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 			{
 				AccumulatedDamage = FMin(
 					0.5 * (Level.TimeSeconds - LastHitTime),
-					STM.WeaponSettings.PulseBoltMaxAccumulate
+					WImp.WeaponSettings.PulseBoltMaxAccumulate
 				);
 				if (Level.Game.GetPropertyText("NoLockdown") == "1")
 					Momentum = vect(0,0,0);
 				else
 					Momentum = MomentumTransfer * X * AccumulatedDamage;
-				STM.PlayerHit(Instigator, 10, False);						// 10 = Pulse Shaft
 				HitActor.TakeDamage(
-					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+					CalcDamage(WImp.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 					instigator,
 					HitLocation,
-					STM.WeaponSettings.PulseBoltMomentum * Momentum,
+					WImp.WeaponSettings.PulseBoltMomentum * Momentum,
 					MyDamageType);
-				STM.PlayerClear();
 				AccumulatedDamage = 0;
 			}
 			else if ( DamagedActor != HitActor )
@@ -224,14 +219,12 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 					Momentum = vect(0,0,0);
 				else
 					Momentum = MomentumTransfer * X * AccumulatedDamage;
-				STM.PlayerHit(Instigator, 10, False);						// 10 = Pulse Shaft
 				DamagedActor.TakeDamage(
-					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+					CalcDamage(WImp.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 					instigator,
 					HitLocation,
-					STM.WeaponSettings.PulseBoltMomentum * Momentum,
+					WImp.WeaponSettings.PulseBoltMomentum * Momentum,
 					MyDamageType);
-				STM.PlayerClear();
 				AccumulatedDamage = 0;
 			}
 			LastHitTime = Level.TimeSeconds;
@@ -245,14 +238,12 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 					Momentum = vect(0,0,0);
 				else
 					Momentum = MomentumTransfer * X * AccumulatedDamage;
-				STM.PlayerHit(Instigator, 10, True);						// 10 = Pulse Shaft, Overload
 				DamagedActor.TakeDamage(
-					CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+					CalcDamage(WImp.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 					instigator,
 					HitLocation,
-					STM.WeaponSettings.PulseBoltMomentum * Momentum,
+					WImp.WeaponSettings.PulseBoltMomentum * Momentum,
 					MyDamageType);
-				STM.PlayerClear();
 				AccumulatedDamage = 0;
 			}
 		}
@@ -289,14 +280,12 @@ simulated function TraceBeam(vector Origin, vector X, float DeltaTime)
 			else
 				Momentum = MomentumTransfer * X * AccumulatedDamage;
 
-			STM.PlayerHit(Instigator, 10, True);								// 10 = Pulse Shaft
 			DamagedActor.TakeDamage(
-				CalcDamage(STM.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
+				CalcDamage(WImp.WeaponSettings.PulseBoltDPS * AccumulatedDamage),
 				instigator,
 				DamagedActor.Location - X * 1.2 * DamagedActor.CollisionRadius,
-				STM.WeaponSettings.PulseBoltMomentum * Momentum,
+				WImp.WeaponSettings.PulseBoltMomentum * Momentum,
 				MyDamageType);
-			STM.PlayerClear();
 			AccumulatedDamage = 0;
 			DamagedActor = None;
 		}

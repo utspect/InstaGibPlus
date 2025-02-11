@@ -73,7 +73,8 @@ static function PlayBeam(
 			1,
 			0.27,
 			MoveAmount,
-			NumPoints - 1);
+			NumPoints - 1,
+			Settings.bBeamEnableLight);
 
 	} else if (Settings.cShockBeam == 2) {
 		Smoke.SetProperties(
@@ -82,7 +83,8 @@ static function PlayBeam(
 			Settings.BeamFadeCurve,
 			Settings.BeamDuration,
 			MoveAmount,
-			NumPoints - 1);
+			NumPoints - 1,
+			Settings.bBeamEnableLight);
 
 	} else if (Settings.cShockBeam == 4) {
 		Smoke.SetProperties(
@@ -91,7 +93,8 @@ static function PlayBeam(
 			Settings.BeamFadeCurve,
 			Settings.BeamDuration,
 			MoveAmount,
-			0);
+			0,
+			Settings.bBeamEnableLight);
 
 		for (NumPoints = NumPoints - 1; NumPoints > 0; NumPoints--) {
 			SmokeLocation += MoveAmount;
@@ -105,7 +108,8 @@ static function PlayBeam(
 				Settings.BeamFadeCurve,
 				Settings.BeamDuration,
 				MoveAmount,
-				0);
+				0,
+				Settings.bBeamEnableLight);
 		}
 	}
 }

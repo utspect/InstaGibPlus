@@ -6,20 +6,10 @@
 
 class ST_UT_SeekingRocket extends UT_SeekingRocket;
 
-var ST_Mutator STM;
-var bool bDirect;
+var IGPlus_WeaponImplementation WImp;
 
 auto state Flying
 {
-	function ProcessTouch (Actor Other, Vector HitLocation)
-	{
-		if ( (Other != instigator) && !Other.IsA('Projectile') ) 
-		{
-			bDirect = Other.IsA('Pawn');
-			Explode(HitLocation,Normal(HitLocation-Other.Location));
-		}
-	}
-
 	function HitWall (vector HitNormal, actor Wall)
 	{
 		if ( (Mover(Wall) != None) && Mover(Wall).bDamageTriggered )
@@ -51,14 +41,22 @@ auto state Flying
 
 	function BlowUp(vector HitLocation)
 	{
-		STM.PlayerHit(Instigator, 16, bDirect);		// 16 = Rockets. No special for seeking, a seeker just means it has a larger chance of direct (yeah rite :P)
-		HurtRadius(
-			STM.WeaponSettings.RocketDamage,
-			STM.WeaponSettings.RocketHurtRadius,
-			MyDamageType,
-			STM.WeaponSettings.RocketMomentum * MomentumTransfer,
-			HitLocation);
-		STM.PlayerClear();
+		if (WImp.WeaponSettings.bEnableEnhancedSplashRockets) {
+			WImp.EnhancedHurtRadius(
+				self,
+				WImp.WeaponSettings.RocketDamage,
+				WImp.WeaponSettings.RocketHurtRadius,
+				MyDamageType,
+				WImp.WeaponSettings.RocketMomentum * MomentumTransfer,
+				HitLocation);
+		} else {
+			HurtRadius(
+				WImp.WeaponSettings.RocketDamage,
+				WImp.WeaponSettings.RocketHurtRadius,
+				MyDamageType,
+				WImp.WeaponSettings.RocketMomentum * MomentumTransfer,
+				HitLocation);
+		}
 
 		MakeNoise(1.0);
 	}

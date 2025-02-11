@@ -6,7 +6,7 @@
 
 class ST_UT_Grenade extends UT_Grenade;
 
-var ST_Mutator STM;
+var IGPlus_WeaponImplementation WImp;
 
 function Explosion(vector HitLocation)
 {
@@ -28,14 +28,22 @@ function Explosion(vector HitLocation)
 
 function BlowUp(vector HitLocation)
 {
-	STM.PlayerHit(Instigator, 17, !bCanHitOwner);	// bCanHitOwner is set to True after the Grenade has bounced once. Neat hax
-	HurtRadius(
-		STM.WeaponSettings.GrenadeDamage,
-		STM.WeaponSettings.GrenadeHurtRadius,
-		MyDamageType,
-		STM.WeaponSettings.GrenadeMomentum * MomentumTransfer,
-		HitLocation);
-	STM.PlayerClear();
+	if (WImp.WeaponSettings.bEnableEnhancedSplashRockets) {
+		WImp.EnhancedHurtRadius(
+			self,
+			WImp.WeaponSettings.GrenadeDamage,
+			WImp.WeaponSettings.GrenadeHurtRadius,
+			MyDamageType,
+			WImp.WeaponSettings.GrenadeMomentum * MomentumTransfer,
+			HitLocation);
+	} else {
+		HurtRadius(
+			WImp.WeaponSettings.GrenadeDamage,
+			WImp.WeaponSettings.GrenadeHurtRadius,
+			MyDamageType,
+			WImp.WeaponSettings.GrenadeMomentum * MomentumTransfer,
+			HitLocation);
+	}
 	MakeNoise(1.0);
 }
 
