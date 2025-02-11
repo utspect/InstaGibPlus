@@ -29,15 +29,16 @@ function bool HandlePickupQuery(Inventory Item) {
 
 function inventory SpawnCopy(Pawn Other) {
 	local Inventory Copy, S;
+	local int Armor;
 
 	Copy = super(TournamentPickup).SpawnCopy(Other);
-	S = Other.FindInventoryType(class'ST_ShieldBelt');
-	if (S != none) {
-		Copy.Charge = Min(Copy.Charge, S.default.Charge - S.Charge);
-		if (Copy.Charge <= 0) {
-			S.Charge -= 1;
-			Copy.Charge = 1;
-		}
-	}
+	for (S = Other.Inventory; S != none; S = S.Inventory)
+		if (S != Copy && S.bIsAnArmor)
+			Armor += S.Charge;
+
+	Copy.Charge = Min(Copy.Charge, class'UT_ShieldBelt'.default.Charge - Armor);
+	if (Copy.Charge <= 0)
+		Copy.Destroy();
+
 	return Copy;
 }
